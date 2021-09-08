@@ -1,0 +1,116 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { SelectorIcon } from "@heroicons/vue/solid";
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from "@headlessui/vue";
+
+interface Item {
+  label: string;
+  value: string;
+}
+
+const props = defineProps<{
+  label?: string;
+  modelValue?: Item;
+  items: Item[];
+}>();
+
+const emits = defineEmits(["update:modelValue"]);
+
+const value = computed({
+  get: () => {
+    return props.modelValue ? props.modelValue : props.items[0];
+  },
+  set: (value) => emits("update:modelValue", value),
+});
+</script>
+
+<template>
+  <div class="relative w-full items-stretch">
+    <div v-if="label" class="label-container">
+      <div class="block text-sm font-body">{{ label }}</div>
+    </div>
+    <div class="relative" :class="{ 'mt-1': label }">
+      <Listbox v-model="value" as="div">
+        <ListboxButton
+          class="shadow-inner rounded-md w-full px-3 py-2"
+          :style="{ height: '54px' }"
+        >
+          <span class="flex items-center">
+            <span class="block truncate">{{ value?.label }}</span>
+          </span>
+          <span
+            class="
+              ml-3
+              absolute
+              inset-y-0
+              right-0
+              flex
+              items-center
+              pr-2
+              pointer-events-none
+            "
+          >
+            <SelectorIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+          </span>
+        </ListboxButton>
+        <transition
+          leave-active-class="transition ease-in duration-100"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <ListboxOptions
+            class="
+              absolute
+              z-10
+              mt-1
+              w-full
+              bg-white
+              shadow-lg
+              max-h-56
+              rounded-md
+              py-1
+              text-base
+              ring-1 ring-app-gray-400
+              overflow-auto
+              outline-none
+              focus:outline-none
+              sm:text-sm
+            "
+          >
+            <ListboxOption
+              v-for="item in items"
+              :key="item.value"
+              v-slot="{ active, selected }"
+              as="template"
+              :value="item"
+            >
+              <li
+                :class="[
+                  active ? 'text-white bg-app-primary-100' : 'text-gray-900',
+                  'cursor-default select-none relative py-2 px-2',
+                ]"
+              >
+                <div class="flex items-center">
+                  <span
+                    :class="[
+                      selected ? 'font-semibold' : 'font-normal',
+                      'ml-3 block truncate',
+                    ]"
+                    >{{ item.label }}</span
+                  >
+                </div>
+              </li>
+            </ListboxOption>
+          </ListboxOptions>
+        </transition>
+      </Listbox>
+    </div>
+  </div>
+</template>
+
+<style scoped></style>
