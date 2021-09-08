@@ -1,4 +1,11 @@
 {
   "version": "0.2",
-  "words": ["scripthost", "tailwindcss", "topup", "toruslabs"]
+  "words": [
+    "headlessui",
+    "heroicons",
+    "scripthost",
+    "tailwindcss",
+    "topup",
+    "toruslabs"
+  ]
 }
