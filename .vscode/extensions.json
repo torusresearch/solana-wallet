@@ -3,8 +3,8 @@
     "johnsoncodehk.volar",
     "cpylua.language-postcss",
     "bradlc.vscode-tailwindcss",
-    "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
     "streetsidesoftware.code-spell-checker"
   ],
   "unwantedRecommendations": ["octref.vetur", "csstools.postcss"]
