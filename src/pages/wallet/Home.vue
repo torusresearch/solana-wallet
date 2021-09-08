@@ -12,14 +12,16 @@ import WalletBalance from "@/components/WalletBalance.vue";
         <Card>
           <div class="grid grid-cols-3 h-full">
             <div class="col-span-2">
-              <div class="font-body font-bold">
+              <div class="font-body font-bold text-app-text-600">
                 Join us at User X Devcon After-Party
               </div>
-              <div class="font-body text-xs">11 Oct 2019 @ Osaka</div>
+              <div class="font-body text-xs text-app-text-600">
+                11 Oct 2019 @ Osaka
+              </div>
             </div>
             <div class="col-span-1">
               <img
-                class="float-right h-full"
+                class="float-right h-2/3"
                 src="https://images.toruswallet.io/eth.svg"
                 alt
               />

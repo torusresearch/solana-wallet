@@ -26,6 +26,11 @@ module.exports = {
           },
           secondary: "#47B2FD",
           secondary2: "#DAF0FF",
+          text: {
+            400: '#A2A5B5',
+            500: '#5C6C7F',
+            600: '#0F1222',
+          },
           gray: {
             200: "#F5F5F5",
             300: "#F9F9FB",

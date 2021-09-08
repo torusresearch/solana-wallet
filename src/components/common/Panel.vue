@@ -26,7 +26,9 @@ withDefaults(
         py-3
       "
       ><slot name="leftIcon"></slot>
-      <div class="text-base font-body font-bold">{{ title }}</div>
+      <div class="text-base text-app-text-600 font-body font-bold">
+        {{ title }}
+      </div>
     </DisclosureButton>
     <DisclosurePanel
       :static="disabled"

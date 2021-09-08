@@ -33,7 +33,7 @@ const onLogin = async () => {
             src="https://app.tor.us/v1.13.2/img/torus-logo-blue.829106db.svg"
             alt=""
           />
-          <div class="font-header text-3xl mb-4">
+          <div class="font-header text-app-text-500 text-3xl mb-4">
             <div>Your Google</div>
             <div>digital wallet in one-click</div>
           </div>
@@ -77,10 +77,10 @@ const onLogin = async () => {
           </div>
           <div class="mt-3 relative w-10/12">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-gray-300" />
+              <div class="w-full border-t border-app-text-400" />
             </div>
             <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-gray-100 text-gray-500">or</span>
+              <span class="px-2 bg-gray-100 text-app-text-500">or</span>
             </div>
           </div>
           <div class="mt-3 w-10/12">
@@ -96,17 +96,19 @@ const onLogin = async () => {
             </form>
           </div>
           <div class="mt-8 mb-2 w-10/12">
-            <div class="font-body text-xs font-bold mb-2">Note:</div>
-            <div class="font-body text-xs font-light mb-2">
+            <div class="font-body text-xs text-app-text-600 font-bold mb-2">
+              Note:
+            </div>
+            <div class="font-body text-xs text-app-text-400 font-light mb-2">
               Torus does not store any data related to your social logins.
             </div>
-            <div class="font-body text-xs font-light">
+            <div class="font-body text-xs text-app-text-400 font-light">
               The following sign-ins involve a third party authenticator: Apple,
               Email, GitHub, Kakao, LINE, LinkedIn, Twitter, WeChat.
             </div>
           </div>
 
-          <div class="inset-0 flex items-center mt-3" aria-hidden="true">
+          <div class="inset-0 flex items-center mt-4 mb-1" aria-hidden="true">
             <div class="w-full border-t border-gray-300" />
           </div>
 
@@ -140,13 +142,13 @@ const onLogin = async () => {
             src="https://app.tor.us/v1.13.2/img/login-bg-1.4fa6ad65.svg"
             alt=""
           />
-          <div class="font-header text-xl mb-2">
+          <div class="font-header text-xl text-app-text-500 mb-2">
             Interact with thousands of apps on the blockchain
           </div>
-          <div class="font-body text-base">
+          <div class="font-body text-base text-app-text-500">
             From Finance, Games, Exchanges and more
           </div>
-          <div class="font-body text-base">
+          <div class="font-body text-base text-app-text-500">
             Access the decentralised world with Torus
           </div>
 

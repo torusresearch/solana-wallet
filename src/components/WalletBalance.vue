@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Card } from "@/components/common";
+import { Button, Card, NetworkDisplay } from "@/components/common";
 
 defineProps<{
   showButtons?: boolean;
@@ -8,15 +8,17 @@ defineProps<{
 <template>
   <Card :height="showButtons ? '164px' : undefined">
     <div class="flex">
-      <div class="font-header font-semibold">Total Value</div>
-      <div class="ml-auto">Casper Network</div>
+      <div class="font-header font-semibold text-app-text-600">Total Value</div>
+      <div class="ml-auto"><NetworkDisplay /></div>
     </div>
     <div class="flex">
       <div>
-        <span class="font-body font-bold text-5xl">0.00</span>
-        <span class="font-body text-xs">USD</span>
+        <span class="mr-2 font-body font-bold text-5xl text-app-text-500"
+          >0.00</span
+        >
+        <span class="font-body text-xs text-app-text-500">USD</span>
       </div>
-      <div class="ml-auto self-end">1 ETH = 269.21 USD</div>
+      <div class="ml-auto self-end text-app-text-400">1 ETH = 269.21 USD</div>
     </div>
     <template v-if="showButtons" #footer>
       <div class="grid grid-cols-2 gap-3 mt-3">

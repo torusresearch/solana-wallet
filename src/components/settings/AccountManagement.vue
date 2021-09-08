@@ -35,7 +35,7 @@ const accounts = [
         </div>
       </li>
     </ul>
-    <div class="font-body text-xs px-2">
+    <div class="font-body text-xs text-app-text-400 px-2">
       Note: The selected default account shall be the account displayed when you
       sign in on a DApp.
     </div>

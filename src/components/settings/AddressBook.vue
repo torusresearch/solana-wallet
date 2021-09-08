@@ -88,13 +88,13 @@ const transferTypes: TranferType[] = [
             src="https://app.tor.us/v1.13.2/img/eth-grey-white.3edd2d65.svg"
             alt
           />
-          <div class="font-body text-xs">
+          <div class="font-body text-xs text-app-text-600">
             {{ contact.name }} -
-            <span>{{ contact.contact }}</span>
+            <span class="text-app-text-500">{{ contact.contact }}</span>
           </div>
         </div>
         <div class="ml-auto">
-          <TrashIcon class="w-4 h-4 text-gray-400" />
+          <TrashIcon class="w-4 h-4 text-app-text-500" />
         </div>
       </li>
     </ul>

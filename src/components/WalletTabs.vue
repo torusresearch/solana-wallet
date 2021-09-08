@@ -25,18 +25,10 @@ import {
 
 import CasperLogoURL from "@/assets/casper.svg";
 
-// TODO: Hookup
 import { user, logout, requireLoggedIn } from "@/modules/auth";
-// import { logout } from "@/modules/auth";
-import Button from "./common/Button.vue";
+import { Button } from "@/components/common";
 
 requireLoggedIn();
-
-// const user = {
-//   imageURL: "https://i.pravatar.cc/150?img=5",
-//   name: "Satoshi Nakamoto",
-//   email: "satosh@gmail.com",
-// };
 
 defineProps<{
   tab: keyof typeof tabs;
@@ -345,7 +337,7 @@ const userNavigations = [
     <div class="py-6">
       <header>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 class="text-3xl font-bold leading-tight text-gray-900">
+          <h1 class="text-3xl font-bold leading-tight text-app-text-500">
             {{ tabs[tab].title }}
           </h1>
         </div>

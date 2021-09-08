@@ -79,9 +79,15 @@ const transferTypes: TranferType[] = [
               </div>
 
               <div class="text-right mb-6">
-                <div class="font-body font-bold text-sm">Total cost</div>
-                <div class="font-body font-bold text-2xl">0 ETH</div>
-                <div class="font-body text-xs font-light">0 USD</div>
+                <div class="font-body font-bold text-sm text-app-text-600">
+                  Total cost
+                </div>
+                <div class="font-body font-bold text-2xl text-app-text-500">
+                  0 ETH
+                </div>
+                <div class="font-body text-xs font-light text-app-text-600">
+                  0 USD
+                </div>
               </div>
 
               <div class="flex">

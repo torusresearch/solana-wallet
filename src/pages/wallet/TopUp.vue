@@ -123,21 +123,21 @@ const selectedCurrency = ref(currencies[0]);
                   class="
                     mt-2
                     flex flex-shrink-0
-                    text-sm
                     sm:mt-0 sm:block sm:ml-4 sm:text-right
                   "
                 >
-                  <div class="font-medium text-gray-900">
+                  <div class="font-medium text-xs text-app-text-600">
                     Pay with {{ provider.paymentMethod }}
                   </div>
-                  <div class="font-medium text-gray-900">
-                    Fees: {{ provider.fee }}
+                  <div class="font-medium text-xs text-app-text-600">
+                    <span class="font-bold">Fees</span>: {{ provider.fee }}
                   </div>
-                  <div class="ml-1 text-gray-500 sm:ml-0">
-                    Limit: {{ provider.limit }}
+                  <div class="ml-1 text-xs text-app-text-600 sm:ml-0">
+                    <span class="font-bold">Limit</span>: {{ provider.limit }}
                   </div>
-                  <div class="ml-1 text-gray-500 sm:ml-0">
-                    Currencies: {{ provider.currencies.join(", ") }}
+                  <div class="ml-1 text-xs text-app-text-600 sm:ml-0">
+                    <span class="font-bold">Currencies</span>:
+                    {{ provider.currencies.join(", ") }}
                   </div>
                 </RadioGroupDescription>
               </div>
@@ -148,7 +148,7 @@ const selectedCurrency = ref(currencies[0]);
           <div class="shadow sm:rounded-md sm:overflow-hidden">
             <div class="bg-white py-6 px-4 space-y-6 sm:p-6">
               <div>
-                <p class="mt-1 text-sm text-gray-500">
+                <p class="mt-1 text-sm text-app-text-600">
                   {{ selectedProvider.description }}
                 </p>
               </div>
@@ -170,16 +170,26 @@ const selectedCurrency = ref(currencies[0]);
                   <SelectField class="mt-6" :items="currencies" />
                 </div>
               </div>
-              <div class="flex flex-col items-end">
-                <div class="font-semibold text-gray-600">You receive</div>
-                <div class="text-xl font-medium text-gray-800">0 ETH</div>
-                <div class="text-sm font-light text-gray-600">
+              <div class="flex flex-col items-end mb-5">
+                <div class="text-app-text-600">You receive</div>
+                <div class="text-2xl font-bold text-app-text-600">0 ETH</div>
+                <div class="text-xs font-light text-app-text-500">
                   Rate: 1 ETH = 3697.37 USD
+                </div>
+              </div>
+              <div class="text-right text-xs">
+                <div>The process would take approximately 10 - 15 min.</div>
+                <div>
+                  Please prepare your Identity Card/Passport to complete the
+                  purchase.
                 </div>
               </div>
             </div>
             <div class="px-4 py-3 mb-4 sm:px-6">
-              <Button class="ml-auto" variant="primary">Save</Button>
+              <Button class="ml-auto mb-2" variant="primary">Save</Button>
+              <div class="text-right text-xs">
+                You will be redirected to the third party page
+              </div>
             </div>
           </div>
         </form>
