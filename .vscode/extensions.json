@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "johnsoncodehk.volar",
+    "cpylua.language-postcss",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "streetsidesoftware.code-spell-checker"
+  ],
+  "unwantedRecommendations": ["octref.vetur", "csstools.postcss"]
+}
