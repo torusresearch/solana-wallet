@@ -1,29 +1,17 @@
-# casper-wallet
+# Casper Wallet
 
-## Project setup
+Casper Wallet end-user web application.
 
-```
-yarn install
-```
+## Recommended IDE Setup
 
-### Compiles and hot-reloads for development
+- [VSCode](https://code.visualstudio.com/)
 
-```
-yarn serve
-```
+- Install recommended extensions when first open the project in VSCode.
 
-### Compiles and minifies for production
+## NPM Scripts
 
-```
-yarn build
-```
-
-### Lints and fixes files
-
-```
-yarn lint
-```
-
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
+| Script       | Description                                             |
+| ------------ | ------------------------------------------------------- |
+| `yarn serve` | Start dev server                                        |
+| `yarn build` | Build for production                                    |
+| `yarn lint`  | Check for code issues (automatically run on pre-commit) |
