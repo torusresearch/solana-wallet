@@ -23,7 +23,7 @@ import {
   MenuItems,
 } from "@headlessui/vue";
 
-import CasperLogoURL from "@/assets/casper-logo.svg";
+import CasperLogoURL from "@/assets/casper.svg";
 
 // TODO: Hookup
 import { user, logout, requireLoggedIn } from "@/modules/auth";
