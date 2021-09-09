@@ -27,10 +27,22 @@ const value = computed({
 <template>
   <div class="relative w-full items-stretch">
     <div v-if="label" class="label-container mb-1">
-      <div class="text-sm font-body">{{ label }}</div>
+      <div
+        class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500"
+      >
+        {{ label }}
+      </div>
     </div>
     <div
-      class="input-container flex shadow-inner rounded-md"
+      class="
+        input-container
+        flex
+        shadow-inner
+        dark:shadow-none
+        bg-white
+        dark:bg-app-gray-800
+        rounded-md
+      "
       :class="`size-${size}`"
     >
       <input
@@ -41,6 +53,8 @@ const value = computed({
           border-0
           bg-transparent
           focus:outline-none focus:ring-0
+          text-app-text-500
+          dark:text-app-text-dark-500
         "
         :class="size === 'small' ? 'text-xs' : 'text-base'"
         type="text"

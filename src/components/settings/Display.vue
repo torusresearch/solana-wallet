@@ -1,15 +1,32 @@
 <script setup lang="ts">
+import { app, setDarkMode } from "@/modules/app";
 import { Button } from "@/components/common";
+
+console.log();
 </script>
 <template>
   <div class="pb-4">
-    <div class="text-sm font-body mb-2">Select a theme</div>
+    <div
+      class="
+        text-sm
+        font-body
+        mb-2
+        text-app-text-600
+        dark:text-app-text-dark-500
+      "
+    >
+      Select a theme
+    </div>
     <div class="grid grid-cols-2 space-x-3">
       <div>
-        <Button variant="tertiary" block>Light</Button>
+        <Button variant="tertiary" block @click="setDarkMode(false)"
+          >Light</Button
+        >
       </div>
       <div>
-        <Button variant="tertiary" block>Dark</Button>
+        <Button variant="tertiary" block @click="setDarkMode(true)"
+          >Dark</Button
+        >
       </div>
     </div>
   </div>

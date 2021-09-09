@@ -80,7 +80,9 @@ const selectedCurrency = ref(currencies[0]);
                   rounded-md
                   border
                   bg-white
+                  dark:bg-app-gray-700
                   shadow
+                  dark:shadow-dark
                   px-6
                   py-4
                   cursor-pointer
@@ -89,7 +91,9 @@ const selectedCurrency = ref(currencies[0]);
                   focus:outline-none
                 "
                 :class="
-                  checked ? 'border-app-primary-500' : 'border-app-gray-200'
+                  checked
+                    ? 'border-app-primary-500'
+                    : 'border-app-gray-200 dark:border-transparent'
                 "
               >
                 <div class="flex flex-shrink-1 items-center">
@@ -126,16 +130,42 @@ const selectedCurrency = ref(currencies[0]);
                     sm:mt-0 sm:block sm:ml-4 sm:text-right
                   "
                 >
-                  <div class="font-medium text-xs text-app-text-600">
+                  <div
+                    class="
+                      font-medium
+                      text-xs text-app-text-600
+                      dark:text-app-text-dark-500
+                    "
+                  >
                     Pay with {{ provider.paymentMethod }}
                   </div>
-                  <div class="font-medium text-xs text-app-text-600">
+                  <div
+                    class="
+                      font-medium
+                      text-xs text-app-text-600
+                      dark:text-app-text-dark-500
+                    "
+                  >
                     <span class="font-bold">Fees</span>: {{ provider.fee }}
                   </div>
-                  <div class="ml-1 text-xs text-app-text-600 sm:ml-0">
+                  <div
+                    class="
+                      ml-1
+                      text-xs text-app-text-600
+                      dark:text-app-text-dark-500
+                      sm:ml-0
+                    "
+                  >
                     <span class="font-bold">Limit</span>: {{ provider.limit }}
                   </div>
-                  <div class="ml-1 text-xs text-app-text-600 sm:ml-0">
+                  <div
+                    class="
+                      ml-1
+                      text-xs text-app-text-600
+                      dark:text-app-text-dark-500
+                      sm:ml-0
+                    "
+                  >
                     <span class="font-bold">Currencies</span>:
                     {{ provider.currencies.join(", ") }}
                   </div>
@@ -145,10 +175,24 @@ const selectedCurrency = ref(currencies[0]);
           </div>
         </RadioGroup>
         <form action="#" method="POST">
-          <div class="shadow sm:rounded-md sm:overflow-hidden">
-            <div class="bg-white py-6 px-4 space-y-6 sm:p-6">
+          <div
+            class="
+              shadow
+              dark:shadow-dark
+              bg-white
+              dark:bg-app-gray-700
+              sm:rounded-md sm:overflow-hidden
+            "
+          >
+            <div class="py-6 px-4 space-y-6 sm:p-6">
               <div>
-                <p class="mt-1 text-sm text-app-text-600">
+                <p
+                  class="
+                    mt-1
+                    text-sm text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
+                >
                   {{ selectedProvider.description }}
                 </p>
               </div>
@@ -171,13 +215,36 @@ const selectedCurrency = ref(currencies[0]);
                 </div>
               </div>
               <div class="flex flex-col items-end mb-5">
-                <div class="text-app-text-600">You receive</div>
-                <div class="text-2xl font-bold text-app-text-600">0 ETH</div>
-                <div class="text-xs font-light text-app-text-500">
+                <div class="text-app-text-600 dark:text-app-text-dark-500">
+                  You receive
+                </div>
+                <div
+                  class="
+                    text-2xl
+                    font-bold
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
+                >
+                  0 ETH
+                </div>
+                <div
+                  class="
+                    text-xs
+                    font-light
+                    text-app-text-500
+                    dark:text-app-text-dark-500
+                  "
+                >
                   Rate: 1 ETH = 3697.37 USD
                 </div>
               </div>
-              <div class="text-right text-xs">
+              <div
+                class="
+                  text-right text-xs text-app-text-600
+                  dark:text-app-text-dark-500
+                "
+              >
                 <div>The process would take approximately 10 - 15 min.</div>
                 <div>
                   Please prepare your Identity Card/Passport to complete the
@@ -187,7 +254,12 @@ const selectedCurrency = ref(currencies[0]);
             </div>
             <div class="px-4 py-3 mb-4 sm:px-6">
               <Button class="ml-auto mb-2" variant="primary">Save</Button>
-              <div class="text-right text-xs">
+              <div
+                class="
+                  text-right text-xs text-app-text-600
+                  dark:text-app-text-dark-500
+                "
+              >
                 You will be redirected to the third party page
               </div>
             </div>

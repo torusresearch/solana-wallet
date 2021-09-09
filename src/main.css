@@ -37,7 +37,7 @@
   }
 
   .t-btn-tertiary {
-    @apply bg-white
+    @apply bg-transparent
     hover:bg-app-gray-300
     active:bg-app-secondary2
     disabled:bg-app-gray-300

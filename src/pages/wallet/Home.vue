@@ -12,10 +12,22 @@ import WalletBalance from "@/components/WalletBalance.vue";
         <Card>
           <div class="grid grid-cols-3 h-full">
             <div class="col-span-2">
-              <div class="font-body font-bold text-app-text-600">
+              <div
+                class="
+                  font-body font-bold
+                  text-app-text-600
+                  dark:text-app-text-dark-500
+                "
+              >
                 Join us at User X Devcon After-Party
               </div>
-              <div class="font-body text-xs text-app-text-600">
+              <div
+                class="
+                  font-body
+                  text-xs text-app-text-600
+                  dark:text-app-text-dark-500
+                "
+              >
                 11 Oct 2019 @ Osaka
               </div>
             </div>

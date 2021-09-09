@@ -39,8 +39,14 @@ const openModal = () => {
     "
     @click="openModal"
   >
-    <KeyIcon class="w-5 h-5 mr-5" />
-    <div class="text-base font-body">Account Details</div>
+    <KeyIcon
+      class="w-5 h-5 mr-5 text-app-text-500 dark:text-app-text-dark-500"
+    />
+    <div
+      class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500"
+    >
+      Account Details
+    </div>
   </div>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog as="div" @close="closeModal">

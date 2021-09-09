@@ -39,12 +39,28 @@ const selectedToken = ref(mainToken);
 </script>
 <template>
   <Listbox v-model="selectedToken" as="div">
-    <ListboxLabel class="block text-sm font-body"
+    <ListboxLabel
+      class="
+        block
+        text-sm
+        font-body
+        text-app-text-600
+        dark:text-app-text-dark-500
+      "
       >Select item to transfer</ListboxLabel
     >
     <div class="mt-1 relative">
       <ListboxButton
-        class="select-container shadow-inner rounded-md w-full px-3"
+        class="
+          bg-white
+          dark:bg-app-gray-800
+          select-container
+          shadow-inner
+          dark:shadow-none
+          rounded-md
+          w-full
+          px-3
+        "
       >
         <span class="flex items-center">
           <img
@@ -52,7 +68,15 @@ const selectedToken = ref(mainToken);
             alt
             class="flex-shrink-0 h-6 w-6 rounded-full"
           />
-          <span class="ml-3 block truncate">
+          <span
+            class="
+              ml-3
+              block
+              truncate
+              text-app-text-600
+              dark:text-app-text-dark-500
+            "
+          >
             {{ selectedToken.name }}
           </span>
         </span>
@@ -84,12 +108,14 @@ const selectedToken = ref(mainToken);
             mt-1
             w-full
             bg-white
+            dark:bg-app-gray-800
             shadow-lg
             max-h-56
             rounded-md
             py-1
             text-base
             ring-1 ring-app-gray-400
+            dark:ring-transparent
             overflow-auto
             outline-none
             focus:outline-none
@@ -103,8 +129,8 @@ const selectedToken = ref(mainToken);
           >
             <li
               :class="[
-                active ? 'bg-app-gray-200' : '',
-                'cursor-pointer select-none relative py-2 pl-3 pr-9 text-app-text-600',
+                active ? 'bg-app-gray-200 dark:text-app-text-500' : '',
+                'cursor-pointer select-none relative py-2 pl-3 pr-9 text-app-text-600 dark:text-app-text-dark-500',
               ]"
             >
               <div class="flex items-center">
@@ -126,7 +152,11 @@ const selectedToken = ref(mainToken);
 
           <div class="flex items-center px-3 py-4 border-t">
             <img :src="TokenLogoURL" class="h-4 w-4 mr-2" />
-            <div class="font-body">TOKENS</div>
+            <div
+              class="font-body text-app-text-600 dark:text-app-text-dark-500"
+            >
+              TOKENS
+            </div>
           </div>
           <ListboxOption
             v-for="item in tokens"
@@ -137,8 +167,8 @@ const selectedToken = ref(mainToken);
           >
             <li
               :class="[
-                active ? 'bg-app-gray-200' : '',
-                'cursor-default select-none relative py-2 pl-9 pr-9 text-app-text-600',
+                active ? 'bg-app-gray-200 dark:text-app-text-500' : '',
+                'cursor-pointer select-none relative py-2 pl-9 pr-9 text-app-text-600 dark:text-app-text-dark-500',
               ]"
             >
               <div class="flex items-center">
