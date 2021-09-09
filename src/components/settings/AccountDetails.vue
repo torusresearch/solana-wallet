@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { KeyIcon } from "@heroicons/vue/outline";
+import {
+  ClipboardCopyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  KeyIcon,
+} from "@heroicons/vue/outline";
 
 import {
   TransitionRoot,
@@ -10,7 +15,10 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
+import { Button } from "@/components/common";
+
 const isOpen = ref(false);
+const isKeyShown = ref(false);
 
 const closeModal = () => {
   isOpen.value = false;
@@ -67,7 +75,7 @@ const openModal = () => {
               class="
                 inline-block
                 w-full
-                max-w-md
+                max-w-2xl
                 p-6
                 my-8
                 overflow-hidden
@@ -82,40 +90,35 @@ const openModal = () => {
             >
               <DialogTitle
                 as="h3"
-                class="text-lg font-medium leading-6 text-app-gray-900"
-                >Payment successful</DialogTitle
+                class="text-lg font-bold leading-6 text-app-text-500"
+                >Private Key</DialogTitle
               >
-              <div class="mt-2">
-                <p class="text-sm text-app-gray-500">
-                  Your payment has been successfully submitted. We’ve sent your
-                  an email with all of the details of your order.
-                </p>
+              <div class="mt-5 flex items-center">
+                <div class="flex items-center">
+                  <KeyIcon class="w-5 h-5 mr-3 text-app-text-400" />
+                  <div class="font-body font-medium">Show Private Key</div>
+                </div>
+                <div class="ml-auto">
+                  <Button variant="text" @click="isKeyShown = !isKeyShown">
+                    <EyeOffIcon v-if="isKeyShown" class="w-5 h-5" />
+                    <EyeIcon v-else class="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              <div v-if="isKeyShown" class="pl-8 flex items-center mt-2">
+                <div class="font-body text-xs text-app-text-500 mr-2">
+                  F48654993568658514F982C87A5BDd01D80969FF48654993568658
+                </div>
+                <Button variant="text">
+                  <ClipboardCopyIcon class="w-4 h-4 mr-1" />
+                  Click to copy
+                </Button>
               </div>
 
-              <div class="mt-4">
-                <button
-                  type="button"
-                  class="
-                    inline-flex
-                    justify-center
-                    px-4
-                    py-2
-                    text-sm
-                    font-medium
-                    text-blue-900
-                    bg-blue-100
-                    border border-transparent
-                    rounded-md
-                    hover:bg-blue-200
-                    focus:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-offset-2
-                    focus-visible:ring-blue-500
-                  "
-                  @click="closeModal"
+              <div class="mt-8">
+                <Button class="ml-auto" variant="tertiary" @click="closeModal"
+                  >Close</Button
                 >
-                  Got it, thanks!
-                </button>
               </div>
             </div>
           </TransitionChild>

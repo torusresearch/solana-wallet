@@ -103,8 +103,8 @@ const selectedToken = ref(mainToken);
           >
             <li
               :class="[
-                active ? 'text-white bg-indigo-600' : 'text-gray-900',
-                'cursor-default select-none relative py-2 pl-3 pr-9',
+                active ? 'bg-app-gray-200' : '',
+                'cursor-pointer select-none relative py-2 pl-3 pr-9 text-app-text-600',
               ]"
             >
               <div class="flex items-center">
@@ -137,8 +137,8 @@ const selectedToken = ref(mainToken);
           >
             <li
               :class="[
-                active ? 'text-white bg-indigo-600' : 'text-gray-900',
-                'cursor-default select-none relative py-2 pl-9 pr-9',
+                active ? 'bg-app-gray-200' : '',
+                'cursor-default select-none relative py-2 pl-9 pr-9 text-app-text-600',
               ]"
             >
               <div class="flex items-center">

@@ -91,8 +91,8 @@ const value = computed({
             >
               <li
                 :class="[
-                  active ? 'text-white bg-app-primary-100' : 'text-gray-900',
-                  'cursor-default select-none relative py-2 px-2',
+                  active ? 'bg-app-gray-200' : '',
+                  'cursor-pointer select-none relative py-2 px-2 text-app-text-600',
                 ]"
               >
                 <div class="flex items-center">
