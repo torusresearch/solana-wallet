@@ -25,7 +25,18 @@ const accounts = [
     >
       Accounts
     </div>
-    <ul class="border dark:border-app-gray-900 rounded-md divide-y shadow mb-2">
+    <ul
+      class="
+        border
+        dark:border-app-gray-900
+        rounded-md
+        divide-y
+        dark:divide-gray-900
+        shadow
+        dark:shadow-dark
+        mb-2
+      "
+    >
       <li
         v-for="account in accounts"
         :key="account.id"

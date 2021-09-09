@@ -19,12 +19,18 @@ console.log();
     </div>
     <div class="grid grid-cols-2 space-x-3">
       <div>
-        <Button variant="tertiary" block @click="setDarkMode(false)"
+        <Button
+          :variant="app.isDarkMode ? 'tertiary' : 'primary'"
+          block
+          @click="setDarkMode(false)"
           >Light</Button
         >
       </div>
       <div>
-        <Button variant="tertiary" block @click="setDarkMode(true)"
+        <Button
+          :variant="app.isDarkMode ? 'primary' : 'tertiary'"
+          block
+          @click="setDarkMode(true)"
           >Dark</Button
         >
       </div>

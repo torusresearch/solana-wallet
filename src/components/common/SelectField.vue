@@ -119,10 +119,8 @@ const value = computed({
             >
               <li
                 :class="[
-                  active
-                    ? 'bg-app-gray-200 dark:bg-app-gray-200 dark:text-app-text-500'
-                    : '',
-                  'cursor-pointer select-none relative py-2 px-2 text-app-text-600 dark:text-app-text-dark-500',
+                  active ? 'bg-app-gray-200' : '',
+                  'cursor-pointer select-none relative py-2 px-2 text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
                 ]"
               >
                 <div class="flex items-center">
