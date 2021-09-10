@@ -1,10 +1,8 @@
 import { readonly, ref } from "vue";
 
-type State =
-  | {
-      isDarkMode: boolean;
-    }
-  | undefined;
+interface State {
+  isDarkMode: boolean;
+}
 
 const state = ref<State>({ isDarkMode: true });
 

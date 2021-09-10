@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { app } from "@/modules/app";
 
 import { SelectorIcon } from "@heroicons/vue/solid";
 import {
@@ -11,8 +12,10 @@ import {
 } from "@headlessui/vue";
 
 import EthereumLogoURL from "@/assets/ethereum.svg";
+import EthereumLightLogoURL from "@/assets/ethereum-light.svg";
 import BitcoinLogoURL from "@/assets/bitcoin.svg";
 import TokenLogoURL from "@/assets/token.svg";
+import TokenLightLogoURL from "@/assets/token-light.svg";
 
 interface Token {
   name: string;
@@ -27,7 +30,7 @@ const mainToken: Token = {
 const tokens: Token[] = [
   {
     name: "Ethereum",
-    iconURL: EthereumLogoURL,
+    iconURL: app.value.isDarkMode ? EthereumLightLogoURL : EthereumLogoURL,
   },
   {
     name: "Bitcoin",
@@ -151,11 +154,19 @@ const selectedToken = ref(mainToken);
           </ListboxOption>
 
           <div class="flex items-center px-3 py-4 border-t">
-            <img :src="TokenLogoURL" class="h-4 w-4 mr-2" />
+            <img
+              :src="app.isDarkMode ? TokenLightLogoURL : TokenLogoURL"
+              class="h-4 w-4 mr-2"
+            />
             <div
-              class="font-body text-app-text-600 dark:text-app-text-dark-500"
+              class="
+                font-body
+                text-app-text-600
+                dark:text-app-text-dark-500
+                capitalize
+              "
             >
-              TOKENS
+              Tokens
             </div>
           </div>
           <ListboxOption

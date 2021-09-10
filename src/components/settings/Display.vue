@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { app, setDarkMode } from "@/modules/app";
 import { Button } from "@/components/common";
-
-console.log();
 </script>
 <template>
   <div class="pb-4">
