@@ -1,14 +1,9 @@
 <script setup lang="ts">
+import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { ref } from "vue";
-import {
-  RadioGroup,
-  RadioGroupDescription,
-  RadioGroupLabel,
-  RadioGroupOption,
-} from "@headlessui/vue";
 
-import WalletTabs from "@/components/WalletTabs.vue";
 import { Button, SelectField, TextField } from "@/components/common";
+import WalletTabs from "@/components/WalletTabs.vue";
 
 const providers = [
   {
@@ -66,13 +61,7 @@ const selectedCurrency = ref(currencies[0]);
         <RadioGroup v-model="selectedProvider">
           <RadioGroupLabel class="sr-only">Server size</RadioGroupLabel>
           <div class="space-y-4">
-            <RadioGroupOption
-              v-for="provider in providers"
-              :key="provider.name"
-              v-slot="{ checked }"
-              :value="provider"
-              as="template"
-            >
+            <RadioGroupOption v-for="provider in providers" :key="provider.name" v-slot="{ checked }" :value="provider" as="template">
               <div
                 class="
                   relative
@@ -90,82 +79,26 @@ const selectedCurrency = ref(currencies[0]);
                   sm:flex sm:justify-between
                   focus:outline-none
                 "
-                :class="
-                  checked
-                    ? 'border-app-primary-500'
-                    : 'border-app-gray-200 dark:border-transparent'
-                "
+                :class="checked ? 'border-app-primary-500' : 'border-app-gray-200 dark:border-transparent'"
               >
                 <div class="flex flex-shrink-1 items-center">
                   <div class="mr-3">
-                    <svg
-                      class="w-6 h-6"
-                      :class="
-                        checked ? 'text-app-primary-500' : 'text-app-gray-600'
-                      "
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
+                    <svg class="w-6 h-6" :class="checked ? 'text-app-primary-500' : 'text-app-gray-600'" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="11" stroke="currentColor" />
-                      <circle
-                        v-if="checked"
-                        cx="12"
-                        cy="12"
-                        r="8"
-                        fill="currentColor"
-                      />
+                      <circle v-if="checked" cx="12" cy="12" r="8" fill="currentColor" />
                     </svg>
                   </div>
-                  <img
-                    :src="provider.logo"
-                    :alt="provider.name"
-                    style="width: 130px"
-                  />
+                  <img :src="provider.logo" :alt="provider.name" style="width: 130px" />
                 </div>
-                <RadioGroupDescription
-                  as="div"
-                  class="
-                    mt-2
-                    flex flex-shrink-0
-                    sm:mt-0 sm:block sm:ml-4 sm:text-right
-                  "
-                >
-                  <div
-                    class="
-                      font-medium
-                      text-xs text-app-text-600
-                      dark:text-app-text-dark-500
-                    "
-                  >
-                    Pay with {{ provider.paymentMethod }}
-                  </div>
-                  <div
-                    class="
-                      font-medium
-                      text-xs text-app-text-600
-                      dark:text-app-text-dark-500
-                    "
-                  >
+                <RadioGroupDescription as="div" class="mt-2 flex flex-shrink-0 sm:mt-0 sm:block sm:ml-4 sm:text-right">
+                  <div class="font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">Pay with {{ provider.paymentMethod }}</div>
+                  <div class="font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
                     <span class="font-bold">Fees</span>: {{ provider.fee }}
                   </div>
-                  <div
-                    class="
-                      ml-1
-                      text-xs text-app-text-600
-                      dark:text-app-text-dark-500
-                      sm:ml-0
-                    "
-                  >
+                  <div class="ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
                     <span class="font-bold">Limit</span>: {{ provider.limit }}
                   </div>
-                  <div
-                    class="
-                      ml-1
-                      text-xs text-app-text-600
-                      dark:text-app-text-dark-500
-                      sm:ml-0
-                    "
-                  >
+                  <div class="ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
                     <span class="font-bold">Currencies</span>:
                     {{ provider.currencies.join(", ") }}
                   </div>
@@ -175,35 +108,17 @@ const selectedCurrency = ref(currencies[0]);
           </div>
         </RadioGroup>
         <form action="#" method="POST">
-          <div
-            class="
-              shadow
-              dark:shadow-dark
-              bg-white
-              dark:bg-app-gray-700
-              sm:rounded-md sm:overflow-hidden
-            "
-          >
+          <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 sm:rounded-md sm:overflow-hidden">
             <div class="py-6 px-4 space-y-6 sm:p-6">
               <div>
-                <p
-                  class="
-                    mt-1
-                    text-sm text-app-text-600
-                    dark:text-app-text-dark-500
-                  "
-                >
+                <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500">
                   {{ selectedProvider.description }}
                 </p>
               </div>
 
               <div class="grid grid-cols-3">
                 <div class="col-span-1">
-                  <SelectField
-                    v-model="selectedCurrency"
-                    label="You buy"
-                    :items="currencies"
-                  />
+                  <SelectField v-model="selectedCurrency" label="You buy" :items="currencies" />
                 </div>
               </div>
               <div class="grid grid-cols-3 space-x-4">
@@ -215,53 +130,18 @@ const selectedCurrency = ref(currencies[0]);
                 </div>
               </div>
               <div class="flex flex-col items-end mb-5">
-                <div class="text-app-text-600 dark:text-app-text-dark-500">
-                  You receive
-                </div>
-                <div
-                  class="
-                    text-2xl
-                    font-bold
-                    text-app-text-600
-                    dark:text-app-text-dark-500
-                  "
-                >
-                  0 ETH
-                </div>
-                <div
-                  class="
-                    text-xs
-                    font-light
-                    text-app-text-500
-                    dark:text-app-text-dark-500
-                  "
-                >
-                  Rate: 1 ETH = 3697.37 USD
-                </div>
+                <div class="text-app-text-600 dark:text-app-text-dark-500">You receive</div>
+                <div class="text-2xl font-bold text-app-text-600 dark:text-app-text-dark-500">0 ETH</div>
+                <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">Rate: 1 ETH = 3697.37 USD</div>
               </div>
-              <div
-                class="
-                  text-right text-xs text-app-text-600
-                  dark:text-app-text-dark-500
-                "
-              >
+              <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">
                 <div>The process would take approximately 10 - 15 min.</div>
-                <div>
-                  Please prepare your Identity Card/Passport to complete the
-                  purchase.
-                </div>
+                <div>Please prepare your Identity Card/Passport to complete the purchase.</div>
               </div>
             </div>
             <div class="px-4 py-3 mb-4 sm:px-6">
               <Button class="ml-auto mb-2" variant="primary">Save</Button>
-              <div
-                class="
-                  text-right text-xs text-app-text-600
-                  dark:text-app-text-dark-500
-                "
-              >
-                You will be redirected to the third party page
-              </div>
+              <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">You will be redirected to the third party page</div>
             </div>
           </div>
         </form>

@@ -31,13 +31,7 @@ withDefaults(
         relative
       "
       ><slot name="leftIcon"></slot>
-      <div
-        class="
-          text-base text-app-text-600
-          dark:text-app-text-dark-500
-          font-body font-bold
-        "
-      >
+      <div class="text-base text-app-text-600 dark:text-app-text-dark-500 font-body font-bold">
         {{ title }}
       </div>
     </DisclosureButton>

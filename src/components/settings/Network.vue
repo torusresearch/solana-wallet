@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+
 import { SelectField } from "@/components/common";
 
 const networks = [
@@ -24,11 +25,7 @@ const selectedNetwork = ref(networks[0]);
 <template>
   <div class="pb-4">
     <div class="mb-4">
-      <SelectField
-        v-model="selectedNetwork"
-        label="Select Network"
-        :items="networks"
-      />
+      <SelectField v-model="selectedNetwork" label="Select Network" :items="networks" />
     </div>
   </div>
 </template>

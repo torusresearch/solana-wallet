@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { SelectorIcon } from "@heroicons/vue/solid";
-import {
-  Listbox,
-  ListboxButton,
-  ListboxOption,
-  ListboxOptions,
-} from "@headlessui/vue";
+import { computed } from "vue";
 
 interface Item {
   label: string;
@@ -32,62 +27,21 @@ const value = computed({
 <template>
   <div class="relative w-full items-stretch">
     <div v-if="label" class="label-container">
-      <div
-        class="
-          block
-          text-sm
-          font-body
-          text-app-text-600
-          dark:text-app-text-dark-500
-        "
-      >
+      <div class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
         {{ label }}
       </div>
     </div>
     <div class="relative" :class="{ 'mt-1': label }">
       <Listbox v-model="value" as="div">
-        <ListboxButton
-          class="
-            shadow-inner
-            dark:shadow-none dark:bg-app-gray-800
-            rounded-md
-            w-full
-            px-3
-            py-2
-          "
-          :style="{ height: '54px' }"
-        >
+        <ListboxButton class="shadow-inner dark:shadow-none dark:bg-app-gray-800 rounded-md w-full px-3 py-2" :style="{ height: '54px' }">
           <span class="flex items-center">
-            <span
-              class="
-                block
-                truncate
-                text-app-text-500
-                dark:text-app-text-dark-500
-              "
-              >{{ value?.label }}</span
-            >
+            <span class="block truncate text-app-text-500 dark:text-app-text-dark-500">{{ value?.label }}</span>
           </span>
-          <span
-            class="
-              ml-3
-              absolute
-              inset-y-0
-              right-0
-              flex
-              items-center
-              pr-2
-              pointer-events-none
-            "
-          >
+          <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
             <SelectorIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
           </span>
         </ListboxButton>
-        <transition
-          leave-active-class="transition ease-in duration-100"
-          leave-from-class="opacity-100"
-          leave-to-class="opacity-0"
-        >
+        <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
           <ListboxOptions
             class="
               absolute
@@ -110,13 +64,7 @@ const value = computed({
               sm:text-sm
             "
           >
-            <ListboxOption
-              v-for="item in items"
-              :key="item.value"
-              v-slot="{ active, selected }"
-              as="template"
-              :value="item"
-            >
+            <ListboxOption v-for="item in items" :key="item.value" v-slot="{ active, selected }" as="template" :value="item">
               <li
                 :class="[
                   active ? 'bg-app-gray-200' : '',
@@ -124,13 +72,7 @@ const value = computed({
                 ]"
               >
                 <div class="flex items-center">
-                  <span
-                    :class="[
-                      selected ? 'font-semibold' : 'font-normal',
-                      'ml-3 block truncate',
-                    ]"
-                    >{{ item.label }}</span
-                  >
+                  <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ item.label }}</span>
                 </div>
               </li>
             </ListboxOption>

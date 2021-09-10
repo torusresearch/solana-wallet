@@ -1508,10 +1508,10 @@
   optionalDependencies:
     secp256k1 "^3.8.0"
 
-"@toruslabs/eslint-config-vue@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@toruslabs/eslint-config-vue/-/eslint-config-vue-0.0.4.tgz#4c0da984e99ab3ddbfcb20d472e7b4160c2667d2"
-  integrity sha512-+WP9zDZJVuQDydCoPGIoRatu48vqa3v+7mkHVze+bdU0+P5eaTMu/SPcEV5oJl8xks/Z8aKqbVd/VVDwXv1Y3g==
+"@toruslabs/eslint-config-vue@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@toruslabs/eslint-config-vue/-/eslint-config-vue-0.0.5.tgz#eeac954ba0cef8bc88952f79a8526d631c48b627"
+  integrity sha512-WDKAHNipqgxgV3NCOVbQNurfyLhtd61VU0uAiO0DpWX2OzsIvCrgnPxWxrwdXCafNCoxvGrTJCAyvaPvNU06sQ==
   dependencies:
     "@typescript-eslint/parser" "^4.30.0"
     "@vue/eslint-config-prettier" "^6.0.0"

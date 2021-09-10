@@ -1,6 +1,6 @@
+import delayAsync from "delay-async";
 import { onMounted, readonly, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import delayAsync from "delay-async";
 
 type State =
   | {

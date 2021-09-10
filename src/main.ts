@@ -1,11 +1,11 @@
+import "@/main.css";
+
 import { createApp } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 
-import { PKG } from "@/const";
-
 import App from "@/App.vue";
+import { PKG } from "@/const";
 import Home from "@/pages/Home.vue";
-import "@/main.css";
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
@@ -50,9 +50,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, _, next) => {
-  document.title = to.meta.title
-    ? `${to.meta.title} | ${PKG.app.name}`
-    : PKG.app.name;
+  document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   next();
 });
 

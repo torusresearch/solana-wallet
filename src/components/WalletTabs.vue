@@ -1,34 +1,13 @@
 <script setup lang="ts">
-import {
-  ChevronDownIcon,
-  PlusIcon,
-  BellIcon,
-  InformationCircleIcon,
-  MenuIcon,
-  XIcon,
-} from "@heroicons/vue/outline";
-import {
-  ClipboardCopyIcon,
-  QrcodeIcon,
-  ExternalLinkIcon,
-  BriefcaseIcon,
-} from "@heroicons/vue/solid";
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/vue";
+import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
+import { BellIcon, ChevronDownIcon, InformationCircleIcon, MenuIcon, PlusIcon, XIcon } from "@heroicons/vue/outline";
+import { BriefcaseIcon, ClipboardCopyIcon, ExternalLinkIcon, QrcodeIcon } from "@heroicons/vue/solid";
 
 import CasperLogoURL from "@/assets/casper.svg";
 import CasperLightLogoURL from "@/assets/casper-light.svg";
-
-import { user, logout, requireLoggedIn } from "@/modules/auth";
-import { app } from "@/modules/app";
 import { Button } from "@/components/common";
+import { app } from "@/modules/app";
+import { logout, requireLoggedIn, user } from "@/modules/auth";
 
 requireLoggedIn();
 
@@ -52,25 +31,12 @@ const userNavigations = [
 
 <template>
   <div v-if="user" class="min-h-screen bg-white dark:bg-app-gray-800">
-    <Disclosure
-      v-slot="{ open }"
-      as="nav"
-      class="
-        bg-white
-        dark:bg-app-gray-700
-        border-b border-gray-200
-        dark:border-transparent
-      "
-    >
+    <Disclosure v-slot="{ open }" as="nav" class="bg-white dark:bg-app-gray-700 border-b border-gray-200 dark:border-transparent">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16">
           <div class="flex-none flex items-center">
             <router-link to="/wallet/home">
-              <img
-                class="hidden lg:block h-7 w-auto"
-                :src="app.isDarkMode ? CasperLightLogoURL : CasperLogoURL"
-                alt="Casper Logo"
-              />
+              <img class="hidden lg:block h-7 w-auto" :src="app.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" />
             </router-link>
           </div>
           <div class="flex flex-grow">
@@ -95,34 +61,12 @@ const userNavigations = [
             <Menu as="div" class="ml-3 relative z-10">
               <div>
                 <MenuButton
-                  class="
-                    max-w-xs
-                    flex
-                    items-center
-                    text-sm
-                    rounded-full
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-offset-2
-                    focus:ring-primary-500
-                  "
+                  class="max-w-xs flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   <span class="sr-only">Open user menu</span>
                   <div class="flex items-center">
-                    <span
-                      class="
-                        font-body
-                        text-app-text-600
-                        dark:text-app-text-dark-500
-                        text-sm
-                        font-bold
-                        mr-1
-                      "
-                      >{{ user.name }}</span
-                    >
-                    <ChevronDownIcon
-                      class="text-app-text-600 dark:text-app-text-dark-500 w-5"
-                    />
+                    <span class="font-body text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user.name }}</span>
+                    <ChevronDownIcon class="text-app-text-600 dark:text-app-text-dark-500 w-5" />
                   </div>
                 </MenuButton>
               </div>
@@ -152,111 +96,32 @@ const userNavigations = [
                   "
                 >
                   <div class="flex items-center p-4">
-                    <img
-                      class="rounded-full w-10 mr-2"
-                      :src="user.imageURL"
-                      alt=""
-                    />
-                    <div
-                      class="
-                        font-body font-bold
-                        text-base text-app-text-600
-                        dark:text-app-text-dark-500
-                      "
-                    >
-                      {{ user.name }}'s Account
-                    </div>
+                    <img class="rounded-full w-10 mr-2" :src="user.imageURL" alt="" />
+                    <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
                   </div>
                   <div class="px-3 pb-3">
                     <div class="shadow dark:shadow-dark2 rounded-md py-2 px-3">
                       <div class="flex">
                         <div class="flex items-center">
-                          <BriefcaseIcon
-                            class="
-                              w-4
-                              h-4
-                              mr-1
-                              text-app-text-500
-                              dark:text-app-text-dark-500
-                            "
-                          />
-                          <div
-                            class="
-                              font-body font-bold
-                              text-sm text-app-text-600
-                              dark:text-app-text-dark-500
-                            "
-                          >
+                          <BriefcaseIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
+                          <div class="font-body font-bold text-sm text-app-text-600 dark:text-app-text-dark-500">
                             {{ user.email }}
                           </div>
                         </div>
-                        <div
-                          class="
-                            ml-auto
-                            text-xs
-                            font-body
-                            text-app-text-500
-                            dark:text-app-text-dark-500
-                          "
-                        >
-                          0.152 USD
-                        </div>
+                        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500">0.152 USD</div>
                       </div>
                       <div class="flex">
-                        <div
-                          class="
-                            font-body
-                            text-xs
-                            w-52
-                            pl-5
-                            text-app-text-400
-                            dark:text-app-text-dark-500
-                            break-all
-                          "
-                        >
+                        <div class="font-body text-xs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">
                           0x0F48654993568658514F982C87A5BDd01D80969F
                         </div>
                         <div class="ml-auto flex space-x-1">
-                          <div
-                            class="
-                              rounded-full
-                              w-6
-                              h-6
-                              flex
-                              items-center
-                              bg-gray-200
-                              justify-center
-                              cursor-pointer
-                            "
-                          >
+                          <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
                             <ClipboardCopyIcon class="w-4 h-4" />
                           </div>
-                          <div
-                            class="
-                              rounded-full
-                              w-6
-                              h-6
-                              flex
-                              items-center
-                              bg-gray-200
-                              justify-center
-                              cursor-pointer
-                            "
-                          >
+                          <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
                             <QrcodeIcon class="w-4 h-4" />
                           </div>
-                          <div
-                            class="
-                              rounded-full
-                              w-6
-                              h-6
-                              flex
-                              items-center
-                              bg-gray-200
-                              justify-center
-                              cursor-pointer
-                            "
-                          >
+                          <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
                             <ExternalLinkIcon class="w-4 h-4" />
                           </div>
                         </div>
@@ -264,11 +129,7 @@ const userNavigations = [
                     </div>
                   </div>
 
-                  <MenuItem
-                    v-for="nav in userNavigations"
-                    :key="nav.name"
-                    v-slot="{ active }"
-                  >
+                  <MenuItem v-for="nav in userNavigations" :key="nav.name" v-slot="{ active }">
                     <router-link
                       is="router-link"
                       :to="nav.to"
@@ -277,18 +138,11 @@ const userNavigations = [
                         'border-t flex items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
                       ]"
                     >
-                      <component
-                        :is="nav.icon"
-                        class="w-4 h-4 mr-2"
-                        aria-hidden="true"
-                      ></component
-                      >{{ nav.name }}</router-link
+                      <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
                     >
                   </MenuItem>
                   <div class="p-4 border-t">
-                    <Button class="ml-auto" variant="text" @click="logout"
-                      >Logout</Button
-                    >
+                    <Button class="ml-auto" variant="text" @click="logout">Logout</Button>
                   </div>
                 </MenuItems>
               </transition>
@@ -306,10 +160,7 @@ const userNavigations = [
                 rounded-md
                 text-gray-400
                 hover:text-gray-500 hover:bg-gray-100
-                focus:outline-none
-                focus:ring-2
-                focus:ring-offset-2
-                focus:ring-indigo-500
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
               "
             >
               <span class="sr-only">Open main menu</span>
@@ -359,10 +210,7 @@ const userNavigations = [
                 rounded-full
                 text-gray-400
                 hover:text-gray-500
-                focus:outline-none
-                focus:ring-2
-                focus:ring-offset-2
-                focus:ring-indigo-500
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
               "
             >
               <span class="sr-only">View notifications</span>
@@ -374,17 +222,7 @@ const userNavigations = [
               v-for="nav in userNavigations"
               :key="nav.name"
               :to="nav.to"
-              class="
-                block
-                w-full
-                text-left
-                px-4
-                py-2
-                text-base
-                font-medium
-                text-gray-500
-                hover:text-gray-800 hover:bg-gray-100
-              "
+              class="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
               >{{ nav.name }}</router-link
             >
           </div>
@@ -395,15 +233,7 @@ const userNavigations = [
     <div class="py-6">
       <header>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1
-            class="
-              text-3xl
-              font-medium
-              leading-tight
-              text-app-text-500
-              dark:text-app-text-dark-400
-            "
-          >
+          <h1 class="text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ tabs[tab].title }}
           </h1>
         </div>

@@ -1,21 +1,10 @@
 <script setup lang="ts">
+import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
+import { ClipboardCopyIcon, EyeIcon, EyeOffIcon, KeyIcon } from "@heroicons/vue/outline";
 import { ref } from "vue";
-import {
-  ClipboardCopyIcon,
-  EyeIcon,
-  EyeOffIcon,
-  KeyIcon,
-} from "@heroicons/vue/outline";
 
-import {
-  TransitionRoot,
-  TransitionChild,
-  Dialog,
-  DialogOverlay,
-  DialogTitle,
-} from "@headlessui/vue";
-import { app } from "@/modules/app";
 import { Button } from "@/components/common";
+import { app } from "@/modules/app";
 
 const isOpen = ref(false);
 const isKeyShown = ref(false);
@@ -49,13 +38,9 @@ const openModal = () => {
     <Dialog :class="{ dark: app.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
-          <DialogOverlay
-            class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500"
-          />
+          <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
-          <span class="inline-block h-screen align-middle" aria-hidden="true"
-            >&#8203;</span
-          >
+          <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
 
           <TransitionChild
             as="template"
@@ -86,26 +71,12 @@ const openModal = () => {
             >
               <DialogTitle
                 as="h3"
-                class="
-                  text-lg
-                  font-bold
-                  leading-6
-                  text-app-text-500
-                  dark:text-app-text-dark-400
-                  focus-within:outline-none
-                "
+                class="text-lg font-bold leading-6 text-app-text-500 dark:text-app-text-dark-400 focus-within:outline-none"
                 tabindex="0"
                 >Private Key</DialogTitle
               >
               <div class="mt-5 flex items-center">
-                <div
-                  class="
-                    flex
-                    items-center
-                    text-app-text-400
-                    dark:text-app-text-dark-500
-                  "
-                >
+                <div class="flex items-center text-app-text-400 dark:text-app-text-dark-500">
                   <KeyIcon class="w-5 h-5 mr-3" />
                   <div class="font-body font-medium">Show Private Key</div>
                 </div>
@@ -117,14 +88,7 @@ const openModal = () => {
                 </div>
               </div>
               <div v-if="isKeyShown" class="pl-8 flex items-center mt-2">
-                <div
-                  class="
-                    font-body
-                    text-xs text-app-text-500
-                    dark:text-app-text-dark-600
-                    mr-2
-                  "
-                >
+                <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2">
                   F48654993568658514F982C87A5BDd01D80969FF48654993568658
                 </div>
                 <Button variant="text">
@@ -134,9 +98,7 @@ const openModal = () => {
               </div>
 
               <div class="mt-8">
-                <Button class="ml-auto" variant="tertiary" @click="closeModal"
-                  >Close</Button
-                >
+                <Button class="ml-auto" variant="tertiary" @click="closeModal">Close</Button>
               </div>
             </div>
           </TransitionChild>

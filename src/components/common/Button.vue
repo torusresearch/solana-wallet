@@ -26,21 +26,12 @@ const classList = computed(() => {
     fontClasses.push("text-base");
   }
 
-  return [
-    ...fontClasses,
-    sizeClass,
-    `t-btn-${props.variant}`,
-    { block: props.block },
-  ];
+  return [...fontClasses, sizeClass, `t-btn-${props.variant}`, { block: props.block }];
 });
 </script>
 
 <template>
-  <button
-    class="flex items-center justify-center"
-    :class="classList"
-    :type="type"
-  >
+  <button class="flex items-center justify-center" :class="classList" :type="type">
     <slot></slot>
   </button>
 </template>

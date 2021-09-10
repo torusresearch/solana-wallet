@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button, Card } from "@/components/common";
-import WalletTabs from "@/components/WalletTabs.vue";
 import WalletBalance from "@/components/WalletBalance.vue";
+import WalletTabs from "@/components/WalletTabs.vue";
 </script>
 
 <template>
@@ -12,31 +12,11 @@ import WalletBalance from "@/components/WalletBalance.vue";
         <Card>
           <div class="grid grid-cols-3 h-full">
             <div class="col-span-2">
-              <div
-                class="
-                  font-body font-bold
-                  text-app-text-600
-                  dark:text-app-text-dark-500
-                "
-              >
-                Join us at User X Devcon After-Party
-              </div>
-              <div
-                class="
-                  font-body
-                  text-xs text-app-text-600
-                  dark:text-app-text-dark-500
-                "
-              >
-                11 Oct 2019 @ Osaka
-              </div>
+              <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us at User X Devcon After-Party</div>
+              <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">11 Oct 2019 @ Osaka</div>
             </div>
             <div class="col-span-1">
-              <img
-                class="float-right h-2/3"
-                src="https://images.toruswallet.io/eth.svg"
-                alt
-              />
+              <img class="float-right h-2/3" src="https://images.toruswallet.io/eth.svg" alt />
             </div>
           </div>
           <template #footer>
