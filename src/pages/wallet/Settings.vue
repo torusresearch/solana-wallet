@@ -29,7 +29,14 @@ import { Panel } from "@/components/common";
             <Panel title="Privacy and Security" disabled>
               <AccountDetails />
               <template #leftIcon
-                ><LockClosedIcon class="w-5 h-5 mr-2"
+                ><LockClosedIcon
+                  class="
+                    w-5
+                    h-5
+                    mr-2
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
               /></template>
             </Panel>
           </div>
@@ -37,7 +44,14 @@ import { Panel } from "@/components/common";
             <Panel title="Address Book" disabled>
               <AddressBook />
               <template #leftIcon
-                ><MenuAlt2Icon class="w-5 h-5 mr-2"
+                ><MenuAlt2Icon
+                  class="
+                    w-5
+                    h-5
+                    mr-2
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
               /></template>
             </Panel>
           </div>
@@ -45,7 +59,14 @@ import { Panel } from "@/components/common";
             <Panel title="Crash Reporting" disabled>
               <CrashReporting />
               <template #leftIcon
-                ><DesktopComputerIcon class="w-5 h-5 mr-2"
+                ><DesktopComputerIcon
+                  class="
+                    w-5
+                    h-5
+                    mr-2
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
               /></template>
             </Panel>
           </div>
@@ -55,7 +76,14 @@ import { Panel } from "@/components/common";
             <Panel title="Network" disabled>
               <Network />
               <template #leftIcon
-                ><GlobeAltIcon class="w-5 h-5 mr-2"
+                ><GlobeAltIcon
+                  class="
+                    w-5
+                    h-5
+                    mr-2
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
               /></template>
             </Panel>
           </div>
@@ -63,14 +91,30 @@ import { Panel } from "@/components/common";
             <Panel title="Display" disabled>
               <Display />
               <template #leftIcon
-                ><AdjustmentsIcon class="w-5 h-5 mr-2"
+                ><AdjustmentsIcon
+                  class="
+                    w-5
+                    h-5
+                    mr-2
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
               /></template>
             </Panel>
           </div>
           <div class="mb-4">
             <Panel title="Account Management" disabled>
               <AccountManagement />
-              <template #leftIcon><UserIcon class="w-5 h-5 mr-2" /></template>
+              <template #leftIcon
+                ><UserIcon
+                  class="
+                    w-5
+                    h-5
+                    mr-2
+                    text-app-text-600
+                    dark:text-app-text-dark-500
+                  "
+              /></template>
             </Panel>
           </div>
         </div>

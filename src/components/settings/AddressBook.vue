@@ -70,13 +70,28 @@ const transferTypes: TranferType[] = [
 <template>
   <div class="py-4">
     <div class="flex items-center mb-4">
-      <div class="font-body text-sm">List of Contacts</div>
+      <div
+        class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500"
+      >
+        List of Contacts
+      </div>
       <div class="ml-auto flex space-x-2">
         <TextField size="small" placeholder="Search by name" />
         <TextField size="small" placeholder="Filter by type" />
       </div>
     </div>
-    <ul class="border rounded-md divide-y shadow mb-4">
+    <ul
+      class="
+        border
+        dark:border-gray-900
+        rounded-md
+        divide-y
+        dark:divide-gray-900
+        shadow
+        dark:shadow-dark
+        mb-4
+      "
+    >
       <li
         v-for="contact in contacts"
         :key="contact.id"
@@ -88,9 +103,17 @@ const transferTypes: TranferType[] = [
             src="https://app.tor.us/v1.13.2/img/eth-grey-white.3edd2d65.svg"
             alt
           />
-          <div class="font-body text-xs text-app-text-600">
+          <div
+            class="
+              font-body
+              text-xs text-app-text-600
+              dark:text-app-text-dark-500
+            "
+          >
             {{ contact.name }} -
-            <span class="text-app-text-500">{{ contact.contact }}</span>
+            <span class="text-app-text-500 dark:text-app-text-dark-500">{{
+              contact.contact
+            }}</span>
           </div>
         </div>
         <div class="ml-auto">
@@ -98,7 +121,16 @@ const transferTypes: TranferType[] = [
         </div>
       </li>
     </ul>
-    <div class="font-body text-sm mb-2">Add new Contact</div>
+    <div
+      class="
+        font-body
+        text-sm text-app-text-600
+        dark:text-app-text-dark-500
+        mb-2
+      "
+    >
+      Add new Contact
+    </div>
     <form>
       <div class="mb-4 grid grid-cols-3 space-x-2">
         <div class="col-span-2">

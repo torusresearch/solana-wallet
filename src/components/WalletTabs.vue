@@ -24,8 +24,10 @@ import {
 } from "@headlessui/vue";
 
 import CasperLogoURL from "@/assets/casper.svg";
+import CasperLightLogoURL from "@/assets/casper-light.svg";
 
 import { user, logout, requireLoggedIn } from "@/modules/auth";
+import { app } from "@/modules/app";
 import { Button } from "@/components/common";
 
 requireLoggedIn();
@@ -49,11 +51,16 @@ const userNavigations = [
 </script>
 
 <template>
-  <div v-if="user" class="min-h-screen bg-white">
+  <div v-if="user" class="min-h-screen bg-white dark:bg-app-gray-800">
     <Disclosure
       v-slot="{ open }"
       as="nav"
-      class="bg-white border-b border-gray-200"
+      class="
+        bg-white
+        dark:bg-app-gray-700
+        border-b border-gray-200
+        dark:border-transparent
+      "
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16">
@@ -61,7 +68,7 @@ const userNavigations = [
             <router-link to="/wallet/home">
               <img
                 class="hidden lg:block h-7 w-auto"
-                :src="CasperLogoURL"
+                :src="app.isDarkMode ? CasperLightLogoURL : CasperLogoURL"
                 alt="Casper Logo"
               />
             </router-link>
@@ -75,7 +82,7 @@ const userNavigations = [
                 :class="[
                   key === tab
                     ? 'border-app-primary-500 text-app-primary-500'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                    : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
                   'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
                 ]"
                 :aria-current="key === tab ? 'page' : undefined"
@@ -90,7 +97,6 @@ const userNavigations = [
                 <MenuButton
                   class="
                     max-w-xs
-                    bg-white
                     flex
                     items-center
                     text-sm
@@ -103,10 +109,20 @@ const userNavigations = [
                 >
                   <span class="sr-only">Open user menu</span>
                   <div class="flex items-center">
-                    <span class="font-body text-sm font-bold">{{
-                      user.name
-                    }}</span>
-                    <ChevronDownIcon class="w-5" />
+                    <span
+                      class="
+                        font-body
+                        text-app-text-600
+                        dark:text-app-text-dark-500
+                        text-sm
+                        font-bold
+                        mr-1
+                      "
+                      >{{ user.name }}</span
+                    >
+                    <ChevronDownIcon
+                      class="text-app-text-600 dark:text-app-text-dark-500 w-5"
+                    />
                   </div>
                 </MenuButton>
               </div>
@@ -127,8 +143,10 @@ const userNavigations = [
                     w-96
                     rounded-md
                     shadow-lg
+                    dark:shadow-dark
                     py-1
                     bg-white
+                    dark:bg-app-gray-700
                     ring-1 ring-black ring-opacity-5
                     focus:outline-none
                   "
@@ -139,23 +157,63 @@ const userNavigations = [
                       :src="user.imageURL"
                       alt=""
                     />
-                    <div class="font-body font-bold text-base">
+                    <div
+                      class="
+                        font-body font-bold
+                        text-base text-app-text-600
+                        dark:text-app-text-dark-500
+                      "
+                    >
                       {{ user.name }}'s Account
                     </div>
                   </div>
                   <div class="px-3 pb-3">
-                    <div class="shadow py-2 px-3">
+                    <div class="shadow dark:shadow-dark2 rounded-md py-2 px-3">
                       <div class="flex">
                         <div class="flex items-center">
-                          <BriefcaseIcon class="w-4 h-4 mr-1" />
-                          <div class="font-body font-bold text-sm">
+                          <BriefcaseIcon
+                            class="
+                              w-4
+                              h-4
+                              mr-1
+                              text-app-text-500
+                              dark:text-app-text-dark-500
+                            "
+                          />
+                          <div
+                            class="
+                              font-body font-bold
+                              text-sm text-app-text-600
+                              dark:text-app-text-dark-500
+                            "
+                          >
                             {{ user.email }}
                           </div>
                         </div>
-                        <div class="ml-auto">0.152 USD</div>
+                        <div
+                          class="
+                            ml-auto
+                            text-xs
+                            font-body
+                            text-app-text-500
+                            dark:text-app-text-dark-500
+                          "
+                        >
+                          0.152 USD
+                        </div>
                       </div>
                       <div class="flex">
-                        <div class="font-body text-xs w-52 pl-5 break-all">
+                        <div
+                          class="
+                            font-body
+                            text-xs
+                            w-52
+                            pl-5
+                            text-app-text-400
+                            dark:text-app-text-dark-500
+                            break-all
+                          "
+                        >
                           0x0F48654993568658514F982C87A5BDd01D80969F
                         </div>
                         <div class="ml-auto flex space-x-1">
@@ -216,19 +274,19 @@ const userNavigations = [
                       :to="nav.to"
                       :class="[
                         active ? 'bg-gray-100' : '',
-                        'border-t flex items-center w-full text-left px-4 py-4 text-sm font-bold text-gray-700',
+                        'border-t flex items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
                       ]"
                     >
                       <component
                         :is="nav.icon"
-                        class="w-4 h-4 mr-2 text-gray-700"
+                        class="w-4 h-4 mr-2"
                         aria-hidden="true"
                       ></component
                       >{{ nav.name }}</router-link
                     >
                   </MenuItem>
                   <div class="p-4 border-t">
-                    <Button class="ml-auto" variant="tertiary" @click="logout"
+                    <Button class="ml-auto" variant="text" @click="logout"
                       >Logout</Button
                     >
                   </div>
@@ -337,7 +395,15 @@ const userNavigations = [
     <div class="py-6">
       <header>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 class="text-3xl font-bold leading-tight text-app-text-500">
+          <h1
+            class="
+              text-3xl
+              font-medium
+              leading-tight
+              text-app-text-500
+              dark:text-app-text-dark-400
+            "
+          >
             {{ tabs[tab].title }}
           </h1>
         </div>

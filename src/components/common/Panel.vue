@@ -19,22 +19,37 @@ withDefaults(
         flex
         items-center
         w-full
-        border border-app-gray-200
-        shadow
-        rounded-md
         px-4
         py-3
+        rounded-md
+        bg-white
+        dark:bg-app-gray-700
+        border border-app-gray-200
+        dark:border-transparent
+        shadow
+        dark:shadow-dark
+        relative
       "
       ><slot name="leftIcon"></slot>
-      <div class="text-base text-app-text-600 font-body font-bold">
+      <div
+        class="
+          text-base text-app-text-600
+          dark:text-app-text-dark-500
+          font-body font-bold
+        "
+      >
         {{ title }}
       </div>
     </DisclosureButton>
     <DisclosurePanel
       :static="disabled"
       class="
+        bg-white
+        dark:bg-app-gray-700
         border border-t-0 border-app-gray-200
+        dark:border-transparent
         shadow
+        dark:shadow-dark
         rounded-t-none rounded-b-md
         px-6
         pt-4

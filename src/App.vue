@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { app } from "@/modules/app";
+</script>
+
 <template>
-  <router-view />
+  <div :class="{ dark: app.isDarkMode }"><router-view /></div>
 </template>

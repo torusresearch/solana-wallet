@@ -14,8 +14,29 @@ const accounts = [
 </script>
 <template>
   <div class="pb-4">
-    <div class="text-sm font-body mb-2">Accounts</div>
-    <ul class="border rounded-md divide-y shadow mb-2">
+    <div
+      class="
+        text-sm
+        font-body
+        mb-2
+        text-app-text-600
+        dark:text-app-text-dark-500
+      "
+    >
+      Accounts
+    </div>
+    <ul
+      class="
+        border
+        dark:border-app-gray-900
+        rounded-md
+        divide-y
+        dark:divide-gray-900
+        shadow
+        dark:shadow-dark
+        mb-2
+      "
+    >
       <li
         v-for="account in accounts"
         :key="account.id"
@@ -27,15 +48,39 @@ const accounts = [
             src="https://app.tor.us/v1.13.2/img/eth-grey-white.3edd2d65.svg"
             alt
           />
-          <div class="font-body text-xs">{{ account.id }}</div>
+          <div
+            class="
+              font-body
+              text-xs text-app-text-500
+              dark:text-app-text-dark-500
+            "
+          >
+            {{ account.id }}
+          </div>
         </div>
         <div class="ml-auto flex">
-          <div v-if="account.default" class="font-body text-xs">Default</div>
+          <div
+            v-if="account.default"
+            class="
+              font-body
+              text-xs text-app-text-500
+              dark:text-app-text-dark-500
+            "
+          >
+            Default
+          </div>
           <Button v-else variant="text">Switch this to Default</Button>
         </div>
       </li>
     </ul>
-    <div class="font-body text-xs text-app-text-400 px-2">
+    <div
+      class="
+        font-body
+        text-xs text-app-text-400
+        dark:text-app-text-dark-500
+        px-2
+      "
+    >
       Note: The selected default account shall be the account displayed when you
       sign in on a DApp.
     </div>
