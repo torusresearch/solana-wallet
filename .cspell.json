@@ -3,9 +3,14 @@
   "words": [
     "headlessui",
     "heroicons",
+    "jrpc",
+    "loglevel",
+    "openlogin",
+    "pify",
     "scripthost",
     "tailwindcss",
     "topup",
-    "toruslabs"
+    "toruslabs",
+    "vuex"
   ]
 }
