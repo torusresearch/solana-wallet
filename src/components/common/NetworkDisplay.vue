@@ -15,7 +15,7 @@ import { WifiIcon } from "@heroicons/vue/outline";
       px-4
     "
   >
-    <WifiIcon class="w-3 h-3 mr-1" /> Caspers Network
+    <WifiIcon class="w-3 h-3 mr-1" /> Casper Network
   </div>
 </template>
 
