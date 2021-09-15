@@ -71,8 +71,7 @@ export class TorusController extends BaseController<TorusControllerConfig, Torus
       state: this.state.CurrencyControllerState,
     });
     this.currencyController.updateConversionRate();
-    // todo: add currency rate polling in currency controller.
-    // this.currencyController.scheduleConversionInterval();
+    this.currencyController.scheduleConversionInterval();
 
     // key mgmt
     this.keyringController = new KeyringController({
