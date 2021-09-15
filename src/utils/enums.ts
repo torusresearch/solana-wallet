@@ -1,3 +1,18 @@
+import {
+  AccountTrackerConfig,
+  AccountTrackerState,
+  BaseConfig,
+  BaseCurrencyControllerConfig,
+  BaseCurrencyControllerState,
+  BaseState,
+  KeyringControllerState,
+  NetworkConfig,
+  NetworkState,
+  PreferencesConfig,
+  PreferencesState,
+  // SafeEventEmitterProvider,
+} from "@toruslabs/base-controllers";
+import { CasperBlock } from "@toruslabs/casper-controllers";
 import type { OpenloginUserInfo } from "@toruslabs/openlogin";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
@@ -8,3 +23,25 @@ export type OpenLoginPopupResponse = {
   userInfo: OpenloginUserInfo;
   privKey: string;
 };
+
+export interface TorusControllerState extends BaseState {
+  NetworkControllerState: NetworkState;
+  CurrencyControllerState: BaseCurrencyControllerState;
+  PreferencesControllerState: PreferencesState;
+  AccountTrackerState: AccountTrackerState;
+  KeyringControllerState: KeyringControllerState;
+}
+
+export interface TorusControllerConfig extends BaseConfig {
+  NetworkControllerConfig: NetworkConfig;
+  CurrencyControllerConfig: BaseCurrencyControllerConfig;
+  PreferencesControllerConfig: PreferencesConfig;
+  AccountTrackerConfig: AccountTrackerConfig<CasperBlock>;
+  KeyringControllerConfig: BaseConfig;
+}
+
+export const CONTROLLER_MODULE_KEY = "controllerModule";
+
+export interface ControllerModuleState {
+  torusState: TorusControllerState;
+}
