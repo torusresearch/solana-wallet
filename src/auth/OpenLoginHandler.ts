@@ -3,9 +3,8 @@ import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { safebtoa } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
 
-import { OpenLoginPopupResponse } from "@/utils/enums";
-
 import config from "../config";
+import type { OpenLoginPopupResponse } from "../utils/enums";
 
 class OpenLoginHandler {
   nonce = randomId();
