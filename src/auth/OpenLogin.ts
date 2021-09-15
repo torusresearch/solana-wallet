@@ -25,6 +25,7 @@ class OpenLoginFactory {
         OpenLoginFactory._instance = instance;
       } catch (error) {
         log.error(error, "Unable to create openlogin instance");
+        throw error;
       } finally {
         releaseLock();
       }
