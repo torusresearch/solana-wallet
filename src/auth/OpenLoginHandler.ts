@@ -9,7 +9,7 @@ import config from "../config";
 
 class OpenLoginHandler {
   nonce = randomId();
-  windowId: string;
+  windowId?: string;
   loginProvider: LOGIN_PROVIDER_TYPE;
   finalURL: URL = new URL(config.baseRoute);
   extraLoginOptions: Record<string, string> = {};
@@ -19,7 +19,7 @@ class OpenLoginHandler {
     loginProvider,
     extraLoginOptions,
   }: {
-    windowId: string;
+    windowId?: string;
     loginProvider: LOGIN_PROVIDER_TYPE;
     // Send login_hint here
     extraLoginOptions: Record<string, string>;
