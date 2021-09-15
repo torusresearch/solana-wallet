@@ -25,6 +25,7 @@
     "@toruslabs/openlogin": "^0.10.1",
     "@toruslabs/openlogin-jrpc": "^0.10.1",
     "@toruslabs/openlogin-utils": "^0.10.1",
+    "@toruslabs/vue-icons": "^0.0.11",
     "core-js": "^3.17.3",
     "delay-async": "^1.2.0",
     "jwt-decode": "^3.1.2",

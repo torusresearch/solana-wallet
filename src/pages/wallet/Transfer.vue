@@ -2,7 +2,7 @@
 import { ref } from "vue";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
-import TransferTokenSelect from "@/components/TransferTokenSelect.vue";
+import { TransferConfirm, TransferTokenSelect } from "@/components/transfer";
 import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
 
@@ -81,7 +81,7 @@ const transferTypes: TranferType[] = [
               </div>
 
               <div class="flex">
-                <Button class="ml-auto" type="submit"><span class="text-base">Transfer</span></Button>
+                <TransferConfirm />
               </div>
             </div>
           </form>

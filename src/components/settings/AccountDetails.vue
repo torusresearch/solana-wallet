@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
-import { ClipboardCopyIcon, EyeIcon, EyeOffIcon, KeyIcon } from "@heroicons/vue/outline";
+import { CopyIcon, EyeIcon, EyeNoIcon } from "@toruslabs/vue-icons/basic";
+import { KeyIcon } from "@toruslabs/vue-icons/security";
 import { ref } from "vue";
 
 import { Button } from "@/components/common";
@@ -82,7 +83,7 @@ const openModal = () => {
                 </div>
                 <div class="ml-auto">
                   <Button variant="text" @click="isKeyShown = !isKeyShown">
-                    <EyeOffIcon v-if="isKeyShown" class="w-5 h-5" />
+                    <EyeNoIcon v-if="isKeyShown" class="w-5 h-5" />
                     <EyeIcon v-else class="w-5 h-5" />
                   </Button>
                 </div>
@@ -92,7 +93,7 @@ const openModal = () => {
                   F48654993568658514F982C87A5BDd01D80969FF48654993568658
                 </div>
                 <Button variant="text">
-                  <ClipboardCopyIcon class="w-4 h-4 mr-1" />
+                  <CopyIcon class="w-4 h-4 mr-1" />
                   Click to copy
                 </Button>
               </div>
