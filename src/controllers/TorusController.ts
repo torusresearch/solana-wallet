@@ -6,11 +6,15 @@ import {
   BaseCurrencyControllerConfig,
   BaseCurrencyControllerState,
   BaseState,
+  createLoggerMiddleware,
+  createOriginMiddleware,
   KeyringControllerState,
   NetworkConfig,
   NetworkState,
   PreferencesConfig,
   PreferencesState,
+  providerAsMiddleware,
+  ProviderConfig,
   // SafeEventEmitterProvider,
 } from "@toruslabs/base-controllers";
 import {
@@ -22,8 +26,9 @@ import {
   NetworkController,
   PreferencesController,
 } from "@toruslabs/casper-controllers";
-import { JRPCEngine } from "@toruslabs/openlogin-jrpc";
+import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-jrpc";
 import { GetDeployResult } from "casper-js-sdk";
+import log from "loglevel";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { version } from "../../package.json";
@@ -45,7 +50,6 @@ interface TorusControllerConfig extends BaseConfig {
 }
 export class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   private networkController: NetworkController;
-  private activeControllerConnections: number;
   private currencyController: CurrencyController;
   private accountTracker: AccountTrackerController;
   private keyringController: KeyringController;
@@ -59,10 +63,6 @@ export class TorusController extends BaseController<TorusControllerConfig, Torus
     // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
     this.initialize();
     this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
-
-    // this keeps track of how many "controllerStream" connections are open
-    // the only thing that uses controller connections are open metamask UI instances
-    this.activeControllerConnections = 0;
 
     this.initializeProvider();
 
@@ -121,9 +121,10 @@ export class TorusController extends BaseController<TorusControllerConfig, Torus
   }
 
   private initializeProvider() {
-    const providerOptions: IProviderHandlers = {
+    const providerHandlers: IProviderHandlers = {
       version,
       // account mgmt
+      // TODO: once embed structure is defined
       requestAccounts: async () => (this.prefsController.state.selectedAddress ? [this.prefsController.state.selectedAddress] : []),
 
       getAccounts: async () =>
@@ -139,7 +140,7 @@ export class TorusController extends BaseController<TorusControllerConfig, Torus
         return {} as unknown as GetDeployResult;
       },
     };
-    const providerProxy = this.networkController.initializeProvider(providerOptions);
+    const providerProxy = this.networkController.initializeProvider(providerHandlers);
     return providerProxy;
   }
 
@@ -182,4 +183,99 @@ export class TorusController extends BaseController<TorusControllerConfig, Torus
   //       this.engine.emit("notification", getPayload());
   //     }
   //   }
+
+  async addAccount(privKey: string): Promise<string> {
+    const address = this.keyringController.importAccount(privKey);
+    await this.prefsController.init(address);
+    return address;
+  }
+
+  setSelectedAccount(address: string): void {
+    this.prefsController.setSelectedAddress(address);
+  }
+
+  /**
+   * Used to create a multiplexed stream for connecting to an untrusted context
+   * like a Dapp or other extension.
+   */
+  setupUntrustedCommunication(connectionStream: Substream, originDomain: string): void {
+    // connect features && for test cases
+    this.setupProviderConnection(connectionStream, originDomain);
+  }
+
+  /**
+   * A method for serving our ethereum provider over a given stream.
+   */
+  setupProviderConnection(outStream: Substream, sender: string): void {
+    // break violently
+    const senderUrl = new URL(sender);
+
+    const engine = this.setupProviderEngine({ origin: senderUrl.hostname });
+    this.engine = engine;
+
+    // setup connection
+    const providerStream = createEngineStream({ engine });
+
+    outStream
+      .pipe(providerStream)
+      .pipe(outStream)
+      .on("error", (error: Error) => {
+        // cleanup filter polyfill middleware
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        engine._middleware.forEach((mid) => {
+          if (mid.destroy && typeof mid.destroy === "function") {
+            mid.destroy();
+          }
+        });
+        this.engine = undefined;
+        if (error) log.error(error);
+      });
+  }
+
+  /**
+   * A method for creating a provider that is safely restricted for the requesting domain.
+   * */
+  setupProviderEngine({ origin }: { origin: string }): JRPCEngine {
+    // setup json rpc engine stack
+    const engine = new JRPCEngine();
+    const { _providerProxy } = this.networkController;
+
+    // create subscription polyfill middleware
+    // const subscriptionManager = createSubscriptionManager({ provider, blockTracker });
+    // subscriptionManager.events.on("notification", (message) => engine.emit("notification", message));
+
+    // metadata
+    engine.push(createOriginMiddleware({ origin }));
+    engine.push(createLoggerMiddleware({ origin }));
+
+    // TODO
+    // engine.push(
+    //   createMethodMiddleware({
+    //     origin,
+    //     getProviderState: this.getProviderState.bind(this),
+    //     getCurrentChainId: this.networkController.getCurrentChainId.bind(this.networkController),
+    //   })
+    // );
+
+    // filter and subscription polyfills
+    // engine.push(subscriptionManager.middleware);
+    // forward to metamask primary provider
+    engine.push(providerAsMiddleware(_providerProxy));
+    return engine;
+  }
+
+  async setCurrentCurrency(currency: string): Promise<void> {
+    const { ticker } = this.networkController.getProviderConfig();
+    // This is CSPR
+    this.currencyController.setNativeCurrency(ticker);
+    // This is USD
+    this.currencyController.setCurrentCurrency(currency);
+    await this.currencyController.updateConversionRate();
+    // TODO: store this in prefsController
+  }
+
+  setNetwork(providerConfig: ProviderConfig): void {
+    this.networkController.setProviderConfig(providerConfig);
+  }
 }
