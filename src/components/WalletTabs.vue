@@ -16,7 +16,7 @@ defineProps<{
 const tabs = NAVIGATION_LIST;
 const user = ControllerModule.userInfo;
 const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey;
+let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
 if (publicKey) {
   publicKey = "02" + publicKey;
 }
@@ -53,10 +53,10 @@ const logout = () => {
           </div>
         </div>
         <div class="ml-6 hidden sm:flex items-center">
-          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
+          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="publicKey" @on-logout="logout" /></AccountMenu>
         </div>
         <div class="ml-6 flex sm:hidden items-center">
-          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
+          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="publicKey" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
     </nav>
