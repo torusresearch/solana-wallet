@@ -2,6 +2,8 @@
 import log from "loglevel";
 import { useRoute } from "vue-router";
 
+import { BoxLoader } from "@/components/common";
+
 import OpenLoginFactory from "../auth/OpenLogin";
 
 async function startLogin() {
@@ -14,12 +16,18 @@ async function startLogin() {
       loginProvider: loginProvider as string,
       appState: state as string,
       extraLoginOptions: rest,
+      relogin: true,
     });
   } catch (error) {
     log.error(error);
-    // TODO: Display error to user and show crisp chat
   }
 }
 
 startLogin();
 </script>
+
+<template>
+  <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
+    <BoxLoader />
+  </div>
+</template>

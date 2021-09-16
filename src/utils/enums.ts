@@ -13,7 +13,7 @@ import {
   // SafeEventEmitterProvider,
 } from "@toruslabs/base-controllers";
 import { CasperBlock } from "@toruslabs/casper-controllers";
-import type { OpenloginUserInfo } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 import { DatabaseIcon } from "@toruslabs/vue-icons/software";
@@ -80,4 +80,14 @@ export const NAVIGATION_LIST = {
     route: "settings",
     icon: SettingsIcon,
   },
+};
+
+export const DEFAULT_USER_INFO = {
+  aggregateVerifier: "",
+  email: "",
+  name: "",
+  profileImage: "",
+  typeOfLogin: LOGIN_PROVIDER.GOOGLE,
+  verifier: "",
+  verifierId: "",
 };

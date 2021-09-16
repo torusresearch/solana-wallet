@@ -3,7 +3,6 @@
   "files.associations": { "*.css": "postcss" },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": { "source.fixAll": true },
-  "editor.formatOnSave": true,
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,

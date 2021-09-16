@@ -1,33 +1,42 @@
 <script setup lang="ts">
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import log from "loglevel";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLightLogoURL from "@/assets/torus-logo-light.svg";
-import { app } from "@/modules/app";
-import { login, onAuthChanged } from "@/modules/auth";
+import { addToast, app } from "@/modules/app";
+import { requireLoggedIn } from "@/modules/auth";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
+import ControllerModule from "../modules/controllers";
 
 const router = useRouter();
-onAuthChanged((user) => {
-  if (user) router.push("/wallet/home");
-});
-
 const email = ref("");
-const password = ref("password");
 const isLoading = ref(false);
 
-const onLogin = async () => {
+requireLoggedIn();
+
+const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
   try {
     isLoading.value = true;
-    await login(email.value, password.value);
+    await ControllerModule.triggerLogin({
+      loginProvider,
+      login_hint: email.value ?? "",
+    });
+    const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
+    if (address) router.push("/wallet/home");
+  } catch (error) {
+    log.error(error);
+    addToast({ message: "Something went wrong, please try again.", type: "error" });
   } finally {
     isLoading.value = false;
   }
 };
 </script>
+
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 grid grid-cols-2">
     <div class="col-span-1 flex items-center">
@@ -40,22 +49,22 @@ const onLogin = async () => {
           </div>
           <div class="grid grid-cols-3 gap-2 w-10/12">
             <div class="col-span-3">
-              <Button variant="tertiary" block
+              <Button variant="tertiary" block @click="onLogin('google')"
                 ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />Continue with Google</Button
               >
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon block>
+              <Button variant="tertiary" icon block @click="onLogin('facebook')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon block>
+              <Button variant="tertiary" icon block @click="onLogin('twitter')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon block>
+              <Button variant="tertiary" icon block @click="onLogin('discord')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-discord.8a29d113.svg" alt="" />
               </Button>
             </div>

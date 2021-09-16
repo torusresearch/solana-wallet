@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import { PKG } from "@/const";
-import Home from "@/pages/Home.vue";
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes: [
-    { path: "/", component: Home },
+    { path: "/", component: () => import("@/pages/Login.vue"), meta: { title: "Login" } },
     {
       path: "/login",
       component: () => import("@/pages/Login.vue"),
