@@ -7,13 +7,25 @@ import CasperLogoURL from "@/assets/casper.svg";
 import CasperLightLogoURL from "@/assets/casper-light.svg";
 import { Button } from "@/components/common";
 import { app } from "@/modules/app";
-import { logout, requireLoggedIn, user } from "@/modules/auth";
+import { requireLoggedIn } from "@/modules/auth";
+import ControllerModule from "@/modules/controllers";
 
 requireLoggedIn();
 
 defineProps<{
   tab: keyof typeof tabs;
 }>();
+
+const user = ControllerModule.userInfo;
+const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
+let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey;
+if (publicKey) {
+  publicKey = "02" + publicKey;
+}
+
+const logout = () => {
+  ControllerModule.logout();
+};
 
 const tabs = {
   home: { name: "Home", title: "Account Balance" },
@@ -30,7 +42,7 @@ const userNavigations = [
 </script>
 
 <template>
-  <div v-if="user" class="min-h-screen bg-white dark:bg-app-gray-800">
+  <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
     <Disclosure v-slot="{ open }" as="nav" class="bg-white dark:bg-app-gray-700 border-b border-gray-200 dark:border-transparent">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16">
@@ -96,7 +108,7 @@ const userNavigations = [
                   "
                 >
                   <div class="flex items-center p-4">
-                    <img class="rounded-full w-10 mr-2" :src="user.imageURL" alt="" />
+                    <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
                     <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
                   </div>
                   <div class="px-3 pb-3">
@@ -112,7 +124,7 @@ const userNavigations = [
                       </div>
                       <div class="flex">
                         <div class="font-body text-xs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">
-                          0x0F48654993568658514F982C87A5BDd01D80969F
+                          {{ publicKey }}
                         </div>
                         <div class="ml-auto flex space-x-1">
                           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
@@ -135,7 +147,8 @@ const userNavigations = [
                       :to="nav.to"
                       :class="[
                         active ? 'bg-gray-100' : '',
-                        'border-t flex items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
+                        'border-t flex items-center w-full text-left px-4 py-4 text-sm font-bold' +
+                          'text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
                       ]"
                     >
                       <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
@@ -190,7 +203,7 @@ const userNavigations = [
         <div class="pt-4 pb-3 border-t border-gray-200">
           <div class="flex items-center px-4">
             <div class="flex-shrink-0">
-              <img class="h-10 w-10 rounded-full" :src="user.imageURL" alt />
+              <img class="h-10 w-10 rounded-full" :src="user.profileImage" alt />
             </div>
             <div class="ml-3">
               <div class="text-base font-medium text-gray-800">
