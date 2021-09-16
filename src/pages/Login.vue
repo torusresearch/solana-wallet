@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import log from "loglevel";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLightLogoURL from "@/assets/torus-logo-light.svg";
 import { addToast, app } from "@/modules/app";
-import { requireLoggedIn } from "@/modules/auth";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -17,7 +16,10 @@ const router = useRouter();
 const email = ref("");
 const isLoading = ref(false);
 
-requireLoggedIn();
+onMounted(() => {
+  const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
+  if (address) router.push("/wallet/home");
+});
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
   try {
@@ -30,7 +32,10 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
     if (address) router.push("/wallet/home");
   } catch (error) {
     log.error(error);
-    addToast({ message: "Something went wrong, please try again.", type: "error" });
+    addToast({
+      message: "Something went wrong, please try again.",
+      type: "error",
+    });
   } finally {
     isLoading.value = false;
   }

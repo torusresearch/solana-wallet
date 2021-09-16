@@ -2,6 +2,7 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { BellIcon, ChevronDownIcon, InformationCircleIcon, MenuIcon, PlusIcon, XIcon } from "@heroicons/vue/outline";
 import { BriefcaseIcon, ClipboardCopyIcon, ExternalLinkIcon, QrcodeIcon } from "@heroicons/vue/solid";
+import { computed } from "vue";
 
 import CasperLogoURL from "@/assets/casper.svg";
 import CasperLightLogoURL from "@/assets/casper-light.svg";
@@ -22,6 +23,15 @@ let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find(
 if (publicKey) {
   publicKey = "02" + publicKey;
 }
+
+const currency = ControllerModule.torusState.CurrencyControllerState.currentCurrency;
+const pricePerToken = ControllerModule.torusState.CurrencyControllerState.conversionRate;
+const balance =
+  ControllerModule.torusState.AccountTrackerState.accounts[ControllerModule.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
+const formattedBalance = computed(() => {
+  const value = Math.round(parseInt(balance, 16) * pricePerToken * 100) / 100;
+  return value === 0 ? "0.00" : value;
+});
 
 const logout = () => {
   ControllerModule.logout();
@@ -120,7 +130,9 @@ const userNavigations = [
                             {{ user.email }}
                           </div>
                         </div>
-                        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500">0.152 USD</div>
+                        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500">
+                          {{ formattedBalance }} {{ currency }}
+                        </div>
                       </div>
                       <div class="flex">
                         <div class="font-body text-xs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">
