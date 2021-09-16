@@ -5,6 +5,8 @@ import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { useRoute } from "vue-router";
 
+import { BoxLoader } from "@/components/common";
+
 import OpenLoginFactory from "../auth/OpenLogin";
 import type { OpenLoginPopupResponse } from "../utils/enums";
 
@@ -48,3 +50,9 @@ async function endLogin() {
 
 endLogin();
 </script>
+
+<template>
+  <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
+    <BoxLoader />
+  </div>
+</template>

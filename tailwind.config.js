@@ -46,6 +46,10 @@ module.exports = {
             800: "#252529",
             900: "#0F1222",
           },
+          success: "#30CCA4",
+          warning: "#FBC94A",
+          error: "#FB4A61",
+          info: "#D4D4D4",
         },
       },
       boxShadow: {

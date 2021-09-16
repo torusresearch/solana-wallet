@@ -70,6 +70,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
    * Always call init function before using this controller
    */
   public init({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }): void {
+    log.info(config, state, "restoring config & state");
     this.initialize();
     this.configure(config, true, true);
     this.update(state, true);
@@ -112,11 +113,25 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.networkController.lookupNetwork();
 
-    this.update({
-      PreferencesControllerState: this.prefsController.state,
-      CurrencyControllerState: this.currencyController.state,
-      NetworkControllerState: this.networkController.state,
-      AccountTrackerState: this.accountTracker.state,
+    // Listen to controller changes
+    this.prefsController.subscribe((state) => {
+      this.update({ PreferencesControllerState: state });
+    });
+
+    this.currencyController.subscribe((state) => {
+      this.update({ CurrencyControllerState: state });
+    });
+
+    this.networkController.subscribe((state) => {
+      this.update({ NetworkControllerState: state });
+    });
+
+    this.accountTracker.subscribe((state) => {
+      this.update({ AccountTrackerState: state });
+    });
+
+    this.keyringController.subscribe((state) => {
+      this.update({ KeyringControllerState: state });
     });
 
     // ensure isClientOpenAndUnlocked is updated when memState updates
