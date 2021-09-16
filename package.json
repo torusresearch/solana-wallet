@@ -25,6 +25,7 @@
     "@toruslabs/openlogin": "^0.10.2",
     "@toruslabs/openlogin-jrpc": "^0.10.2",
     "@toruslabs/openlogin-utils": "^0.10.2",
+    "@toruslabs/vue-icons": "^0.0.11",
     "casper-js-sdk": "^2.5.0",
     "core-js": "^3.17.3",
     "delay-async": "^1.2.0",
