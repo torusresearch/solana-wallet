@@ -1,9 +1,8 @@
-import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import type { WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import log, { LogLevelDesc } from "loglevel";
 
 import { LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY } from "./utils/enums";
-import { storageAvailable } from "./utils/helpers";
 
 const { VUE_APP_TORUS_NETWORK, NODE_ENV } = process.env;
 
@@ -27,7 +26,7 @@ switch (NODE_ENV) {
     logLevel = "error";
     break;
 }
-log.setDefaultLevel(logLevel);
+log.setLevel(logLevel);
 
 export default {
   baseUrl,
@@ -38,8 +37,7 @@ export default {
   redirect_uri: redirectURI,
   dappStorageKey,
 
-  supportedCurrencies: ["USD", "AUD", "BTC", "CAD", "DAI", "ETC", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "PHP", "RUB", "SGD", "UAH"],
-  additionalCurrencies: ["ANT", "BAT", "DASH", "DGD", "GNO", "LTC", "QTUM", "REP", "SAI", "XEM", "XLM", "XMR", "XRP", "ZEC"],
+  supportedCurrencies: ["USD", "AUD", "CAD", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "PHP", "RUB", "SGD", "UAH"],
   logosUrl: "https://images.toruswallet.io",
 
   isStorageAvailable: {

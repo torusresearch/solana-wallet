@@ -1,5 +1,4 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
   "javascript.suggestionActions.enabled": false,
   "files.associations": { "*.css": "postcss" },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -8,10 +7,6 @@
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
-  "files.exclude": {
-    "node_modules": true,
-    "yarn.lock": true
-  },
   "eslint.options": {
     "extends": ["@toruslabs/vue"]
   }

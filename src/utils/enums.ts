@@ -1,3 +1,18 @@
+import {
+  AccountTrackerConfig,
+  AccountTrackerState,
+  BaseConfig,
+  BaseCurrencyControllerConfig,
+  BaseCurrencyControllerState,
+  BaseState,
+  KeyringControllerState,
+  NetworkConfig,
+  NetworkState,
+  PreferencesConfig,
+  PreferencesState,
+  // SafeEventEmitterProvider,
+} from "@toruslabs/base-controllers";
+import { CasperBlock } from "@toruslabs/casper-controllers";
 import type { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
@@ -12,10 +27,57 @@ export type OpenLoginPopupResponse = {
   privKey: string;
 };
 
+export interface TorusControllerState extends BaseState {
+  NetworkControllerState: NetworkState;
+  CurrencyControllerState: BaseCurrencyControllerState;
+  PreferencesControllerState: PreferencesState;
+  AccountTrackerState: AccountTrackerState;
+  KeyringControllerState: KeyringControllerState;
+}
+
+export interface TorusControllerConfig extends BaseConfig {
+  NetworkControllerConfig: NetworkConfig;
+  CurrencyControllerConfig: BaseCurrencyControllerConfig;
+  PreferencesControllerConfig: PreferencesConfig;
+  AccountTrackerConfig: AccountTrackerConfig<CasperBlock>;
+  KeyringControllerConfig: BaseConfig;
+}
+
+export const CONTROLLER_MODULE_KEY = "controllerModule";
+
+export interface ControllerModuleState {
+  torusState: TorusControllerState;
+}
+
 export const NAVIGATION_LIST = {
-  home: { name: "Home", title: "Account Balance", route: "home", icon: PlusIcon },
-  transfer: { name: "Transfer", title: "Transfer Details", route: "transfer", icon: ArrowBoldForvardIcon },
-  topup: { name: "Top Up", title: "Select a Provider", route: "topup", icon: DatabaseIcon },
-  activity: { name: "Activity", title: "Transaction Activities", route: "activity", icon: ListIcon },
-  settings: { name: "Settings", title: "Settings", route: "settings", icon: SettingsIcon },
+  home: {
+    name: "Home",
+    title: "Account Balance",
+    route: "home",
+    icon: PlusIcon,
+  },
+  transfer: {
+    name: "Transfer",
+    title: "Transfer Details",
+    route: "transfer",
+    icon: ArrowBoldForvardIcon,
+  },
+  topup: {
+    name: "Top Up",
+    title: "Select a Provider",
+    route: "topup",
+    icon: DatabaseIcon,
+  },
+  activity: {
+    name: "Activity",
+    title: "Transaction Activities",
+    route: "activity",
+    icon: ListIcon,
+  },
+  settings: {
+    name: "Settings",
+    title: "Settings",
+    route: "settings",
+    icon: SettingsIcon,
+  },
 };
