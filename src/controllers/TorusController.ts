@@ -1,67 +1,77 @@
 import {
-  AccountTrackerConfig,
-  AccountTrackerState,
-  BaseConfig,
   BaseController,
-  BaseCurrencyControllerConfig,
-  BaseCurrencyControllerState,
-  BaseState,
   createLoggerMiddleware,
   createOriginMiddleware,
-  KeyringControllerState,
-  NetworkConfig,
-  NetworkState,
-  PreferencesConfig,
-  PreferencesState,
   providerAsMiddleware,
   ProviderConfig,
   // SafeEventEmitterProvider,
 } from "@toruslabs/base-controllers";
 import {
   AccountTrackerController,
-  CasperBlock,
   CurrencyController,
   IProviderHandlers,
   KeyringController,
   NetworkController,
   PreferencesController,
+  SUPPORTED_NETWORKS,
 } from "@toruslabs/casper-controllers";
 import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-jrpc";
 import { GetDeployResult } from "casper-js-sdk";
 import log from "loglevel";
 
+import { TorusControllerConfig, TorusControllerState } from "@/utils/enums";
+
 // import { debounce, DebouncedFunc } from "lodash";
-import { version } from "../../package.json";
+import { PKG } from "../const";
 
-interface TorusControllerState extends BaseState {
-  NetworkControllerState: NetworkState;
-  CurrencyControllerState: BaseCurrencyControllerState;
-  PreferencesControllerState: PreferencesState;
-  AccountTrackerState: AccountTrackerState;
-  KeyringControllerState: KeyringControllerState;
-}
+export const DEFAULT_CONFIG = {
+  CurrencyControllerConfig: { api: "", pollInterval: 600_000 },
+  NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS["casper_mainnet"] },
+  PreferencesControllerConfig: { pollInterval: 180_000 },
+};
 
-interface TorusControllerConfig extends BaseConfig {
-  NetworkControllerConfig: NetworkConfig;
-  CurrencyControllerConfig: BaseCurrencyControllerConfig;
-  PreferencesControllerConfig: PreferencesConfig;
-  AccountTrackerConfig: AccountTrackerConfig<CasperBlock>;
-  KeyringControllerConfig: BaseConfig;
-}
-export class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
-  private networkController: NetworkController;
-  private currencyController: CurrencyController;
-  private accountTracker: AccountTrackerController;
-  private keyringController: KeyringController;
-  private prefsController: PreferencesController;
+export const DEFAULT_STATE = {
+  AccountTrackerState: { accounts: {} },
+  KeyringControllerState: { wallets: [] },
+  CurrencyControllerState: {
+    conversionDate: Date.now().toString(),
+    conversionRate: 0,
+    currentCurrency: "usd",
+    nativeCurrency: "cspr",
+    ticker: "cspr",
+  },
+  NetworkControllerState: {
+    chainId: SUPPORTED_NETWORKS["casper_mainnet"].chainId,
+    properties: {},
+    providerConfig: SUPPORTED_NETWORKS["casper_mainnet"],
+  },
+  PreferencesControllerState: {
+    identities: {},
+    selectedAddress: "",
+  },
+};
+
+export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
+  private networkController!: NetworkController;
+  private currencyController!: CurrencyController;
+  private accountTracker!: AccountTrackerController;
+  private keyringController!: KeyringController;
+  private prefsController!: PreferencesController;
   private engine?: JRPCEngine;
 
   //   private sendUpdate: DebouncedFunc<() => void>;
 
   constructor({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }) {
     super({ config, state });
-    // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
+  }
+
+  /**
+   * Always call init function before using this controller
+   */
+  public init({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }): void {
     this.initialize();
+    this.configure(config, true, true);
+    this.update(state, true);
     this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
 
     this.initializeProvider();
@@ -118,11 +128,12 @@ export class TorusController extends BaseController<TorusControllerConfig, Torus
     //     options.rehydrate();
     //   }, 50);
     // }
+    // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
   }
 
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
-      version,
+      version: PKG.version,
       // account mgmt
       // TODO: once embed structure is defined
       requestAccounts: async () => (this.prefsController.state.selectedAddress ? [this.prefsController.state.selectedAddress] : []),
