@@ -17,7 +17,6 @@ async function startLogin() {
     });
   } catch (error) {
     log.error(error);
-    // TODO: Display error to user and show crisp chat
   }
 }
 

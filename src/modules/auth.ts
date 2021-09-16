@@ -1,6 +1,9 @@
-import delayAsync from "delay-async";
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { onMounted, readonly, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+
+import OpenLoginFactory from "@/auth/OpenLogin";
+import OpenLoginHandler from "@/auth/OpenLoginHandler";
 
 type State =
   | {
@@ -22,29 +25,29 @@ watch(state, (value) => {
 
 export const user = readonly(state);
 
-export async function login(email: string, password: string): Promise<void> {
-  // TODO: Implement login
-  console.log("Logging in...", { email, password });
-  await delayAsync(2000);
-
+export async function login({ loginProvider }: { loginProvider: LOGIN_PROVIDER_TYPE }): Promise<void> {
+  const handler = new OpenLoginHandler({
+    loginProvider,
+    extraLoginOptions: {},
+  });
+  const result = await handler.handleLoginWindow();
   state.value = {
     publicAddress: "<public address>",
-    privateKey: "<private key>",
-    name: "Tom Cook",
-    email,
-    imageURL:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+    privateKey: result.privKey,
+    name: result.userInfo.name,
+    email: result.userInfo.email,
+    imageURL: result.userInfo.profileImage,
   };
 }
 
 export async function logout(): Promise<void> {
   if (!state.value) return;
-
-  // TODO: Implement login
-  console.log("Logging out...", state.value);
-  await delayAsync(500);
-
-  state.value = undefined;
+  const openlogin = await OpenLoginFactory.getInstance();
+  try {
+    await openlogin.logout();
+  } finally {
+    state.value = undefined;
+  }
 }
 
 export function onAuthChanged(callback: (user: State) => void): void {
