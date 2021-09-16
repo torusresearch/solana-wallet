@@ -65,40 +65,42 @@ const selectedCurrency = ref(currencies[0]);
               <div
                 class="
                   relative
-                  flex
+                  grid grid-cols-2
                   rounded-md
                   border
                   bg-white
                   dark:bg-app-gray-700
                   shadow
                   dark:shadow-dark
-                  px-6
+                  px-4
+                  sm:px-6
                   py-4
                   cursor-pointer
                   hover:bg-app-gray-200
-                  sm:flex sm:justify-between
                   focus:outline-none
                 "
                 :class="checked ? 'border-app-primary-500' : 'border-app-gray-200 dark:border-transparent'"
               >
-                <div class="flex flex-shrink-1 items-center">
+                <div class="flex col-span-1 items-center">
                   <div class="mr-3">
                     <svg class="w-6 h-6" :class="checked ? 'text-app-primary-500' : 'text-app-gray-600'" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="11" stroke="currentColor" />
                       <circle v-if="checked" cx="12" cy="12" r="8" fill="currentColor" />
                     </svg>
                   </div>
-                  <img :src="provider.logo" :alt="provider.name" style="width: 130px" />
+                  <img :src="provider.logo" :alt="provider.name" class="w-24" />
                 </div>
-                <RadioGroupDescription as="div" class="mt-2 flex flex-shrink-0 sm:mt-0 sm:block sm:ml-4 sm:text-right">
-                  <div class="font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">Pay with {{ provider.paymentMethod }}</div>
-                  <div class="font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
+                <RadioGroupDescription as="div" class="col-span-1">
+                  <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
+                    Pay with {{ provider.paymentMethod }}
+                  </div>
+                  <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
                     <span class="font-bold">Fees</span>: {{ provider.fee }}
                   </div>
-                  <div class="ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
+                  <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
                     <span class="font-bold">Limit</span>: {{ provider.limit }}
                   </div>
-                  <div class="ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
+                  <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
                     <span class="font-bold">Currencies</span>:
                     {{ provider.currencies.join(", ") }}
                   </div>
@@ -117,16 +119,16 @@ const selectedCurrency = ref(currencies[0]);
               </div>
 
               <div class="grid grid-cols-3">
-                <div class="col-span-1">
+                <div class="col-span-3 sm:col-span-1">
                   <SelectField v-model="selectedCurrency" label="You buy" :items="currencies" />
                 </div>
               </div>
-              <div class="grid grid-cols-3 space-x-4">
-                <div class="col-span-2">
+              <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-3 sm:col-span-2">
                   <TextField label="You pay" />
                 </div>
-                <div class="col-span-1">
-                  <SelectField class="mt-6" :items="currencies" />
+                <div class="col-span-3 sm:col-span-1">
+                  <SelectField class="sm:mt-6" :items="currencies" />
                 </div>
               </div>
               <div class="flex flex-col items-end mb-5">

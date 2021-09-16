@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
-import { SelectorIcon } from "@heroicons/vue/solid";
+import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { ref } from "vue";
 
 import BitcoinLogoURL from "@/assets/bitcoin.svg";
@@ -45,7 +45,7 @@ const selectedToken = ref(mainToken);
           </span>
         </span>
         <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-          <SelectorIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <ChevronBottomIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
         </span>
       </ListboxButton>
 

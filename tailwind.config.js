@@ -15,6 +15,9 @@ module.exports = {
         header: ["Poppins"],
         body: ["DM Sans"],
       },
+      fontSize: {
+        xxs: "0.625rem",
+      },
       colors: {
         app: {
           primary: {
