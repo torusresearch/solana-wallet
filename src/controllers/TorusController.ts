@@ -19,13 +19,14 @@ import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-
 import { GetDeployResult } from "casper-js-sdk";
 import log from "loglevel";
 
+import config from "@/config";
 import { TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
 
 export const DEFAULT_CONFIG = {
-  CurrencyControllerConfig: { api: "", pollInterval: 600_000 },
+  CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
   NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS["casper_mainnet"] },
   PreferencesControllerConfig: { pollInterval: 180_000 },
 };
