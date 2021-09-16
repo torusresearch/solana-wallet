@@ -37,7 +37,7 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
           <Button block variant="tertiary" @click="router.push('/wallet/topup')">Top up</Button>
         </div>
         <div>
-          <Button block variant="tertiary" @click="router.push('wallet/transfer')">Transfer</Button>
+          <Button block variant="tertiary" @click="router.push('/wallet/transfer')">Transfer</Button>
         </div>
       </div>
     </template>
