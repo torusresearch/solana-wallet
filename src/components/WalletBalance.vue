@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "@vue/reactivity";
+import { useRouter } from "vue-router";
 
 import { Button, Card, NetworkDisplay } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
@@ -8,6 +9,7 @@ defineProps<{
   showButtons?: boolean;
 }>();
 
+const router = useRouter();
 const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
 const token = computed(() => ControllersModule.torusState.CurrencyControllerState.nativeCurrency);
 const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate);
@@ -32,10 +34,10 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
     <template v-if="showButtons" #footer>
       <div class="grid grid-cols-2 gap-3 mt-3">
         <div>
-          <Button block variant="tertiary">Top up</Button>
+          <Button block variant="tertiary" @click="router.push('/wallet/topup')">Top up</Button>
         </div>
         <div>
-          <Button block variant="tertiary">Transfer</Button>
+          <Button block variant="tertiary" @click="router.push('wallet/transfer')">Transfer</Button>
         </div>
       </div>
     </template>
