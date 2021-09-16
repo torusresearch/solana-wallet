@@ -25,10 +25,10 @@ watch(state, (value) => {
 
 export const user = readonly(state);
 
-export async function login({ loginProvider }: { loginProvider: LOGIN_PROVIDER_TYPE }): Promise<void> {
+export async function login({ loginProvider, email }: { loginProvider: LOGIN_PROVIDER_TYPE; email?: string }): Promise<void> {
   const handler = new OpenLoginHandler({
     loginProvider,
-    extraLoginOptions: {},
+    extraLoginOptions: email && loginProvider === "email_passwordless" ? { login_hint: email } : {},
   });
   const result = await handler.handleLoginWindow();
   state.value = {

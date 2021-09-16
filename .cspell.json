@@ -6,6 +6,7 @@
     "jrpc",
     "loglevel",
     "openlogin",
+    "passwordless",
     "pify",
     "scripthost",
     "tailwindcss",

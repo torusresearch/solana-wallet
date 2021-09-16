@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import log from "loglevel";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -19,9 +20,9 @@ const isLoading = ref(false);
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
   try {
     isLoading.value = true;
-    await login({ loginProvider });
+    await login({ loginProvider, email: email.value });
   } catch (error) {
-    console.error(error);
+    log.error(error);
     alert("Something went wrong, please try again.");
   } finally {
     isLoading.value = false;
