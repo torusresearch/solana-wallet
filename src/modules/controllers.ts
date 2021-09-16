@@ -47,7 +47,6 @@ class ControllerModule extends VuexModule {
   public init(): void {
     this.torus.init({ config: DEFAULT_CONFIG, state: this.torusState });
     this.torus.subscribe((state) => {
-      log.info(state);
       this.updateTorusState(state);
     });
     // this.torus.setupUntrustedCommunication();
