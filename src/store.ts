@@ -26,7 +26,7 @@ if (storageAvailable(appConfig.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STOR
       const cMoState = state[CONTROLLER_MODULE_KEY];
       return {
         ...state,
-        [CONTROLLER_MODULE_KEY]: pick(cMoState, ["torusState"]),
+        [CONTROLLER_MODULE_KEY]: pick(cMoState, ["torusState", "userInfo"]),
       };
     },
   });
