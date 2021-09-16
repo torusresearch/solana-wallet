@@ -1,5 +1,6 @@
 import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
+import BigNumber from "bignumber.js";
 import { cloneDeep, omit } from "lodash";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -40,13 +41,21 @@ class ControllerModule extends VuexModule {
     this.torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
   }
 
+  get userBalance(): string {
+    const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
+    const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
+    return value.toString();
+  }
+
   /**
    * Call once on refresh
    */
   @Action
   public init(): void {
     this.torus.init({ config: DEFAULT_CONFIG, state: this.torusState });
-    this.torus.subscribe((state) => {
+    this.torus.on("store", (state: TorusControllerState) => {
+      log.info(state);
       this.updateTorusState(state);
     });
     // this.torus.setupUntrustedCommunication();

@@ -102,35 +102,35 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.AccountTrackerConfig,
       blockTracker: this.networkController._blockTrackerProxy,
       getIdentities: () => this.prefsController.state.identities,
-      onPreferencesStateChange: (listener) => this.prefsController.subscribe(listener),
-      onNetworkChange: (listener) => this.networkController.subscribe(listener),
+      onPreferencesStateChange: (listener) => this.prefsController.on("store", listener),
+      onNetworkChange: (listener) => this.networkController.on("store", listener),
     });
 
     // ensure accountTracker updates balances after network change
-    this.networkController.subscribeEvent("networkDidChange", () => {
+    this.networkController.on("networkDidChange", () => {
       this.accountTracker.refresh();
     });
 
     this.networkController.lookupNetwork();
 
     // Listen to controller changes
-    this.prefsController.subscribe((state) => {
+    this.prefsController.on("store", (state) => {
       this.update({ PreferencesControllerState: state });
     });
 
-    this.currencyController.subscribe((state) => {
+    this.currencyController.on("store", (state) => {
       this.update({ CurrencyControllerState: state });
     });
 
-    this.networkController.subscribe((state) => {
+    this.networkController.on("store", (state) => {
       this.update({ NetworkControllerState: state });
     });
 
-    this.accountTracker.subscribe((state) => {
+    this.accountTracker.on("store", (state) => {
       this.update({ AccountTrackerState: state });
     });
 
-    this.keyringController.subscribe((state) => {
+    this.keyringController.on("store", (state) => {
       this.update({ KeyringControllerState: state });
     });
 
