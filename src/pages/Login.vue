@@ -4,23 +4,23 @@ import log from "loglevel";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-import { login, onAuthChanged } from "@/modules/auth";
-
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
+import ControllerModule from "../modules/controllers";
 
 const router = useRouter();
-onAuthChanged((user) => {
-  if (user) router.push("/wallet/home");
-});
-
 const email = ref("");
 const isLoading = ref(false);
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
   try {
     isLoading.value = true;
-    await login({ loginProvider, email: email.value });
+    await ControllerModule.triggerLogin({
+      loginProvider,
+      login_hint: email.value ?? "",
+    });
+    const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
+    if (address) router.push("/home/wallet");
   } catch (error) {
     log.error(error);
     alert("Something went wrong, please try again.");
