@@ -1,33 +1,29 @@
 <script setup lang="ts">
 import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
-import log from "loglevel";
+import { ref, watch } from "vue";
 
 import { SelectField } from "@/components/common";
+import ControllersModule from "@/modules/controllers";
 
-import ControllerModule from "../../modules/controllers";
-
-type SUPPORTED_NETWORK_TYPE = keyof typeof SUPPORTED_NETWORKS;
-
-const networks = Object.keys(SUPPORTED_NETWORKS).map((x) => {
-  const current = SUPPORTED_NETWORKS[x as SUPPORTED_NETWORK_TYPE];
+const networks = Object.keys(SUPPORTED_NETWORKS).map((key) => {
+  const value = SUPPORTED_NETWORKS[key as keyof typeof SUPPORTED_NETWORKS];
   return {
-    label: current.displayName,
-    value: current.chainId,
+    label: value.displayName,
+    value: value.chainId,
   };
 });
+const selectedNetwork = ref(networks[0]);
+watch(selectedNetwork, (newValue) => {
+  if (!newValue) selectedNetwork.value = networks[0];
+  ControllersModule.setNetwork(newValue.value);
+});
 
-const selectedNetwork = ControllerModule.torusState.NetworkControllerState.chainId;
-// TODO: if chainId is "loading", show a loader
-
-const onNetworkChange = (value: string) => {
-  log.info("changing network to", value);
-  ControllerModule.setNetwork(value);
-};
+// TODO: Handle when chainId is "loading"
 </script>
 <template>
   <div class="pb-4">
     <div class="mb-4">
-      <SelectField label="Select Network" :items="networks" :value="selectedNetwork" @change="onNetworkChange" />
+      <SelectField v-model="selectedNetwork" label="Select Network" :items="networks" />
     </div>
   </div>
 </template>
