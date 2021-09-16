@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "@vue/reactivity";
+
 import { Button, Card, NetworkDisplay } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
@@ -9,6 +11,14 @@ defineProps<{
 const currency = ControllersModule.torusState.CurrencyControllerState.currentCurrency;
 const token = ControllersModule.torusState.CurrencyControllerState.nativeCurrency;
 const pricePerToken = ControllersModule.torusState.CurrencyControllerState.conversionRate;
+const balance =
+  ControllersModule.torusState.AccountTrackerState.accounts[ControllersModule.torusState.PreferencesControllerState.selectedAddress]?.balance ||
+  "0x0";
+
+const formattedBalance = computed(() => {
+  const value = Math.round(parseInt(balance, 16) * pricePerToken * 100) / 100;
+  return value === 0 ? "0.00" : value;
+});
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">
@@ -18,7 +28,7 @@ const pricePerToken = ControllersModule.torusState.CurrencyControllerState.conve
     </div>
     <div class="flex">
       <div>
-        <span class="mr-2 font-body font-bold text-5xl text-app-text-500 dark:text-app-text-dark-500">0.00</span>
+        <span class="mr-2 font-body font-bold text-5xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <span class="font-body uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ currency }}</span>
       </div>
       <div class="ml-auto font-body uppercase text-xs self-end text-app-text-400 dark:text-app-text-dark-600">
