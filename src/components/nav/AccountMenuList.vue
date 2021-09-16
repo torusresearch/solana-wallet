@@ -4,8 +4,10 @@ import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
+import { computed } from "vue";
 
 import { Button } from "@/components/common";
+import ControllersModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 
 defineProps<{
@@ -15,6 +17,9 @@ defineProps<{
 const emits = defineEmits(["onLogout"]);
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
+
+const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const formattedBalance = computed(() => ControllersModule.userBalance);
 
 const logout = () => {
   emits("onLogout");
@@ -35,7 +40,7 @@ const logout = () => {
             {{ user.email }}
           </div>
         </div>
-        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500">0.152 USD</div>
+        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ formattedBalance }} {{ currency }}</div>
       </div>
       <div class="flex">
         <div class="font-body text-xxs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">{{ selectedAddress }}</div>
