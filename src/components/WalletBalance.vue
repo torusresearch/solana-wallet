@@ -8,17 +8,11 @@ defineProps<{
   showButtons?: boolean;
 }>();
 
-const currency = ControllersModule.torusState.CurrencyControllerState.currentCurrency;
-const token = ControllersModule.torusState.CurrencyControllerState.nativeCurrency;
-const pricePerToken = ControllersModule.torusState.CurrencyControllerState.conversionRate;
-const balance =
-  ControllersModule.torusState.AccountTrackerState.accounts[ControllersModule.torusState.PreferencesControllerState.selectedAddress]?.balance ||
-  "0x0";
+const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const token = computed(() => ControllersModule.torusState.CurrencyControllerState.nativeCurrency);
+const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate);
 
-const formattedBalance = computed(() => {
-  const value = Math.round(parseInt(balance, 16) * pricePerToken * 100) / 100;
-  return value === 0 ? "0.00" : value;
-});
+const formattedBalance = computed(() => ControllersModule.userBalance);
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">

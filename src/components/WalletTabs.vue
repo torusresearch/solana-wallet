@@ -24,14 +24,9 @@ if (publicKey) {
   publicKey = "02" + publicKey;
 }
 
-const currency = ControllerModule.torusState.CurrencyControllerState.currentCurrency;
-const pricePerToken = ControllerModule.torusState.CurrencyControllerState.conversionRate;
-const balance =
-  ControllerModule.torusState.AccountTrackerState.accounts[ControllerModule.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
-const formattedBalance = computed(() => {
-  const value = Math.round(parseInt(balance, 16) * pricePerToken * 100) / 100;
-  return value === 0 ? "0.00" : value;
-});
+const currency = computed(() => ControllerModule.torusState.CurrencyControllerState.currentCurrency);
+
+const formattedBalance = computed(() => ControllerModule.userBalance);
 
 const logout = () => {
   ControllerModule.logout();
@@ -130,7 +125,7 @@ const userNavigations = [
                             {{ user.email }}
                           </div>
                         </div>
-                        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500">
+                        <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">
                           {{ formattedBalance }} {{ currency }}
                         </div>
                       </div>
