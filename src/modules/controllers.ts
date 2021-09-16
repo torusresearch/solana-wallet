@@ -1,3 +1,4 @@
+import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { cloneDeep, omit } from "lodash";
 import log from "loglevel";
@@ -70,6 +71,13 @@ class ControllerModule extends VuexModule {
     this.update(DEFAULT_USER_INFO);
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     this.resetTorusController();
+  }
+
+  @Action
+  setNetwork(chainId: string): void {
+    const providerConfig = Object.values(SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
+    if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
+    this.torus.setNetwork(providerConfig);
   }
 }
 

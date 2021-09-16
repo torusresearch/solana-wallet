@@ -1,31 +1,33 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
+import log from "loglevel";
 
 import { SelectField } from "@/components/common";
 
-const networks = [
-  {
-    label: "Main Ethereum Network",
-    value: "mainnet",
-    code: 1,
-    symbol: "ETH",
-    url: "https://etherscan.io",
-  },
-  {
-    label: "Rinkeby Test Network",
-    value: "rinkeby",
-    code: 4,
-    symbol: "ETH",
-    url: "https://rinkeby.etherscan.io",
-  },
-];
+import ControllerModule from "../../modules/controllers";
 
-const selectedNetwork = ref(networks[0]);
+type SUPPORTED_NETWORK_TYPE = keyof typeof SUPPORTED_NETWORKS;
+
+const networks = Object.keys(SUPPORTED_NETWORKS).map((x) => {
+  const current = SUPPORTED_NETWORKS[x as SUPPORTED_NETWORK_TYPE];
+  return {
+    label: current.displayName,
+    value: current.chainId,
+  };
+});
+
+const selectedNetwork = ControllerModule.torusState.NetworkControllerState.chainId;
+// TODO: if chainId is "loading", show a loader
+
+const onNetworkChange = (value: string) => {
+  log.info("changing network to", value);
+  ControllerModule.setNetwork(value);
+};
 </script>
 <template>
   <div class="pb-4">
     <div class="mb-4">
-      <SelectField v-model="selectedNetwork" label="Select Network" :items="networks" />
+      <SelectField label="Select Network" :items="networks" :value="selectedNetwork" @change="onNetworkChange" />
     </div>
   </div>
 </template>
