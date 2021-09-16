@@ -13,7 +13,7 @@ defineProps<{
     </div>
     <div class="flex">
       <div>
-        <span class="mr-2 font-body font-bold text-5xl text-app-text-500 dark:text-app-text-dark-500">0.00</span>
+        <span class="mr-2 font-body font-bold text-3xl sm:text-5xl text-app-text-500 dark:text-app-text-dark-500">0.00</span>
         <span class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600">USD</span>
       </div>
       <div class="ml-auto font-body text-xs self-end text-app-text-400 dark:text-app-text-dark-600">1 ETH = 269.21 USD</div>

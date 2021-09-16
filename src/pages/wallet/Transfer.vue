@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { Button, Card, SelectField, TextField } from "@/components/common";
+import { Card, SelectField, TextField } from "@/components/common";
 import { TransferConfirm, TransferTokenSelect } from "@/components/transfer";
 import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
@@ -49,16 +49,16 @@ const transferTypes: TranferType[] = [
   <WalletTabs tab="transfer">
     <div class="py-2">
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        <Card>
+        <Card class="order-2 sm:order-1">
           <form action="#" method="POST">
             <div>
               <TransferTokenSelect class="mb-6" />
-              <div class="grid grid-cols-3 space-x-3 mb-6">
-                <div class="col-span-2">
+              <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="col-span-3 sm:col-span-2">
                   <TextField v-model="transferTo" label="Send to" />
                 </div>
-                <div class="col-span-1">
-                  <SelectField v-model="transferType" :items="transferTypes" class="mt-6" />
+                <div class="col-span-3 sm:col-span-1">
+                  <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
                 </div>
               </div>
 
@@ -86,7 +86,7 @@ const transferTypes: TranferType[] = [
             </div>
           </form>
         </Card>
-        <WalletBalance class="self-start" />
+        <WalletBalance class="self-start order-1 sm:order-2" />
       </dl>
     </div>
   </WalletTabs>

@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+import TorusLogoURL from "@/assets/torus-logo.svg";
+import TorusLightLogoURL from "@/assets/torus-logo-light.svg";
+import { app } from "@/modules/app";
 import { login, onAuthChanged } from "@/modules/auth";
 
 import { Button } from "../components/common";
@@ -26,12 +29,12 @@ const onLogin = async () => {
 };
 </script>
 <template>
-  <div class="min-h-screen bg-gray-100 grid grid-cols-2">
+  <div class="min-h-screen bg-white dark:bg-app-gray-800 grid grid-cols-2">
     <div class="col-span-1 flex items-center">
       <div class="grid grid-cols-6 w-full">
         <div class="col-span-4 col-start-2 w-full mx-auto">
-          <img class="mb-7" src="https://app.tor.us/v1.13.2/img/torus-logo-blue.829106db.svg" alt="" />
-          <div class="font-header text-app-text-500 text-3xl mb-4">
+          <img class="block mb-7 h-7 w-auto" :src="app.isDarkMode ? TorusLightLogoURL : TorusLogoURL" alt="Casper Logo" />
+          <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4">
             <div>Your Google</div>
             <div>digital wallet in one-click</div>
           </div>
@@ -62,19 +65,21 @@ const onLogin = async () => {
               <div class="w-full border-t border-app-text-400" />
             </div>
             <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-gray-100 text-app-text-500">or</span>
+              <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
             </div>
           </div>
           <div class="mt-3 w-10/12">
             <form @submit.prevent="onLogin">
-              <TextField v-model="email" class="mb-3" placeholder="Enter your email" />
+              <TextField v-model="email" variant="dark-bg" class="mb-3" placeholder="Enter your email" />
               <Button variant="tertiary" block type="submit">Continue with Email</Button>
             </form>
           </div>
           <div class="mt-8 mb-2 w-10/12">
-            <div class="font-body text-xs text-app-text-600 font-bold mb-2">Note:</div>
-            <div class="font-body text-xs text-app-text-400 font-light mb-2">Torus does not store any data related to your social logins.</div>
-            <div class="font-body text-xs text-app-text-400 font-light">
+            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">Note:</div>
+            <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
+              Torus does not store any data related to your social logins.
+            </div>
+            <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
               The following sign-ins involve a third party authenticator: Apple, Email, GitHub, Kakao, LINE, LinkedIn, Twitter, WeChat.
             </div>
           </div>
@@ -95,11 +100,10 @@ const onLogin = async () => {
     </div>
     <div class="col-span-1 flex items-center">
       <div class="grid grid-cols-8 w-full">
-        <div class="col-span-6 col-start-2 w-full mx-auto text-center">
+        <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <img src="https://app.tor.us/v1.13.2/img/login-bg-1.4fa6ad65.svg" alt="" />
-          <div class="font-header text-xl text-app-text-500 mb-2">Interact with thousands of apps on the blockchain</div>
-          <div class="font-body text-base text-app-text-500">From Finance, Games, Exchanges and more</div>
-          <div class="font-body text-base text-app-text-500">Access the decentralised world with Torus</div>
+          <div class="font-header text-xl mb-2">Interact with thousands of apps on the blockchain</div>
+          <div class="font-body text-base">Access the decentralised world with Torus</div>
 
           <Button size="small" variant="tertiary" class="mx-auto mt-5">Visit our website</Button>
         </div>

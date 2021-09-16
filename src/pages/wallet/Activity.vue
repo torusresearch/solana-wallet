@@ -53,7 +53,7 @@ const date = ref(dates[0]);
       <ActivityItem />
     </div>
     <template #rightPanel>
-      <div class="flex ml-auto w-2/4">
+      <div class="hidden sm:flex ml-auto w-2/4">
         <SelectField v-model="transactionType" class="mr-4" :items="transactionTypes" />
         <SelectField v-model="date" :items="dates" />
       </div>

@@ -71,15 +71,15 @@ const transferTypes: TranferType[] = [
 </script>
 <template>
   <div class="py-4">
-    <div class="flex items-center mb-4">
-      <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500">List of Contacts</div>
-      <div class="ml-auto flex space-x-2">
+    <div class="grid grid-cols-3 items-center mb-4">
+      <div class="col-span-3 sm:col-span-1 font-body text-sm text-app-text-600 dark:text-app-text-dark-500">List of Contacts</div>
+      <div class="col-span-3 sm:col-span-2 flex gap-2">
         <TextField size="small" placeholder="Search by name" />
         <TextField size="small" placeholder="Filter by type" />
       </div>
     </div>
     <ul class="border dark:border-gray-900 rounded-md divide-y dark:divide-gray-900 shadow dark:shadow-dark mb-4">
-      <li v-for="contact in contacts" :key="contact.id" class="flex items-center py-3 px-4">
+      <li v-for="contact in contacts" :key="contact.id" class="flex items-center py-3 px-4 break-all">
         <div class="flex items-center">
           <div class="bg-app-gray-400 text-app-text-500 rounded-full flex justify-center items-center w-4 h-4 text-xs mr-2">
             <GithubIcon class="w-3 h-3" />
@@ -96,11 +96,11 @@ const transferTypes: TranferType[] = [
     </ul>
     <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">Add new Contact</div>
     <form>
-      <div class="mb-4 grid grid-cols-3 space-x-2">
-        <div class="col-span-2">
+      <div class="mb-4 grid grid-cols-3 gap-2">
+        <div class="col-span-3 sm:col-span-2">
           <TextField placeholder="Enter Contact Name" />
         </div>
-        <div class="col-span-1">
+        <div class="col-span-3 sm:col-span-1">
           <SelectField v-model="transferType" :items="transferTypes" />
         </div>
       </div>
