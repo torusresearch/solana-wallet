@@ -5,9 +5,14 @@ import { ref } from "vue";
 
 import { Button } from "@/components/common";
 import { app } from "@/modules/app";
+import ControllersModule from "@/modules/controllers";
 
 const isOpen = ref(false);
 const isKeyShown = ref(false);
+const key =
+  ControllersModule.torusState.KeyringControllerState.wallets.find(
+    (it) => it.address === ControllersModule.torusState.PreferencesControllerState.selectedAddress
+  )?.privateKey ?? "Key not found";
 
 const closeModal = () => {
   isOpen.value = false;
@@ -88,9 +93,7 @@ const openModal = () => {
                 </div>
               </div>
               <div v-if="isKeyShown" class="pl-8 flex items-center mt-2">
-                <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2">
-                  F48654993568658514F982C87A5BDd01D80969FF48654993568658
-                </div>
+                <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2">{{ key }}</div>
                 <Button variant="text">
                   <ClipboardCopyIcon class="w-4 h-4 mr-1" />
                   Click to copy
