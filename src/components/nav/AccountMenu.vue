@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItems } from "@headlessui/vue";
+import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 
-import { user } from "@/modules/auth";
-
-import AccountMenuList from "./AccountMenuList.vue";
+defineProps<{
+  user: OpenloginUserInfo;
+}>();
 </script>
 
 <template>
   <Menu as="div" class="ml-3 relative z-10">
     <div>
-      <MenuButton class="max-w-xs flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+      <MenuButton class="max-w-xs flex items-center text-sm focus:outline-none">
         <span class="sr-only">Open user menu</span>
         <div class="flex items-center">
           <span class="font-body text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user?.name }}</span>
@@ -42,7 +43,7 @@ import AccountMenuList from "./AccountMenuList.vue";
           ring-1 ring-black ring-opacity-5
           focus:outline-none
         "
-        ><AccountMenuList />
+        ><slot />
       </MenuItems>
     </transition>
   </Menu>

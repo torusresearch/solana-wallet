@@ -1,19 +1,29 @@
 <script setup lang="ts">
 import { InformationCircleIcon } from "@heroicons/vue/outline";
 import { QrcodeIcon } from "@heroicons/vue/solid";
+import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 
 import { Button } from "@/components/common";
-import { logout, user } from "@/modules/auth";
 import { NAVIGATION_LIST } from "@/utils/enums";
 
+defineProps<{
+  user: OpenloginUserInfo;
+  selectedAddress: string;
+}>();
+const emits = defineEmits(["onLogout"]);
+
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
+
+const logout = () => {
+  emits("onLogout");
+};
 </script>
 
 <template>
   <div class="flex items-center p-4">
-    <img class="rounded-full w-10 mr-2" :src="user.imageURL" alt="" />
+    <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
     <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
   </div>
   <div class="px-3 pb-3">
@@ -28,7 +38,7 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
         <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500">0.152 USD</div>
       </div>
       <div class="flex">
-        <div class="font-body text-xs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500">0x0F48654993568658514F982C87A5BDd01D80969F</div>
+        <div class="font-body text-xxs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">{{ selectedAddress }}</div>
         <div class="ml-auto flex space-x-1">
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
             <CopyIcon class="w-4 h-4" />
@@ -46,8 +56,10 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
   <div
     class="
       flex
+      cursor-pointer
       items-center
       border-t border-b
+      sm:border-b-0
       w-full
       text-left
       px-4
@@ -55,7 +67,7 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
       text-sm
       font-bold
       text-app-text-600
-      dark:text-app-text-dark-500 dark:hover:text-app-text-600
+      dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
     "
   >
     <PlusIcon class="w-4 h-4 mr-2" aria-hidden="true" />
@@ -70,6 +82,7 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
     :to="`/wallet/${nav.route}`"
     class="
       flex
+      cursor-pointer
       sm:hidden
       items-center
       w-full
@@ -79,7 +92,7 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
       text-sm
       font-bold
       text-app-text-600
-      dark:text-app-text-dark-500 dark:hover:text-app-text-600
+      dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-
     "
   >
     <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
@@ -88,8 +101,10 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
   <div
     class="
       flex
-      border-t
+      cursor-pointer
       items-center
+      border-t border-b
+      sm:border-b-0
       w-full
       text-left
       px-4
@@ -97,7 +112,7 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
       text-sm
       font-bold
       text-app-text-600
-      dark:text-app-text-dark-500 dark:hover:text-app-text-600
+      dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
     "
   >
     <InformationCircleIcon class="w-4 h-4 mr-2" aria-hidden="true" />

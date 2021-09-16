@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CasperLogoURL from "@/assets/casper.svg";
 import CasperLightLogoURL from "@/assets/casper-light.svg";
-import { AccountMenu, AccountMenuMobile } from "@/components/nav";
+import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import { app } from "@/modules/app";
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
@@ -53,10 +53,10 @@ const logout = () => {
           </div>
         </div>
         <div class="ml-6 hidden sm:flex items-center">
-          <AccountMenu />
+          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
         </div>
         <div class="ml-6 flex sm:hidden items-center">
-          <AccountMenuMobile />
+          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
     </nav>
