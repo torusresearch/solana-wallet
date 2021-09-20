@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import useVuelidate from "@vuelidate/core";
+import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import TorusLogoURL from "@/assets/torus-logo.svg";
@@ -13,20 +15,27 @@ import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
 
 const router = useRouter();
-const email = ref("");
+const userEmail = ref("");
 const isLoading = ref(false);
+
+const rules = computed(() => {
+  return {
+    userEmail: { required, email },
+  };
+});
+const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
   const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
   if (address) router.push("/wallet/home");
 });
 
-const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
+const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail: string) => {
   try {
     isLoading.value = true;
     await ControllerModule.triggerLogin({
       loginProvider,
-      login_hint: email.value ?? "",
+      login_hint: userEmail,
     });
     const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
     if (address) router.push("/wallet/home");
@@ -38,6 +47,13 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
     });
   } finally {
     isLoading.value = false;
+  }
+};
+
+const onEmailLogin = () => {
+  $v.value.$touch();
+  if (!$v.value.$invalid) {
+    onLogin(LOGIN_PROVIDER.EMAIL_PASSWORDLESS, userEmail.value);
   }
 };
 </script>
@@ -83,8 +99,8 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE) => {
             </div>
           </div>
           <div class="mt-3 w-10/12">
-            <form @submit.prevent="onLogin">
-              <TextField v-model="email" variant="dark-bg" class="mb-3" placeholder="Enter your email" />
+            <form @submit.prevent="onEmailLogin">
+              <TextField v-model.lazy="userEmail" variant="dark-bg" class="mb-3" placeholder="Enter your email" :errors="$v.userEmail.$errors" />
               <Button variant="tertiary" block type="submit">Continue with Email</Button>
             </form>
           </div>

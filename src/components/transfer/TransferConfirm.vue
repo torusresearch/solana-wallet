@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-import { ref } from "vue";
 
 import CasperLogoURL from "@/assets/casper.svg";
 import CasperLightLogoURL from "@/assets/casper-light.svg";
-import { Button } from "@/components/common";
 import { app } from "@/modules/app";
 
-const isOpen = ref(false);
+withDefaults(
+  defineProps<{
+    isOpen?: boolean;
+  }>(),
+  {
+    isOpen: false,
+  }
+);
 
+const emits = defineEmits(["onCloseModal"]);
 const closeModal = () => {
-  isOpen.value = false;
-};
-const openModal = () => {
-  isOpen.value = true;
+  emits("onCloseModal");
 };
 </script>
 <template>
-  <Button class="ml-auto" @click="openModal"><span class="text-base">Transfer</span></Button>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :class="{ dark: app.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">

@@ -1,9 +1,28 @@
 <script setup lang="ts">
 import { TrashIcon } from "@toruslabs/vue-icons/basic";
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
+import useVuelidate from "@vuelidate/core";
+import { helpers, required } from "@vuelidate/validators";
 import { ref } from "vue";
 
 import { Button, SelectField, TextField } from "@/components/common";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
+import { ruleVerifierId } from "@/utils/helpers";
+
+const validVerifier = (value: string) => {
+  if (!transferType.value) return true;
+  return ruleVerifierId(transferType.value.value, value);
+};
+
+const ensRule = () => {
+  return transferType.value.value === ENS && !ensError.value;
+};
+
+const getErrorMessage = () => {
+  const selectedType = transferType.value?.value || "";
+  if (!selectedType) return "";
+  return ALLOWED_VERIFIERS_ERRORS[selectedType];
+};
 
 const contacts = [
   {
@@ -35,39 +54,26 @@ const contacts = [
   },
 ];
 
-interface TranferType {
-  label: string;
-  value: string;
-}
+const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
+const transferTypes = ALLOWED_VERIFIERS;
 
-const transferType = ref<TranferType | undefined>();
+const name = ref("");
+const address = ref("");
+const ensError = ref("");
+const rules = {
+  name: { required: helpers.withMessage("Required", required) },
+  address: {
+    validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
+    ensRule: helpers.withMessage(ensError.value, ensRule),
+    required: helpers.withMessage("Required", required),
+  },
+};
 
-const transferTypes: TranferType[] = [
-  {
-    label: "ETH address",
-    value: "eth",
-  },
-  {
-    label: "ENS domain",
-    value: "ens",
-  },
-  {
-    label: "Google account",
-    value: "google",
-  },
-  {
-    label: "Twitter handle",
-    value: "twitter",
-  },
-  {
-    label: "Reddit username",
-    value: "reddit",
-  },
-  {
-    label: "Discord ID",
-    value: "discord",
-  },
-];
+const $v = useVuelidate(rules, { name, address });
+
+const onSave = () => {
+  $v.value.$touch();
+};
 </script>
 <template>
   <div class="py-4">
@@ -95,20 +101,20 @@ const transferTypes: TranferType[] = [
       </li>
     </ul>
     <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">Add new Contact</div>
-    <form>
+    <form @submit.prevent="onSave">
       <div class="mb-4 grid grid-cols-3 gap-2">
         <div class="col-span-3 sm:col-span-2">
-          <TextField placeholder="Enter Contact Name" />
+          <TextField v-model.lazy="name" :errors="$v.name.$errors" placeholder="Enter Contact Name" />
         </div>
         <div class="col-span-3 sm:col-span-1">
           <SelectField v-model="transferType" :items="transferTypes" />
         </div>
       </div>
       <div class="mb-4">
-        <TextField placeholder="Enter ETH Address" />
+        <TextField v-model.lazy="address" :errors="$v.address.$errors" placeholder="Enter ETH Address" />
       </div>
       <div>
-        <Button class="ml-auto" variant="tertiary">Add Contact</Button>
+        <Button class="ml-auto" variant="tertiary" type="submit">Add Contact</Button>
       </div>
     </form>
   </div>

@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
+import useVuelidate from "@vuelidate/core";
+import { helpers, minValue, required } from "@vuelidate/validators";
 import { ref } from "vue";
 
+import MoonpayLogoURL from "@/assets/moonpay-logo.svg";
+import MoonpayLogoLightURL from "@/assets/moonpay-logo-light.svg";
+import WyreLogoURL from "@/assets/wyre-logo.svg";
+import WyreLogoLightURL from "@/assets/wyre-logo-light.svg";
 import { Button, SelectField, TextField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
+import { app } from "@/modules/app";
 
 const providers = [
   {
@@ -13,7 +20,7 @@ const providers = [
     paymentMethod: "Credit / Debit / Apple Pay",
     fee: "4.5% or 5 USD",
     limit: "2,000€/day",
-    logo: "https://app.tor.us/v1.13.2/img/moonpay-logo.90c07828.svg",
+    logo: app.value.isDarkMode ? MoonpayLogoLightURL : MoonpayLogoURL,
     currencies: ["ETH", "DAI", "TUSD", "USDC", "USDT", "BNB", "BUSD"],
   },
   {
@@ -23,11 +30,10 @@ const providers = [
     paymentMethod: "Credit / Debit / Apple Pay",
     fee: "4.9% + 30c or 5 USD",
     limit: "$250/day",
-    logo: "https://app.tor.us/v1.13.2/img/wyre-logo.41ddc839.svg",
+    logo: app.value.isDarkMode ? WyreLogoLightURL : WyreLogoURL,
     currencies: ["ETH", "DAI", "USDT", "USDC"],
   },
 ];
-const selectedProvider = ref(providers[0]);
 
 const currencies = [
   {
@@ -51,7 +57,19 @@ const currencies = [
     label: "OKB",
   },
 ];
+const selectedProvider = ref(providers[0]);
 const selectedCurrency = ref(currencies[0]);
+const amount = ref(0);
+
+const rules = {
+  amount: { required: helpers.withMessage("Required", required), miValue: helpers.withMessage("Must be greater than zero", minValue(1)) },
+};
+
+const $v = useVuelidate(rules, { amount });
+
+const onSave = () => {
+  $v.value.$touch();
+};
 </script>
 
 <template>
@@ -109,7 +127,7 @@ const selectedCurrency = ref(currencies[0]);
             </RadioGroupOption>
           </div>
         </RadioGroup>
-        <form action="#" method="POST">
+        <form @submit.prevent="onSave">
           <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 sm:rounded-md sm:overflow-hidden">
             <div class="py-6 px-4 space-y-6 sm:p-6">
               <div>
@@ -125,7 +143,7 @@ const selectedCurrency = ref(currencies[0]);
               </div>
               <div class="grid grid-cols-3 gap-4">
                 <div class="col-span-3 sm:col-span-2">
-                  <TextField label="You pay" />
+                  <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
                 </div>
                 <div class="col-span-3 sm:col-span-1">
                   <SelectField class="sm:mt-6" :items="currencies" />
@@ -142,7 +160,7 @@ const selectedCurrency = ref(currencies[0]);
               </div>
             </div>
             <div class="px-4 py-3 mb-4 sm:px-6">
-              <Button class="ml-auto mb-2" variant="primary">Save</Button>
+              <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="$v.$dirty && $v.$invalid">Save</Button>
               <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">You will be redirected to the third party page</div>
             </div>
           </div>
