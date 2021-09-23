@@ -1,48 +1,63 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import useVuelidate from "@vuelidate/core";
+import { helpers, minValue, required } from "@vuelidate/validators";
+import { computed, ref } from "vue";
 
-import { Card, SelectField, TextField } from "@/components/common";
+import { Button, Card, SelectField, TextField } from "@/components/common";
 import { TransferConfirm, TransferTokenSelect } from "@/components/transfer";
 import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
+import { ruleVerifierId } from "@/utils/helpers";
 
-interface TranferType {
-  label: string;
-  value: string;
-}
-
-const transferType = ref<TranferType | undefined>();
+const ensError = ref("");
+const isOpen = ref(false);
+const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
 const transferTo = ref("");
 const sendAmount = ref(0);
 const transferId = ref("");
 const transactionFee = ref(0);
 
-const transferTypes: TranferType[] = [
-  {
-    label: "ETH address",
-    value: "eth",
-  },
-  {
-    label: "ENS domain",
-    value: "ens",
-  },
-  {
-    label: "Google account",
-    value: "google",
-  },
-  {
-    label: "Twitter handle",
-    value: "twitter",
-  },
-  {
-    label: "Reddit username",
-    value: "reddit",
-  },
-  {
-    label: "Discord ID",
-    value: "discord",
-  },
-];
+const validVerifier = (value: string) => {
+  if (!transferType.value) return true;
+  return ruleVerifierId(transferType.value.value, value);
+};
+
+const ensRule = () => {
+  return transferType.value.value === ENS && !ensError.value;
+};
+
+const getErrorMessage = () => {
+  const selectedType = transferType.value?.value || "";
+  if (!selectedType) return "";
+  return ALLOWED_VERIFIERS_ERRORS[selectedType];
+};
+
+const rules = computed(() => {
+  return {
+    transferTo: {
+      validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
+      ensRule: helpers.withMessage(ensError.value, ensRule),
+      required: helpers.withMessage("Required", required),
+    },
+    sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
+    transferId: { required },
+    transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
+  };
+});
+
+const $v = useVuelidate(rules, { transferTo, transferId, sendAmount, transactionFee });
+
+const closeModal = () => {
+  isOpen.value = false;
+};
+
+const openModal = () => {
+  $v.value.$touch();
+  if (!$v.value.$invalid) isOpen.value = true;
+};
+
+const transferTypes = ALLOWED_VERIFIERS;
 </script>
 
 <template>
@@ -55,7 +70,7 @@ const transferTypes: TranferType[] = [
               <TransferTokenSelect class="mb-6" />
               <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="col-span-3 sm:col-span-2">
-                  <TextField v-model="transferTo" label="Send to" />
+                  <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
                 </div>
                 <div class="col-span-3 sm:col-span-1">
                   <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
@@ -63,15 +78,15 @@ const transferTypes: TranferType[] = [
               </div>
 
               <div class="mb-6">
-                <TextField v-model="sendAmount" label="Amount" />
+                <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
               </div>
 
               <div class="mb-6">
-                <TextField v-model="transferId" label="Transfer ID (Memo)" />
+                <TextField v-model="transferId" label="Transfer ID (Memo)" :errors="$v.transferId.$errors" />
               </div>
 
               <div class="mb-6">
-                <TextField v-model="transactionFee" label="Transaction Fee" />
+                <TextField v-model="transactionFee" label="Transaction Fee" :errors="$v.transactionFee.$errors" />
               </div>
 
               <div class="text-right mb-6">
@@ -81,7 +96,8 @@ const transferTypes: TranferType[] = [
               </div>
 
               <div class="flex">
-                <TransferConfirm />
+                <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
+                <TransferConfirm :is-open="isOpen" @onCloseModal="closeModal" />
               </div>
             </div>
           </form>

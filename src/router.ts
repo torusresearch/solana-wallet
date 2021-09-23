@@ -22,6 +22,11 @@ const router = createRouter({
       meta: { title: "End" },
     },
     {
+      path: "/confirm",
+      component: () => import("@/pages/Confirm.vue"),
+      meta: { title: "Confirm" },
+    },
+    {
       path: "/logout",
       component: () => import("@/pages/Logout.vue"),
       meta: { title: "Logout" },

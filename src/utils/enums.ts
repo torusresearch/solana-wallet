@@ -91,3 +91,53 @@ export const DEFAULT_USER_INFO = {
   verifier: "",
   verifierId: "",
 };
+
+export const CSP = "csp";
+export const ENS = "ens";
+export const GOOGLE = "google";
+export const REDDIT = "reddit";
+export const DISCORD = "discord";
+export const GITHUB = "github";
+export const TWITTER = "twitter";
+
+export interface TransferType {
+  label: string;
+  value: string;
+}
+
+export const ALLOWED_VERIFIERS: TransferType[] = [
+  {
+    label: "Casper address",
+    value: CSP,
+  },
+  {
+    label: "ENS domain",
+    value: ENS,
+  },
+  {
+    label: "Google account",
+    value: GOOGLE,
+  },
+  {
+    label: "Twitter handle",
+    value: TWITTER,
+  },
+  {
+    label: "Reddit username",
+    value: REDDIT,
+  },
+  {
+    label: "Discord ID",
+    value: DISCORD,
+  },
+];
+
+export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
+  [CSP]: "Invalid CSP Address",
+  [GOOGLE]: "Invalid Email Address",
+  [REDDIT]: "Invalid Reddit username",
+  [DISCORD]: "Invalid Discord ID",
+  [TWITTER]: `Twitter username begins with "@"`,
+  [GITHUB]: "Invalid GitHub username",
+  [ENS]: "Invalid ENS address",
+};

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ErrorObject } from "@vuelidate/core";
 import { computed } from "vue";
 
 const props = withDefaults(
@@ -8,6 +9,8 @@ const props = withDefaults(
     label?: string;
     placeholder?: string;
     modelValue?: string | number;
+    errors?: Array<ErrorObject>;
+    type?: string;
   }>(),
   {
     size: "medium",
@@ -15,6 +18,8 @@ const props = withDefaults(
     label: "",
     placeholder: "",
     modelValue: "",
+    errors: () => [],
+    type: "text",
   }
 );
 
@@ -41,9 +46,12 @@ const value = computed({
         v-model="value"
         class="w-full font-body border-0 bg-transparent focus:outline-none focus:ring-0 text-app-text-500 dark:text-app-text-dark-500"
         :class="size === 'small' ? 'text-xs' : 'text-base'"
-        type="text"
+        :type="type"
         :placeholder="placeholder"
       />
+    </div>
+    <div v-if="errors?.length" class="flex mt-1 px-1">
+      <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
     </div>
   </div>
 </template>
