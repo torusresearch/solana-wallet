@@ -97,7 +97,7 @@ const transferTypes = ALLOWED_VERIFIERS;
 
               <div class="flex">
                 <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
-                <TransferConfirm @onCloseModal="closeModal" />
+                <TransferConfirm :is-open="isOpen" @onCloseModal="closeModal" />
               </div>
             </div>
           </form>

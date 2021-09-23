@@ -4,6 +4,7 @@ import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 
 import CasperLogoURL from "@/assets/casper.svg";
 import CasperLightLogoURL from "@/assets/casper-light.svg";
+import { Button } from "@/components/common";
 import { app } from "@/modules/app";
 
 withDefaults(
@@ -55,14 +56,16 @@ const closeModal = () => {
                 rounded-md
               "
             >
-              <DialogTitle as="div" class="shadow text-center py-6" tabindex="0">
+              <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div><img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /></div>
-                <div class="font-header text-lg font-bold text-app-text-600">Confirm Transaction</div>
+                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</div>
               </DialogTitle>
               <div class="mt-5 px-6 items-center">
                 <div class="flex items-center">
                   <div class="pl-5 flex-none">
-                    <div class="flex justify-center border border-app-gray-400 shadow rounded-full w-12 h-12">
+                    <div
+                      class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12"
+                    >
                       <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
                     </div>
                   </div>
@@ -70,46 +73,52 @@ const closeModal = () => {
                     <hr />
                   </div>
                   <div class="pr-5 flex-none">
-                    <div class="flex justify-center border border-app-gray-400 shadow rounded-full w-12 h-12">
+                    <div
+                      class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12"
+                    >
                       <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
                     </div>
                   </div>
                 </div>
-                <div class="flex">
+                <div class="flex mt-1">
                   <div class="flex-none w-20 text-center">
-                    <div class="overflow-ellipsis truncate text-xs text-app-text-500">tom@gmail.com</div>
-                    <div class="overflow-ellipsis truncate text-xs text-app-text-500">0x0F48654993568658514F982C87A5BDd01D80969F</div>
+                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">tom@gmail.com</div>
+                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
+                      0x0F48654993568658514F982C87A5BDd01D80969F
+                    </div>
                   </div>
-                  <div class="flex-grow text-xs text-app-text-500 flex items-center justify-center -mt-14">
+                  <div class="flex-grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
                     <WiFiIcon class="w-3 h-3 mr-1" /> Casper Network
                   </div>
                   <div class="flex-none w-20 text-center">
-                    <div class="overflow-ellipsis truncate text-xs text-app-text-500">tom@gmail.com</div>
-                    <div class="overflow-ellipsis truncate text-xs text-app-text-500">0x0F48654993568658514F982C87A5BDd01D80969F</div>
+                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">tom@gmail.com</div>
+                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
+                      0x0F48654993568658514F982C87A5BDd01D80969F
+                    </div>
                   </div>
                 </div>
                 <hr class="mt-3 mb-5" />
                 <div class="flex mb-5">
-                  <div class="font-body text-xs text-app-text-500">Amount to send</div>
+                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">Amount to send</div>
                   <div class="ml-auto text-right">
-                    <div class="font-body text-xs font-bold text-app-text-500">0.009968499999769 ETH</div>
-                    <div class="font-body text-xs text-app-text-400">~ 33.0737 USD</div>
+                    <div class="font-body text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">0.009968499999769 ETH</div>
+                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">~ 33.0737 USD</div>
                   </div>
                 </div>
                 <div class="flex">
-                  <div class="font-body text-xs text-app-text-500">Max Transaction Fee</div>
+                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">Max Transaction Fee</div>
                   <div class="ml-auto text-right">
-                    <div class="font-body text-xs font-bold text-app-text-500">0.1 USD</div>
-                    <div class="font-body text-xs text-app-text-400">(In &lt; 30 seconds)</div>
+                    <div class="font-body text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">0.1 USD</div>
+                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">(In &lt; 30 seconds)</div>
                   </div>
                 </div>
                 <hr class="my-5" />
 
                 <div class="flex">
-                  <div class="font-body text-sm text-app-text-600 font-bold">Total Cost</div>
+                  <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">Total Cost</div>
                   <div class="ml-auto text-right">
-                    <div class="font-body text-sm font-bold text-app-text-600">~0.01 ETH</div>
-                    <div class="font-body text-xs text-app-text-400">~ 33.18 USD</div>
+                    <div class="font-body text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~0.01 ETH</div>
+                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-400">~ 33.18 USD</div>
                   </div>
                 </div>
               </div>
