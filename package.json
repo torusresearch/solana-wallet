@@ -1,9 +1,9 @@
 {
-  "name": "casper-wallet",
+  "name": "solana-wallet",
   "version": "0.1.0",
   "private": true,
   "app": {
-    "name": "Casper"
+    "name": "Solana"
   },
   "scripts": {
     "serve": "vue-cli-service serve",

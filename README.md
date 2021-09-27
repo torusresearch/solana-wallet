@@ -1,6 +1,6 @@
-# Casper Wallet
+# Solana Wallet
 
-Casper Wallet end-user web application.
+Solana Wallet end-user web application.
 
 ## Recommended IDE Setup
 

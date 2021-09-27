@@ -2,8 +2,8 @@
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { computed, ref } from "vue";
 
-import CasperLogoURL from "@/assets/casper.svg";
-import CasperLightLogoURL from "@/assets/casper-light.svg";
+import SolanaLogoURL from "@/assets/solana-dark.svg";
+import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { Button, TextField } from "@/components/common";
 import { app } from "@/modules/app";
 
@@ -16,7 +16,7 @@ const total = computed(() => 0);
   <div class="bg-white min-h-screen dark:bg-app-gray-700">
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
-        <div><img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /></div>
+        <div><img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" /></div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Transaction</div>
       </div>
       <div class="p-5">

@@ -56,24 +56,24 @@ export const NAVIGATION_LIST = {
     route: "home",
     icon: PlusIcon,
   },
-  transfer: {
-    name: "Transfer",
-    title: "Transfer Details",
-    route: "transfer",
-    icon: ArrowBoldForvardIcon,
-  },
-  topup: {
-    name: "Top Up",
-    title: "Select a Provider",
-    route: "topup",
-    icon: DatabaseIcon,
-  },
-  activity: {
-    name: "Activity",
-    title: "Transaction Activities",
-    route: "activity",
-    icon: ListIcon,
-  },
+  // transfer: {
+  //   name: "Transfer",
+  //   title: "Transfer Details",
+  //   route: "transfer",
+  //   icon: ArrowBoldForvardIcon,
+  // },
+  // topup: {
+  //   name: "Top Up",
+  //   title: "Select a Provider",
+  //   route: "topup",
+  //   icon: DatabaseIcon,
+  // },
+  // activity: {
+  //   name: "Activity",
+  //   title: "Transaction Activities",
+  //   route: "activity",
+  //   icon: ListIcon,
+  // },
   settings: {
     name: "Settings",
     title: "Settings",

@@ -6,8 +6,8 @@ import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import TorusLogoURL from "@/assets/torus-logo.svg";
-import TorusLightLogoURL from "@/assets/torus-logo-light.svg";
+import SolanaLogoURL from "@/assets/solana-dark.svg";
+import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { addToast, app } from "@/modules/app";
 
 import { Button } from "../components/common";
@@ -63,7 +63,7 @@ const onEmailLogin = () => {
     <div class="col-span-1 flex items-center">
       <div class="grid grid-cols-6 w-full">
         <div class="col-span-4 col-start-2 w-full mx-auto">
-          <img class="block mb-7 h-7 w-auto" :src="app.isDarkMode ? TorusLightLogoURL : TorusLogoURL" alt="Casper Logo" />
+          <img class="block mb-7 h-7 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4">
             <div>Your Google</div>
             <div>digital wallet in one-click</div>

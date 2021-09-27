@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import CasperLogoURL from "@/assets/casper.svg";
-import CasperLightLogoURL from "@/assets/casper-light.svg";
+import SolanaLogoURL from "@/assets/solana-dark.svg";
+import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import { app } from "@/modules/app";
 import { requireLoggedIn } from "@/modules/auth";
@@ -32,7 +32,7 @@ const logout = () => {
       <div class="flex h-16 px-4">
         <div class="flex-none flex items-center">
           <router-link to="/wallet/home">
-            <img class="block h-7 w-auto" :src="app.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" />
+            <img class="block h-7 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
           </router-link>
         </div>
         <div class="flex flex-grow">
