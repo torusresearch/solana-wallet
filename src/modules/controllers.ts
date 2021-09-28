@@ -79,6 +79,8 @@ class ControllerModule extends VuexModule {
     this.update(DEFAULT_USER_INFO);
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     this.resetTorusController();
+    // console.log(this.torus);
+    this.init();
   }
 
   @Action
