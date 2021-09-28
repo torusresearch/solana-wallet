@@ -12,8 +12,9 @@ import {
   PreferencesState,
   // SafeEventEmitterProvider,
 } from "@toruslabs/base-controllers";
-import { CasperBlock } from "@toruslabs/casper-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
+// import { SolanaKeyringControllerState } from "@toruslabs/solana-controllers";
+import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 import { DatabaseIcon } from "@toruslabs/vue-icons/software";
@@ -39,7 +40,7 @@ export interface TorusControllerConfig extends BaseConfig {
   NetworkControllerConfig: NetworkConfig;
   CurrencyControllerConfig: BaseCurrencyControllerConfig;
   PreferencesControllerConfig: PreferencesConfig;
-  AccountTrackerConfig: AccountTrackerConfig<CasperBlock>;
+  AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
 }
 
@@ -92,7 +93,7 @@ export const DEFAULT_USER_INFO = {
   verifierId: "",
 };
 
-export const CSP = "csp";
+export const SOL = "sol";
 export const ENS = "ens";
 export const GOOGLE = "google";
 export const REDDIT = "reddit";
@@ -107,8 +108,8 @@ export interface TransferType {
 
 export const ALLOWED_VERIFIERS: TransferType[] = [
   {
-    label: "Casper address",
-    value: CSP,
+    label: "Solana address",
+    value: SOL,
   },
   {
     label: "ENS domain",
@@ -133,7 +134,7 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
 ];
 
 export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
-  [CSP]: "Invalid CSP Address",
+  [SOL]: "Invalid SOL Address",
   [GOOGLE]: "Invalid Email Address",
   [REDDIT]: "Invalid Reddit username",
   [DISCORD]: "Invalid Discord ID",

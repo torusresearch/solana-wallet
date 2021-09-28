@@ -1,5 +1,5 @@
-import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
+import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import { cloneDeep, omit } from "lodash";
 import log from "loglevel";

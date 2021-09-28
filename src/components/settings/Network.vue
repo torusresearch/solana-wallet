@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
+import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 
 import { SelectField } from "@/components/common";
