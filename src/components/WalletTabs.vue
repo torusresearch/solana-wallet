@@ -28,11 +28,11 @@ const logout = () => {
 
 <template>
   <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
-    <nav class="bg-white dark:bg-app-gray-700 border-b border-gray-200 dark:border-transparent">
+    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent">
       <div class="flex h-16 px-4">
         <div class="flex-none flex items-center">
           <router-link to="/wallet/home">
-            <img class="block h-7 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+            <img class="block h-4 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
           </router-link>
         </div>
         <div class="flex flex-grow">

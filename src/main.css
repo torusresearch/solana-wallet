@@ -42,9 +42,6 @@
     active:bg-app-secondary2
     disabled:bg-app-gray-300
     disabled:text-app-gray-500
-    border
-    border-solid
-    border-app-gray-300
     rounded-md
     px-8
     font-body
@@ -52,6 +49,8 @@
     ease-linear
     transition-all
     duration-150;
+    box-shadow: -5px -5px 10px #37383C, 5px 5px 10px #242529;
+    border-radius: 6px;
   }
 
   .t-btn-text {

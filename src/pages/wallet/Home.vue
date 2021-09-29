@@ -16,8 +16,8 @@ import WalletTabs from "@/components/WalletTabs.vue";
               <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us at User X Devcon After-Party</div>
               <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">11 Oct 2019 @ Osaka</div>
             </div>
-            <div class="col-span-1">
-              <img class="float-right h-2/4 sm:h-2/3" :src="SolanaMascot" alt />
+            <div class="col-span-1 sol_logo">
+              <img class="float-right h-2/4 sm:h-16 sol_logo_image" :src="SolanaMascot" alt />
             </div>
           </div>
           <template #footer>
@@ -32,3 +32,19 @@ import WalletTabs from "@/components/WalletTabs.vue";
     </div>
   </WalletTabs>
 </template>
+
+<style scoped>
+.sol_logo {
+  display: flex;
+}
+
+.sol_logo_image {
+  margin: auto 23px auto auto;
+}
+
+.t-btn-tertiary {
+  box-shadow: -5px -5px 10px #37383c, 5px 5px 10px #242529;
+  border-radius: 6px;
+  border: none;
+}
+</style>
