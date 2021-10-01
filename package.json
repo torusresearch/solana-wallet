@@ -25,18 +25,21 @@
     "@toruslabs/openlogin-ed25519": "^0.10.2",
     "@toruslabs/openlogin-jrpc": "^0.10.2",
     "@toruslabs/openlogin-utils": "^0.10.2",
-    "@toruslabs/solana-controllers": "/Users/apollo/works/crypto/torus/controllers/packages/solana-controllers/",
+    "@toruslabs/solana-controllers": "/Users/apollo/works/crypto/torus/reclone3/controllers/packages/solana-controllers",
     "@toruslabs/vue-icons": "^0.0.11",
     "@vuelidate/core": "^2.0.0-alpha.25",
     "@vuelidate/validators": "^2.0.0-alpha.21",
     "bignumber.js": "^9.0.1",
     "core-js": "^3.17.3",
     "delay-async": "^1.2.0",
+    "https-browserify": "^1.0.0",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
     "loglevel": "^1.7.1",
+    "os-browserify": "^0.3.0",
     "pify": "^5.0.0",
     "pump": "^3.0.0",
+    "stream-http": "^3.2.0",
     "vue": "^3.2.11",
     "vue-class-component": "^8.0.0-rc.1",
     "vue-property-decorator": "^10.0.0-rc.3",
@@ -57,6 +60,7 @@
     "@vue/cli-plugin-vuex": "^5.0.0-beta.3",
     "@vue/cli-service": "~5.0.0-beta.3",
     "@vue/compiler-sfc": "^3.2.11",
+    "assert": "^2.0.0",
     "autoprefixer": "^10.3.4",
     "color": "^4.0.1",
     "crypto-browserify": "^3.12.0",
@@ -81,8 +85,5 @@
   "engines": {
     "node": ">=14.17.0",
     "npm": "~6.x"
-  },
-  "resolutions": {
-    "@toruslabs/base-controllers": "/Users/apollo/works/crypto/torus/controllers/packages/base-controllers"
   }
 }

@@ -8,13 +8,14 @@ import {
   KeyringControllerState,
   NetworkConfig,
   NetworkState,
-  PreferencesConfig,
-  PreferencesState,
+  // PreferencesConfig,
+  // PreferencesState,
   // SafeEventEmitterProvider,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 // import { SolanaKeyringControllerState } from "@toruslabs/solana-controllers";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
+import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers/types/src/Preferences/PreferencesController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 import { DatabaseIcon } from "@toruslabs/vue-icons/software";
@@ -31,7 +32,7 @@ export type OpenLoginPopupResponse = {
 export interface TorusControllerState extends BaseState {
   NetworkControllerState: NetworkState;
   CurrencyControllerState: BaseCurrencyControllerState;
-  PreferencesControllerState: PreferencesState;
+  PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
 }
@@ -39,7 +40,7 @@ export interface TorusControllerState extends BaseState {
 export interface TorusControllerConfig extends BaseConfig {
   NetworkControllerConfig: NetworkConfig;
   CurrencyControllerConfig: BaseCurrencyControllerConfig;
-  PreferencesControllerConfig: PreferencesConfig;
+  PreferencesControllerConfig: SolanaPreferencesConfig;
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
 }

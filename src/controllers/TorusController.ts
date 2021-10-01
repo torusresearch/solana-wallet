@@ -30,7 +30,7 @@ const TARGET_NETWORK = "solana_testnet";
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
   NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK] },
-  PreferencesControllerConfig: { pollInterval: 180_000 },
+  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
 };
 console.log(SUPPORTED_NETWORKS);
 export const DEFAULT_STATE = {
@@ -51,6 +51,8 @@ export const DEFAULT_STATE = {
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
+    api: "",
+    signInPrefix: "Solana Signin",
   },
 };
 
@@ -93,6 +95,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.prefsController = new PreferencesController({
       state: this.state.PreferencesControllerState,
       config: this.config.PreferencesControllerConfig,
+      provider: this.networkController._providerProxy,
+      signAuthMessage: this.keyringController.signAuthMessage.bind(this.keyringController),
+      getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
+      getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
+      getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
+      getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
     });
 
     this.accountTracker = new AccountTrackerController({
@@ -223,10 +231,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   //   }
 
   async addAccount(privKey: string): Promise<string> {
-    const solkey = getED25519Key(privKey);
-    const address = this.keyringController.importKeyring(solkey.sk);
+    const address = this.keyringController.importAccount(privKey);
 
-    await this.prefsController.init(address);
+    await this.prefsController.sync(address);
     this.prefsController.setSelectedAddress(address);
     return address;
   }

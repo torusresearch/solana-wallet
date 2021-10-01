@@ -43,6 +43,8 @@ class ControllerModule extends VuexModule {
 
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    console.log(this.torusState.AccountTrackerState.accounts);
+    console.log(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
     return value.toString();
