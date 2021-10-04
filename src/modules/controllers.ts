@@ -1,5 +1,5 @@
-import { SUPPORTED_NETWORKS } from "@toruslabs/casper-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
+import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import { cloneDeep, omit } from "lodash";
 import log from "loglevel";
@@ -43,6 +43,8 @@ class ControllerModule extends VuexModule {
 
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    console.log(this.torusState.AccountTrackerState.accounts);
+    console.log(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
     return value.toString();
@@ -79,6 +81,8 @@ class ControllerModule extends VuexModule {
     this.update(DEFAULT_USER_INFO);
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     this.resetTorusController();
+    // console.log(this.torus);
+    this.init();
   }
 
   @Action

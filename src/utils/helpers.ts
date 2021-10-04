@@ -1,6 +1,6 @@
 import config from "@/config";
 
-import { CSP, DISCORD, GITHUB, GOOGLE, REDDIT, STORAGE_TYPE, TWITTER } from "./enums";
+import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -10,7 +10,7 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
   console.log("ruleVerifierId", value);
   // TODO: Validate casper address
-  if (selectedTypeOfLogin === CSP) {
+  if (selectedTypeOfLogin === SOL) {
     return !!value;
   }
 

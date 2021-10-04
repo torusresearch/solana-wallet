@@ -6,6 +6,8 @@ import {
   ProviderConfig,
   // SafeEventEmitterProvider,
 } from "@toruslabs/base-controllers";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
+import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-jrpc";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -14,9 +16,8 @@ import {
   NetworkController,
   PreferencesController,
   SUPPORTED_NETWORKS,
-} from "@toruslabs/casper-controllers";
-import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-jrpc";
-import { GetDeployResult } from "casper-js-sdk";
+} from "@toruslabs/solana-controllers";
+// import { GetDeployResult } from "casper-js-sdk";
 import log from "loglevel";
 
 import config from "@/config";
@@ -24,31 +25,34 @@ import { TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
+const TARGET_NETWORK = "solana_testnet";
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
-  NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS["casper_mainnet"] },
-  PreferencesControllerConfig: { pollInterval: 180_000 },
+  NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK] },
+  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
 };
-
+console.log(SUPPORTED_NETWORKS);
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
-  KeyringControllerState: { wallets: [] },
+  KeyringControllerState: { wallets: [], keyrings: [] },
   CurrencyControllerState: {
     conversionDate: Date.now().toString(),
     conversionRate: 0,
     currentCurrency: "usd",
-    nativeCurrency: "cspr",
-    ticker: "cspr",
+    nativeCurrency: "sol",
+    ticker: "sol",
   },
   NetworkControllerState: {
-    chainId: SUPPORTED_NETWORKS["casper_mainnet"].chainId,
+    chainId: SUPPORTED_NETWORKS[TARGET_NETWORK].chainId,
     properties: {},
-    providerConfig: SUPPORTED_NETWORKS["casper_mainnet"],
+    providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK],
   },
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
+    api: "",
+    signInPrefix: "Solana Signin",
   },
 };
 
@@ -65,7 +69,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   constructor({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }) {
     super({ config, state });
   }
-
   /**
    * Always call init function before using this controller
    */
@@ -75,9 +78,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.configure(config, true, true);
     this.update(state, true);
     this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
-
     this.initializeProvider();
-
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -94,20 +95,35 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.prefsController = new PreferencesController({
       state: this.state.PreferencesControllerState,
       config: this.config.PreferencesControllerConfig,
+      provider: this.networkController._providerProxy,
+      signAuthMessage: this.keyringController.signAuthMessage.bind(this.keyringController),
+      getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
+      getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
+      getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
+      getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
     });
 
     this.accountTracker = new AccountTrackerController({
       provider: this.networkController._providerProxy,
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
-      blockTracker: this.networkController._blockTrackerProxy,
+      // blockTracker: this.networkController._blockTrackerProxy,
       getIdentities: () => this.prefsController.state.identities,
       onPreferencesStateChange: (listener) => this.prefsController.on("store", listener),
-      onNetworkChange: (listener) => this.networkController.on("store", listener),
+      // onNetworkChange: (listener) => this.networkController.on("store", listener),
+    });
+
+    this.networkController._blockTrackerProxy.on("latest", () => {
+      this.accountTracker.refresh();
     });
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
+      console.log("network changed");
+      this.accountTracker.refresh();
+    });
+
+    this.prefsController.on("store", () => {
       this.accountTracker.refresh();
     });
 
@@ -127,6 +143,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.accountTracker.on("store", (state) => {
+      // console.log('tracker udate');
+      // console.log( state.)
       this.update({ AccountTrackerState: state });
     });
 
@@ -164,7 +182,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return { deploy_hash: "" };
       }, // todo: add handler for tx processing
       getPendingDeployByHash: async () => {
-        return {} as unknown as GetDeployResult;
+        return {} as unknown;
+        // as GetDeployResult;
       },
     };
     const providerProxy = this.networkController.initializeProvider(providerHandlers);
@@ -213,7 +232,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async addAccount(privKey: string): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
-    await this.prefsController.init(address);
+
+    await this.prefsController.sync(address);
+    this.prefsController.setSelectedAddress(address);
     return address;
   }
 
