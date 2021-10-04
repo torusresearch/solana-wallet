@@ -41,10 +41,4 @@ import WalletTabs from "@/components/WalletTabs.vue";
 .sol_logo_image {
   margin: auto 23px auto auto;
 }
-
-.t-btn-tertiary {
-  box-shadow: -5px -5px 10px #37383c, 5px 5px 10px #242529;
-  border-radius: 6px;
-  border: none;
-}
 </style>

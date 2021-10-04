@@ -49,8 +49,11 @@
     ease-linear
     transition-all
     duration-150;
-    box-shadow: -5px -5px 10px #37383C, 5px 5px 10px #242529;
+    border: 1px solid #F3F3F4;
     border-radius: 6px;
+  }
+  .dark .t-btn-tertiary{
+    box-shadow: -5px -5px 10px #37383C, 5px 5px 10px #242529;
   }
 
   .t-btn-text {
