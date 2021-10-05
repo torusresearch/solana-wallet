@@ -58,12 +58,12 @@ export const NAVIGATION_LIST = {
     route: "home",
     icon: PlusIcon,
   },
-  // transfer: {
-  //   name: "Transfer",
-  //   title: "Transfer Details",
-  //   route: "transfer",
-  //   icon: ArrowBoldForvardIcon,
-  // },
+  transfer: {
+    name: "Transfer",
+    title: "Transfer Details",
+    route: "transfer",
+    icon: ArrowBoldForvardIcon,
+  },
   // topup: {
   //   name: "Top Up",
   //   title: "Select a Provider",

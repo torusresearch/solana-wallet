@@ -1,3 +1,4 @@
+import { Transaction } from "@solana/web3.js";
 import {
   BaseController,
   createLoggerMiddleware,
@@ -116,6 +117,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.networkController._blockTrackerProxy.on("latest", () => {
       this.accountTracker.refresh();
+
+      // this.update({ blockhash : this.networkController._blockTrackerProxy.getLatestBlock() })
     });
 
     // ensure accountTracker updates balances after network change
@@ -123,6 +126,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       console.log("network changed");
       this.accountTracker.refresh();
       this.prefsController.sync(this.prefsController.state.selectedAddress);
+      // const pconfig = this.networkController.getProviderConfig();
+      // rpcTarget = pconfig.rpcTarget
     });
 
     this.prefsController.on("store", () => {
@@ -334,4 +339,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
   getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
     return this.prefsController && this.prefsController.getAddressState(address);
   }
+
+  signTransaction(transaction: Transaction): Transaction {
+    return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
+  }
+
+  // signAllTransaction( transactions : Transaction[]) :Transaction[] {
+  //   return this.keyringController.signTransaction(transactions, this.state.PreferencesControllerState.selectedAddress);
+  // }
 }

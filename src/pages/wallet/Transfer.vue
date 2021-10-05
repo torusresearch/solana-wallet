@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { clusterApiUrl, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import { computed, ref } from "vue";
@@ -7,25 +8,27 @@ import { Button, Card, SelectField, TextField } from "@/components/common";
 import { TransferConfirm, TransferTokenSelect } from "@/components/transfer";
 import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
-
-const ensError = ref("");
+// const ensError = ref("");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
 const transferTo = ref("");
 const sendAmount = ref(0);
 const transferId = ref("");
 const transactionFee = ref(0);
+const blockhash = ref("");
+const selectedVerifier = ref("solana");
 
 const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
 
-const ensRule = () => {
-  return transferType.value.value === ENS && !ensError.value;
-};
+// const ensRule = () => {
+//   return transferType.value.value === ENS && !ensError.value;
+// };
 
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
@@ -37,12 +40,12 @@ const rules = computed(() => {
   return {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
-      ensRule: helpers.withMessage(ensError.value, ensRule),
+      // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage("Required", required),
     },
     sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
-    transferId: { required },
-    transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
+    // transferId: { required },
+    // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
 });
 
@@ -52,9 +55,29 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
-const openModal = () => {
+const LAMPORTS = 1000000000;
+
+const openModal = async () => {
+  const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
+  blockhash.value = (await conn.getRecentBlockhash("finalized")).blockhash;
+  transactionFee.value = ((await conn.getFeeCalculatorForBlockhash(blockhash.value)).value?.lamportsPerSignature || 0) / LAMPORTS;
+
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
+};
+const confirmTransfer = async () => {
+  const ti = SystemProgram.transfer({
+    fromPubkey: new PublicKey(ControllersModule.selectedAddress),
+    toPubkey: new PublicKey(transferTo.value),
+    lamports: sendAmount.value * LAMPORTS,
+  });
+  const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
+  // let block = await conn.getRecentBlockhash("finalized");
+  let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
+  ControllersModule.torus.signTransaction(tf);
+  let resp = await conn.sendRawTransaction(tf.serialize());
+  console.log(resp);
+  console.log("confirm");
 };
 
 const transferTypes = ALLOWED_VERIFIERS;
@@ -80,24 +103,36 @@ const transferTypes = ALLOWED_VERIFIERS;
               <div class="mb-6">
                 <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
               </div>
-
+              <!--
               <div class="mb-6">
                 <TextField v-model="transferId" label="Transfer ID (Memo)" :errors="$v.transferId.$errors" />
               </div>
 
               <div class="mb-6">
                 <TextField v-model="transactionFee" label="Transaction Fee" :errors="$v.transactionFee.$errors" />
-              </div>
+              </div> -->
 
-              <div class="text-right mb-6">
+              <!-- <div class="text-right mb-6">
                 <div class="font-body font-bold text-sm text-app-text-600 dark:text-app-text-dark-400">Total cost</div>
-                <div class="font-body font-bold text-2xl text-app-text-500 dark:text-app-text-dark-500">0 ETH</div>
+                <div class="font-body font-bold text-2xl text-app-text-500 dark:text-app-text-dark-500">0 SOL</div>
                 <div class="font-body text-xs font-light text-app-text-600 dark:text-app-text-dark-500">0 USD</div>
-              </div>
+              </div> -->
 
               <div class="flex">
                 <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
-                <TransferConfirm :is-open="isOpen" @onCloseModal="closeModal" />
+                <!-- :crypto-tx-fee="state.transactionFee" -->
+                <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
+                <TransferConfirm
+                  :sender-pub-key="ControllersModule.selectedAddress"
+                  :receiver-pub-key="transferTo"
+                  :crypto-amount="sendAmount"
+                  :receiver-verifier="selectedVerifier"
+                  :receiver-verifier-id="transferTo"
+                  :is-open="isOpen"
+                  :crypto-tx-fee="transactionFee"
+                  @transfer-confirm="confirmTransfer"
+                  @onCloseModal="closeModal"
+                />
               </div>
             </div>
           </form>

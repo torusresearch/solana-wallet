@@ -1,3 +1,5 @@
+import { PublicKey } from "@solana/web3.js";
+
 import config from "@/config";
 
 import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
@@ -11,7 +13,12 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
   console.log("ruleVerifierId", value);
   // TODO: Validate casper address
   if (selectedTypeOfLogin === SOL) {
-    return !!value;
+    try {
+      new PublicKey(value);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   if (selectedTypeOfLogin === GOOGLE) {

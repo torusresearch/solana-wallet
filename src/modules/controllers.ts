@@ -1,6 +1,6 @@
 import { DEFAULT_PREFERENCES } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
-import { ExtendedAddressPreferences, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { CHAIN_ID_NETWORK_MAP, ExtendedAddressPreferences, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
 import BigNumber from "bignumber.js";
 import { cloneDeep, omit } from "lodash";
@@ -49,7 +49,7 @@ class ControllerModule extends VuexModule {
     console.log(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
-    return value.toString();
+    return value.toFixed(2).toString();
   }
 
   /**
@@ -94,7 +94,15 @@ class ControllerModule extends VuexModule {
     this.torus.setNetwork(providerConfig);
   }
 
-  get selectedNetworkDisplayName(): string {
+  get network(): string {
+    return "testnet";
+  }
+
+  get isDarkMode(): boolean {
+    return this.selectedAccountPreferences.theme === "dark";
+  }
+
+  selectedNetworkDisplayName(): string {
     const network = this.torusState.NetworkControllerState.providerConfig.displayName;
     return network;
   }
