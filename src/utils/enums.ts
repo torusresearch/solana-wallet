@@ -143,3 +143,9 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [GITHUB]: "Invalid GitHub username",
   [ENS]: "Invalid ENS address",
 };
+
+export const STATUS_SUCCESS = "success";
+export const STATUS_WARNING = "warning";
+export const STATUS_ERROR = "error";
+export const STATUS_INFO = "info";
+export type STATUS_TYPE = typeof STATUS_SUCCESS | typeof STATUS_WARNING | typeof STATUS_ERROR | typeof STATUS_INFO;

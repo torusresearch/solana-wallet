@@ -126,8 +126,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       console.log("network changed");
       this.accountTracker.refresh();
       this.prefsController.sync(this.prefsController.state.selectedAddress);
-      // const pconfig = this.networkController.getProviderConfig();
-      // rpcTarget = pconfig.rpcTarget
     });
 
     this.prefsController.on("store", () => {
@@ -150,8 +148,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.accountTracker.on("store", (state) => {
-      // console.log('tracker udate');
-      // console.log( state.)
       this.update({ AccountTrackerState: state });
     });
 
@@ -159,7 +155,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state });
     });
 
-    this.prefsController.poll();
+    this.prefsController.poll(20000);
     // ensure isClientOpenAndUnlocked is updated when memState updates
     // this.subscribeEvent("update", (torusControllerState: unknown) => this._onStateUpdate(torusControllerState));
 

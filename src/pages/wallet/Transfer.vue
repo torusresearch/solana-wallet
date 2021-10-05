@@ -2,14 +2,14 @@
 import { clusterApiUrl, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
-import { computed, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 
-import { Button, Card, SelectField, TextField } from "@/components/common";
+import { Button, Card, MessageModal, SelectField, TextField } from "@/components/common";
 import { TransferConfirm, TransferTokenSelect } from "@/components/transfer";
 import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -20,6 +20,13 @@ const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
+
+const messageModalState = reactive({
+  showMessage: false,
+  messageTitle: "",
+  messageDescription: "",
+  messageStatus: STATUS_INFO as STATUS_TYPE,
+});
 
 const validVerifier = (value: string) => {
   if (!transferType.value) return true;
@@ -43,13 +50,28 @@ const rules = computed(() => {
       // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage("Required", required),
     },
-    sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
+    sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(0.0001)) },
     // transferId: { required },
     // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
 });
 
 const $v = useVuelidate(rules, { transferTo, transferId, sendAmount, transactionFee });
+
+const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
+  const { messageDescription, messageTitle, messageStatus } = params;
+  messageModalState.messageDescription = messageDescription || "";
+  messageModalState.messageTitle = messageTitle;
+  messageModalState.messageStatus = messageStatus;
+  messageModalState.showMessage = true;
+};
+
+const onMessageModalClosed = () => {
+  messageModalState.messageDescription = "";
+  messageModalState.messageTitle = "";
+  messageModalState.messageStatus = STATUS_INFO;
+  messageModalState.showMessage = false;
+};
 
 const closeModal = () => {
   isOpen.value = false;
@@ -66,18 +88,28 @@ const openModal = async () => {
   if (!$v.value.$invalid) isOpen.value = true;
 };
 const confirmTransfer = async () => {
-  const ti = SystemProgram.transfer({
-    fromPubkey: new PublicKey(ControllersModule.selectedAddress),
-    toPubkey: new PublicKey(transferTo.value),
-    lamports: sendAmount.value * LAMPORTS,
-  });
-  const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
-  // let block = await conn.getRecentBlockhash("finalized");
-  let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
-  ControllersModule.torus.signTransaction(tf);
-  let resp = await conn.sendRawTransaction(tf.serialize());
-  console.log(resp);
-  console.log("confirm");
+  try {
+    const ti = SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllersModule.selectedAddress),
+      toPubkey: new PublicKey(transferTo.value),
+      lamports: sendAmount.value * LAMPORTS,
+    });
+    const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
+    // let block = await conn.getRecentBlockhash("finalized");
+    let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
+    ControllersModule.torus.signTransaction(tf);
+    let resp = await conn.sendRawTransaction(tf.serialize());
+    console.log(resp);
+    console.log("confirm");
+    showMessageModal({ messageTitle: `Your transfer is being processed.`, messageStatus: STATUS_INFO });
+    // resetForm();
+  } catch (error) {
+    // log.error("deploy error", error);
+    showMessageModal({
+      messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
+      messageStatus: STATUS_ERROR,
+    });
+  }
 };
 
 const transferTypes = ALLOWED_VERIFIERS;
@@ -139,6 +171,13 @@ const transferTypes = ALLOWED_VERIFIERS;
         </Card>
         <WalletBalance class="self-start order-1 sm:order-2" />
       </dl>
+      <MessageModal
+        :is-open="messageModalState.showMessage"
+        :title="messageModalState.messageTitle"
+        :description="messageModalState.messageDescription"
+        :status="messageModalState.messageStatus"
+        @onClose="onMessageModalClosed"
+      />
     </div>
   </WalletTabs>
 </template>
