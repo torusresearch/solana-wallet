@@ -11,6 +11,7 @@ import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-
 import {
   AccountTrackerController,
   CurrencyController,
+  ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
   NetworkController,
@@ -25,7 +26,7 @@ import { TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
-const TARGET_NETWORK = "solana_testnet";
+const TARGET_NETWORK = "testnet";
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
@@ -121,6 +122,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.networkController.on("networkDidChange", () => {
       console.log("network changed");
       this.accountTracker.refresh();
+      this.prefsController.sync(this.prefsController.state.selectedAddress);
     });
 
     this.prefsController.on("store", () => {
@@ -152,6 +154,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state });
     });
 
+    this.prefsController.poll();
     // ensure isClientOpenAndUnlocked is updated when memState updates
     // this.subscribeEvent("update", (torusControllerState: unknown) => this._onStateUpdate(torusControllerState));
 
@@ -240,6 +243,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   setSelectedAccount(address: string): void {
     this.prefsController.setSelectedAddress(address);
+    this.prefsController.sync(address);
   }
 
   /**
@@ -325,5 +329,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   setNetwork(providerConfig: ProviderConfig): void {
     this.networkController.setProviderConfig(providerConfig);
+  }
+
+  getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
+    return this.prefsController && this.prefsController.getAddressState(address);
   }
 }

@@ -1,61 +1,124 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import ActivityItem from "@/components/ActivityItem.vue";
 import { SelectField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllersModule from "@/modules/controllers";
 
-const transactionTypes = [
+const ACTIVITY_ACTION_ALL = "walletActivity.allTransactions";
+const ACTIVITY_ACTION_SEND = "walletActivity.send";
+const ACTIVITY_ACTION_RECEIVE = "walletActivity.receive";
+const ACTIVITY_ACTION_TOPUP = "walletActivity.topup";
+
+const ACTIVITY_PERIOD_ALL = "walletActivity.all";
+const ACTIVITY_PERIOD_WEEK_ONE = "walletActivity.lastOneWeek";
+const ACTIVITY_PERIOD_MONTH_ONE = "walletActivity.lastOneMonth";
+const ACTIVITY_PERIOD_MONTH_SIX = "walletActivity.lastSixMonts";
+
+const actionTypes = [
   {
-    value: "",
+    value: ACTIVITY_ACTION_ALL,
     label: "All Transactions",
   },
   {
-    value: "send",
+    value: ACTIVITY_ACTION_SEND,
     label: "Send",
   },
   {
-    value: "receive",
-    label: "Send",
+    value: ACTIVITY_ACTION_RECEIVE,
+    label: "Receive",
   },
   {
-    value: "topup",
+    value: ACTIVITY_ACTION_TOPUP,
     label: "Topup",
   },
 ];
 
-const dates = [
+const periods = [
   {
-    value: "",
+    value: ACTIVITY_PERIOD_ALL,
     label: "All",
   },
   {
-    value: "date1",
+    value: ACTIVITY_PERIOD_WEEK_ONE,
     label: "Last 1 week",
   },
   {
-    value: "date2",
+    value: ACTIVITY_PERIOD_MONTH_ONE,
     label: "Last 1 month",
   },
   {
-    value: "date3",
+    value: ACTIVITY_PERIOD_MONTH_SIX,
     label: "Last 6 months",
   },
 ];
 
-const transactionType = ref(transactionTypes[0]);
-const date = ref(dates[0]);
+const allTransactions = computed(() => ControllersModule.selectedNetworkTransactions);
+
+const filteredTransaction = computed(() => {
+  const selectedAction = actionType.value.value === ACTIVITY_ACTION_ALL ? "" : actionType.value.value;
+  const regExAction = new RegExp(selectedAction, "i");
+
+  const transactions = allTransactions.value.filter((item) => {
+    // GET Date Scope
+    let isScoped = false;
+    if (period.value.value === ACTIVITY_PERIOD_ALL) {
+      isScoped = true;
+    } else {
+      let minDate;
+      const itemDate = new Date(item.rawDate);
+      if (period.value.value === ACTIVITY_PERIOD_WEEK_ONE) {
+        minDate = oneWeekAgoDate.value;
+      } else if (period.value.value === ACTIVITY_PERIOD_MONTH_ONE) {
+        minDate = oneMonthAgoDate.value;
+      } else {
+        minDate = sixMonthAgoDate.value;
+      }
+      isScoped = minDate <= itemDate.getTime();
+    }
+
+    if (item.action) {
+      return item.action.match(regExAction) && isScoped;
+    }
+    return isScoped;
+  });
+
+  transactions.sort((x, y) => {
+    const xTime = new Date(x.rawDate).getTime();
+    const yTime = new Date(y.rawDate).getTime();
+    return yTime - xTime;
+  });
+
+  return transactions;
+});
+
+const actionType = ref(actionTypes[0]);
+const period = ref(periods[0]);
+
+const oneWeekAgoDate = computed(() => {
+  const minDate = new Date();
+  return minDate.setDate(minDate.getDate() - 7);
+});
+const oneMonthAgoDate = computed(() => {
+  const minDate = new Date();
+  return minDate.setMonth(minDate.getMonth() - 1);
+});
+const sixMonthAgoDate = computed(() => {
+  const minDate = new Date();
+  return minDate.setMonth(minDate.getMonth() - 6);
+});
 </script>
 
 <template>
   <WalletTabs tab="activity">
-    <div class="pt-7">
-      <ActivityItem />
+    <div v-for="tx in filteredTransaction" :key="tx.id" class="pt-7">
+      <ActivityItem :activity="tx" />
     </div>
     <template #rightPanel>
       <div class="hidden sm:flex ml-auto w-2/4">
-        <SelectField v-model="transactionType" class="mr-4" :items="transactionTypes" />
-        <SelectField v-model="date" :items="dates" />
+        <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
+        <SelectField v-model="period" :items="periods" />
       </div>
     </template>
   </WalletTabs>

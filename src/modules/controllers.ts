@@ -1,5 +1,7 @@
+import { DEFAULT_PREFERENCES } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
-import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
 import BigNumber from "bignumber.js";
 import { cloneDeep, omit } from "lodash";
 import log from "loglevel";
@@ -90,6 +92,32 @@ class ControllerModule extends VuexModule {
     const providerConfig = Object.values(SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
     this.torus.setNetwork(providerConfig);
+  }
+
+  get selectedNetworkDisplayName(): string {
+    const network = this.torusState.NetworkControllerState.providerConfig.displayName;
+    return network;
+  }
+
+  get selectedAddress(): string {
+    return this.torusState.PreferencesControllerState?.selectedAddress || "";
+  }
+
+  get selectedAccountPreferences(): ExtendedAddressPreferences {
+    const preferences = this.torus.getAccountPreferences(this.selectedAddress);
+    return (
+      preferences || {
+        ...DEFAULT_PREFERENCES,
+        formattedPastTransactions: [],
+        fetchedPastTx: [],
+        currentNetworkTxsList: [],
+        network_selected: "testnet",
+      }
+    );
+  }
+  get selectedNetworkTransactions(): SolanaTransactionActivity[] {
+    const txns = this.selectedAccountPreferences.currentNetworkTxsList;
+    return txns ? txns : [];
   }
 }
 

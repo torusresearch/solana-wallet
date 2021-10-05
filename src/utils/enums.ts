@@ -70,12 +70,12 @@ export const NAVIGATION_LIST = {
   //   route: "topup",
   //   icon: DatabaseIcon,
   // },
-  // activity: {
-  //   name: "Activity",
-  //   title: "Transaction Activities",
-  //   route: "activity",
-  //   icon: ListIcon,
-  // },
+  activity: {
+    name: "Activity",
+    title: "Transaction Activities",
+    route: "activity",
+    icon: ListIcon,
+  },
   settings: {
     name: "Settings",
     title: "Settings",
