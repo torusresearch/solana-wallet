@@ -50,7 +50,7 @@ export const DEFAULT_STATE = {
     ticker: "sol",
   },
   NetworkControllerState: {
-    chainId: SUPPORTED_NETWORKS[TARGET_NETWORK].chainId,
+    chainId: SUPPORTED_NETWORKS[TARGET_NETWORK]?.chainId,
     properties: {},
     providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK],
   },

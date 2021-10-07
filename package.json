@@ -30,6 +30,7 @@
     "@vuelidate/core": "^2.0.0-alpha.25",
     "@vuelidate/validators": "^2.0.0-alpha.21",
     "bignumber.js": "^9.0.1",
+    "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.17.3",
     "date-fns": "^2.24.0",
     "delay-async": "^1.2.0",
