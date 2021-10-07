@@ -1,4 +1,4 @@
-import { Transaction } from "@solana/web3.js";
+import { Connection, Transaction } from "@solana/web3.js";
 import {
   BaseController,
   createLoggerMiddleware,
@@ -6,9 +6,11 @@ import {
   providerAsMiddleware,
   ProviderConfig,
   // SafeEventEmitterProvider,
+  TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-import { createEngineStream, JRPCEngine, Substream } from "@toruslabs/openlogin-jrpc";
+import { createEngineStream, JRPCEngine, JRPCRequest, Substream } from "@toruslabs/openlogin-jrpc";
+import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -18,6 +20,7 @@ import {
   NetworkController,
   PreferencesController,
   SUPPORTED_NETWORKS,
+  TransactionController,
 } from "@toruslabs/solana-controllers";
 // import { GetDeployResult } from "casper-js-sdk";
 import log from "loglevel";
@@ -33,6 +36,7 @@ export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
   NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK] },
   PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
+  TransactionControllerConfig: { txHistoryLimit: 40 },
 };
 console.log(SUPPORTED_NETWORKS);
 export const DEFAULT_STATE = {
@@ -56,6 +60,11 @@ export const DEFAULT_STATE = {
     api: "",
     signInPrefix: "Solana Signin",
   },
+  TransactionControllerState: {
+    transactions: {},
+    unapprovedTxs: {},
+    currentNetworkTxsList: [],
+  },
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
@@ -64,6 +73,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private accountTracker!: AccountTrackerController;
   private keyringController!: KeyringController;
   private prefsController!: PreferencesController;
+  private txController!: TransactionController;
+
   private engine?: JRPCEngine;
 
   //   private sendUpdate: DebouncedFunc<() => void>;
@@ -113,6 +124,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getIdentities: () => this.prefsController.state.identities,
       onPreferencesStateChange: (listener) => this.prefsController.on("store", listener),
       // onNetworkChange: (listener) => this.networkController.on("store", listener),
+    });
+
+    this.txController = new TransactionController({
+      config: this.config.TransactionControllerConfig,
+      state: this.state.TransactionControllerState,
+      blockTracker: this.networkController._blockTrackerProxy,
+      provider: this.networkController._providerProxy,
+      getCurrentChainId: this.networkController.getNetworkIdentifier.bind(this.networkController),
+      signTransaction: this.keyringController.signTransaction.bind(this.keyringController),
+    });
+
+    this.txController.on(TX_EVENTS.TX_UNAPPROVED, (txMeta) => {
+      this.emit(TX_EVENTS.TX_UNAPPROVED, txMeta);
     });
 
     this.networkController._blockTrackerProxy.on("latest", () => {
@@ -189,9 +213,70 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return {} as unknown;
         // as GetDeployResult;
       },
+      signTransaction: async (req: JRPCRequest<Transaction> & { origin?: string }): Promise<{ signature: string }> => {
+        return await this.addSignTransaction(req.params as Transaction, req.origin);
+      },
+      signAllTransactions: async (req) => {
+        console.log(req.method);
+        return {} as unknown;
+      },
+      sendTransaction: async (req) => {
+        return await this.transfer(req.params as Transaction, req.origin);
+      },
     };
     const providerProxy = this.networkController.initializeProvider(providerHandlers);
     return providerProxy;
+  }
+
+  async approveSignTransaction(txId: string): Promise<void> {
+    await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
+    return;
+  }
+  async approveTransaction(txId: string): Promise<void> {
+    await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
+    return;
+  }
+
+  async addSignTransaction(txParams: Transaction, origin?: string): Promise<{ signature: string }> {
+    const txRes = await this.txController.addSignTransaction(txParams, origin);
+    console.log(txRes);
+    const signature = await txRes.result;
+    return { signature: signature };
+  }
+
+  async signAndTransfer(tx: Transaction): Promise<string> {
+    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
+    // ControllersModule.torus.signTransaction(tf);
+    const res = await this.addSignTransaction(tx, location.origin);
+    console.log(res);
+    const resp = await conn.sendRawTransaction(tx.serialize());
+    console.log(resp);
+    console.log("confirm");
+    return resp;
+  }
+  async transfer(tx: Transaction, origin?: string): Promise<string> {
+    // ControllersModule.torus.signTransaction(tf);
+    try {
+      const res = await this.txController.addTransaction(tx, origin);
+      const resp = await res.result;
+      console.log(resp);
+      return resp;
+    } catch (e) {
+      console.log(e);
+      return "none";
+    }
+  }
+
+  async providertransfer(tx: Transaction, origin?: string): Promise<string> {
+    const provider = await this.networkController.getProvider();
+    const res = await provider.sendAsync({
+      jsonrpc: "2.0",
+      id: randomId(),
+      method: "send_transaction",
+      params: tx,
+    });
+    console.log(res);
+    return res as string;
   }
 
   //   private isUnlocked(): boolean {

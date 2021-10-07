@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import { computed, reactive, ref } from "vue";
@@ -94,17 +94,15 @@ const confirmTransfer = async () => {
       toPubkey: new PublicKey(transferTo.value),
       lamports: sendAmount.value * LAMPORTS,
     });
-    const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
-    // let block = await conn.getRecentBlockhash("finalized");
     let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
-    ControllersModule.torus.signTransaction(tf);
-    let resp = await conn.sendRawTransaction(tf.serialize());
-    console.log(resp);
-    console.log("confirm");
+    const res = await ControllersModule.torus.transfer(tf);
+    // const res = await ControllersModule.torus.providertransfer(tf);
+    console.log(res);
+
     showMessageModal({ messageTitle: `Your transfer is being processed.`, messageStatus: STATUS_INFO });
     // resetForm();
   } catch (error) {
-    // log.error("deploy error", error);
+    // log.error("send error", error);
     showMessageModal({
       messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
       messageStatus: STATUS_ERROR,

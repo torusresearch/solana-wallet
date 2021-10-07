@@ -1,3 +1,4 @@
+import { Transaction } from "@solana/web3.js";
 import {
   AccountTrackerConfig,
   AccountTrackerState,
@@ -11,6 +12,8 @@ import {
   // PreferencesConfig,
   // PreferencesState,
   // SafeEventEmitterProvider,
+  TransactionConfig,
+  TransactionState,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 // import { SolanaKeyringControllerState } from "@toruslabs/solana-controllers";
@@ -35,6 +38,7 @@ export interface TorusControllerState extends BaseState {
   PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
+  TransactionControllerState: TransactionState<Transaction>;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -43,6 +47,7 @@ export interface TorusControllerConfig extends BaseConfig {
   PreferencesControllerConfig: SolanaPreferencesConfig;
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
+  TransactionControllerConfig: TransactionConfig;
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";

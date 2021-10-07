@@ -1,4 +1,4 @@
-import { DEFAULT_PREFERENCES } from "@toruslabs/base-controllers";
+import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { CHAIN_ID_NETWORK_MAP, ExtendedAddressPreferences, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
@@ -12,6 +12,7 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { CONTROLLER_MODULE_KEY, DEFAULT_USER_INFO, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { isMain } from "@/utils/helpers";
 
 import store from "../store";
 
@@ -45,8 +46,8 @@ class ControllerModule extends VuexModule {
 
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
-    console.log(this.torusState.AccountTrackerState.accounts);
-    console.log(this.torusState.PreferencesControllerState.identities);
+    // console.log(this.torusState.AccountTrackerState.accounts);
+    // console.log(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
     return value.toFixed(2).toString();
@@ -63,6 +64,17 @@ class ControllerModule extends VuexModule {
       this.updateTorusState(state);
     });
     // this.torus.setupUntrustedCommunication();
+    // Good
+    this.torus.on(TX_EVENTS.TX_UNAPPROVED, (txMeta, sign) => {
+      if (isMain) {
+        console.log("approve sign");
+        if (sign) {
+          this.torus.approveSignTransaction(txMeta.id);
+        } else {
+          this.torus.approveTransaction(txMeta.id);
+        }
+      }
+    });
   }
 
   @Action

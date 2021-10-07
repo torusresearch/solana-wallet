@@ -9,6 +9,8 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   return undefined;
 }
 
+export const isMain = window.self === window.top;
+
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
   console.log("ruleVerifierId", value);
   // TODO: Validate casper address
