@@ -9,7 +9,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz"
   },
   "dependencies": {
     "@babel/runtime": "^7.15.4",
