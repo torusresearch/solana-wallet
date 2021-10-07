@@ -1,5 +1,5 @@
-import copyToClipboard from "copy-to-clipboard";
 import { PublicKey } from "@solana/web3.js";
+import copyToClipboard from "copy-to-clipboard";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
@@ -15,7 +15,6 @@ export const isMain = window.self === window.top;
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
   console.log("ruleVerifierId", value);
-  // TODO: Validate casper address
   if (selectedTypeOfLogin === SOL) {
     try {
       new PublicKey(value);

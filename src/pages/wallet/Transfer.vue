@@ -80,12 +80,12 @@ const closeModal = () => {
 const LAMPORTS = 1000000000;
 
 const openModal = async () => {
+  $v.value.$touch();
+  if (!$v.value.$invalid) isOpen.value = true;
+
   const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
   blockhash.value = (await conn.getRecentBlockhash("finalized")).blockhash;
   transactionFee.value = ((await conn.getFeeCalculatorForBlockhash(blockhash.value)).value?.lamportsPerSignature || 0) / LAMPORTS;
-
-  $v.value.$touch();
-  if (!$v.value.$invalid) isOpen.value = true;
 };
 const confirmTransfer = async () => {
   try {
