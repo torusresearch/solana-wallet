@@ -1,5 +1,7 @@
+import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
-import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { CHAIN_ID_NETWORK_MAP, ExtendedAddressPreferences, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
 import BigNumber from "bignumber.js";
 import { cloneDeep, omit } from "lodash";
 import log from "loglevel";
@@ -10,6 +12,7 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { CONTROLLER_MODULE_KEY, DEFAULT_USER_INFO, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { isMain } from "@/utils/helpers";
 
 import store from "../store";
 
@@ -43,11 +46,11 @@ class ControllerModule extends VuexModule {
 
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
-    console.log(this.torusState.AccountTrackerState.accounts);
-    console.log(this.torusState.PreferencesControllerState.identities);
+    // console.log(this.torusState.AccountTrackerState.accounts);
+    // console.log(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
-    return value.toString();
+    return value.toFixed(2).toString();
   }
 
   /**
@@ -61,6 +64,17 @@ class ControllerModule extends VuexModule {
       this.updateTorusState(state);
     });
     // this.torus.setupUntrustedCommunication();
+    // Good
+    this.torus.on(TX_EVENTS.TX_UNAPPROVED, (txMeta, sign) => {
+      if (isMain) {
+        console.log("approve sign");
+        if (sign) {
+          this.torus.approveSignTransaction(txMeta.id);
+        } else {
+          this.torus.approveTransaction(txMeta.id);
+        }
+      }
+    });
   }
 
   @Action
@@ -90,6 +104,40 @@ class ControllerModule extends VuexModule {
     const providerConfig = Object.values(SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
     this.torus.setNetwork(providerConfig);
+  }
+
+  get network(): string {
+    return "testnet";
+  }
+
+  get isDarkMode(): boolean {
+    return this.selectedAccountPreferences.theme === "dark";
+  }
+
+  selectedNetworkDisplayName(): string {
+    const network = this.torusState.NetworkControllerState.providerConfig.displayName;
+    return network;
+  }
+
+  get selectedAddress(): string {
+    return this.torusState.PreferencesControllerState?.selectedAddress || "";
+  }
+
+  get selectedAccountPreferences(): ExtendedAddressPreferences {
+    const preferences = this.torus.getAccountPreferences(this.selectedAddress);
+    return (
+      preferences || {
+        ...DEFAULT_PREFERENCES,
+        formattedPastTransactions: [],
+        fetchedPastTx: [],
+        currentNetworkTxsList: [],
+        network_selected: "testnet",
+      }
+    );
+  }
+  get selectedNetworkTransactions(): SolanaTransactionActivity[] {
+    const txns = this.selectedAccountPreferences.currentNetworkTxsList;
+    return txns ? txns : [];
   }
 }
 

@@ -6,6 +6,7 @@ import { ref } from "vue";
 import BitcoinLogoURL from "@/assets/bitcoin.svg";
 import EthereumLogoURL from "@/assets/ethereum.svg";
 import EthereumLightLogoURL from "@/assets/ethereum-light.svg";
+import solicon from "@/assets/solana-mascot.svg";
 import TokenLogoURL from "@/assets/token.svg";
 import TokenLightLogoURL from "@/assets/token-light.svg";
 import { app } from "@/modules/app";
@@ -16,8 +17,8 @@ interface Token {
 }
 
 const mainToken: Token = {
-  name: "Casper",
-  iconURL: "https://s2.coinmarketcap.com/static/img/coins/64x64/5899.png",
+  name: "Solana",
+  iconURL: solicon,
 };
 
 const tokens: Token[] = [

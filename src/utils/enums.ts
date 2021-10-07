@@ -1,3 +1,4 @@
+import { Transaction } from "@solana/web3.js";
 import {
   AccountTrackerConfig,
   AccountTrackerState,
@@ -11,6 +12,8 @@ import {
   // PreferencesConfig,
   // PreferencesState,
   // SafeEventEmitterProvider,
+  TransactionConfig,
+  TransactionState,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 // import { SolanaKeyringControllerState } from "@toruslabs/solana-controllers";
@@ -35,6 +38,7 @@ export interface TorusControllerState extends BaseState {
   PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
+  TransactionControllerState: TransactionState<Transaction>;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -43,6 +47,7 @@ export interface TorusControllerConfig extends BaseConfig {
   PreferencesControllerConfig: SolanaPreferencesConfig;
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
+  TransactionControllerConfig: TransactionConfig;
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
@@ -58,24 +63,24 @@ export const NAVIGATION_LIST = {
     route: "home",
     icon: PlusIcon,
   },
-  // transfer: {
-  //   name: "Transfer",
-  //   title: "Transfer Details",
-  //   route: "transfer",
-  //   icon: ArrowBoldForvardIcon,
-  // },
+  transfer: {
+    name: "Transfer",
+    title: "Transfer Details",
+    route: "transfer",
+    icon: ArrowBoldForvardIcon,
+  },
   // topup: {
   //   name: "Top Up",
   //   title: "Select a Provider",
   //   route: "topup",
   //   icon: DatabaseIcon,
   // },
-  // activity: {
-  //   name: "Activity",
-  //   title: "Transaction Activities",
-  //   route: "activity",
-  //   icon: ListIcon,
-  // },
+  activity: {
+    name: "Activity",
+    title: "Transaction Activities",
+    route: "activity",
+    icon: ListIcon,
+  },
   settings: {
     name: "Settings",
     title: "Settings",
@@ -143,3 +148,9 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [GITHUB]: "Invalid GitHub username",
   [ENS]: "Invalid ENS address",
 };
+
+export const STATUS_SUCCESS = "success";
+export const STATUS_WARNING = "warning";
+export const STATUS_ERROR = "error";
+export const STATUS_INFO = "info";
+export type STATUS_TYPE = typeof STATUS_SUCCESS | typeof STATUS_WARNING | typeof STATUS_ERROR | typeof STATUS_INFO;

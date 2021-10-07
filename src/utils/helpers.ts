@@ -1,4 +1,5 @@
 import copyToClipboard from "copy-to-clipboard";
+import { PublicKey } from "@solana/web3.js";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
@@ -10,11 +11,18 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   return undefined;
 }
 
+export const isMain = window.self === window.top;
+
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
   console.log("ruleVerifierId", value);
   // TODO: Validate casper address
   if (selectedTypeOfLogin === SOL) {
-    return !!value;
+    try {
+      new PublicKey(value);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   if (selectedTypeOfLogin === GOOGLE) {

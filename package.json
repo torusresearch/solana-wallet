@@ -32,6 +32,7 @@
     "bignumber.js": "^9.0.1",
     "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.17.3",
+    "date-fns": "^2.24.0",
     "delay-async": "^1.2.0",
     "https-browserify": "^1.0.0",
     "jwt-decode": "^3.1.2",
