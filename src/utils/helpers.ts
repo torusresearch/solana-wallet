@@ -1,4 +1,7 @@
+import copyToClipboard from "copy-to-clipboard";
+
 import config from "@/config";
+import { addToast } from "@/modules/app";
 
 import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
 
@@ -34,3 +37,8 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
 
   return true;
 }
+
+export const copyText = (text: string): void => {
+  copyToClipboard(text);
+  addToast({ message: "Copied", type: "success" });
+};

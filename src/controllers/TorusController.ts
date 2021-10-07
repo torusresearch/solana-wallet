@@ -25,7 +25,7 @@ import { TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
-const TARGET_NETWORK = "solana_testnet";
+const TARGET_NETWORK = "testnet";
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
@@ -44,7 +44,7 @@ export const DEFAULT_STATE = {
     ticker: "sol",
   },
   NetworkControllerState: {
-    chainId: SUPPORTED_NETWORKS[TARGET_NETWORK].chainId,
+    chainId: SUPPORTED_NETWORKS[TARGET_NETWORK]?.chainId,
     properties: {},
     providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK],
   },
