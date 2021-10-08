@@ -1,4 +1,4 @@
-import { Connection, Transaction } from "@solana/web3.js";
+import { Connection, Message, Transaction } from "@solana/web3.js";
 import {
   BaseController,
   createLoggerMiddleware,
@@ -22,6 +22,7 @@ import {
   SUPPORTED_NETWORKS,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import bs58 from "bs58";
 // import { GetDeployResult } from "casper-js-sdk";
 import log from "loglevel";
 
@@ -140,20 +141,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.networkController._blockTrackerProxy.on("latest", () => {
-      this.accountTracker.refresh();
-
-      // this.update({ blockhash : this.networkController._blockTrackerProxy.getLatestBlock() })
+      this.prefsController.sync(this.prefsController.state.selectedAddress);
     });
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
       console.log("network changed");
-      this.accountTracker.refresh();
       this.prefsController.sync(this.prefsController.state.selectedAddress);
-    });
-
-    this.prefsController.on("store", () => {
-      this.accountTracker.refresh();
     });
 
     this.networkController.lookupNetwork();
@@ -179,7 +173,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state });
     });
 
-    this.prefsController.poll(20000);
+    // this.prefsController.poll(40000);
     // ensure isClientOpenAndUnlocked is updated when memState updates
     // this.subscribeEvent("update", (torusControllerState: unknown) => this._onStateUpdate(torusControllerState));
 
@@ -213,15 +207,25 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return {} as unknown;
         // as GetDeployResult;
       },
-      signTransaction: async (req: JRPCRequest<Transaction> & { origin?: string }): Promise<{ signature: string }> => {
-        return await this.addSignTransaction(req.params as Transaction, req.origin);
+      signMessage: async (req) => {
+        console.log(req.method);
+        return {} as unknown;
+      },
+      signTransaction: async (req) => {
+        const data = bs58.decode(req.params?.message || "");
+        const msg = Message.from(data);
+        const tx = Transaction.populate(msg);
+        return await this.addSignTransaction(tx, req.origin);
       },
       signAllTransactions: async (req) => {
         console.log(req.method);
         return {} as unknown;
       },
       sendTransaction: async (req) => {
-        return await this.transfer(req.params as Transaction, req.origin);
+        const data = bs58.decode(req.params?.message || "");
+        const msg = Message.from(data);
+        const tx = Transaction.populate(msg);
+        return await this.transfer(tx, req.origin);
       },
     };
     const providerProxy = this.networkController.initializeProvider(providerHandlers);
@@ -273,7 +277,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       jsonrpc: "2.0",
       id: randomId(),
       method: "send_transaction",
-      params: tx,
+      params: {
+        message: bs58.encode(tx.serializeMessage()),
+      },
     });
     console.log(res);
     return res as string;
