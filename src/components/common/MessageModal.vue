@@ -3,6 +3,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, XCircleIcon, XIcon } from "@heroicons/vue/solid";
 
 import { Button } from "@/components/common";
+import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
 import { STATUS_ERROR, STATUS_INFO, STATUS_SUCCESS, STATUS_TYPE, STATUS_WARNING } from "@/utils/enums";
 
@@ -27,7 +28,7 @@ const closeModal = () => {
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: app.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -43,21 +44,7 @@ const closeModal = () => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div
-              class="
-                inline-block
-                w-96
-                overflow-hidden
-                text-left
-                align-middle
-                transition-all
-                transform
-                bg-white
-                dark:bg-app-gray-700
-                shadow
-                rounded-md
-              "
-            >
+            <div class="inline-block w-96 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 rounded-md">
               <DialogTitle
                 as="div"
                 class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md flex justify-center py-8 relative"
