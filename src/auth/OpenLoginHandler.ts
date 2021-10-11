@@ -1,5 +1,6 @@
-import { PopupWithBcHandler, randomId } from "@toruslabs/base-controllers";
+import { PopupWithBcHandler, randomId, SafeEventEmitterProvider } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 import { safebtoa } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
 
@@ -53,11 +54,16 @@ class OpenLoginHandler {
     this.finalURL = finalUrl;
   }
 
-  async handleLoginWindow(): Promise<OpenLoginPopupResponse> {
+  async handleLoginWindow({
+    communicationProvider,
+    communicationWindowManager,
+  }: {
+    communicationProvider?: SafeEventEmitterProvider;
+    communicationWindowManager?: SafeEventEmitter;
+  } = {}): Promise<OpenLoginPopupResponse> {
     log.info("channel name", this.nonce);
-    // TODO: send windowStream here
     const verifierWindow = new PopupWithBcHandler<OpenLoginPopupResponse, never>({
-      config: { dappStorageKey: config.dappStorageKey || undefined, windowStream: undefined },
+      config: { dappStorageKey: config.dappStorageKey || undefined, communicationProvider, communicationWindowManager },
       state: { url: this.finalURL, windowId: this.windowId },
       instanceId: this.nonce,
     });

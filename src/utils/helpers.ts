@@ -49,3 +49,21 @@ export const copyText = (text: string): void => {
   copyToClipboard(text);
   addToast({ message: "Copied", type: "success" });
 };
+
+export function promiseCreator<T>(): {
+  resolve: ((value: T | PromiseLike<T>) => void) | null;
+  reject: ((reason?: any) => void) | null;
+  promise: Promise<T>;
+} {
+  let resolve: ((value: T | PromiseLike<T>) => void) | null = null;
+  let reject: ((reason?: any) => void) | null = null;
+  const promise = new Promise<T>(function (res, rej) {
+    resolve = res;
+    reject = rej;
+  });
+  return {
+    resolve: resolve,
+    reject: reject,
+    promise: promise,
+  };
+}

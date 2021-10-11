@@ -27,6 +27,11 @@ const router = createRouter({
       meta: { title: "Confirm" },
     },
     {
+      path: "/frame",
+      component: () => import("@/pages/Frame.vue"),
+      meta: { title: "Frame" },
+    },
+    {
       path: "/logout",
       component: () => import("@/pages/Logout.vue"),
       meta: { title: "Logout" },

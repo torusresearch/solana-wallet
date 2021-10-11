@@ -1,15 +1,23 @@
 import { Connection, Message, Transaction } from "@solana/web3.js";
 import {
+  BaseConfig,
   BaseController,
+  BaseEmbedController,
+  BaseEmbedControllerState,
+  CommunicationWindowManager,
   createLoggerMiddleware,
   createOriginMiddleware,
+  DEFAULT_PREFERENCES,
+  ICommunicationProviderHandlers,
   providerAsMiddleware,
   ProviderConfig,
-  // SafeEventEmitterProvider,
+  SafeEventEmitterProvider,
+  TransactionState,
   TX_EVENTS,
+  UserInfo,
 } from "@toruslabs/base-controllers";
-import { getED25519Key } from "@toruslabs/openlogin-ed25519";
-import { createEngineStream, JRPCEngine, JRPCRequest, Substream } from "@toruslabs/openlogin-jrpc";
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { createEngineStream, JRPCEngine, JRPCRequest, setupMultiplex, Stream, Substream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
@@ -23,11 +31,14 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import bs58 from "bs58";
-// import { GetDeployResult } from "casper-js-sdk";
+import { cloneDeep } from "lodash";
 import log from "loglevel";
+import pump from "pump";
+import { Duplex } from "readable-stream";
 
+import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import { TorusControllerConfig, TorusControllerState } from "@/utils/enums";
+import { BUTTON_POSITION, OpenLoginPopupResponse, TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
@@ -39,7 +50,6 @@ export const DEFAULT_CONFIG = {
   PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
   TransactionControllerConfig: { txHistoryLimit: 40 },
 };
-console.log(SUPPORTED_NETWORKS);
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
   KeyringControllerState: { wallets: [], keyrings: [] },
@@ -66,6 +76,13 @@ export const DEFAULT_STATE = {
     unapprovedTxs: {},
     currentNetworkTxsList: [],
   },
+  EmbedControllerState: {
+    buttonPosition: BUTTON_POSITION.BOTTOM_RIGHT,
+    torusWidgetVisibility: true,
+    apiKey: "torus-default",
+    oauthModalVisibility: false,
+    loginInProgress: false,
+  },
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
@@ -73,11 +90,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private currencyController!: CurrencyController;
   private accountTracker!: AccountTrackerController;
   private keyringController!: KeyringController;
-  private prefsController!: PreferencesController;
+  private preferencesController!: PreferencesController;
   private txController!: TransactionController;
-
+  private embedController!: BaseEmbedController<BaseConfig, BaseEmbedControllerState>;
   private engine?: JRPCEngine;
 
+  public communicationManager = new CommunicationWindowManager();
   //   private sendUpdate: DebouncedFunc<() => void>;
 
   constructor({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }) {
@@ -93,6 +111,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.update(state, true);
     this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
     this.initializeProvider();
+    this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
+    this.initializeCommunicationProvider();
+
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -106,7 +127,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.KeyringControllerState,
     });
 
-    this.prefsController = new PreferencesController({
+    this.preferencesController = new PreferencesController({
       state: this.state.PreferencesControllerState,
       config: this.config.PreferencesControllerConfig,
       provider: this.networkController._providerProxy,
@@ -122,8 +143,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
       // blockTracker: this.networkController._blockTrackerProxy,
-      getIdentities: () => this.prefsController.state.identities,
-      onPreferencesStateChange: (listener) => this.prefsController.on("store", listener),
+      getIdentities: () => this.preferencesController.state.identities,
+      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
       // onNetworkChange: (listener) => this.networkController.on("store", listener),
     });
 
@@ -141,19 +162,21 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.networkController._blockTrackerProxy.on("latest", () => {
-      this.prefsController.sync(this.prefsController.state.selectedAddress);
+      if (this.preferencesController.state.selectedAddress) {
+        this.preferencesController.sync(this.preferencesController.state.selectedAddress);
+      }
     });
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
       console.log("network changed");
-      this.prefsController.sync(this.prefsController.state.selectedAddress);
+      this.preferencesController.sync(this.preferencesController.state.selectedAddress);
     });
 
     this.networkController.lookupNetwork();
 
     // Listen to controller changes
-    this.prefsController.on("store", (state) => {
+    this.preferencesController.on("store", (state) => {
       this.update({ PreferencesControllerState: state });
     });
 
@@ -173,6 +196,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state });
     });
 
+    this.txController.on("store", (state: TransactionState<Transaction>) => {
+      this.update({ TransactionControllerState: state });
+      // Object.keys(state.transactions).forEach((txId) => {
+      //   this.preferencesController.patchNewTx(state.transactions[txId], this.preferencesController.state.selectedAddress).catch((err) => {
+      //     log.error("error while patching a new tx", err);
+      //   });
+      // });
+    });
+
+    this.embedController.on("store", (state) => {
+      this.update({ EmbedControllerState: state });
+    });
+
     // this.prefsController.poll(40000);
     // ensure isClientOpenAndUnlocked is updated when memState updates
     // this.subscribeEvent("update", (torusControllerState: unknown) => this._onStateUpdate(torusControllerState));
@@ -190,23 +226,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
-      // account mgmt
-      // TODO: once embed structure is defined
-      requestAccounts: async () => (this.prefsController.state.selectedAddress ? [this.prefsController.state.selectedAddress] : []),
+      requestAccounts: this.requestAccounts.bind(this),
 
       getAccounts: async () =>
         // Expose no accounts if this origin has not been approved, preventing
         // account-requiring RPC methods from completing successfully
         // only show address if account is unlocked
-        this.prefsController.state.selectedAddress ? [this.prefsController.state.selectedAddress] : [],
+        this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [],
       // tx signing
-      processDeploy: async () => {
-        return { deploy_hash: "" };
-      }, // todo: add handler for tx processing
-      getPendingDeployByHash: async () => {
-        return {} as unknown;
-        // as GetDeployResult;
-      },
       signMessage: async (req) => {
         console.log(req.method);
         return {} as unknown;
@@ -223,9 +250,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
       },
       sendTransaction: async (req) => {
         const data = bs58.decode(req.params?.message || "");
+        console.log(data);
         const msg = Message.from(data);
         const tx = Transaction.populate(msg);
         return await this.transfer(tx, req.origin);
+      },
+      getProviderState: (req, res, _, end) => {
+        res.result = {
+          accounts: this.keyringController.getPublicKeys(),
+          chainId: this.networkController.state.chainId,
+          isUnlocked: !!this.selectedAddress,
+        };
+        end();
       },
     };
     const providerProxy = this.networkController.initializeProvider(providerHandlers);
@@ -260,15 +296,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
   async transfer(tx: Transaction, origin?: string): Promise<string> {
     // ControllersModule.torus.signTransaction(tf);
-    try {
-      const res = await this.txController.addTransaction(tx, origin);
-      const resp = await res.result;
-      console.log(resp);
-      return resp;
-    } catch (e) {
-      console.log(e);
-      return "none";
-    }
+    console.log(tx);
+    const res = await this.txController.addTransaction(tx, origin);
+    const resp = await res.result;
+    return resp;
   }
 
   async providertransfer(tx: Transaction, origin?: string): Promise<string> {
@@ -325,32 +356,153 @@ export default class TorusController extends BaseController<TorusControllerConfi
   //     }
   //   }
 
-  async addAccount(privKey: string): Promise<string> {
+  async addAccount(privKey: string, userInfo: UserInfo): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
-
-    await this.prefsController.sync(address);
-    this.prefsController.setSelectedAddress(address);
+    await this.preferencesController.initPreferences({
+      address,
+      calledFromEmbed: false,
+      userInfo,
+      rehydrate: true,
+      jwtToken: "bypass init for now",
+    });
     return address;
   }
 
   setSelectedAccount(address: string): void {
-    this.prefsController.setSelectedAddress(address);
-    this.prefsController.sync(address);
+    this.preferencesController.setSelectedAddress(address);
+    this.preferencesController.sync(address);
   }
 
+  async setCurrentCurrency(currency: string): Promise<void> {
+    const { ticker } = this.networkController.getProviderConfig();
+    // This is CSPR
+    this.currencyController.setNativeCurrency(ticker);
+    // This is USD
+    this.currencyController.setCurrentCurrency(currency);
+    await this.currencyController.updateConversionRate();
+    // TODO: store this in prefsController
+  }
+
+  setNetwork(providerConfig: ProviderConfig): void {
+    this.networkController.setProviderConfig(providerConfig);
+  }
+
+  getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
+    return this.preferencesController && this.preferencesController.getAddressState(address);
+  }
+
+  signTransaction(transaction: Transaction): Transaction {
+    return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
+  }
+
+  // signAllTransaction( transactions : Transaction[]) :Transaction[] {
+  //   return this.keyringController.signTransaction(transactions, this.state.PreferencesControllerState.selectedAddress);
+  // }
+
+  get selectedAddress(): string {
+    return this.preferencesController.state.selectedAddress;
+  }
+
+  get userInfo(): UserInfo {
+    return this.preferencesController.state.identities[this.selectedAddress]?.userInfo || cloneDeep(DEFAULT_PREFERENCES.userInfo);
+  }
+
+  get communicationProvider(): SafeEventEmitterProvider {
+    return this.embedController._communicationProviderProxy;
+  }
+
+  get provider(): SafeEventEmitterProvider {
+    return this.networkController._providerProxy as unknown as SafeEventEmitterProvider;
+  }
+
+  private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const [requestedLoginProvider, login_hint] = req.params as string[];
+      const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;
+      console.log(currentLoginProvider);
+      if (requestedLoginProvider) {
+        if (requestedLoginProvider === currentLoginProvider && this.selectedAddress) {
+          resolve([this.selectedAddress]);
+        } else {
+          // To login with the requested provider
+          // On Embed, we have a window waiting... we need to tell it to login
+          this.embedController.update({ loginInProgress: true, oauthModalVisibility: false });
+          this.triggerLogin({ loginProvider: requestedLoginProvider as LOGIN_PROVIDER_TYPE, login_hint });
+          this.once("LOGIN_RESPONSE", (error: string, address: string) => {
+            this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
+            if (error) reject(new Error(error));
+            else resolve([address]);
+          });
+        }
+      } else {
+        if (this.selectedAddress) resolve([this.selectedAddress]);
+        else {
+          // We show the modal to login
+          this.embedController.update({ loginInProgress: true, oauthModalVisibility: true });
+          this.once("LOGIN_RESPONSE", (error: string, address: string) => {
+            console.log("enter update embeded");
+            this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
+            if (error) reject(new Error(error));
+            else resolve([address]);
+          });
+        }
+      }
+    });
+  }
+
+  private initializeCommunicationProvider() {
+    const commProviderHandlers: ICommunicationProviderHandlers = {
+      setTorusWidgetVisibility: this.setTorusWidgetVisibility.bind(this),
+      changeProvider: this.changeProvider.bind(this),
+      logout: () => {
+        return;
+      },
+      getUserInfo: () => {
+        return {} as unknown as UserInfo;
+      },
+      getWalletInstanceId: () => {
+        return "";
+      },
+      topup: async () => {
+        return false;
+      },
+      handleWindowRpc: this.communicationManager.handleWindowRpc,
+      getProviderState: (req, res, _, end) => {
+        res.result = {
+          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          isLoggedIn: !!this.selectedAddress,
+        };
+        end();
+      },
+    };
+    this.embedController.initializeProvider(commProviderHandlers);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async changeProvider<T>(req: JRPCRequest<T>): Promise<void> {
+    // todo: it will resolve after user confirm or deny in confirmation window.
+  }
+  setTorusWidgetVisibility(req: JRPCRequest<boolean>): void {
+    this.embedController.update({
+      torusWidgetVisibility: req.params as boolean,
+    });
+  }
   /**
    * Used to create a multiplexed stream for connecting to an untrusted context
    * like a Dapp or other extension.
    */
-  setupUntrustedCommunication(connectionStream: Substream, originDomain: string): void {
+  setupUnTrustedCommunication(connectionStream: Duplex, originDomain: string): void {
     // connect features && for test cases
-    this.setupProviderConnection(connectionStream, originDomain);
+    const torusMux = setupMultiplex(connectionStream);
+    // We create the mux so that we can handle phishing stream here
+    const providerStream = torusMux.getStream("provider");
+    this.setupProviderConnection(providerStream as Substream, originDomain);
   }
 
   /**
    * A method for serving our ethereum provider over a given stream.
    */
-  setupProviderConnection(outStream: Substream, sender: string): void {
+  setupProviderConnection(providerStream: Substream, sender: string): void {
     // break violently
     const senderUrl = new URL(sender);
 
@@ -358,12 +510,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.engine = engine;
 
     // setup connection
-    const providerStream = createEngineStream({ engine });
+    const engineStream = createEngineStream({ engine });
 
-    outStream
-      .pipe(providerStream)
-      .pipe(outStream)
-      .on("error", (error: Error) => {
+    pump(providerStream as unknown as Stream, engineStream as unknown as Stream, providerStream as unknown as Stream, (error: Error | undefined) => {
+      if (error) {
         // cleanup filter polyfill middleware
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -373,8 +523,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
           }
         });
         this.engine = undefined;
-        if (error) log.error(error);
-      });
+        log.error(error);
+      }
+    });
   }
 
   /**
@@ -409,29 +560,94 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return engine;
   }
 
-  async setCurrentCurrency(currency: string): Promise<void> {
-    const { ticker } = this.networkController.getProviderConfig();
-    // This is CSPR
-    this.currencyController.setNativeCurrency(ticker);
-    // This is USD
-    this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
-    // TODO: store this in prefsController
+  setupCommunicationChannel(connectionStream: Duplex, originDomain: string): void {
+    // connect features && for test cases
+    const torusMux = setupMultiplex(connectionStream);
+    // We create the mux so that we can handle phishing stream here
+    const providerStream = torusMux.getStream("communication");
+    this.setupCommunicationProviderConnection(providerStream as Substream, originDomain);
   }
 
-  setNetwork(providerConfig: ProviderConfig): void {
-    this.networkController.setProviderConfig(providerConfig);
+  /**
+   * A method for serving our ethereum provider over a given stream.
+   */
+  setupCommunicationProviderConnection(providerStream: Substream, sender: string): void {
+    // break violently
+    const senderUrl = new URL(sender);
+
+    const engine = this.setupCommunicationProviderEngine({ origin: senderUrl.hostname });
+    this.engine = engine;
+
+    // setup connection
+    const engineStream = createEngineStream({ engine });
+
+    pump(providerStream as unknown as Stream, engineStream as unknown as Stream, providerStream as unknown as Stream, (error: Error | undefined) => {
+      if (error) {
+        // cleanup filter polyfill middleware
+        this.engine = undefined;
+        log.error(error);
+      }
+    });
   }
 
-  getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
-    return this.prefsController && this.prefsController.getAddressState(address);
+  /**
+   * A method for creating a provider that is safely restricted for the requesting domain.
+   * */
+  setupCommunicationProviderEngine({ origin }: { origin: string }): JRPCEngine {
+    // setup json rpc engine stack
+    const engine = new JRPCEngine();
+    // const { _providerProxy } = this.networkController;
+
+    // create subscription polyfill middleware
+    // const subscriptionManager = createSubscriptionManager({ provider, blockTracker });
+    // subscriptionManager.events.on("notification", (message) => engine.emit("notification", message));
+
+    // metadata
+    engine.push(createOriginMiddleware({ origin }));
+    engine.push(createLoggerMiddleware({ origin }));
+
+    // TODO
+    // engine.push(
+    //   createMethodMiddleware({
+    //     origin,
+    //     getProviderState: this.getProviderState.bind(this),
+    //     getCurrentChainId: this.networkController.getCurrentChainId.bind(this.networkController),
+    //   })
+    // );
+
+    // filter and subscription polyfills
+    // engine.push(subscriptionManager.middleware);
+    // forward to metamask primary provider
+    // engine.push(providerAsMiddleware(_providerProxy));
+    return engine;
   }
 
-  signTransaction(transaction: Transaction): Transaction {
-    return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
+  public async triggerLogin({
+    loginProvider,
+    login_hint,
+  }: {
+    loginProvider: LOGIN_PROVIDER_TYPE;
+    login_hint?: string;
+  }): Promise<OpenLoginPopupResponse> {
+    try {
+      const handler = new OpenLoginHandler({
+        loginProvider,
+        extraLoginOptions: login_hint ? { login_hint: login_hint } : {},
+      });
+      const result = await handler.handleLoginWindow({
+        communicationProvider: this.communicationProvider,
+        communicationWindowManager: this.communicationManager,
+      });
+      const { privKey, userInfo } = result;
+      // const address = await this.addAccount(privKey.padStart(64, "0"), userInfo);
+      const address = await this.addAccount(privKey, userInfo);
+      this.setSelectedAccount(address);
+      this.emit("LOGIN_RESPONSE", null, address);
+      return result;
+    } catch (error) {
+      this.emit("LOGIN_RESPONSE", (error as Error)?.message);
+      log.error(error);
+      throw error;
+    }
   }
-
-  // signAllTransaction( transactions : Transaction[]) :Transaction[] {
-  //   return this.keyringController.signTransaction(transactions, this.state.PreferencesControllerState.selectedAddress);
-  // }
 }

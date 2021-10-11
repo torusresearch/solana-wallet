@@ -5,9 +5,10 @@ import { Toast } from "@/components/common";
 import { app } from "@/modules/app";
 
 import ControllerModule from "./modules/controllers";
+import { isMain } from "./utils/helpers";
 
 onMounted(() => {
-  ControllerModule.init();
+  if (isMain) ControllerModule.init();
 });
 </script>
 

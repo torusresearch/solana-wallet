@@ -1,9 +1,10 @@
 import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
+import { PostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { CHAIN_ID_NETWORK_MAP, ExtendedAddressPreferences, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
 import BigNumber from "bignumber.js";
-import { cloneDeep, omit } from "lodash";
+import { cloneDeep, merge, omit } from "lodash";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
@@ -57,8 +58,8 @@ class ControllerModule extends VuexModule {
    * Call once on refresh
    */
   @Action
-  public init(): void {
-    this.torus.init({ config: DEFAULT_CONFIG, state: this.torusState });
+  public init(state?: Partial<TorusControllerState>): void {
+    this.torus.init({ config: DEFAULT_CONFIG, state: merge(this.torusState, state) });
     this.torus.on("store", (state: TorusControllerState) => {
       log.info(state);
       this.updateTorusState(state);
@@ -73,30 +74,45 @@ class ControllerModule extends VuexModule {
         } else {
           this.torus.approveTransaction(txMeta.id);
         }
+      } else {
+        console.log("FIXME :auto approve for now sign");
+        if (sign) {
+          this.torus.approveSignTransaction(txMeta.id);
+        } else {
+          this.torus.approveTransaction(txMeta.id);
+        }
       }
     });
   }
 
   @Action
-  async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
-    const handler = new OpenLoginHandler({
-      loginProvider,
-      extraLoginOptions: login_hint ? { login_hint: login_hint } : {},
+  public setupCommunication(origin: string): void {
+    log.info("setting up communication with", origin);
+    const torusStream = new PostMessageStream({
+      name: "iframe_torus",
+      target: "embed_torus",
+      targetWindow: window.parent,
     });
-    const result = await handler.handleLoginWindow();
-    const { privKey, userInfo } = result;
-    this.update(userInfo);
-    const address = await this.torus.addAccount(privKey);
-    this.torus.setSelectedAccount(address);
+
+    const communicationStream = new PostMessageStream({
+      name: "iframe_communication",
+      target: "embed_communication",
+      targetWindow: window.parent,
+    });
+    this.torus.setupUnTrustedCommunication(torusStream, origin);
+    this.torus.setupCommunicationChannel(communicationStream, origin);
+  }
+
+  @Action
+  async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+    await this.torus.triggerLogin({ loginProvider, login_hint });
   }
 
   @Action
   logout(): void {
-    this.update(DEFAULT_USER_INFO);
+    // this.update(DEFAULT_USER_INFO);
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     this.resetTorusController();
-    // console.log(this.torus);
-    this.init();
   }
 
   @Action
@@ -110,7 +126,7 @@ class ControllerModule extends VuexModule {
     return "testnet";
   }
 
-  get isDarkMode(): boolean {
+  isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
   }
 

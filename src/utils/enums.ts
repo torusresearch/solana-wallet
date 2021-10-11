@@ -5,10 +5,12 @@ import {
   BaseConfig,
   BaseCurrencyControllerConfig,
   BaseCurrencyControllerState,
+  BaseEmbedControllerState,
   BaseState,
   KeyringControllerState,
   NetworkConfig,
   NetworkState,
+  ProviderConfig,
   // PreferencesConfig,
   // PreferencesState,
   // SafeEventEmitterProvider,
@@ -16,7 +18,6 @@ import {
   TransactionState,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
-// import { SolanaKeyringControllerState } from "@toruslabs/solana-controllers";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers/types/src/Preferences/PreferencesController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
@@ -39,6 +40,7 @@ export interface TorusControllerState extends BaseState {
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
   TransactionControllerState: TransactionState<Transaction>;
+  EmbedControllerState: BaseEmbedControllerState;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -154,3 +156,20 @@ export const STATUS_WARNING = "warning";
 export const STATUS_ERROR = "error";
 export const STATUS_INFO = "info";
 export type STATUS_TYPE = typeof STATUS_SUCCESS | typeof STATUS_WARNING | typeof STATUS_ERROR | typeof STATUS_INFO;
+// export type TX_TYPE = "Transfer" | "Deploy" | "Buy Crypto";
+
+export const BUTTON_POSITION = {
+  BOTTOM_LEFT: "bottom-left",
+  TOP_LEFT: "top-left",
+  BOTTOM_RIGHT: "bottom-right",
+  TOP_RIGHT: "top-right",
+} as const;
+
+export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_POSITION];
+
+export interface EmbedInitParams {
+  buttonPosition: BUTTON_POSITION_TYPE;
+  torusWidgetVisibility: boolean;
+  apiKey: string;
+  network: ProviderConfig;
+}
