@@ -17,14 +17,14 @@ const tabs = NAVIGATION_LIST;
 const user = ControllerModule.userInfo;
 const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
 let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
-
 const logout = () => {
   ControllerModule.logout();
 };
 </script>
 
 <template>
-  <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
+  <!-- <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800"> -->
+  <div v-if="selectedAddress" class="min-h-screen bg-white dark:bg-app-gray-800">
     <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent">
       <div class="flex h-16 px-4">
         <div class="flex-none flex items-center">
