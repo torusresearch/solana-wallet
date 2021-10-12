@@ -54,7 +54,6 @@ class ControllerModule extends VuexModule {
   public init(state?: Partial<TorusControllerState>): void {
     this.torus.init({ config: DEFAULT_CONFIG, state: merge(this.torusState, state) });
     this.torus.on("store", (state: TorusControllerState) => {
-      log.info(state);
       this.updateTorusState(state);
     });
     // this.torus.setupUntrustedCommunication();
