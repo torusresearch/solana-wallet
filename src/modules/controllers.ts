@@ -28,16 +28,9 @@ class ControllerModule extends VuexModule {
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
-  public userInfo: OpenloginUserInfo = cloneDeep(DEFAULT_USER_INFO);
-
   @Mutation
   public updateTorusState(state: TorusControllerState): void {
     this.torusState = { ...state };
-  }
-
-  @Mutation
-  public update(state: OpenloginUserInfo): void {
-    this.userInfo = { ...state };
   }
 
   @Mutation
