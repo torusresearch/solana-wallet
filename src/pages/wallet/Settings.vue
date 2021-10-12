@@ -19,12 +19,12 @@ import WalletTabs from "@/components/WalletTabs.vue";
               <template #leftIcon><LockIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
             </Panel>
           </div>
-          <div class="mb-4">
-            <Panel title="Address Book" disabled>
-              <AddressBook />
-              <template #leftIcon><ListIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
-            </Panel>
-          </div>
+          <!--          <div class="mb-4">-->
+          <!--            <Panel title="Address Book" disabled>-->
+          <!--              <AddressBook />-->
+          <!--              <template #leftIcon><ListIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>-->
+          <!--            </Panel>-->
+          <!--          </div>-->
           <div class="mb-4">
             <Panel title="Crash Reporting" disabled>
               <CrashReporting />
@@ -45,12 +45,12 @@ import WalletTabs from "@/components/WalletTabs.vue";
               <template #leftIcon><OptionsIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
             </Panel>
           </div>
-          <div class="mb-4">
-            <Panel title="Account Management" disabled>
-              <AccountManagement />
-              <template #leftIcon><UserIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
-            </Panel>
-          </div>
+          <!--          <div class="mb-4">-->
+          <!--            <Panel title="Account Management" disabled>-->
+          <!--              <AccountManagement />-->
+          <!--              <template #leftIcon><UserIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>-->
+          <!--            </Panel>-->
+          <!--          </div>-->
         </div>
       </div>
     </div>

@@ -55,7 +55,9 @@ const copySelectedAddress = () => {
         <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ formattedBalance }} {{ currency }}</div>
       </div>
       <div class="flex">
-        <div class="font-body text-xxs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">{{ selectedAddress }}</div>
+        <div class="font-body text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
+          {{ selectedAddress }}
+        </div>
         <div class="ml-auto flex space-x-1">
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
             <CopyIcon class="w-4 h-4" @click="copySelectedAddress" />
