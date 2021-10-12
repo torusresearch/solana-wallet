@@ -239,9 +239,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return {} as unknown;
       },
       signTransaction: async (req) => {
-        const data = bs58.decode(req.params?.message || "");
-        const msg = Message.from(data);
-        const tx = Transaction.populate(msg);
+        const message = req.params?.message;
+        if (!message) {
+          throw new Error("empty error message");
+        }
+
+        const data = Buffer.from(message, "hex");
+        const tx = Transaction.populate(Message.from(data));
         return await this.addSignTransaction(tx, req.origin);
       },
       signAllTransactions: async (req) => {
@@ -249,10 +253,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return {} as unknown;
       },
       sendTransaction: async (req) => {
-        const data = bs58.decode(req.params?.message || "");
-        console.log(data);
-        const msg = Message.from(data);
-        const tx = Transaction.populate(msg);
+        const message = req.params?.message;
+        if (!message) {
+          throw new Error("empty error message");
+        }
+
+        const data = Buffer.from(message, "hex");
+        const tx = Transaction.populate(Message.from(data), []);
         return await this.transfer(tx, req.origin);
       },
       getProviderState: (req, res, _, end) => {
@@ -357,7 +364,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   //   }
 
   async addAccount(privKey: string, userInfo: UserInfo): Promise<string> {
-    const address = this.keyringController.importAccount(privKey);
+    const paddedKey = privKey.padStart(64, "0");
+    const address = this.keyringController.importAccount(paddedKey);
     await this.preferencesController.initPreferences({
       address,
       calledFromEmbed: false,
