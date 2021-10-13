@@ -16,14 +16,6 @@ import ControllersModule from "@/modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
-//todo: export it from controllers
-const deserializeDeployFromJson = (deployJson: Transaction): DeployUtil.Deploy => {
-  const deploy = DeployUtil.deployFromJson(deployJson);
-  if (deploy.ok) {
-    return deploy.val;
-  }
-  throw new Error("The JSON can't be parsed as a Deploy");
-};
 interface FinalTxData {
   slicedSenderAddress: string;
   slicedReceiverAddress: string;
@@ -53,7 +45,7 @@ onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelEventData>();
-    const deserializedDeploy = deserializeDeployFromJson(txData.txParams.transaction);
+    const deserializedDeploy = txData.txParams.transaction;
     const from = encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
     const to = Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
     const txFee = deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
