@@ -4,11 +4,13 @@ import {
   BaseController,
   BaseEmbedController,
   BaseEmbedControllerState,
+  BROADCAST_CHANNELS,
   CommunicationWindowManager,
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
   ICommunicationProviderHandlers,
+  PopupWithBcHandler,
   providerAsMiddleware,
   ProviderConfig,
   SafeEventEmitterProvider,
@@ -28,8 +30,10 @@ import {
   NetworkController,
   PreferencesController,
   SUPPORTED_NETWORKS,
+  TRANSACTION_TYPES,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import BigNumber from "bignumber.js";
 import bs58 from "bs58";
 import { cloneDeep } from "lodash";
 import log from "loglevel";
@@ -92,6 +96,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private keyringController!: KeyringController;
   private preferencesController!: PreferencesController;
   private txController!: TransactionController;
+  private communicationEngine?: JRPCEngine;
   private embedController!: BaseEmbedController<BaseConfig, BaseEmbedControllerState>;
   private engine?: JRPCEngine;
 
@@ -221,6 +226,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     //   }, 50);
     // }
     // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
+  }
+
+  get userSOLBalance(): string {
+    const balance = this.accountTracker.state.accounts[this.selectedAddress]?.balance || "0x0";
+    const value = new BigNumber(balance).div(new BigNumber(10 ** 9));
+    return value.toString();
   }
 
   private initializeProvider() {
@@ -630,6 +641,49 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return engine;
   }
 
+  async handleTransactionPopup(txId: string, req: JRPCRequest<Transaction> & { origin: string; windowId: string }): Promise<void> {
+    try {
+      const windowId = req.windowId;
+      const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
+      const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
+
+      const popupPayload: any = {
+        type: TRANSACTION_TYPES.STANDARD_TRANSACTION,
+        txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
+        origin: this.preferencesController.iframeOrigin,
+        balance: this.userSOLBalance,
+        selectedCurrency: this.currencyController.state.currentCurrency,
+        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+        network: this.networkController.state.providerConfig.displayName,
+        networkDetails: { providerConfig: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)) },
+      };
+      const txApproveWindow = new PopupWithBcHandler({
+        state: {
+          url: finalUrl,
+          windowId,
+        },
+        config: {
+          dappStorageKey: config.dappStorageKey || undefined,
+          communicationEngine: this.communicationEngine,
+          communicationWindowManager: this.communicationManager,
+          target: "_blank",
+        },
+        instanceId: channelName,
+      });
+      const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
+      const { approve = false } = result;
+      if (approve) {
+        this.txController.approveTransaction(txId); // approve and publish
+      } else {
+        this.txController.setTxStatusRejected(txId);
+      }
+    } catch (error) {
+      log.error(error);
+      this.txController.setTxStatusRejected(txId);
+    }
+  }
+
   public async triggerLogin({
     loginProvider,
     login_hint,
@@ -643,7 +697,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         extraLoginOptions: login_hint ? { login_hint: login_hint } : {},
       });
       const result = await handler.handleLoginWindow({
-        communicationProvider: this.communicationProvider,
+        communicationEngine: this.communicationEngine,
         communicationWindowManager: this.communicationManager,
       });
       const { privKey, userInfo } = result;

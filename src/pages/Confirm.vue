@@ -1,29 +1,107 @@
 <script setup lang="ts">
+import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { Transaction, TransactionChannelEventData } from "@toruslabs/solana-controllers";
+import Button from "@toruslabs/vue-components/common/Button.vue";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-import { computed, ref } from "vue";
+import { BigNumber } from "bignumber.js";
+import { BroadcastChannel } from "broadcast-channel";
+import { DeployUtil, encodeBase16 } from "casper-js-sdk";
+import log from "loglevel";
+import { onMounted, reactive } from "vue";
 
-import SolanaLogoURL from "@/assets/solana-dark.svg";
+import SolanaLogoURL from "@/assets/solana.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
-import { Button, TextField } from "@/components/common";
-import { app } from "@/modules/app";
+import { TextField } from "@/components/common";
+import ControllersModule from "@/modules/controllers";
 
-const sendAmount = ref(0);
-const transactionFee = ref(0);
-const total = computed(() => 0);
+const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+
+//todo: export it from controllers
+const deserializeDeployFromJson = (deployJson: Transaction): DeployUtil.Deploy => {
+  const deploy = DeployUtil.deployFromJson(deployJson);
+  if (deploy.ok) {
+    return deploy.val;
+  }
+  throw new Error("The JSON can't be parsed as a Deploy");
+};
+interface FinalTxData {
+  slicedSenderAddress: string;
+  slicedReceiverAddress: string;
+  totalCsprAmount: string;
+  totalCsprFee: string;
+  totalFiatAmount: string;
+  totalFiatFee: string;
+  transactionType: string;
+  totalCsprCost: string;
+  totalFiatCost: string;
+  networkDisplayName: string;
+}
+let finalTxData = reactive<FinalTxData>({
+  slicedSenderAddress: "",
+  slicedReceiverAddress: "",
+  totalCsprAmount: "",
+  totalCsprFee: "",
+  totalFiatAmount: "",
+  totalFiatFee: "",
+  transactionType: "",
+  totalCsprCost: "",
+  totalFiatCost: "",
+  networkDisplayName: "",
+});
+
+onMounted(async () => {
+  try {
+    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
+    const txData = await bcHandler.getMessageFromChannel<TransactionChannelEventData>();
+    const deserializedDeploy = deserializeDeployFromJson(txData.txParams.transaction);
+    const from = encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
+    const to = Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
+    const txFee = deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
+    const txAmount = deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
+    const totalCsprCost = new BigNumber(txFee).plus(txAmount).div(10 ** 9);
+    // const totalCurrencyAmount = totalAmount.multipliedBy(currencyData.conversionRate);
+    // const totalAmountString = formatSmallNumbers(totalAmount.toNumber(), currencyData.networkNativeCurrency.toUpperCase(), true);
+    // const currencyAmountString = formatSmallNumbers(totalCurrencyAmount.toNumber(), currencyData.selectedCurrency, true);
+    finalTxData.slicedSenderAddress = addressSlicer(from);
+    finalTxData.slicedReceiverAddress = addressSlicer(to);
+    finalTxData.totalCsprAmount = new BigNumber(txAmount).div(10 ** 9).toString();
+    finalTxData.totalCsprFee = new BigNumber(txFee).div(10 ** 9).toString();
+    // finalTxData.totalFiatAmount = "";
+    // finalTxData.totalFiatFee = "";
+    finalTxData.totalCsprCost = totalCsprCost.toString();
+    finalTxData.transactionType = "";
+    finalTxData.networkDisplayName = txData.networkDetails?.providerConfig?.displayName;
+  } catch (error) {
+    log.error("error in tx", error);
+  }
+});
+
+const approveTxn = async (): Promise<void> => {
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+  await bc.postMessage({
+    data: { type: POPUP_RESULT, approve: true },
+  });
+  bc.close();
+};
+const rejectTxn = async () => {
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+  bc.close();
+};
 </script>
 
 <template>
-  <div class="bg-white min-h-screen dark:bg-app-gray-700">
+  <div class="min-h-screen bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
-        <div><img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" /></div>
+        <div><img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" /></div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Transaction</div>
       </div>
       <div class="p-5">
         <div class="flex items-center">
           <div class="pl-5 flex-none">
             <div class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12">
-              <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
+              <img class="w-10" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
             </div>
           </div>
           <div class="flex-grow">
@@ -31,24 +109,22 @@ const total = computed(() => 0);
           </div>
           <div class="pr-5 flex-none">
             <div class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12">
-              <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
+              <img class="w-10" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
             </div>
           </div>
         </div>
         <div class="flex mt-1">
           <div class="flex-none w-20 text-center">
-            <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">tom@gmail.com</div>
             <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
-              0x0F48654993568658514F982C87A5BDd01D80969F
+              {{ finalTxData.slicedSenderAddress }}
             </div>
           </div>
           <div class="flex-grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
-            <WiFiIcon class="w-3 h-3 mr-1" /> Casper Network
+            <WiFiIcon class="w-3 h-3 mr-1" /> {{ finalTxData.networkDisplayName }}
           </div>
           <div class="flex-none w-20 text-center">
-            <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">tom@gmail.com</div>
             <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
-              0x0F48654993568658514F982C87A5BDd01D80969F
+              {{ finalTxData.slicedReceiverAddress }}
             </div>
           </div>
         </div>
@@ -56,23 +132,23 @@ const total = computed(() => 0);
         <div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-1 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Amount</div>
-            <div class="col-span-2"><TextField v-model="sendAmount" type="number" /></div>
+            <div class="col-span-2"><TextField v-model="finalTxData.totalCsprAmount" type="number" /></div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-1 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Transaction Fee</div>
-            <div class="col-span-2"><TextField v-model="transactionFee" type="number" /></div>
+            <div class="col-span-2"><TextField v-model="finalTxData.totalCsprFee" type="number" /></div>
           </div>
           <hr class="mb-6" />
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-1 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Total Cost</div>
-            <div class="col-span-2"><TextField v-model="total" disabled type="number" /></div>
+            <div class="col-span-2"><TextField v-model="finalTxData.totalCsprCost" disabled type="number" /></div>
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" block variant="tertiary">Cancel</Button></div>
-        <div><Button class="ml-auto" block variant="primary">Confirm</Button></div>
+        <div><Button class="ml-auto" block variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
+        <div><Button class="ml-auto" block variant="primary" @click="approveTxn()">Confirm</Button></div>
       </div>
     </div>
   </div>
