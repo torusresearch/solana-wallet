@@ -469,9 +469,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   }
 
+  setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean }>): void {
+    const { isIFrameFullScreen = false } = req.params || {};
+    this.embedController.update({
+      isIFrameFullScreen,
+    });
+  }
+
   private initializeCommunicationProvider() {
     const commProviderHandlers: ICommunicationProviderHandlers = {
-      setTorusWidgetVisibility: this.setTorusWidgetVisibility.bind(this),
+      setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
       logout: () => {
         return;
@@ -500,11 +507,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async changeProvider<T>(req: JRPCRequest<T>): Promise<void> {
     // todo: it will resolve after user confirm or deny in confirmation window.
-  }
-  setTorusWidgetVisibility(req: JRPCRequest<boolean>): void {
-    this.embedController.update({
-      torusWidgetVisibility: req.params as boolean,
-    });
   }
   /**
    * Used to create a multiplexed stream for connecting to an untrusted context
@@ -647,6 +649,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
 
+      debugger;
+
       const popupPayload: any = {
         type: TRANSACTION_TYPES.STANDARD_TRANSACTION,
         txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
@@ -674,7 +678,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
       if (approve) {
-        this.txController.approveTransaction(txId); // approve and publish
+        this.txController.approveTransaction(txId, this.selectedAddress); // approve and publish
       } else {
         this.txController.setTxStatusRejected(txId);
       }
