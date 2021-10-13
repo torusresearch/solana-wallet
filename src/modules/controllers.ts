@@ -38,6 +38,31 @@ class ControllerModule extends VuexModule {
     this.torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
   }
 
+  get selectedAddress(): string {
+    return this.torusState.PreferencesControllerState?.selectedAddress || "";
+  }
+
+  get selectedAccountPreferences(): ExtendedAddressPreferences {
+    const preferences = this.torus.getAccountPreferences(this.selectedAddress);
+    return (
+      preferences || {
+        ...DEFAULT_PREFERENCES,
+        formattedPastTransactions: [],
+        fetchedPastTx: [],
+        currentNetworkTxsList: [],
+        network_selected: "testnet",
+      }
+    );
+  }
+  get selectedNetworkTransactions(): SolanaTransactionActivity[] {
+    const txns = this.selectedAccountPreferences.currentNetworkTxsList;
+    return txns ? txns : [];
+  }
+
+  get network(): string {
+    return "testnet";
+  }
+
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     // console.log(this.torusState.AccountTrackerState.accounts);
@@ -58,21 +83,11 @@ class ControllerModule extends VuexModule {
     });
     // this.torus.setupUntrustedCommunication();
     // Good
-    this.torus.on(TX_EVENTS.TX_UNAPPROVED, (txMeta, sign) => {
+    this.torus.on(TX_EVENTS.TX_UNAPPROVED, async (txMeta, req) => {
       if (isMain) {
-        console.log("approve sign");
-        if (sign) {
-          this.torus.approveSignTransaction(txMeta.id);
-        } else {
-          this.torus.approveTransaction(txMeta.id);
-        }
+        this.torus.approveTransaction(txMeta.id);
       } else {
-        console.log("FIXME :auto approve for now sign");
-        if (sign) {
-          this.torus.approveSignTransaction(txMeta.id);
-        } else {
-          this.torus.approveTransaction(txMeta.id);
-        }
+        await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });
   }
@@ -114,10 +129,6 @@ class ControllerModule extends VuexModule {
     this.torus.setNetwork(providerConfig);
   }
 
-  get network(): string {
-    return "testnet";
-  }
-
   isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
   }
@@ -125,27 +136,6 @@ class ControllerModule extends VuexModule {
   selectedNetworkDisplayName(): string {
     const network = this.torusState.NetworkControllerState.providerConfig.displayName;
     return network;
-  }
-
-  get selectedAddress(): string {
-    return this.torusState.PreferencesControllerState?.selectedAddress || "";
-  }
-
-  get selectedAccountPreferences(): ExtendedAddressPreferences {
-    const preferences = this.torus.getAccountPreferences(this.selectedAddress);
-    return (
-      preferences || {
-        ...DEFAULT_PREFERENCES,
-        formattedPastTransactions: [],
-        fetchedPastTx: [],
-        currentNetworkTxsList: [],
-        network_selected: "testnet",
-      }
-    );
-  }
-  get selectedNetworkTransactions(): SolanaTransactionActivity[] {
-    const txns = this.selectedAccountPreferences.currentNetworkTxsList;
-    return txns ? txns : [];
   }
 }
 
