@@ -5,12 +5,12 @@ import Button from "@toruslabs/vue-components/common/Button.vue";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
-import { DeployUtil, encodeBase16 } from "casper-js-sdk";
+// import { DeployUtil, encodeBase16 } from "casper-js-sdk";
 import log from "loglevel";
 import { onMounted, reactive } from "vue";
 
-import SolanaLogoURL from "@/assets/solana.svg";
-import SolanaLightLogoURL from "@/assets/solana-light.svg";
+import SolanaLightLogoURL from "@/assets/solana-dark.svg";
+import SolanaLogoURL from "@/assets/solana-light.svg";
 import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
@@ -45,11 +45,11 @@ onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelEventData>();
-    const deserializedDeploy = txData.txParams.transaction;
-    const from = encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
-    const to = Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
-    const txFee = deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
-    const txAmount = deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
+    // const deserializedDeploy = txData.txParams.transaction;
+    const from = "0x00"; // encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
+    const to = "0x00"; // Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
+    const txFee = 0; // deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
+    const txAmount = 0; //deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
     const totalCsprCost = new BigNumber(txFee).plus(txAmount).div(10 ** 9);
     // const totalCurrencyAmount = totalAmount.multipliedBy(currencyData.conversionRate);
     // const totalAmountString = formatSmallNumbers(totalAmount.toNumber(), currencyData.networkNativeCurrency.toUpperCase(), true);

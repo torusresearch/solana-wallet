@@ -19,7 +19,7 @@ import {
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
-import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers/types/Preferences/PreferencesController";
+import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 import { DatabaseIcon } from "@toruslabs/vue-icons/software";
