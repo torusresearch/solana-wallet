@@ -1,4 +1,4 @@
-import { PopupWithBcHandler, randomId, SafeEventEmitterProvider } from "@toruslabs/base-controllers";
+import { PopupWithBcHandler, randomId } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 import { safebtoa } from "@toruslabs/openlogin-utils";

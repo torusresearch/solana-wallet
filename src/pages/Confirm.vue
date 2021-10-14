@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import { Transaction, TransactionChannelEventData } from "@toruslabs/solana-controllers";
+import { Transaction } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { BigNumber } from "bignumber.js";
@@ -13,6 +13,7 @@ import SolanaLightLogoURL from "@/assets/solana-dark.svg";
 import SolanaLogoURL from "@/assets/solana-light.svg";
 import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
+import { TransactionChannelDataType } from "@/utils/enums";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
@@ -44,7 +45,7 @@ let finalTxData = reactive<FinalTxData>({
 onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
-    const txData = await bcHandler.getMessageFromChannel<TransactionChannelEventData>();
+    const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     // const deserializedDeploy = txData.txParams.transaction;
     const from = "0x00"; // encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
     const to = "0x00"; // Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver

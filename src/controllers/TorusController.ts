@@ -262,7 +262,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data));
-        return await this.addSignTransaction(tx, req.origin);
+        const txRes = await this.txController.addSignTransaction(tx, req);
+        const signature = await txRes.result;
+        return { signature: signature };
       },
       signAllTransactions: async (req) => {
         console.log(req.method);
@@ -274,6 +276,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           throw new Error("empty error message");
         }
 
+        console.log(req);
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data), []);
         const res = await this.txController.addTransaction(tx, req);
@@ -303,7 +306,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async addSignTransaction(txParams: Transaction, origin?: string): Promise<{ signature: string }> {
-    const txRes = await this.txController.addSignTransaction(txParams, origin);
+    const txRes = await this.txController.addSignTransaction(txParams);
     console.log(txRes);
     const signature = await txRes.result;
     return { signature: signature };
@@ -511,10 +514,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController.initializeProvider(commProviderHandlers);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async changeProvider<T>(req: JRPCRequest<T>): Promise<void> {
-    // todo: it will resolve after user confirm or deny in confirmation window.
-  }
   /**
    * Used to create a multiplexed stream for connecting to an untrusted context
    * like a Dapp or other extension.
@@ -650,9 +649,40 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return engine;
   }
 
+  async changeProvider<T>(req: JRPCRequest<T>): Promise<boolean> {
+    const { windowId } = req.params as unknown as ProviderConfig & { windowId: string };
+    const channelName = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${windowId}`;
+    const finalUrl = new URL(`${config.baseRoute}providerchange?integrity=true&instanceId=${windowId}`);
+    const providerChangeWindow = new PopupWithBcHandler({
+      state: {
+        url: finalUrl,
+        windowId,
+      },
+      config: {
+        dappStorageKey: config.dappStorageKey || undefined,
+        communicationEngine: this.communicationEngine as JRPCEngine,
+        communicationWindowManager: this.communicationManager,
+        target: "_blank",
+      },
+      instanceId: channelName,
+    });
+    const result = (await providerChangeWindow.handleWithHandshake({
+      origin: this.preferencesController.iframeOrigin,
+      network: req.params,
+      currentNetwork: this.networkController.state.providerConfig.displayName,
+    })) as { approve: boolean };
+    const { approve = false } = result;
+    if (approve) {
+      this.networkController.setProviderConfig(req.params as unknown as ProviderConfig);
+      return true;
+    } else {
+      throw new Error("user denied provider change request");
+    }
+  }
   async handleTransactionPopup(txId: string, req: JRPCRequest<Transaction> & { origin: string; windowId: string }): Promise<void> {
     try {
       const windowId = req.windowId;
+      console.log(windowId);
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
       console.log(req);

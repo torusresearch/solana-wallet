@@ -173,3 +173,7 @@ export interface EmbedInitParams {
   apiKey: string;
   network: ProviderConfig;
 }
+
+export type TransactionChannelDataType = {
+  txid: string;
+};
