@@ -6,7 +6,7 @@ const darken = (color, val) =>
 
 const tailwindColors = require("tailwindcss/colors");
 const appColors = {
-  primary: "#70a3ff",
+  primary: "#9945ff",
 };
 
 module.exports = {
