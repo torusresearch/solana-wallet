@@ -175,5 +175,13 @@ export interface EmbedInitParams {
 }
 
 export type TransactionChannelDataType = {
-  txid: string;
+  type: string;
+  message: string;
+  origin: string;
+  balance: string;
+  selectedCurrency: string;
+  currencyRate: string;
+  jwtToken: string;
+  network: string;
+  networkDetails: ProviderConfig;
 };
