@@ -1,10 +1,14 @@
 const lighten = (color, val) =>
   require("color")(color).lighten(val).rgb().string();
 
+const darken = (color, val) =>
+  require("color")(color).darken(val).rgb().string();
+
 const tailwindColors = require("tailwindcss/colors");
 const appColors = {
-  primary: "#9945FF",
+  primary: "#70a3ff",
 };
+
 module.exports = {
   purge: ["index.html", "src/**/*.{ts,tsx,vue}"],
   darkMode: "class",
@@ -25,9 +29,13 @@ module.exports = {
             300: lighten(appColors.primary, 0.4),
             400: lighten(appColors.primary, 0.24),
             500: appColors.primary,
+            600: darken(appColors.primary, 0.24),
+            700: darken(appColors.primary, 0.4),
+            800: darken(appColors.primary, 0.64),
+            900: darken(appColors.primary, 0.80),
           },
-          secondary: lighten(appColors.primary, 0.24),
-          secondary2: lighten(appColors.primary, 0.4),
+          secondary: '#47B2FD',
+          secondary2: '#DAF0FF',
           text: {
             400: "#A2A5B5",
             500: "#5C6C7F",
@@ -39,11 +47,11 @@ module.exports = {
             },
           },
           gray: {
-            200: "#F5F5F5",
-            300: "#F9F9FB",
-            400: "#F3F3F4",
-            500: "#B7B8BD",
-            600: "#6F717A",
+            200: "#F9F9FB",
+            300: "#F5F5F5",
+            400: "#B7B8BD",
+            500: "#6F717A",
+            600: "#595857",
             700: "#2f3136",
             800: "#252529",
             900: "#0F1222",
@@ -65,7 +73,7 @@ module.exports = {
   variants: {
     extend: {
       opacity: ["disabled"],
-      backgroundColor: ["disabled", "active"],
+      backgroundColor: ["disabled", "active", "hover"],
       textColor: ["disabled", "active"],
       borderColor: ["disabled"],
       outline: ["focus"],

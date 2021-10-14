@@ -1,14 +1,12 @@
 import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
-import { LOGIN_PROVIDER_TYPE, OpenloginUserInfo } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { PostMessageStream } from "@toruslabs/openlogin-jrpc";
-import { CHAIN_ID_NETWORK_MAP, ExtendedAddressPreferences, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
-import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
+import { ExtendedAddressPreferences, SolanaTransactionActivity, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
-import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import installStorePlugin from "@/plugins/persistPlugin";
@@ -83,10 +81,12 @@ class ControllerModule extends VuexModule {
     });
     // this.torus.setupUntrustedCommunication();
     // Good
-    this.torus.on(TX_EVENTS.TX_UNAPPROVED, async (txMeta, req) => {
+    this.torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
       if (isMain) {
         this.torus.approveTransaction(txMeta.id);
       } else {
+        console.log(txMeta);
+        console.log(req);
         await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });

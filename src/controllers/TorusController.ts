@@ -82,10 +82,14 @@ export const DEFAULT_STATE = {
   },
   EmbedControllerState: {
     buttonPosition: BUTTON_POSITION.BOTTOM_RIGHT,
-    torusWidgetVisibility: true,
+    isIFrameFullScreen: false,
     apiKey: "torus-default",
     oauthModalVisibility: false,
     loginInProgress: false,
+    dappMetadata: {
+      name: "",
+      icon: "",
+    },
   },
 };
 
@@ -162,8 +166,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signTransaction: this.keyringController.signTransaction.bind(this.keyringController),
     });
 
-    this.txController.on(TX_EVENTS.TX_UNAPPROVED, (txMeta) => {
-      this.emit(TX_EVENTS.TX_UNAPPROVED, txMeta);
+    this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
+      console.log(req);
+      this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
     });
 
     this.networkController._blockTrackerProxy.on("latest", () => {
@@ -271,7 +276,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data), []);
-        return await this.transfer(tx, req.origin);
+        const res = await this.txController.addTransaction(tx, req);
+        const resp = await res.result;
+        return resp;
       },
       getProviderState: (req, res, _, end) => {
         res.result = {
@@ -312,10 +319,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     console.log("confirm");
     return resp;
   }
-  async transfer(tx: Transaction, origin?: string): Promise<string> {
+  async transfer(tx: Transaction): Promise<string> {
     // ControllersModule.torus.signTransaction(tf);
     console.log(tx);
-    const res = await this.txController.addTransaction(tx, origin);
+    const res = await this.txController.addTransaction(tx);
     const resp = await res.result;
     return resp;
   }
@@ -648,8 +655,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const windowId = req.windowId;
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
-
-      debugger;
+      console.log(req);
+      // debugger;
 
       const popupPayload: any = {
         type: TRANSACTION_TYPES.STANDARD_TRANSACTION,
