@@ -40,7 +40,7 @@ class ControllerModule extends VuexModule {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
   }
 
-  get selectedAccountPreferences(): ExtendedAddressPreferences {
+  get selectedAccountPreferences(): ExtendedAddressPreferences | any {
     const preferences = this.torus.getAccountPreferences(this.selectedAddress);
     return (
       preferences || {

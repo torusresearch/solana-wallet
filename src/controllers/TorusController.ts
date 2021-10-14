@@ -35,7 +35,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
-// import bs58 from "bs58";
+import bs58 from "bs58";
 import { cloneDeep } from "lodash";
 import log from "loglevel";
 import pump from "pump";
@@ -348,7 +348,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const resp = await res.result;
     return resp;
   }
-
 
   async providertransfer(tx: Transaction, origin?: string): Promise<string> {
     const provider = await this.networkController.getProvider();
@@ -784,7 +783,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  performAccountRefresh() {
+  performAccountRefresh(): void {
     // this is called way to many times, implement throttling here.
     this.accountTracker.refresh();
     this.tokensTracker.fetchSolTokens();
