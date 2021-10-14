@@ -20,10 +20,10 @@ import {
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
-import { TokensTrackerConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
+import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
-import { DatabaseIcon } from "@toruslabs/vue-icons/software";
+// import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
@@ -42,7 +42,7 @@ export interface TorusControllerState extends BaseState {
   KeyringControllerState: KeyringControllerState;
   TransactionControllerState: TransactionState<Transaction>;
   EmbedControllerState: BaseEmbedControllerState;
-  TokensTrackerState: TorusControllerConfig;
+  TokensTrackerState: TokensTrackerState;
 }
 
 export interface TorusControllerConfig extends BaseConfig {

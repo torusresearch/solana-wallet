@@ -35,7 +35,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
-import bs58 from "bs58";
+// import bs58 from "bs58";
 import { cloneDeep } from "lodash";
 import log from "loglevel";
 import pump from "pump";
@@ -347,19 +347,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return resp;
   }
 
-  async providertransfer(tx: Transaction, origin?: string): Promise<string> {
-    const provider = await this.networkController.getProvider();
-    const res = await provider.sendAsync({
-      jsonrpc: "2.0",
-      id: randomId(),
-      method: "send_transaction",
-      params: {
-        message: bs58.encode(tx.serializeMessage()),
-      },
-    });
-    console.log(res);
-    return res as string;
-  }
+  // async providertransfer(tx: Transaction, origin?: string): Promise<string> {
+  //   const provider = await this.networkController.getProvider();
+  //   const res = await provider.sendAsync({
+  //     jsonrpc: "2.0",
+  //     id: randomId(),
+  //     method: "send_transaction",
+  //     params: {
+  //       message: bs58.encode(tx.serializeMessage()),
+  //     },
+  //   });
+  //   console.log(res);
+  //   return res as string;
+  // }
 
   //   private isUnlocked(): boolean {
   //     return !!this.prefsController.state.selectedAddress;
