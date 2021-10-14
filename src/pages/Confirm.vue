@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import { Transaction } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
+import { decimal } from "@vuelidate/validators";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 // import { DeployUtil, encodeBase16 } from "casper-js-sdk";
@@ -11,10 +12,10 @@ import { onMounted, reactive } from "vue";
 
 import SolanaLightLogoURL from "@/assets/solana-dark.svg";
 import SolanaLogoURL from "@/assets/solana-light.svg";
+import SolanaLogo from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import { app } from "@/modules/app";
 import { TransactionChannelDataType } from "@/utils/enums";
-
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
 interface FinalTxData {
@@ -42,28 +43,48 @@ let finalTxData = reactive<FinalTxData>({
   networkDisplayName: "",
 });
 
+// type: req.method,
+// message: req.params?.message || "",
+// // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
+// origin: this.preferencesController.iframeOrigin,
+// balance: this.userSOLBalance,
+// selectedCurrency: this.currencyController.state.currentCurrency,
+// currencyRate: this.currencyController.state.conversionRate?.toString(),
+// jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+// network: this.networkController.state.providerConfig.displayName,
+// networkDetails: { providerConfig: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)) },
 onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
-    // const deserializedDeploy = txData.txParams.transaction;
-    const from = "0x00"; // encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
-    const to = "0x00"; // Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
-    const txFee = 0; // deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
-    const txAmount = 0; //deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
+    const msg = Message.from(Buffer.from(txData.message, "hex"));
+    const tx = Transaction.populate(msg);
+
+    const conn = new Connection(clusterApiUrl("testnet"));
+    const block = await conn.getRecentBlockhash("finalized");
+
+    const decoded = tx.instructions.map((inst) => {
+      const decoded_inst = SystemInstruction.decodeTransfer(inst);
+      return decoded_inst;
+    });
+
+    const from = decoded[0].fromPubkey; // encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
+    const to = decoded[0].toPubkey; // Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
+    const txFee = block.feeCalculator.lamportsPerSignature; // deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
+    const txAmount = decoded[0].lamports / LAMPORTS_PER_SOL; //deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
     const totalCsprCost = new BigNumber(txFee).plus(txAmount).div(10 ** 9);
     // const totalCurrencyAmount = totalAmount.multipliedBy(currencyData.conversionRate);
     // const totalAmountString = formatSmallNumbers(totalAmount.toNumber(), currencyData.networkNativeCurrency.toUpperCase(), true);
     // const currencyAmountString = formatSmallNumbers(totalCurrencyAmount.toNumber(), currencyData.selectedCurrency, true);
-    finalTxData.slicedSenderAddress = addressSlicer(from);
-    finalTxData.slicedReceiverAddress = addressSlicer(to);
+    finalTxData.slicedSenderAddress = from.toBase58();
+    finalTxData.slicedReceiverAddress = to.toBase58();
     finalTxData.totalCsprAmount = new BigNumber(txAmount).div(10 ** 9).toString();
     finalTxData.totalCsprFee = new BigNumber(txFee).div(10 ** 9).toString();
     // finalTxData.totalFiatAmount = "";
     // finalTxData.totalFiatFee = "";
     finalTxData.totalCsprCost = totalCsprCost.toString();
     finalTxData.transactionType = "";
-    finalTxData.networkDisplayName = txData.networkDetails?.providerConfig?.displayName;
+    finalTxData.networkDisplayName = txData.networkDetails?.displayName;
   } catch (error) {
     log.error("error in tx", error);
   }
@@ -87,14 +108,14 @@ const rejectTxn = async () => {
   <div class="min-h-screen bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
-        <div><img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" /></div>
+        <div><img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" /></div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Transaction</div>
       </div>
       <div class="p-5">
         <div class="flex items-center">
           <div class="pl-5 flex-none">
             <div class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12">
-              <img class="w-10" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+              <img class="w-10" :src="app.isDarkMode ? SolanaLogo : SolanaLogo" alt="Casper Logo" />
             </div>
           </div>
           <div class="flex-grow">
@@ -102,7 +123,7 @@ const rejectTxn = async () => {
           </div>
           <div class="pr-5 flex-none">
             <div class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12">
-              <img class="w-10" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+              <img class="w-10" :src="app.isDarkMode ? SolanaLogo : SolanaLogo" alt="Casper Logo" />
             </div>
           </div>
         </div>
