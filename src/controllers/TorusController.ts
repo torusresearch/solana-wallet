@@ -30,6 +30,7 @@ import {
   NetworkController,
   PreferencesController,
   SUPPORTED_NETWORKS,
+  TokensTrackerController,
   TRANSACTION_TYPES,
   TransactionController,
 } from "@toruslabs/solana-controllers";
@@ -91,6 +92,7 @@ export const DEFAULT_STATE = {
       icon: "",
     },
   },
+  TokensTrackerState: { tokens: undefined },
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
@@ -102,6 +104,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private txController!: TransactionController;
   private communicationEngine?: JRPCEngine;
   private embedController!: BaseEmbedController<BaseConfig, BaseEmbedControllerState>;
+  private tokensTracker!: TokensTrackerController;
   private engine?: JRPCEngine;
 
   public communicationManager = new CommunicationWindowManager();
@@ -151,10 +154,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
       provider: this.networkController._providerProxy,
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
-      // blockTracker: this.networkController._blockTrackerProxy,
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
-      // onNetworkChange: (listener) => this.networkController.on("store", listener),
+    });
+
+    this.tokensTracker = new TokensTrackerController({
+      provider: this.networkController._providerProxy,
+      state: this.state.TokensTrackerState,
+      config: this.config.TokensTrackerConfig,
+      getIdentities: () => this.preferencesController.state.identities,
+      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
 
     this.txController = new TransactionController({
@@ -179,8 +188,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
-      console.log("network changed");
       this.preferencesController.sync(this.preferencesController.state.selectedAddress);
+      this.performAccountRefresh();
+    });
+
+    this.preferencesController.on("store", () => {
+      this.performAccountRefresh();
     });
 
     this.networkController.lookupNetwork();
@@ -200,6 +213,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.accountTracker.on("store", (state) => {
       this.update({ AccountTrackerState: state });
+    });
+
+    this.tokensTracker.on("store", (state) => {
+      this.update({ TokensTrackerState: state });
     });
 
     this.keyringController.on("store", (state) => {
@@ -722,5 +739,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(error);
       throw error;
     }
+  }
+
+  performAccountRefresh() {
+    // this is called way to many times, implement throttling here.
+    this.accountTracker.refresh();
+    this.tokensTracker.fetchSolTokens();
   }
 }

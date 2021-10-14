@@ -1,7 +1,7 @@
 import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { PostMessageStream } from "@toruslabs/openlogin-jrpc";
-import { ExtendedAddressPreferences, SolanaTransactionActivity, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SolanaTransactionActivity, SUPPORTED_NETWORKS, TokensTrackerController } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash";
 import log from "loglevel";
@@ -63,7 +63,6 @@ class ControllerModule extends VuexModule {
 
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
-    // console.log(this.torusState.AccountTrackerState.accounts);
     // console.log(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));

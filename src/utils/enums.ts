@@ -20,6 +20,7 @@ import {
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/types/src/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 import { DatabaseIcon } from "@toruslabs/vue-icons/software";
@@ -41,6 +42,7 @@ export interface TorusControllerState extends BaseState {
   KeyringControllerState: KeyringControllerState;
   TransactionControllerState: TransactionState<Transaction>;
   EmbedControllerState: BaseEmbedControllerState;
+  TokensTrackerState: TokensTrackerState;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -50,6 +52,7 @@ export interface TorusControllerConfig extends BaseConfig {
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
   TransactionControllerConfig: TransactionConfig;
+  TokensTrackerConfig: TokensTrackerConfig;
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
