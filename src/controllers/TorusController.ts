@@ -280,8 +280,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data));
         const txRes = await this.txController.addSignTransaction(tx, req);
-        const signature = await txRes.result;
-        return { signature: signature };
+        const result = await txRes.result;
+        console.log(result);
+        return txRes.transactionMeta.transaction.serialize().toString("hex");
       },
       signAllTransactions: async (req) => {
         console.log(req.method);
@@ -314,7 +315,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
-    await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
+    const res = await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
+    console.log(res);
     return;
   }
   async approveTransaction(txId: string): Promise<void> {
@@ -347,20 +349,33 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return resp;
   }
 
-  // async providertransfer(tx: Transaction, origin?: string): Promise<string> {
-  //   const provider = await this.networkController.getProvider();
-  //   const res = await provider.sendAsync({
-  //     jsonrpc: "2.0",
-  //     id: randomId(),
-  //     method: "send_transaction",
-  //     params: {
-  //       message: bs58.encode(tx.serializeMessage()),
-  //     },
-  //   });
-  //   console.log(res);
-  //   return res as string;
-  // }
 
+  async providertransfer(tx: Transaction, origin?: string): Promise<string> {
+    const provider = await this.networkController.getProvider();
+    const res = await provider.sendAsync({
+      jsonrpc: "2.0",
+      id: randomId(),
+      method: "send_transaction",
+      params: {
+        message: bs58.encode(tx.serializeMessage()),
+      },
+    });
+    console.log(res);
+    return res as string;
+  }
+  async signtransfer(tx: Transaction): Promise<string> {
+    const provider = await this.networkController.getProvider();
+    const res = await provider.sendAsync({
+      jsonrpc: "2.0",
+      id: randomId(),
+      method: "sign_transaction",
+      params: {
+        message: tx.serializeMessage().toString("hex"),
+      },
+    });
+    console.log(res);
+    return res as string;
+  }
   //   private isUnlocked(): boolean {
   //     return !!this.prefsController.state.selectedAddress;
   //   }
@@ -550,7 +565,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // break violently
     const senderUrl = new URL(sender);
 
-    const engine = this.setupProviderEngine({ origin: senderUrl.hostname });
+    const engine = this.setupProviderEngine({ origin: senderUrl.origin });
+    log.info("initializing preferences controller with hostname", sender, senderUrl.origin);
+
+    this.preferencesController.setIframeOrigin(senderUrl.origin);
     this.engine = engine;
 
     // setup connection
@@ -559,13 +577,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     pump(providerStream as unknown as Stream, engineStream as unknown as Stream, providerStream as unknown as Stream, (error: Error | undefined) => {
       if (error) {
         // cleanup filter polyfill middleware
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        engine._middleware.forEach((mid) => {
-          if (mid.destroy && typeof mid.destroy === "function") {
-            mid.destroy();
-          }
-        });
         this.engine = undefined;
         log.error(error);
       }
@@ -608,7 +619,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // connect features && for test cases
     const torusMux = setupMultiplex(connectionStream);
     // We create the mux so that we can handle phishing stream here
-    const providerStream = torusMux.getStream("communication");
+    const providerStream = torusMux.getStream("provider");
     this.setupCommunicationProviderConnection(providerStream as Substream, originDomain);
   }
 
@@ -619,16 +630,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // break violently
     const senderUrl = new URL(sender);
 
-    const engine = this.setupCommunicationProviderEngine({ origin: senderUrl.hostname });
-    this.engine = engine;
-
+    const engine = this.setupCommunicationProviderEngine({ origin: senderUrl.origin });
+    this.communicationEngine = engine;
     // setup connection
     const engineStream = createEngineStream({ engine });
 
     pump(providerStream as unknown as Stream, engineStream as unknown as Stream, providerStream as unknown as Stream, (error: Error | undefined) => {
       if (error) {
         // cleanup filter polyfill middleware
-        this.engine = undefined;
+        this.communicationEngine = undefined;
         log.error(error);
       }
     });
@@ -638,6 +648,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
    * A method for creating a provider that is safely restricted for the requesting domain.
    * */
   setupCommunicationProviderEngine({ origin }: { origin: string }): JRPCEngine {
+    const { _communicationProviderProxy } = this.embedController;
     // setup json rpc engine stack
     const engine = new JRPCEngine();
     // const { _providerProxy } = this.networkController;
@@ -649,6 +660,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // metadata
     engine.push(createOriginMiddleware({ origin }));
     engine.push(createLoggerMiddleware({ origin }));
+    engine.push(providerAsMiddleware(_communicationProviderProxy));
 
     // TODO
     // engine.push(
@@ -696,7 +708,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       throw new Error("user denied provider change request");
     }
   }
-  async handleTransactionPopup(txId: string, req: JRPCRequest<Transaction> & { origin: string; windowId: string }): Promise<void> {
+  async handleTransactionPopup(txId: string, req: JRPCRequest<{ message: string }> & { origin: string; windowId: string }): Promise<void> {
     try {
       const windowId = req.windowId;
       console.log(windowId);
@@ -706,8 +718,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // debugger;
 
       const popupPayload: any = {
-        type: TRANSACTION_TYPES.STANDARD_TRANSACTION,
-        txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
+        type: req.method,
+        message: req.params?.message || "",
+        // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
