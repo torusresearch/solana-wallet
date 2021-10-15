@@ -122,26 +122,26 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
     label: "Solana address",
     value: SOL,
   },
-  {
-    label: "ENS domain",
-    value: ENS,
-  },
-  {
-    label: "Google account",
-    value: GOOGLE,
-  },
-  {
-    label: "Twitter handle",
-    value: TWITTER,
-  },
-  {
-    label: "Reddit username",
-    value: REDDIT,
-  },
-  {
-    label: "Discord ID",
-    value: DISCORD,
-  },
+  // {
+  //   label: "ENS domain",
+  //   value: ENS,
+  // },
+  // {
+  //   label: "Google account",
+  //   value: GOOGLE,
+  // },
+  // {
+  //   label: "Twitter handle",
+  //   value: TWITTER,
+  // },
+  // {
+  //   label: "Reddit username",
+  //   value: REDDIT,
+  // },
+  // {
+  //   label: "Discord ID",
+  //   value: DISCORD,
+  // },
 ];
 
 export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {

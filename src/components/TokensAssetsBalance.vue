@@ -77,7 +77,7 @@ function selectTab(tab: TOKEN_TABS) {
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
-                <img class="block h-5 w-auto" :src="[token.data.logoURI]" alt="TOKEN Logo" />
+                <img class="block h-5 w-auto" :src="token.data.logoURI" alt="TOKEN Logo" />
                 <p class="coin-name">{{ token.data.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">

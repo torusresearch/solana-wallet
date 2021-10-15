@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import { Connection, Message, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -714,7 +715,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
       console.log(req);
-      // debugger;
 
       const popupPayload: any = {
         type: req.method,

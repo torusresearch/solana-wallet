@@ -18,7 +18,7 @@ import WalletTabs from "@/components/WalletTabs.vue";
               <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">11 Oct 2019 @ Osaka</div>
             </div>
             <div class="col-span-1 sol_logo">
-              <img class="float-right h-2/4 sm:h-16 sol_logo_image" :src="SolanaMascot" alt />
+              <img class="float-right h-2/4 sm:h-16 sol_logo_image" :src="SolanaMascot" />
             </div>
           </div>
           <template #footer>
