@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SolanaMascot from "@/assets/solana-mascot.svg";
 import { Button, Card } from "@/components/common";
+import TokensAssetsBalance from "@/components/TokensAssetsBalance.vue";
 import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
 </script>
@@ -28,6 +29,9 @@ import WalletTabs from "@/components/WalletTabs.vue";
             </div>
           </template>
         </Card>
+      </div>
+      <div>
+        <TokensAssetsBalance class="mt-10" />
       </div>
     </div>
   </WalletTabs>
