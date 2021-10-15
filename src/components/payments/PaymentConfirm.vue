@@ -15,14 +15,10 @@ const currency = computed(() => ControllersModule.torusState.CurrencyControllerS
 
 const props = withDefaults(
   defineProps<{
-    senderPubKey: string;
     receiverPubKey: string;
-    receiverVerifierId: string;
-    receiverVerifier: string;
     cryptoAmount: number;
     cryptoTxFee: number;
     token?: string;
-    transferDisabled?: boolean;
     isGasless?: boolean;
     isOpen?: boolean;
     tokenLogoUrl?: string;
@@ -30,12 +26,9 @@ const props = withDefaults(
   {
     senderPubKey: "",
     receiverPubKey: "",
-    receiverVerifierId: "",
-    receiverVerifier: "solana",
     cryptoAmount: 0.0,
     cryptoTxFee: 0,
     token: "SOL",
-    transferDisabled: false,
     isOpen: false,
     isGasless: true,
     tokenLogoUrl: "",
