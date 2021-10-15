@@ -1,4 +1,4 @@
-import { Connection, Message, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -255,6 +255,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const balance = this.accountTracker.state.accounts[this.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9));
     return value.toString();
+  }
+
+  async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
+    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
+    const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
+    const fee = ((await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0) / LAMPORTS_PER_SOL;
+    return { b_hash, fee };
   }
 
   private initializeProvider() {

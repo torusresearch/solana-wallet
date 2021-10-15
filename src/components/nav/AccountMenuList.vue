@@ -3,6 +3,7 @@ import { InformationCircleIcon } from "@heroicons/vue/outline";
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { EXPLORER } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import { computed } from "vue";
@@ -11,7 +12,6 @@ import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
-
 const props = defineProps<{
   user: OpenloginUserInfo;
   selectedAddress: string;
@@ -21,7 +21,7 @@ const emits = defineEmits(["onLogout"]);
 const explorerUrl = computed(() => {
   const blockExplorerUrl =
     Object.values(SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torusState.NetworkControllerState.chainId)?.blockExplorerUrl || "";
-  return `https://solscan.io/account/${props.selectedAddress + blockExplorerUrl}`;
+  return `${EXPLORER}/account/${props.selectedAddress + blockExplorerUrl}`;
 });
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");

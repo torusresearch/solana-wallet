@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import { computed, reactive, ref } from "vue";
@@ -83,9 +83,9 @@ const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
 
-  const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
-  blockhash.value = (await conn.getRecentBlockhash("finalized")).blockhash;
-  transactionFee.value = ((await conn.getFeeCalculatorForBlockhash(blockhash.value)).value?.lamportsPerSignature || 0) / LAMPORTS;
+  const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
+  blockhash.value = b_hash;
+  transactionFee.value = fee / LAMPORTS;
 };
 const confirmTransfer = async () => {
   try {
