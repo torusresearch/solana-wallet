@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { FormattedTransactionActivity, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import log from "loglevel";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted } from "vue";
 
+import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { isMain, promiseCreator } from "@/utils/helpers";
 
-import { Button } from "../components/common";
 import ControllerModule from "../modules/controllers";
-
 const { resolve, promise } = promiseCreator<void>();
-
 let dappOrigin = window.location.ancestorOrigins[0] || "";
-const initParams = reactive<EmbedInitParams>({
+const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
-  torusWidgetVisibility: true,
+  isIFrameFullScreen: false,
   apiKey: "torus-default",
-  network: SUPPORTED_NETWORKS.testnet,
-});
+  network: SUPPORTED_NETWORKS["testnet"],
+  dappMetadata: {
+    icon: "",
+    name: "",
+  },
+} as EmbedInitParams;
 
 const hashParams = new URLSearchParams(window.location.hash.slice(1));
 const specifiedOrigin = hashParams.get("origin");
@@ -28,16 +30,16 @@ function startLogin() {
       const { origin, data } = ev;
       if (origin === specifiedOrigin) {
         window.removeEventListener("message", handleMessage);
+        log.info("received info from origin", origin, data);
         // Add torus controller origin setup
         if (!dappOrigin) {
           dappOrigin = origin;
         }
-        const { buttonPosition, torusWidgetVisibility, apiKey, network } = data;
+        const { buttonPosition, apiKey, network, dappMetadata } = data;
         initParams.buttonPosition = buttonPosition;
-        initParams.torusWidgetVisibility = torusWidgetVisibility;
         initParams.apiKey = apiKey;
         initParams.network = network;
-
+        initParams.dappMetadata = dappMetadata;
         if (resolve) resolve();
       }
     };
@@ -46,66 +48,82 @@ function startLogin() {
     log.error(error);
   }
 }
-
 startLogin();
-const isLoading = ref<boolean>(false);
+const isLoggedIn = computed(() => ControllerModule.torusState.PreferencesControllerState.selectedAddress !== "");
 const isLoginInProgress = computed(() => ControllerModule.torusState.EmbedControllerState.loginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torusState.EmbedControllerState.oauthModalVisibility);
-const torusWidgetVisibility = computed(() => ControllerModule.torusState.EmbedControllerState.torusWidgetVisibility);
-
-log.info("state of frame", isLoginInProgress, oauthModalVisibility, torusWidgetVisibility);
-
+const isIFrameFullScreen = computed(() => ControllerModule.torusState.EmbedControllerState.isIFrameFullScreen);
+const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
+const lastTransaction = computed(() => {
+  const txns = allTransactions.value;
+  //   txns.sort((x, y) => {
+  //     const xTime = new Date(x.rawDate).getTime();
+  //     const yTime = new Date(y.rawDate).getTime();
+  //     return yTime - xTime;
+  //   });
+  return txns.length > 0 ? txns[0] : ({} as FormattedTransactionActivity);
+});
+// const toggleIframeFullScreen = () => {
+//   ControllerModule.toggleIframeFullScreen();
+// };
 onMounted(async () => {
   if (!isMain) {
     await promise;
+    log.info("initializing controllers with origin", dappOrigin);
     ControllerModule.init({
-      EmbedControllerState: {
-        buttonPosition: initParams.buttonPosition,
-        torusWidgetVisibility: initParams.torusWidgetVisibility,
-        apiKey: initParams.apiKey,
-        oauthModalVisibility: false,
-        loginInProgress: false,
-      },
-      ...(initParams.network && {
-        NetworkControllerState: {
-          chainId: initParams.network.chainId,
-          properties: {},
-          providerConfig: initParams.network,
+      state: {
+        EmbedControllerState: {
+          buttonPosition: initParams.buttonPosition,
+          isIFrameFullScreen: initParams.isIFrameFullScreen,
+          apiKey: initParams.apiKey,
+          oauthModalVisibility: false,
+          loginInProgress: false,
+          dappMetadata: initParams.dappMetadata,
         },
-      }),
+        ...(initParams.network && {
+          NetworkControllerState: {
+            chainId: initParams.network.chainId,
+            properties: {},
+            providerConfig: initParams.network,
+          },
+        }),
+      },
+      origin: dappOrigin,
     });
     ControllerModule.setupCommunication(dappOrigin);
   }
 });
-
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
   try {
+    ControllerModule.torus.hideOAuthModal();
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: userEmail,
     });
   } catch (error) {
     log.error(error);
-  } finally {
-    isLoading.value = false;
   }
+};
+const cancelLogin = (): void => {
+  log.info("cancelLogin");
+  ControllerModule.torus.emit("LOGIN_RESPONSE", "User cancelled login");
+};
+const loginFromWidget = () => {
+  ControllerModule.torus.loginFromWidgetButton();
 };
 </script>
 
 <template>
-  <div class="min-h-[calc(50%+1rem)] bg-white dark:bg-app-gray-800 flex justify-center items-center"></div>
-  <div v-if="oauthModalVisibility">
-    <Button variant="tertiary" icon block @click="onLogin('twitter')">
-      <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
-    </Button>
-    <Button variant="tertiary" icon block @click="onLogin('google')">
-      <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
-    </Button>
-  </div>
-  <div v-if="isLoginInProgress">
-    <h2>Loading</h2>
-  </div>
-  <div v-if="torusWidgetVisibility">
-    <h2>Widget</h2>
+  <div class="min-h-screen flex justify-center ite1ms-center">
+    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @onClose="cancelLogin" @on-login="onLogin" />
+    <PopupWidget
+      :last-transaction="lastTransaction"
+      :is-iframe-full-screen="isIFrameFullScreen"
+      :is-logged-in="isLoggedIn"
+      :button-position="initParams.buttonPosition"
+      :is-login-in-progress="isLoginInProgress"
+      @show-login-modal="loginFromWidget"
+      @toggle-panel="ControllerModule.toggleIframeFullScreen"
+    />
   </div>
 </template>

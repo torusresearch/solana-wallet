@@ -5,12 +5,14 @@ import {
   BaseEmbedController,
   BaseEmbedControllerState,
   BROADCAST_CHANNELS,
+  COMMUNICATION_NOTIFICATIONS,
   CommunicationWindowManager,
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
   ICommunicationProviderHandlers,
   PopupWithBcHandler,
+  PROVIDER_NOTIFICATIONS,
   providerAsMiddleware,
   ProviderConfig,
   SafeEventEmitterProvider,
@@ -19,7 +21,17 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import { createEngineStream, JRPCEngine, JRPCRequest, setupMultiplex, Stream, Substream } from "@toruslabs/openlogin-jrpc";
+import {
+  createEngineStream,
+  JRPCEngine,
+  JRPCEngineEndCallback,
+  JRPCEngineNextCallback,
+  JRPCRequest,
+  JRPCResponse,
+  setupMultiplex,
+  Stream,
+  Substream,
+} from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
@@ -229,6 +241,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     //   }, 50);
     // }
     // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
+  }
+
+  get origin(): string {
+    return this.preferencesController.iframeOrigin;
+  }
+
+  setOrigin(origin: string): void {
+    this.preferencesController.setIframeOrigin(origin);
   }
 
   get userSOLBalance(): string {
@@ -496,6 +516,77 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController.update({
       isIFrameFullScreen,
     });
+  }
+
+  logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {
+    this.emit("logout");
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.ACCOUNTS_CHANGED,
+      params: [],
+    });
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+      params: {
+        accounts: [],
+        isUnlocked: false,
+      },
+    });
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_OUT,
+    });
+    res.result = true;
+    end();
+  }
+
+  toggleIframeFullScreen(id?: string): void {
+    const newState = !this.embedController.state.isIFrameFullScreen;
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.IFRAME_STATUS,
+      params: {
+        isFullScreen: newState,
+        rid: id,
+      },
+    });
+  }
+
+  public loginFromWidgetButton(): void {
+    const id = randomId();
+    this.toggleIframeFullScreen(id);
+    this.once(id, () => {
+      this.embedController.update({
+        loginInProgress: true,
+        oauthModalVisibility: true,
+      });
+    });
+    this.once("LOGIN_RESPONSE", (error: string, publicKey: string) => {
+      const id2 = randomId();
+      this.embedController.update({ oauthModalVisibility: false });
+      setTimeout(() => {
+        this.toggleIframeFullScreen(id2);
+      }, 100);
+      this.once(id2, () => {
+        this.embedController.update({ loginInProgress: false });
+      });
+      if (error) {
+        log.error(error);
+      } else if (publicKey) {
+        this.engine?.emit("notification", {
+          method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+          params: {
+            accounts: [publicKey],
+            isUnlocked: true,
+          },
+        });
+        this.communicationEngine?.emit("notification", {
+          method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+        });
+      }
+    });
+  }
+
+  public hideOAuthModal(): void {
+    this.embedController.update({ oauthModalVisibility: false });
   }
 
   private initializeCommunicationProvider() {

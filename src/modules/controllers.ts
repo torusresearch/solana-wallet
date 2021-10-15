@@ -74,8 +74,9 @@ class ControllerModule extends VuexModule {
    * Call once on refresh
    */
   @Action
-  public init(state?: Partial<TorusControllerState>): void {
+  public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
     this.torus.init({ config: DEFAULT_CONFIG, state: merge(this.torusState, state) });
+    this.torus.setOrigin(origin);
     this.torus.on("store", (state: TorusControllerState) => {
       this.updateTorusState(state);
     });
@@ -127,6 +128,11 @@ class ControllerModule extends VuexModule {
     const providerConfig = Object.values(SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
     this.torus.setNetwork(providerConfig);
+  }
+
+  @Action
+  public toggleIframeFullScreen(): void {
+    this.torus.toggleIframeFullScreen();
   }
 
   isDarkMode(): boolean {
