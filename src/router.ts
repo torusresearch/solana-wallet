@@ -27,6 +27,21 @@ const router = createRouter({
       meta: { title: "Confirm" },
     },
     {
+      path: "/redirect",
+      component: () => import("@/pages/RedirectHandler.vue"),
+      meta: { title: "redirecting" },
+    },
+    {
+      path: "/providerchange",
+      component: () => import("@/pages/ProviderChange.vue"),
+      meta: { title: "ProviderChange" },
+    },
+    {
+      path: "/frame",
+      component: () => import("@/pages/Frame.vue"),
+      meta: { title: "Frame" },
+    },
+    {
       path: "/logout",
       component: () => import("@/pages/Logout.vue"),
       meta: { title: "Logout" },

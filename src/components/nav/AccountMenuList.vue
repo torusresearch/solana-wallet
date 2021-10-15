@@ -2,6 +2,7 @@
 import { InformationCircleIcon } from "@heroicons/vue/outline";
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
+import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import { computed } from "vue";
@@ -9,12 +10,19 @@ import { computed } from "vue";
 import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
+import { copyText } from "@/utils/helpers";
 
-defineProps<{
+const props = defineProps<{
   user: OpenloginUserInfo;
   selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
+
+const explorerUrl = computed(() => {
+  const blockExplorerUrl =
+    Object.values(SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torusState.NetworkControllerState.chainId)?.blockExplorerUrl || "";
+  return `https://solscan.io/account/${props.selectedAddress + blockExplorerUrl}`;
+});
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
 
@@ -23,6 +31,10 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
 
 const logout = () => {
   emits("onLogout");
+};
+
+const copySelectedAddress = () => {
+  copyText(props.selectedAddress);
 };
 </script>
 
@@ -43,16 +55,20 @@ const logout = () => {
         <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ formattedBalance }} {{ currency }}</div>
       </div>
       <div class="flex">
-        <div class="font-body text-xxs w-52 pl-5 text-app-text-400 dark:text-app-text-dark-500 break-all">{{ selectedAddress }}</div>
+        <div class="font-body text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
+          {{ selectedAddress }}
+        </div>
         <div class="ml-auto flex space-x-1">
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-            <CopyIcon class="w-4 h-4" />
+            <CopyIcon class="w-4 h-4" @click="copySelectedAddress" />
           </div>
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
             <QrcodeIcon class="w-4 h-4" />
           </div>
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-            <ExternalLinkIcon class="w-4 h-4" />
+            <a :href="explorerUrl" target="_blank" rel="noreferrer noopener">
+              <ExternalLinkIcon class="w-4 h-4" />
+            </a>
           </div>
         </div>
       </div>

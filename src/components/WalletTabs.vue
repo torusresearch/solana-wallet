@@ -14,10 +14,9 @@ defineProps<{
 }>();
 
 const tabs = NAVIGATION_LIST;
-const user = ControllerModule.userInfo;
+const user = ControllerModule.torus.userInfo;
 const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
 let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
-
 const logout = () => {
   ControllerModule.logout();
 };

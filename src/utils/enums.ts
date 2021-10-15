@@ -1,24 +1,27 @@
+import { Transaction } from "@solana/web3.js";
 import {
   AccountTrackerConfig,
   AccountTrackerState,
   BaseConfig,
   BaseCurrencyControllerConfig,
   BaseCurrencyControllerState,
+  BaseEmbedControllerState,
   BaseState,
   KeyringControllerState,
   NetworkConfig,
   NetworkState,
+  ProviderConfig,
   // PreferencesConfig,
   // PreferencesState,
   // SafeEventEmitterProvider,
+  TransactionConfig,
+  TransactionState,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
-// import { SolanaKeyringControllerState } from "@toruslabs/solana-controllers";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
-import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers/types/src/Preferences/PreferencesController";
+import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
-import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
@@ -35,6 +38,8 @@ export interface TorusControllerState extends BaseState {
   PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
+  TransactionControllerState: TransactionState<Transaction>;
+  EmbedControllerState: BaseEmbedControllerState;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -43,6 +48,7 @@ export interface TorusControllerConfig extends BaseConfig {
   PreferencesControllerConfig: SolanaPreferencesConfig;
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
+  TransactionControllerConfig: TransactionConfig;
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
@@ -58,24 +64,24 @@ export const NAVIGATION_LIST = {
     route: "home",
     icon: PlusIcon,
   },
-  // transfer: {
-  //   name: "Transfer",
-  //   title: "Transfer Details",
-  //   route: "transfer",
-  //   icon: ArrowBoldForvardIcon,
-  // },
+  transfer: {
+    name: "Transfer",
+    title: "Transfer Details",
+    route: "transfer",
+    icon: ArrowBoldForvardIcon,
+  },
   // topup: {
   //   name: "Top Up",
   //   title: "Select a Provider",
   //   route: "topup",
   //   icon: DatabaseIcon,
   // },
-  // activity: {
-  //   name: "Activity",
-  //   title: "Transaction Activities",
-  //   route: "activity",
-  //   icon: ListIcon,
-  // },
+  activity: {
+    name: "Activity",
+    title: "Transaction Activities",
+    route: "activity",
+    icon: ListIcon,
+  },
   settings: {
     name: "Settings",
     title: "Settings",
@@ -142,4 +148,39 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [TWITTER]: `Twitter username begins with "@"`,
   [GITHUB]: "Invalid GitHub username",
   [ENS]: "Invalid ENS address",
+};
+
+export const STATUS_SUCCESS = "success";
+export const STATUS_WARNING = "warning";
+export const STATUS_ERROR = "error";
+export const STATUS_INFO = "info";
+export type STATUS_TYPE = typeof STATUS_SUCCESS | typeof STATUS_WARNING | typeof STATUS_ERROR | typeof STATUS_INFO;
+// export type TX_TYPE = "Transfer" | "Deploy" | "Buy Crypto";
+
+export const BUTTON_POSITION = {
+  BOTTOM_LEFT: "bottom-left",
+  TOP_LEFT: "top-left",
+  BOTTOM_RIGHT: "bottom-right",
+  TOP_RIGHT: "top-right",
+} as const;
+
+export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_POSITION];
+
+export interface EmbedInitParams {
+  buttonPosition: BUTTON_POSITION_TYPE;
+  torusWidgetVisibility: boolean;
+  apiKey: string;
+  network: ProviderConfig;
+}
+
+export type TransactionChannelDataType = {
+  type: string;
+  message: string;
+  origin: string;
+  balance: string;
+  selectedCurrency: string;
+  currencyRate: string;
+  jwtToken: string;
+  network: string;
+  networkDetails: ProviderConfig;
 };
