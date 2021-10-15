@@ -34,10 +34,10 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
     <template v-if="showButtons" #footer>
       <div class="grid grid-cols-2 gap-3 mt-3">
         <div>
-          <Button block variant="tertiary" @click="router.push('/wallet/topup')">Top up</Button>
+          <Button :block="true" variant="tertiary" @click="router.push('/wallet/topup')">Top up</Button>
         </div>
         <div>
-          <Button block variant="tertiary" @click="router.push('/wallet/transfer')">Transfer</Button>
+          <Button :block="true" variant="tertiary" @click="router.push('/wallet/transfer')">Transfer</Button>
         </div>
       </div>
     </template>

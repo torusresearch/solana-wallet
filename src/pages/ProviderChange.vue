@@ -37,7 +37,9 @@ const denyProviderChange = async () => {
   <div class="min-h-screen bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
-        <div><img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /></div>
+        <div>
+          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode() ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" />
+        </div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Permissions</div>
       </div>
       <div class="p-5">
@@ -54,8 +56,8 @@ const denyProviderChange = async () => {
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" block variant="tertiary" @click="denyProviderChange()">Cancel</Button></div>
-        <div><Button class="ml-auto" block variant="primary" @click="approveProviderChange()">Confirm</Button></div>
+        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">Cancel</Button></div>
+        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">Confirm</Button></div>
       </div>
     </div>
   </div>

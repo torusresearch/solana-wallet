@@ -1,4 +1,3 @@
-/* eslint-disable no-debugger */
 import { Connection, Message, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -155,16 +154,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       provider: this.networkController._providerProxy,
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
+      // blockTracker: this.networkController._blockTrackerProxy,
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
-    });
-
-    this.tokensTracker = new TokensTrackerController({
-      provider: this.networkController._providerProxy,
-      state: this.state.TokensTrackerState,
-      config: this.config.TokensTrackerConfig,
-      getIdentities: () => this.preferencesController.state.identities,
-      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
+      // onNetworkChange: (listener) => this.networkController.on("store", listener),
     });
 
     this.txController = new TransactionController({
@@ -174,6 +167,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
       provider: this.networkController._providerProxy,
       getCurrentChainId: this.networkController.getNetworkIdentifier.bind(this.networkController),
       signTransaction: this.keyringController.signTransaction.bind(this.keyringController),
+    });
+
+    this.tokensTracker = new TokensTrackerController({
+      provider: this.networkController._providerProxy,
+      state: this.state.TokensTrackerState,
+      config: this.config.TokensTrackerConfig,
+      getIdentities: () => this.preferencesController.state.identities,
+      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
@@ -189,12 +190,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
-      this.preferencesController.sync(this.preferencesController.state.selectedAddress);
-      this.performAccountRefresh();
-    });
-
-    this.preferencesController.on("store", () => {
-      this.performAccountRefresh();
+      console.log("network changed");
     });
 
     this.networkController.lookupNetwork();
@@ -781,11 +777,5 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(error);
       throw error;
     }
-  }
-
-  performAccountRefresh(): void {
-    // this is called way to many times, implement throttling here.
-    this.accountTracker.refresh();
-    this.tokensTracker.fetchSolTokens();
   }
 }

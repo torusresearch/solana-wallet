@@ -10,7 +10,7 @@ import WalletTabs from "@/components/WalletTabs.vue";
   <WalletTabs tab="home">
     <div class="py-2">
       <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        <WalletBalance show-buttons />
+        <WalletBalance :show-buttons="true" />
         <Card :height="'164px'">
           <div class="grid grid-cols-3 h-full">
             <div class="col-span-2">
@@ -24,7 +24,7 @@ import WalletTabs from "@/components/WalletTabs.vue";
           <template #footer>
             <div class="flex sm:grid grid-cols-2 gap-3 mt-3">
               <div class="w-full sm:w-auto">
-                <Button block variant="tertiary">More information</Button>
+                <Button :block="true" variant="tertiary">More information</Button>
               </div>
             </div>
           </template>

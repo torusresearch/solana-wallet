@@ -26,7 +26,7 @@ interface FinalTxData {
   totalFiatAmount: string;
   totalFiatFee: string;
   transactionType: string;
-  totalCsprCost: string;
+  totalSolCost: string;
   totalFiatCost: string;
   networkDisplayName: string;
 }
@@ -38,7 +38,7 @@ let finalTxData = reactive<FinalTxData>({
   totalFiatAmount: "",
   totalFiatFee: "",
   transactionType: "",
-  totalCsprCost: "",
+  totalSolCost: "",
   totalFiatCost: "",
   networkDisplayName: "",
 });
@@ -71,8 +71,8 @@ onMounted(async () => {
     const from = decoded[0].fromPubkey; // encodeBase16(deserializedDeploy.header.account.toAccountHash()); // this is account hash of sender
     const to = decoded[0].toPubkey; // Buffer.from(deserializedDeploy.session.getArgByName("target")?.value())?.toString("hex"); // this is account hash of receiver
     const txFee = block.feeCalculator.lamportsPerSignature; // deserializedDeploy.payment.getArgByName("amount")?.value().toNumber() || 0;
-    const txAmount = decoded[0].lamports / LAMPORTS_PER_SOL; //deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
-    const totalCsprCost = new BigNumber(txFee).plus(txAmount).div(10 ** 9);
+    const txAmount = decoded[0].lamports; //deserializedDeploy.session.getArgByName("amount")?.value().toNumber() || 0;
+    const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
     // const totalCurrencyAmount = totalAmount.multipliedBy(currencyData.conversionRate);
     // const totalAmountString = formatSmallNumbers(totalAmount.toNumber(), currencyData.networkNativeCurrency.toUpperCase(), true);
     // const currencyAmountString = formatSmallNumbers(totalCurrencyAmount.toNumber(), currencyData.selectedCurrency, true);
@@ -80,9 +80,7 @@ onMounted(async () => {
     finalTxData.slicedReceiverAddress = to.toBase58();
     finalTxData.totalCsprAmount = new BigNumber(txAmount).div(10 ** 9).toString();
     finalTxData.totalCsprFee = new BigNumber(txFee).div(10 ** 9).toString();
-    // finalTxData.totalFiatAmount = "";
-    // finalTxData.totalFiatFee = "";
-    finalTxData.totalCsprCost = totalCsprCost.toString();
+    finalTxData.totalSolCost = totalSolCost.toString();
     finalTxData.transactionType = "";
     finalTxData.networkDisplayName = txData.networkDetails?.displayName;
   } catch (error) {
@@ -155,14 +153,14 @@ const rejectTxn = async () => {
           <hr class="mb-6" />
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-1 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Total Cost</div>
-            <div class="col-span-2"><TextField v-model="finalTxData.totalCsprCost" disabled type="number" /></div>
+            <div class="col-span-2"><TextField v-model="finalTxData.totalSolCost" disabled type="number" /></div>
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" block variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
-        <div><Button class="ml-auto" block variant="primary" @click="approveTxn()">Confirm</Button></div>
+        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
+        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveTxn()">Confirm</Button></div>
       </div>
     </div>
   </div>

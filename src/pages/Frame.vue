@@ -95,10 +95,10 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) =
 <template>
   <div class="min-h-[calc(50%+1rem)] bg-white dark:bg-app-gray-800 flex justify-center items-center"></div>
   <div v-if="oauthModalVisibility">
-    <Button variant="tertiary" icon block @click="onLogin('twitter')">
+    <Button variant="tertiary" icon :block="true" @click="onLogin('twitter')">
       <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
     </Button>
-    <Button variant="tertiary" icon block @click="onLogin('google')">
+    <Button variant="tertiary" icon :block="true" @click="onLogin('google')">
       <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
     </Button>
   </div>
