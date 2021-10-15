@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_UNSUCCESSFUL } from "@toruslabs/base-controllers";
-// import {  } from "@toruslabs/solana-controllers"
-import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
-import { formatDistance } from "date-fns";
-// import { FormattedTransactionActivity } from "@toruslabs/casper-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { computed, ref } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
@@ -50,7 +47,7 @@ const openExplorerLink = (link: string) => {
     @click="toggleDetails(activity.blockExplorerUrl)"
   >
     <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0">
-      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ formatDistance(activity.updated_at * 1000, new Date()) }}</div>
+      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ (activity.updated_at || 0) * 1000 }}</div>
     </div>
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
       <div class="flex">

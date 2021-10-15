@@ -3,7 +3,7 @@ import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-import { decimal } from "@vuelidate/validators";
+// import { decimal } from "@vuelidate/validators";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 // import { DeployUtil, encodeBase16 } from "casper-js-sdk";
@@ -76,8 +76,8 @@ onMounted(async () => {
     // const totalCurrencyAmount = totalAmount.multipliedBy(currencyData.conversionRate);
     // const totalAmountString = formatSmallNumbers(totalAmount.toNumber(), currencyData.networkNativeCurrency.toUpperCase(), true);
     // const currencyAmountString = formatSmallNumbers(totalCurrencyAmount.toNumber(), currencyData.selectedCurrency, true);
-    finalTxData.slicedSenderAddress = from.toBase58();
-    finalTxData.slicedReceiverAddress = to.toBase58();
+    finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
+    finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
     finalTxData.totalCsprAmount = new BigNumber(txAmount).div(10 ** 9).toString();
     finalTxData.totalCsprFee = new BigNumber(txFee).div(10 ** 9).toString();
     // finalTxData.totalFiatAmount = "";
