@@ -14,8 +14,8 @@ import WalletTabs from "@/components/WalletTabs.vue";
         <Card :height="'164px'">
           <div class="grid grid-cols-3 h-full">
             <div class="col-span-2">
-              <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us at User X Devcon After-Party</div>
-              <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">11 Oct 2019 @ Osaka</div>
+              <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us for Solana breakpoint</div>
+              <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">7 Nov 2021 @ Lisbon</div>
             </div>
             <div class="col-span-1 sol_logo">
               <img class="float-right h-2/4 sm:h-16 sol_logo_image" :src="SolanaMascot" />
