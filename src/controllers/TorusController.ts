@@ -253,6 +253,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return value.toString();
   }
 
+  get origin(): string {
+    return this.preferencesController.iframeOrigin;
+  }
+
+  setOrigin(origin: string): void {
+    this.preferencesController.setIframeOrigin(origin);
+  }
+
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
