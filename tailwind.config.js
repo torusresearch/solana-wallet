@@ -10,7 +10,7 @@ const appColors = {
 };
 
 module.exports = {
-  purge: ["index.html", "src/**/*.{ts,tsx,vue}"],
+  purge: ["public/index.html", "src/**/*.{ts,tsx,jsx,js,vue}", "node_modules/\\@toruslabs/**/*.{ts,tsx,jsx,js,vue}"],
   darkMode: "class",
   theme: {
     extend: {

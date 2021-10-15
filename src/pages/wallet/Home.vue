@@ -23,7 +23,7 @@ import WalletTabs from "@/components/WalletTabs.vue";
           <template #footer>
             <div class="flex sm:grid grid-cols-2 gap-3 mt-3">
               <div class="w-full sm:w-auto">
-                <Button block variant="tertiary">More information</Button>
+                <Button :block="true" variant="tertiary">More information</Button>
               </div>
             </div>
           </template>

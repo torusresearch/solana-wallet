@@ -161,8 +161,8 @@ const rejectTxn = async () => {
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" block variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
-        <div><Button class="ml-auto" block variant="primary" @click="approveTxn()">Confirm</Button></div>
+        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
+        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveTxn()">Confirm</Button></div>
       </div>
     </div>
   </div>

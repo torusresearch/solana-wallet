@@ -70,22 +70,22 @@ const onEmailLogin = () => {
           </div>
           <div class="grid grid-cols-3 gap-2 w-10/12">
             <div class="col-span-3">
-              <Button variant="tertiary" block @click="onLogin('google')"
+              <Button variant="tertiary" :block="true" @click="onLogin('google')"
                 ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />Continue with Google</Button
               >
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon block @click="onLogin('facebook')">
+              <Button variant="tertiary" icon :block="true" @click="onLogin('facebook')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon block @click="onLogin('twitter')">
+              <Button variant="tertiary" icon :block="true" @click="onLogin('twitter')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon block @click="onLogin('discord')">
+              <Button variant="tertiary" icon :block="true" @click="onLogin('discord')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-discord.8a29d113.svg" alt="" />
               </Button>
             </div>
@@ -101,7 +101,7 @@ const onEmailLogin = () => {
           <div class="mt-3 w-10/12">
             <form @submit.prevent="onEmailLogin">
               <TextField v-model.lazy="userEmail" variant="dark-bg" class="mb-3" placeholder="Enter your email" :errors="$v.userEmail.$errors" />
-              <Button variant="tertiary" block type="submit">Continue with Email</Button>
+              <Button variant="tertiary" :block="true" type="submit">Continue with Email</Button>
             </form>
           </div>
           <div class="mt-8 mb-2 w-10/12">
