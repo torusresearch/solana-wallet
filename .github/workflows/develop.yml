@@ -1,0 +1,64 @@
+name: Testnet release
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [develop]
+
+jobs:
+  build:
+    name: build
+    strategy:
+      matrix:
+        node: ["14.x"]
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: Node dependency cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ matrix.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ matrix.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate build
+        run: npm run build -- --mode testing
+
+      # Upload to S3
+      - name: sync s3
+        uses: jakejarvis/s3-sync-action@master
+        env:
+          SOURCE_DIR: "dist"
+          AWS_REGION: "us-east-1"
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_BETA }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Invalidate Cloudfront (this action)
+      - name: invalidate
+        uses: chetan/invalidate-cloudfront-action@master
+        env:
+          DISTRIBUTION: ${{ secrets.DISTRIBUTION_BETA }}
+          PATHS: "/*"
+          AWS_REGION: "us-east-1"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

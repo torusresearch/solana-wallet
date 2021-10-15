@@ -22,7 +22,6 @@ import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
-import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
