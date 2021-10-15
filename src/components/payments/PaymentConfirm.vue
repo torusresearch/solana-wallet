@@ -74,63 +74,64 @@ const totalFiatCostString = computed(() => {
 });
 </script>
 <template>
-  <div
-    :class="{ dark: app.isDarkMode }"
-    class="
-      inline-block
-      w-screen
-      h-screen
-      overflow-hidden
-      text-left
-      align-middle
-      transition-all
-      transform
-      bg-white
-      dark:bg-app-gray-700
-      shadow-xl
-      flex flex-col
-      justify-between
-      align-start
-    "
-  >
-    <div class="shadow dark:shadow-dark text-center py-6 flex flex-row justify-center items-center" tabindex="0">
-      <div>
-        <img class="h-7 mx-auto w-auto mb-1 logo" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
+  <div :class="{ dark: app.isDarkMode }" class="w-screen h-screen bg-white dark:bg-app-gray-700 align-middle flex items-center justify-center">
+    <div
+      class="
+        wrapper-div
+        inline-block
+        overflow-hidden
+        text-left
+        align-middle
+        transition-all
+        transform
+        bg-white
+        dark:bg-app-gray-700
+        shadow-xl
+        flex flex-col
+        justify-between
+        align-start
+        max-w-sm
+      "
+    >
+      <div class="shadow dark:shadow-dark text-center py-6 flex flex-row justify-center items-center" tabindex="0">
+        <div>
+          <img class="h-7 mx-auto w-auto mb-1 logo" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
+        </div>
+        <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">Payment Confirmation</div>
       </div>
-      <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">Payment Confirmation</div>
-    </div>
-    <div class="mt-4 px-6 items-center">
-      <div class="flex flex-col justify-start items-start">
-        <NetworkDisplay />
-        <p class="rec_pub_key text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">Pay to : {{ props.receiverPubKey }}</p>
+      <div class="mt-4 px-6 items-center">
+        <div class="flex flex-col justify-start items-start">
+          <NetworkDisplay />
+          <p class="rec_pub_key text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">Pay to : {{ props.receiverPubKey }}</p>
+        </div>
       </div>
-    </div>
-    <hr class="m-5" />
-    <div class="mt-4 px-6 items-center">
-      <div class="flex flex-col justify-start items-start">
-        <span class="flex flex-row justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>You Pay</p>
-          <p>{{ props.cryptoAmount }} {{ props.token }}</p>
-        </span>
+      <hr class="m-5" />
+      <div class="mt-4 px-6 items-center">
+        <div class="flex flex-col justify-start items-start">
+          <span class="flex flex-row justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
+            <p>You Pay</p>
+            <p>{{ props.cryptoAmount }} {{ props.token }}</p>
+          </span>
 
-        <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>Transaction Fee <img :src="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
-          <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
-        </span>
-        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent">View more details</p>
+          <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
+            <p>Transaction Fee <img :src="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+            <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
+          </span>
+          <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent">View more details</p>
+        </div>
       </div>
-    </div>
-    <hr class="m-5" />
-    <div class="flex px-6">
-      <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">Total Cost</div>
-      <div class="ml-auto text-right">
-        <div class="font-body text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
-        <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
+      <hr class="m-5" />
+      <div class="flex px-6">
+        <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">Total Cost</div>
+        <div class="ml-auto text-right">
+          <div class="font-body text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
+          <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
+        </div>
       </div>
-    </div>
-    <div class="grid grid-cols-2 gap-3 m-6">
-      <div><Button class="ml-auto" block variant="tertiary" @click="onCancel">Cancel</Button></div>
-      <div><Button class="ml-auto" block variant="primary" @click="onConfirm">Confirm</Button></div>
+      <div class="grid grid-cols-2 gap-3 m-6">
+        <div><Button class="ml-auto" block variant="tertiary" @click="onCancel">Cancel</Button></div>
+        <div><Button class="ml-auto" block variant="primary" @click="onConfirm">Confirm</Button></div>
+      </div>
     </div>
   </div>
 </template>
@@ -152,5 +153,9 @@ hr {
 }
 .logo {
   transform: translateX(100%);
+}
+.wrapper-div {
+  max-height: 508px;
+  height: 100%;
 }
 </style>
