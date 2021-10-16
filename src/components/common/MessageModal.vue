@@ -62,7 +62,7 @@ const closeModal = () => {
                 <div v-if="description" class="text-center mt-3 font-body text-base text-app-text-500 dark:text-app-text-dark-500">
                   {{ description }}
                 </div>
-                <Button class="mt-5" block variant="tertiary" @click="closeModal">Close</Button>
+                <Button class="mt-5" :block="true" variant="tertiary" @click="closeModal">Close</Button>
               </div>
             </div>
           </TransitionChild>
