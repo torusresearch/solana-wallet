@@ -1,5 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import copyToClipboard from "copy-to-clipboard";
+import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
@@ -14,7 +15,7 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
 export const isMain = window.self === window.top;
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
-  console.log("ruleVerifierId", value);
+  log.info("ruleVerifierId", value);
   if (selectedTypeOfLogin === SOL) {
     try {
       new PublicKey(value);

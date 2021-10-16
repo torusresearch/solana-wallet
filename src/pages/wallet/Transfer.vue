@@ -2,6 +2,7 @@
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
+import log from "loglevel";
 import { computed, reactive, ref } from "vue";
 
 import { Button, Card, MessageModal, SelectField, TextField } from "@/components/common";
@@ -97,7 +98,7 @@ const confirmTransfer = async () => {
     let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
     const res = await ControllersModule.torus.transfer(tf);
     // const res = await ControllersModule.torus.providertransfer(tf);
-    console.log(res);
+    log.info(res);
 
     showMessageModal({ messageTitle: `Your transfer is being processed.`, messageStatus: STATUS_INFO });
     // resetForm();

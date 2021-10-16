@@ -8,7 +8,7 @@ import { PlusIcon } from "@toruslabs/vue-icons/basic";
 import { CreditcardFaceIcon } from "@toruslabs/vue-icons/finance";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
-import SolanaLogoLight from "@/assets/solana-light.svg";
+import SolanaMascot from "@/assets/solana-mascot.svg";
 import ControllersModule from "@/modules/controllers";
 const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllersModule.selectedAddress);
@@ -107,7 +107,7 @@ const closePanel = () => {
                 </div>
               </div>
               <button class="torus-widget__button">
-                <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
+                <img class="torus-widget__button-img" :src="SolanaMascot" alt="Login icon" />
               </button>
             </div>
           </TransitionChild>
