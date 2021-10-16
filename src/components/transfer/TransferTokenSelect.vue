@@ -22,14 +22,14 @@ const mainToken: Token = {
 };
 
 const tokens: Token[] = [
-  {
-    name: "Ethereum",
-    iconURL: app.value.isDarkMode ? EthereumLightLogoURL : EthereumLogoURL,
-  },
-  {
-    name: "Bitcoin",
-    iconURL: BitcoinLogoURL,
-  },
+  // {
+  //   name: "Ethereum",
+  //   iconURL: app.value.isDarkMode ? EthereumLightLogoURL : EthereumLogoURL,
+  // },
+  // {
+  //   name: "Bitcoin",
+  //   iconURL: BitcoinLogoURL,
+  // },
 ];
 
 const selectedToken = ref(mainToken);
@@ -40,7 +40,7 @@ const selectedToken = ref(mainToken);
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
-          <img :src="selectedToken.iconURL" alt class="flex-shrink-0 h-6 w-6 rounded-full" />
+          <img :src="selectedToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedToken.name }}
           </span>
@@ -80,13 +80,13 @@ const selectedToken = ref(mainToken);
               ]"
             >
               <div class="flex items-center">
-                <img :src="mainToken.iconURL" alt class="flex-shrink-0 h-6 w-6 rounded-full" />
+                <img :src="mainToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ mainToken.name }}</span>
               </div>
             </li>
           </ListboxOption>
 
-          <div class="flex items-center px-3 py-4 border-t">
+          <!-- <div class="flex items-center px-3 py-4 border-t">
             <img :src="app.isDarkMode ? TokenLightLogoURL : TokenLogoURL" class="h-4 w-4 mr-2" />
             <div class="font-body text-app-text-600 dark:text-app-text-dark-500 capitalize">Tokens</div>
           </div>
@@ -98,11 +98,11 @@ const selectedToken = ref(mainToken);
               ]"
             >
               <div class="flex items-center">
-                <img :src="item.iconURL" alt class="flex-shrink-0 h-6 w-6 rounded-full" />
+                <img :src="item.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ item.name }}</span>
               </div>
             </li>
-          </ListboxOption>
+          </ListboxOption> -->
         </ListboxOptions>
       </transition>
     </div>

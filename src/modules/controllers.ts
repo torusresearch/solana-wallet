@@ -1,7 +1,7 @@
 import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { PostMessageStream } from "@toruslabs/openlogin-jrpc";
-import { ExtendedAddressPreferences, SolanaTransactionActivity, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SolanaTransactionActivity, SUPPORTED_NETWORKS, TokensTrackerController } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash";
 import log from "loglevel";
@@ -118,9 +118,10 @@ class ControllerModule extends VuexModule {
 
   @Action
   logout(): void {
-    // this.update(DEFAULT_USER_INFO);
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
-    this.resetTorusController();
+    const origin = this.torus.origin;
+    this.torus.init({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
+    this.torus.setOrigin(origin);
   }
 
   @Action

@@ -1,6 +1,7 @@
 {
   "version": "0.2",
   "words": [
+    "bignumber",
     "headlessui",
     "heroicons",
     "jrpc",
@@ -9,6 +10,7 @@
     "passwordless",
     "pify",
     "scripthost",
+    "solana",
     "tailwindcss",
     "topup",
     "toruslabs",

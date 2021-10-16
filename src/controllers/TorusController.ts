@@ -42,6 +42,8 @@ import {
   NetworkController,
   PreferencesController,
   SUPPORTED_NETWORKS,
+  TokensTrackerController,
+  TRANSACTION_TYPES,
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
@@ -102,6 +104,7 @@ export const DEFAULT_STATE = {
       icon: "",
     },
   },
+  TokensTrackerState: { tokens: undefined },
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
@@ -113,6 +116,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private txController!: TransactionController;
   private communicationEngine?: JRPCEngine;
   private embedController!: BaseEmbedController<BaseConfig, BaseEmbedControllerState>;
+  private tokensTracker!: TokensTrackerController;
   private engine?: JRPCEngine;
 
   public communicationManager = new CommunicationWindowManager();
@@ -177,6 +181,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signTransaction: this.keyringController.signTransaction.bind(this.keyringController),
     });
 
+    this.tokensTracker = new TokensTrackerController({
+      provider: this.networkController._providerProxy,
+      state: this.state.TokensTrackerState,
+      config: this.config.TokensTrackerConfig,
+      getIdentities: () => this.preferencesController.state.identities,
+      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
+    });
+
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
       log.info(req);
       this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
@@ -210,6 +222,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.accountTracker.on("store", (state) => {
       this.update({ AccountTrackerState: state });
+    });
+
+    this.tokensTracker.on("store", (state) => {
+      this.update({ TokensTrackerState: state });
     });
 
     this.keyringController.on("store", (state) => {

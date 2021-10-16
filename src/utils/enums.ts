@@ -20,6 +20,7 @@ import {
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 
@@ -40,6 +41,7 @@ export interface TorusControllerState extends BaseState {
   KeyringControllerState: KeyringControllerState;
   TransactionControllerState: TransactionState<Transaction>;
   EmbedControllerState: BaseEmbedControllerState;
+  TokensTrackerState: TokensTrackerState;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -49,6 +51,7 @@ export interface TorusControllerConfig extends BaseConfig {
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
   TransactionControllerConfig: TransactionConfig;
+  TokensTrackerConfig: TokensTrackerConfig;
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
@@ -118,26 +121,26 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
     label: "Solana address",
     value: SOL,
   },
-  {
-    label: "ENS domain",
-    value: ENS,
-  },
-  {
-    label: "Google account",
-    value: GOOGLE,
-  },
-  {
-    label: "Twitter handle",
-    value: TWITTER,
-  },
-  {
-    label: "Reddit username",
-    value: REDDIT,
-  },
-  {
-    label: "Discord ID",
-    value: DISCORD,
-  },
+  // {
+  //   label: "ENS domain",
+  //   value: ENS,
+  // },
+  // {
+  //   label: "Google account",
+  //   value: GOOGLE,
+  // },
+  // {
+  //   label: "Twitter handle",
+  //   value: TWITTER,
+  // },
+  // {
+  //   label: "Reddit username",
+  //   value: REDDIT,
+  // },
+  // {
+  //   label: "Discord ID",
+  //   value: DISCORD,
+  // },
 ];
 
 export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
