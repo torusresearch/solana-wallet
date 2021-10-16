@@ -64,7 +64,7 @@ const fiatAmountString = computed(() => {
 });
 
 const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
+  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 const totalCryptoCostString = computed(() => {
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);

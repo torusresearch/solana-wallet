@@ -1,21 +1,13 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import Button from "@toruslabs/vue-components/common/Button.vue";
-import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-// import { decimal } from "@vuelidate/validators";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 // import { DeployUtil, encodeBase16 } from "casper-js-sdk";
 import log from "loglevel";
 import { onMounted, reactive } from "vue";
 
-import SolanaLightLogoURL from "@/assets/solana-dark.svg";
-import SolanaLogoURL from "@/assets/solana-light.svg";
-import SolanaLogo from "@/assets/solana-mascot.svg";
-import { TextField } from "@/components/common";
 import { PaymentConfirm } from "@/components/payments";
-import { app } from "@/modules/app";
 import { TransactionChannelDataType } from "@/utils/enums";
 // import PaymentConfirm from "@/components/payments/PaymentConfirm.vue";
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;

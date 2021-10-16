@@ -279,14 +279,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   get userSOLBalance(): string {
     const balance = this.accountTracker.state.accounts[this.selectedAddress]?.balance || "0x0";
-    const value = new BigNumber(balance).div(new BigNumber(10 ** 9));
+    const value = new BigNumber(balance).div(new BigNumber(LAMPORTS_PER_SOL));
     return value.toString();
   }
 
   async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
     const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
     const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
-    const fee = ((await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0) / LAMPORTS_PER_SOL;
+    const fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
     return { b_hash, fee };
   }
 
