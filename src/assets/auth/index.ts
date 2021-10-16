@@ -1,0 +1,16 @@
+export { default as ActiveAppleIcon } from "./login-apple.svg";
+export { default as ActiveDiscordIcon } from "./login-discord.svg";
+export { default as ActiveEmailIcon } from "./login-email.svg";
+export { default as ActiveFacebookIcon } from "./login-facebook.svg";
+export { default as ActiveGithubIcon } from "./login-github.svg";
+export { default as ActiveGoogleIcon } from "./login-google.svg";
+export { default as ActiveJwtIcon } from "./login-jwt.svg";
+export { default as ActiveKakaoIcon } from "./login-kakao.svg";
+export { default as ActiveLineIcon } from "./login-line.svg";
+export { default as ActiveLinkedinIcon } from "./login-linkedin.svg";
+export { default as ActiveRedditIcon } from "./login-reddit.svg";
+export { default as ActiveTelegramIcon } from "./login-telegram.svg";
+export { default as ActiveTwitchIcon } from "./login-twitch.svg";
+export { default as ActiveTwitterIcon } from "./login-twitter.svg";
+export { default as ActiveWechatIcon } from "./login-wechat.svg";
+export { default as ActiveWeiboIcon } from "./login-weibo.svg";

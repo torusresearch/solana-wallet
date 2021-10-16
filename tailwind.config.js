@@ -40,6 +40,7 @@ module.exports = {
             400: "#A2A5B5",
             500: "#5C6C7F",
             600: "#0F1222",
+            accent: appColors.primary,
             dark: {
               400: "#EEF2F4",
               500: "#D3D3D4",

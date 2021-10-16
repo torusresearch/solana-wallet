@@ -63,8 +63,8 @@ class ControllerModule extends VuexModule {
 
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
-    // console.log(this.torusState.AccountTrackerState.accounts);
-    // console.log(this.torusState.PreferencesControllerState.identities);
+    // log.info(this.torusState.AccountTrackerState.accounts);
+    // log.info(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
     return value.toFixed(2).toString();
@@ -74,8 +74,9 @@ class ControllerModule extends VuexModule {
    * Call once on refresh
    */
   @Action
-  public init(state?: Partial<TorusControllerState>): void {
+  public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
     this.torus.init({ config: DEFAULT_CONFIG, state: merge(this.torusState, state) });
+    this.torus.setOrigin(origin);
     this.torus.on("store", (state: TorusControllerState) => {
       this.updateTorusState(state);
     });
@@ -85,8 +86,8 @@ class ControllerModule extends VuexModule {
       if (isMain) {
         this.torus.approveTransaction(txMeta.id);
       } else {
-        console.log(txMeta);
-        console.log(req);
+        log.info(txMeta);
+        log.info(req);
         await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });
@@ -128,6 +129,11 @@ class ControllerModule extends VuexModule {
     const providerConfig = Object.values(SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
     this.torus.setNetwork(providerConfig);
+  }
+
+  @Action
+  public toggleIframeFullScreen(): void {
+    this.torus.toggleIframeFullScreen();
   }
 
   isDarkMode(): boolean {

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
+import log from "loglevel";
 import { computed, reactive, ref } from "vue";
 
 import { Button, Card, MessageModal, SelectField, TextField } from "@/components/common";
@@ -83,9 +84,9 @@ const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
 
-  const conn = new Connection(ControllersModule.torusState.NetworkControllerState.providerConfig.rpcTarget);
-  blockhash.value = (await conn.getRecentBlockhash("finalized")).blockhash;
-  transactionFee.value = ((await conn.getFeeCalculatorForBlockhash(blockhash.value)).value?.lamportsPerSignature || 0) / LAMPORTS;
+  const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
+  blockhash.value = b_hash;
+  transactionFee.value = fee / LAMPORTS;
 };
 const confirmTransfer = async () => {
   try {
@@ -97,7 +98,7 @@ const confirmTransfer = async () => {
     let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
     const res = await ControllersModule.torus.transfer(tf);
     // const res = await ControllersModule.torus.providertransfer(tf);
-    console.log(res);
+    log.info(res);
 
     showMessageModal({ messageTitle: `Your transfer is being processed.`, messageStatus: STATUS_INFO });
     // resetForm();

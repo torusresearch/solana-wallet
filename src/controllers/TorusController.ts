@@ -1,16 +1,18 @@
-import { Connection, Message, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
   BaseEmbedController,
   BaseEmbedControllerState,
   BROADCAST_CHANNELS,
+  COMMUNICATION_NOTIFICATIONS,
   CommunicationWindowManager,
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
   ICommunicationProviderHandlers,
   PopupWithBcHandler,
+  PROVIDER_NOTIFICATIONS,
   providerAsMiddleware,
   ProviderConfig,
   SafeEventEmitterProvider,
@@ -19,7 +21,17 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import { createEngineStream, JRPCEngine, JRPCRequest, setupMultiplex, Stream, Substream } from "@toruslabs/openlogin-jrpc";
+import {
+  createEngineStream,
+  JRPCEngine,
+  JRPCEngineEndCallback,
+  JRPCEngineNextCallback,
+  JRPCRequest,
+  JRPCResponse,
+  setupMultiplex,
+  Stream,
+  Substream,
+} from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
@@ -178,7 +190,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
-      console.log(req);
+      log.info(req);
       this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
     });
 
@@ -190,7 +202,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
-      console.log("network changed");
+      log.info("network changed");
     });
 
     this.networkController.lookupNetwork();
@@ -245,12 +257,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
     //   }, 50);
     // }
     // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
-  }
 
-  get userSOLBalance(): string {
-    const balance = this.accountTracker.state.accounts[this.selectedAddress]?.balance || "0x0";
-    const value = new BigNumber(balance).div(new BigNumber(10 ** 9));
-    return value.toString();
+    // this.networkController.setProviderConfig({
+    //   blockExplorerUrl: "?cluster=testnet",
+    //   chainId: "0x2",
+    //   displayName: "Solana Testnet",
+    //   logo: "solana.svg",
+    //   rpcTarget: "https://spring-frosty-sky.solana-testnet.quiknode.pro/060ad86235dea9b678fc3e189e9d4026ac876ad4/",
+    //   ticker: "SOL",
+    //   tickerName: "Solana Token",
+    // });
   }
 
   get origin(): string {
@@ -261,19 +277,30 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController.setIframeOrigin(origin);
   }
 
+  get userSOLBalance(): string {
+    const balance = this.accountTracker.state.accounts[this.selectedAddress]?.balance || "0x0";
+    const value = new BigNumber(balance).div(new BigNumber(LAMPORTS_PER_SOL));
+    return value.toString();
+  }
+
+  async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
+    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
+    const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
+    const fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+    return { b_hash, fee };
+  }
+
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
       requestAccounts: this.requestAccounts.bind(this),
 
-      getAccounts: async () =>
-        // Expose no accounts if this origin has not been approved, preventing
-        // account-requiring RPC methods from completing successfully
-        // only show address if account is unlocked
-        this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [],
-      // tx signing
+      // Expose no accounts if this origin has not been approved, preventing
+      // account-requiring RPC methods from completing successfully
+      // only show address if account is unlocked
+      getAccounts: async () => (this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : []),
       signMessage: async (req) => {
-        console.log(req.method);
+        log.info(req.method);
         return {} as unknown;
       },
       signTransaction: async (req) => {
@@ -286,11 +313,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
         const tx = Transaction.populate(Message.from(data));
         const txRes = await this.txController.addSignTransaction(tx, req);
         const result = await txRes.result;
-        console.log(result);
+        log.info(result);
         return txRes.transactionMeta.transaction.serialize().toString("hex");
       },
       signAllTransactions: async (req) => {
-        console.log(req.method);
+        log.info(req.method);
         return {} as unknown;
       },
       sendTransaction: async (req) => {
@@ -299,7 +326,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           throw new Error("empty error message");
         }
 
-        console.log(req);
+        log.info(req);
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data), []);
         const res = await this.txController.addTransaction(tx, req);
@@ -321,7 +348,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async approveSignTransaction(txId: string): Promise<void> {
     const res = await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
-    console.log(res);
+    log.info(res);
     return;
   }
   async approveTransaction(txId: string): Promise<void> {
@@ -331,7 +358,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async addSignTransaction(txParams: Transaction, origin?: string): Promise<{ signature: string }> {
     const txRes = await this.txController.addSignTransaction(txParams);
-    console.log(txRes);
+    log.info(txRes);
     const signature = await txRes.result;
     return { signature: signature };
   }
@@ -340,15 +367,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
     // ControllersModule.torus.signTransaction(tf);
     const res = await this.addSignTransaction(tx, location.origin);
-    console.log(res);
+    log.info(res);
     const resp = await conn.sendRawTransaction(tx.serialize());
-    console.log(resp);
-    console.log("confirm");
+    log.info(resp);
+    log.info("confirm");
     return resp;
   }
   async transfer(tx: Transaction): Promise<string> {
     // ControllersModule.torus.signTransaction(tf);
-    console.log(tx);
+    log.info(tx);
     const res = await this.txController.addTransaction(tx);
     const resp = await res.result;
     return resp;
@@ -364,7 +391,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         message: bs58.encode(tx.serializeMessage()),
       },
     });
-    console.log(res);
+    log.info(res);
     return res as string;
   }
   async signtransfer(tx: Transaction): Promise<string> {
@@ -377,7 +404,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         message: tx.serializeMessage().toString("hex"),
       },
     });
-    console.log(res);
+    log.info(res);
     return res as string;
   }
   //   private isUnlocked(): boolean {
@@ -484,7 +511,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;
-      console.log(currentLoginProvider);
+      log.info(currentLoginProvider);
       if (requestedLoginProvider) {
         if (requestedLoginProvider === currentLoginProvider && this.selectedAddress) {
           resolve([this.selectedAddress]);
@@ -505,7 +532,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           // We show the modal to login
           this.embedController.update({ loginInProgress: true, oauthModalVisibility: true });
           this.once("LOGIN_RESPONSE", (error: string, address: string) => {
-            console.log("enter update embeded");
+            log.info("enter update embeded");
             this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
             if (error) reject(new Error(error));
             else resolve([address]);
@@ -520,6 +547,77 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController.update({
       isIFrameFullScreen,
     });
+  }
+
+  logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {
+    this.emit("logout");
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.ACCOUNTS_CHANGED,
+      params: [],
+    });
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+      params: {
+        accounts: [],
+        isUnlocked: false,
+      },
+    });
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_OUT,
+    });
+    res.result = true;
+    end();
+  }
+
+  toggleIframeFullScreen(id?: string): void {
+    const newState = !this.embedController.state.isIFrameFullScreen;
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.IFRAME_STATUS,
+      params: {
+        isFullScreen: newState,
+        rid: id,
+      },
+    });
+  }
+
+  public loginFromWidgetButton(): void {
+    const id = randomId();
+    this.toggleIframeFullScreen(id);
+    this.once(id, () => {
+      this.embedController.update({
+        loginInProgress: true,
+        oauthModalVisibility: true,
+      });
+    });
+    this.once("LOGIN_RESPONSE", (error: string, publicKey: string) => {
+      const id2 = randomId();
+      this.embedController.update({ oauthModalVisibility: false });
+      setTimeout(() => {
+        this.toggleIframeFullScreen(id2);
+      }, 100);
+      this.once(id2, () => {
+        this.embedController.update({ loginInProgress: false });
+      });
+      if (error) {
+        log.error(error);
+      } else if (publicKey) {
+        this.engine?.emit("notification", {
+          method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+          params: {
+            accounts: [publicKey],
+            isUnlocked: true,
+          },
+        });
+        this.communicationEngine?.emit("notification", {
+          method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+        });
+      }
+    });
+  }
+
+  public hideOAuthModal(): void {
+    this.embedController.update({ oauthModalVisibility: false });
   }
 
   private initializeCommunicationProvider() {
@@ -715,10 +813,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async handleTransactionPopup(txId: string, req: JRPCRequest<{ message: string }> & { origin: string; windowId: string }): Promise<void> {
     try {
       const windowId = req.windowId;
-      console.log(windowId);
+      log.info(windowId);
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
-      console.log(req);
+      log.info(req);
+      // debugger;
 
       const popupPayload: any = {
         type: req.method,
@@ -775,7 +874,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationWindowManager: this.communicationManager,
       });
       const { privKey, userInfo } = result;
-      // const address = await this.addAccount(privKey.padStart(64, "0"), userInfo);
       const address = await this.addAccount(privKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);

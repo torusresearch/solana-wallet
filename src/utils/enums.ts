@@ -171,9 +171,13 @@ export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_PO
 
 export interface EmbedInitParams {
   buttonPosition: BUTTON_POSITION_TYPE;
-  torusWidgetVisibility: boolean;
+  isIFrameFullScreen: boolean;
   apiKey: string;
   network: ProviderConfig;
+  dappMetadata: {
+    name: string;
+    icon: string;
+  };
 }
 
 export type TransactionChannelDataType = {
@@ -187,3 +191,18 @@ export type TransactionChannelDataType = {
   network: string;
   networkDetails: ProviderConfig;
 };
+
+export interface LOGIN_CONFIG {
+  loginProvider: string;
+  name: string;
+  description: string;
+  logoHover: string;
+  logoLight: string;
+  logoDark: string;
+  showOnModal: boolean;
+  mainOption: boolean;
+  showOnDesktop: boolean;
+  showOnMobile: boolean;
+  hasLightLogo: boolean;
+  buttonDescription: string;
+}

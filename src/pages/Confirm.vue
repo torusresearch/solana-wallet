@@ -1,28 +1,22 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import Button from "@toruslabs/vue-components/common/Button.vue";
-import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-import { decimal } from "@vuelidate/validators";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 // import { DeployUtil, encodeBase16 } from "casper-js-sdk";
 import log from "loglevel";
 import { onMounted, reactive } from "vue";
 
-import SolanaLightLogoURL from "@/assets/solana-dark.svg";
-import SolanaLogoURL from "@/assets/solana-light.svg";
-import SolanaLogo from "@/assets/solana-mascot.svg";
-import { TextField } from "@/components/common";
-import { app } from "@/modules/app";
+import { PaymentConfirm } from "@/components/payments";
 import { TransactionChannelDataType } from "@/utils/enums";
+// import PaymentConfirm from "@/components/payments/PaymentConfirm.vue";
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
 interface FinalTxData {
   slicedSenderAddress: string;
   slicedReceiverAddress: string;
-  totalCsprAmount: string;
-  totalCsprFee: string;
+  totalSolAmount: string;
+  totalSolFee: string;
   totalFiatAmount: string;
   totalFiatFee: string;
   transactionType: string;
@@ -33,8 +27,8 @@ interface FinalTxData {
 let finalTxData = reactive<FinalTxData>({
   slicedSenderAddress: "",
   slicedReceiverAddress: "",
-  totalCsprAmount: "",
-  totalCsprFee: "",
+  totalSolAmount: "",
+  totalSolFee: "",
   totalFiatAmount: "",
   totalFiatFee: "",
   transactionType: "",
@@ -60,7 +54,7 @@ onMounted(async () => {
     const msg = Message.from(Buffer.from(txData.message, "hex"));
     const tx = Transaction.populate(msg);
 
-    const conn = new Connection(clusterApiUrl("testnet"));
+    const conn = new Connection("https://spring-frosty-sky.solana-testnet.quiknode.pro/060ad86235dea9b678fc3e189e9d4026ac876ad4/");
     const block = await conn.getRecentBlockhash("finalized");
 
     const decoded = tx.instructions.map((inst) => {
@@ -76,10 +70,12 @@ onMounted(async () => {
     // const totalCurrencyAmount = totalAmount.multipliedBy(currencyData.conversionRate);
     // const totalAmountString = formatSmallNumbers(totalAmount.toNumber(), currencyData.networkNativeCurrency.toUpperCase(), true);
     // const currencyAmountString = formatSmallNumbers(totalCurrencyAmount.toNumber(), currencyData.selectedCurrency, true);
-    finalTxData.slicedSenderAddress = from.toBase58();
-    finalTxData.slicedReceiverAddress = to.toBase58();
-    finalTxData.totalCsprAmount = new BigNumber(txAmount).div(10 ** 9).toString();
-    finalTxData.totalCsprFee = new BigNumber(txFee).div(10 ** 9).toString();
+    finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
+    finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
+    finalTxData.totalSolAmount = new BigNumber(txAmount).div(10 ** 9).toString();
+    finalTxData.totalSolFee = new BigNumber(txFee).div(10 ** 9).toString();
+    // finalTxData.totalFiatAmount = "";
+    // finalTxData.totalFiatFee = "";
     finalTxData.totalSolCost = totalSolCost.toString();
     finalTxData.transactionType = "";
     finalTxData.networkDisplayName = txData.networkDetails?.displayName;
@@ -103,7 +99,7 @@ const rejectTxn = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-app-gray-700 flex justify-center items-center">
+  <!-- <div class="min-h-screen bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
         <div><img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" /></div>
@@ -144,11 +140,11 @@ const rejectTxn = async () => {
         <div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-1 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Amount</div>
-            <div class="col-span-2"><TextField v-model="finalTxData.totalCsprAmount" type="number" /></div>
+            <div class="col-span-2"><TextField v-model="finalTxData.totalSolAmount" type="number" /></div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-1 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Transaction Fee</div>
-            <div class="col-span-2"><TextField v-model="finalTxData.totalCsprFee" type="number" /></div>
+            <div class="col-span-2"><TextField v-model="finalTxData.totalSolFee" type="number" /></div>
           </div>
           <hr class="mb-6" />
           <div class="grid grid-cols-3 items-center mb-4">
@@ -159,9 +155,18 @@ const rejectTxn = async () => {
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
-        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveTxn()">Confirm</Button></div>
+        <div><Button class="ml-auto" block variant="tertiary" @click="rejectTxn()">Cancel</Button></div>
+        <div><Button class="ml-auto" block variant="primary" @click="approveTxn()">Confirm</Button></div>
       </div>
     </div>
-  </div>
+  </div> -->
+  <PaymentConfirm
+    :is-open="true"
+    :sender-pub-key="finalTxData.slicedSenderAddress"
+    :receiver-pub-key="finalTxData.slicedReceiverAddress"
+    :crypto-amount="finalTxData.totalSolAmount"
+    :crypto-tx-fee="finalTxData.totalSolFee"
+    @on-close-modal="rejectTxn()"
+    @transfer-confirm="approveTxn()"
+  />
 </template>
