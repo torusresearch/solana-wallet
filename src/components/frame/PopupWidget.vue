@@ -2,7 +2,7 @@
 import { ref } from "vue";
 
 import LoginUrl from "@/assets/login.png";
-import CasperLogoLight from "@/assets/solana-light.svg";
+import SolanaLogoLight from "@/assets/solana-light.svg";
 import { RoundLoader } from "@/components/common";
 
 import PopupWidgetPanel from "./PopupWidgetPanel.vue";
@@ -23,7 +23,7 @@ const togglePanel = () => {
   <div class="torus-widget" :class="[buttonPosition]">
     <PopupWidgetPanel :is-open="isPanelOpen" @onClose="togglePanel" />
     <button v-if="isLoggedIn" class="torus-widget__button" @click="togglePanel">
-      <img class="torus-widget__button-img" :src="CasperLogoLight" alt="Login icon" />
+      <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
     </button>
     <button v-else-if="isLoginInProgress" class="torus-widget__button">
       <RoundLoader class="w-5 h-5" color="border-white" />

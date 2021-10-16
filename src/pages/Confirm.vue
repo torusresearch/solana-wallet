@@ -62,7 +62,7 @@ onMounted(async () => {
     const msg = Message.from(Buffer.from(txData.message, "hex"));
     const tx = Transaction.populate(msg);
 
-    const conn = new Connection(clusterApiUrl("testnet"));
+    const conn = new Connection("https://spring-frosty-sky.solana-testnet.quiknode.pro/060ad86235dea9b678fc3e189e9d4026ac876ad4/");
     const block = await conn.getRecentBlockhash("finalized");
 
     const decoded = tx.instructions.map((inst) => {
