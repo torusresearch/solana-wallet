@@ -91,6 +91,10 @@ class ControllerModule extends VuexModule {
         await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });
+
+    this.torus.on("logout", () => {
+      this.logout();
+    });
   }
 
   @Action

@@ -48,6 +48,7 @@ import {
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
+// import base58 from "bs58";
 import { cloneDeep } from "lodash";
 import log from "loglevel";
 import pump from "pump";
@@ -55,7 +56,7 @@ import { Duplex } from "readable-stream";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import { BUTTON_POSITION, OpenLoginPopupResponse, TorusControllerConfig, TorusControllerState } from "@/utils/enums";
+import { BUTTON_POSITION, OpenLoginPopupResponse, SignMessageChannelDataType, TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 // import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
@@ -293,17 +294,55 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
-      requestAccounts: this.requestAccounts.bind(this),
+      requestAccounts: async (req) => {
+        const accounts = await this.requestAccounts(req);
+        this.engine?.emit("notification", {
+          method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+          params: {
+            accounts: accounts,
+            isUnlocked: accounts.length > 0,
+          },
+        });
+        this.communicationEngine?.emit("notification", {
+          method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+        });
+        return accounts;
+      },
 
       // Expose no accounts if this origin has not been approved, preventing
       // account-requiring RPC methods from completing successfully
       // only show address if account is unlocked
       getAccounts: async () => (this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : []),
-      signMessage: async (req) => {
-        log.info(req.method);
-        return {} as unknown;
+      signMessage: async (
+        req: JRPCRequest<{
+          data: Uint8Array;
+          display: string;
+          message?: string;
+        }> & {
+          origin?: string | undefined;
+          windowId?: string | undefined;
+        }
+      ) => {
+        if (!this.selectedAddress) throw new Error("Not logged in");
+        const approve = await this.handleSignMessagePopup(req);
+        if (approve) {
+          // temporary workaround
+          // const toSignedAddress = this.selectedAddress;
+          // const keytoUsed = this.keyringController.state.wallets.find((keyp) => {
+          //   return keyp.publicKey === toSignedAddress;
+          // });
+          // const keyp = Keypair.fromSecretKey(base58.decode(keytoUsed?.privateKey as string));
+
+          const msg = Message.from(Buffer.from(req.params?.message || "", "hex"));
+          const tx = Transaction.populate(msg);
+          this.keyringController.signTransaction(tx, this.selectedAddress);
+          const signature = tx.signature?.toString("hex");
+          return signature;
+        } else throw new Error("User Rejected");
       },
       signTransaction: async (req) => {
+        if (!this.selectedAddress) throw new Error("Not logged in");
         const message = req.params?.message;
         if (!message) {
           throw new Error("empty error message");
@@ -317,10 +356,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return txRes.transactionMeta.transaction.serialize().toString("hex");
       },
       signAllTransactions: async (req) => {
+        if (!this.selectedAddress) throw new Error("Not logged in");
         log.info(req.method);
         return {} as unknown;
       },
       sendTransaction: async (req) => {
+        if (!this.selectedAddress) throw new Error("Not logged in");
         const message = req.params?.message;
         if (!message) {
           throw new Error("empty error message");
@@ -624,9 +665,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const commProviderHandlers: ICommunicationProviderHandlers = {
       setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
-      logout: () => {
-        return;
-      },
+      logout: this.logout.bind(this),
       getUserInfo: () => {
         return {} as unknown as UserInfo;
       },
@@ -829,7 +868,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         currencyRate: this.currencyController.state.conversionRate?.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
-        networkDetails: { providerConfig: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)) },
+        networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
       };
       const txApproveWindow = new PopupWithBcHandler({
         state: {
@@ -847,13 +886,66 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
       if (approve) {
-        this.txController.approveTransaction(txId, this.selectedAddress); // approve and publish
+        if (req.method === "send_transaction") this.txController.approveTransaction(txId, this.selectedAddress);
+        // approve and publish
+        else if (req.method === "sign_transaction") this.txController.approveSignTransaction(txId, this.selectedAddress);
+        else throw new Error(`unexpected method : ${req.method}`);
       } else {
-        this.txController.setTxStatusRejected(txId);
+        if (req.method in ["send_transaction", "sign_transaction"]) this.txController.setTxStatusRejected(txId);
+        else throw new Error(`unexpected method : ${req.method}`);
       }
     } catch (error) {
       log.error(error);
       this.txController.setTxStatusRejected(txId);
+    }
+  }
+  async handleSignMessagePopup(
+    req: JRPCRequest<{ data: Uint8Array; display?: string; message?: string }> & { origin?: string; windowId?: string }
+  ): Promise<boolean> {
+    try {
+      const windowId = req.windowId;
+      log.info(windowId);
+      const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
+      const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
+      log.info(req);
+      // debugger;
+
+      const popupPayload: SignMessageChannelDataType = {
+        type: req.method,
+        data: req.params?.data,
+        display: req.params?.display,
+        message: req.params?.message,
+        // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
+        origin: this.preferencesController.iframeOrigin,
+        balance: this.userSOLBalance,
+        selectedCurrency: this.currencyController.state.currentCurrency,
+        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+        network: this.networkController.state.providerConfig.displayName,
+        networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+      };
+      const txApproveWindow = new PopupWithBcHandler({
+        state: {
+          url: finalUrl,
+          windowId,
+        },
+        config: {
+          dappStorageKey: config.dappStorageKey || undefined,
+          communicationEngine: this.communicationEngine,
+          communicationWindowManager: this.communicationManager,
+          target: "_blank",
+        },
+        instanceId: channelName,
+      });
+      const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
+      const { approve = false } = result;
+      if (approve) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      log.error(error);
+      return false;
     }
   }
 

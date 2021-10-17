@@ -182,7 +182,7 @@ export interface EmbedInitParams {
 
 export type TransactionChannelDataType = {
   type: string;
-  message: string;
+  message?: string;
   origin: string;
   balance: string;
   selectedCurrency: string;
@@ -190,6 +190,12 @@ export type TransactionChannelDataType = {
   jwtToken: string;
   network: string;
   networkDetails: ProviderConfig;
+};
+
+// export type SignMessageChannelDataType = Omit<TransactionChannelDataType, "message"> & {
+export type SignMessageChannelDataType = TransactionChannelDataType & {
+  data?: Uint8Array;
+  display?: string;
 };
 
 export interface LOGIN_CONFIG {
@@ -206,3 +212,6 @@ export interface LOGIN_CONFIG {
   hasLightLogo: boolean;
   buttonDescription: string;
 }
+
+// const METHODS = {
+// }
