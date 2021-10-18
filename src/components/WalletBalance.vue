@@ -2,7 +2,7 @@
 import { computed } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 
-import { Button, Card, NetworkDisplay } from "@/components/common";
+import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
 defineProps<{
@@ -15,6 +15,9 @@ const token = computed(() => ControllersModule.torusState.CurrencyControllerStat
 const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate);
 
 const formattedBalance = computed(() => ControllersModule.userBalance);
+const updateCurrency = (newCurrency: string) => {
+  ControllersModule.setCurrency(newCurrency);
+};
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">
@@ -23,9 +26,11 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
       <div class="ml-auto"><NetworkDisplay /></div>
     </div>
     <div class="flex">
-      <div>
+      <div class="amount-container">
         <span class="mr-2 font-body font-bold text-5xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
-        <span class="font-body uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ currency }}</span>
+        <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />
+
+        <!--        <span class="font-body uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ currency }}</span>-->
       </div>
       <div class="ml-auto font-body uppercase text-xs self-end text-app-text-400 dark:text-app-text-dark-600">
         1 {{ token }} = {{ pricePerToken }} {{ currency }}
@@ -43,3 +48,10 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
     </template>
   </Card>
 </template>
+<style scoped>
+.amount-container {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+</style>

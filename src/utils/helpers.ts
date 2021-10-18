@@ -88,3 +88,9 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
 
   return finalAuthenticators.join(", ");
 }
+
+export const supportedCurrencies = (ticker: string): string[] => {
+  const returnArr = ["SOL", ...config.supportedCurrencies];
+  if (ticker !== "SOL") returnArr.unshift(ticker);
+  return returnArr;
+};
