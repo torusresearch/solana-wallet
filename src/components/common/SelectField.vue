@@ -50,8 +50,6 @@ const value = computed({
               w-full
               bg-white
               dark:bg-app-gray-700
-              shadow-lg
-              dark:shadow-dark
               max-h-56
               rounded-md
               py-1
@@ -67,8 +65,8 @@ const value = computed({
             <ListboxOption v-for="item in items" :key="item.value" v-slot="{ active, selected }" as="template" :value="item">
               <li
                 :class="[
-                  active ? 'bg-app-gray-200' : '',
-                  'cursor-pointer select-none relative py-2 px-2 text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
+                  active ? 'bg-app-gray-200 text-app-text-600' : 'dark:text-app-text-dark-500',
+                  'cursor-pointer select-none relative py-2 px-2 dark:hover:text-app-text-600',
                 ]"
               >
                 <div class="flex items-center">
