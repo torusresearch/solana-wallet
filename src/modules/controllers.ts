@@ -144,7 +144,7 @@ class ControllerModule extends VuexModule {
     return this.selectedAccountPreferences.theme === "dark";
   }
 
-  selectedNetworkDisplayName(): string {
+  get selectedNetworkDisplayName(): string {
     const network = this.torusState.NetworkControllerState.providerConfig.displayName;
     return network;
   }

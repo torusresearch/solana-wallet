@@ -58,7 +58,6 @@ import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { BUTTON_POSITION, OpenLoginPopupResponse, SignMessageChannelDataType, TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
-// import { debounce, DebouncedFunc } from "lodash";
 import { PKG } from "../const";
 const TARGET_NETWORK = "testnet";
 
@@ -583,11 +582,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   }
 
-  setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean }>): void {
-    const { isIFrameFullScreen = false } = req.params || {};
+  setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean; rid?: string }>): void {
+    const { isIFrameFullScreen = false, rid } = req.params || {};
     this.embedController.update({
       isIFrameFullScreen,
     });
+
+    if (rid) this.emit(rid);
   }
 
   logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {

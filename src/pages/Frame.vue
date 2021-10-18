@@ -61,7 +61,8 @@ const lastTransaction = computed(() => {
   //     const yTime = new Date(y.rawDate).getTime();
   //     return yTime - xTime;
   //   });
-  return txns.length > 0 ? txns[0] : ({} as FormattedTransactionActivity);
+  // return txns.length > 0 ? txns[0] : ({} as FormattedTransactionActivity);
+  return {} as FormattedTransactionActivity;
 });
 // const toggleIframeFullScreen = () => {
 //   ControllerModule.toggleIframeFullScreen();

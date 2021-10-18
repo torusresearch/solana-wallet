@@ -6,8 +6,8 @@ import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { onMounted } from "vue";
 
-import CasperLogoURL from "@/assets/casper.svg";
-import CasperLightLogoURL from "@/assets/casper-light.svg";
+import SolanaLightLogoURL from "@/assets/solana-light.svg";
+import SolanaLogoURL from "@/assets/solana-mascot.svg";
 // import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 // let providerData = reactive<ProviderChangeChannelEventData>({} as ProviderChangeChannelEventData);
@@ -38,7 +38,7 @@ const denyProviderChange = async () => {
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
         <div>
-          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode() ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" />
+          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode() ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
         </div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Permissions</div>
       </div>
