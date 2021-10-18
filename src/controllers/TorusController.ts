@@ -326,18 +326,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (!this.selectedAddress) throw new Error("Not logged in");
         const approve = await this.handleSignMessagePopup(req);
         if (approve) {
-          // temporary workaround
-          // const toSignedAddress = this.selectedAddress;
-          // const keytoUsed = this.keyringController.state.wallets.find((keyp) => {
-          //   return keyp.publicKey === toSignedAddress;
-          // });
-          // const keyp = Keypair.fromSecretKey(base58.decode(keytoUsed?.privateKey as string));
-
-          const msg = Message.from(Buffer.from(req.params?.message || "", "hex"));
-          const tx = Transaction.populate(msg);
-          this.keyringController.signTransaction(tx, this.selectedAddress);
-          const signature = tx.signature?.toString("hex");
-          return signature;
+          // const msg = Buffer.from(req.params?.message || "", "hex");
+          const data = req.params?.data as Uint8Array;
+          const signed_message = this.keyringController.signMessage(data, this.selectedAddress);
+          return signed_message;
         } else throw new Error("User Rejected");
       },
       signTransaction: async (req) => {
