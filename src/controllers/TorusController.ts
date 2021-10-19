@@ -41,7 +41,6 @@ import {
   KeyringController,
   NetworkController,
   PreferencesController,
-  SUPPORTED_NETWORKS,
   TokensTrackerController,
   TRANSACTION_TYPES,
   TransactionController,
@@ -59,11 +58,13 @@ import config from "@/config";
 import { BUTTON_POSITION, OpenLoginPopupResponse, SignMessageChannelDataType, TorusControllerConfig, TorusControllerState } from "@/utils/enums";
 
 import { PKG } from "../const";
+import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 const TARGET_NETWORK = "testnet";
+console.log(WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK]);
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
-  NetworkControllerConfig: { providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK] },
+  NetworkControllerConfig: { providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK] },
   PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
   TransactionControllerConfig: { txHistoryLimit: 40 },
 };
@@ -78,9 +79,9 @@ export const DEFAULT_STATE = {
     ticker: "sol",
   },
   NetworkControllerState: {
-    chainId: SUPPORTED_NETWORKS[TARGET_NETWORK]?.chainId,
+    chainId: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK]?.chainId,
     properties: {},
-    providerConfig: SUPPORTED_NETWORKS[TARGET_NETWORK],
+    providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
   },
   PreferencesControllerState: {
     identities: {},

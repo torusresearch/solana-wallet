@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { FormattedTransactionActivity } from "@toruslabs/solana-controllers";
-import { ref } from "vue";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 
 import LoginUrl from "@/assets/login.png";
 import SolanaLogoLight from "@/assets/solana-light.svg";
@@ -13,7 +12,7 @@ defineProps<{
   isLoginInProgress: boolean;
   isIframeFullScreen: boolean;
   buttonPosition: string;
-  lastTransaction: FormattedTransactionActivity;
+  lastTransaction: SolanaTransactionActivity;
 }>();
 const emits = defineEmits(["togglePanel", "showLoginModal"]);
 

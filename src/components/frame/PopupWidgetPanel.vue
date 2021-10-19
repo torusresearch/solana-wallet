@@ -16,13 +16,13 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
 const currentFiatCurrency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
 const userInfo = computed(() => ControllersModule.selectedAccountPreferences.userInfo);
 
-import { FormattedTransactionActivity } from "@toruslabs/solana-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { computed } from "vue";
 withDefaults(
   defineProps<{
     isOpen?: boolean;
-    lastTransaction: FormattedTransactionActivity;
+    lastTransaction: SolanaTransactionActivity;
   }>(),
   {
     isOpen: false,
@@ -97,12 +97,12 @@ const closePanel = () => {
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
                       <img :src="SolanaLogo" alt="activity icon" />
                     </div>
-                    <!-- <div class="flex flex-grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
+                    <div class="flex flex-grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
                       <div>
                         <div>Last Signature</div>
-                        <div>{{ lastTransaction.signature }}</div>
+                        <div>{{ addressSlicer(lastTransaction.signature) }}</div>
                       </div>
-                    </div> -->
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { DEFAULT_PREFERENCES, TX_EVENTS } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { PostMessageStream } from "@toruslabs/openlogin-jrpc";
-import { ExtendedAddressPreferences, SolanaTransactionActivity, SUPPORTED_NETWORKS, TokensTrackerController } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash";
 import log from "loglevel";
@@ -10,11 +10,11 @@ import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-dec
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import installStorePlugin from "@/plugins/persistPlugin";
-import { CONTROLLER_MODULE_KEY, DEFAULT_USER_INFO, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
+import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { isMain } from "@/utils/helpers";
 
 import store from "../store";
-
 @Module({
   name: CONTROLLER_MODULE_KEY,
   namespaced: true,
@@ -130,7 +130,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   setNetwork(chainId: string): void {
-    const providerConfig = Object.values(SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
+    const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
     this.torus.setNetwork(providerConfig);
   }
