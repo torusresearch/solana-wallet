@@ -73,7 +73,7 @@ export const DEFAULT_STATE = {
   CurrencyControllerState: {
     conversionDate: Date.now().toString(),
     conversionRate: 0,
-    currentCurrency: "sol",
+    currentCurrency: "usd",
     nativeCurrency: "sol",
     ticker: "sol",
   },
@@ -427,7 +427,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       calledFromEmbed: false,
       userInfo,
       rehydrate: true,
-      jwtToken: "",
+      jwtToken: "bypass init for now",
     });
     return address;
   }
