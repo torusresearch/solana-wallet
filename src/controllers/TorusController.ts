@@ -235,39 +235,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.txController.on("store", (state: TransactionState<Transaction>) => {
       this.update({ TransactionControllerState: state });
-      // Object.keys(state.transactions).forEach((txId) => {
-      //   this.preferencesController.patchNewTx(state.transactions[txId], this.preferencesController.state.selectedAddress).catch((err) => {
-      //     log.error("error while patching a new tx", err);
-      //   });
-      // });
     });
 
     this.embedController.on("store", (state) => {
       this.update({ EmbedControllerState: state });
     });
-
-    // this.prefsController.poll(40000);
-    // ensure isClientOpenAndUnlocked is updated when memState updates
-    // this.subscribeEvent("update", (torusControllerState: unknown) => this._onStateUpdate(torusControllerState));
-
-    // this.subscribe(this.sendUpdate.bind(this));
-
-    // if (typeof options.rehydrate === "function") {
-    //   setTimeout(() => {
-    //     options.rehydrate();
-    //   }, 50);
-    // }
-    // this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200);
-
-    // this.networkController.setProviderConfig({
-    //   blockExplorerUrl: "?cluster=testnet",
-    //   chainId: "0x2",
-    //   displayName: "Solana Testnet",
-    //   logo: "solana.svg",
-    //   rpcTarget: "https://spring-frosty-sky.solana-testnet.quiknode.pro/060ad86235dea9b678fc3e189e9d4026ac876ad4/",
-    //   ticker: "SOL",
-    //   tickerName: "Solana Token",
-    // });
   }
 
   get origin(): string {
@@ -969,5 +941,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(error);
       throw error;
     }
+  }
+
+  async setDefaultCurrency(currency: string): Promise<void> {
+    const { ticker } = this.networkController.getProviderConfig();
+    this.currencyController.setNativeCurrency(ticker);
+    this.currencyController.setCurrentCurrency(currency);
+    await this.currencyController.updateConversionRate();
+    // TODO uncomment below to make the selected currency persistent in future sessions.
+    // return this.preferencesController.setSelectedCurrency({ selectedCurrency: currency });
   }
 }

@@ -7,6 +7,7 @@ import { ref } from "vue";
 import { Button } from "@/components/common";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
+import { copyText } from "@/utils/helpers";
 
 const isOpen = ref(false);
 const isKeyShown = ref(false);
@@ -21,6 +22,9 @@ const closeModal = () => {
 const openModal = () => {
   isOpen.value = true;
 };
+function copyPrivKey() {
+  copyText(key);
+}
 </script>
 <template>
   <div
@@ -94,8 +98,8 @@ const openModal = () => {
                 </div>
               </div>
               <div v-if="isKeyShown" class="pl-8 flex items-center mt-2">
-                <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2">{{ key }}</div>
-                <Button variant="text">
+                <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2 priv-key">{{ key }}</div>
+                <Button variant="text" @click="copyPrivKey()">
                   <CopyIcon class="w-4 h-4 mr-1" />
                   Click to copy
                 </Button>
@@ -111,3 +115,11 @@ const openModal = () => {
     </Dialog>
   </TransitionRoot>
 </template>
+
+<style scoped>
+.priv-key {
+  width: calc(100% - 101px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>

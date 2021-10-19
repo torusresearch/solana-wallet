@@ -148,6 +148,16 @@ class ControllerModule extends VuexModule {
     const network = this.torusState.NetworkControllerState.providerConfig.displayName;
     return network;
   }
+
+  @Action
+  public async setCurrency(currency: string): Promise<void> {
+    try {
+      await this.torus.setDefaultCurrency(currency);
+      // handle success here, like notification or something
+    } catch (e) {
+      console.error("setCurrency FAILED", e);
+    }
+  }
 }
 
 const module = getModule(ControllerModule);
