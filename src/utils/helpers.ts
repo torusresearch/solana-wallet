@@ -1,3 +1,4 @@
+import { dom } from "@headlessui/vue/dist/utils/dom";
 import { PublicKey } from "@solana/web3.js";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
@@ -94,3 +95,13 @@ export const supportedCurrencies = (ticker: string): string[] => {
   if (ticker !== "SOL") returnArr.unshift(ticker);
   return returnArr;
 };
+
+export function getDomainFromUrl(url: string): string {
+  let domain: string;
+  try {
+    domain = new URL(url).hostname.replace("www.", "");
+  } catch (e) {
+    domain = "Invalid URL";
+  }
+  return domain;
+}
