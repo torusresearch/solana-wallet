@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 
 import LoginUrl from "@/assets/login.png";
 import SolanaLogoLight from "@/assets/solana-light.svg";
@@ -10,25 +10,31 @@ import PopupWidgetPanel from "./PopupWidgetPanel.vue";
 defineProps<{
   isLoggedIn: boolean;
   isLoginInProgress: boolean;
+  isIframeFullScreen: boolean;
   buttonPosition: string;
+  lastTransaction: SolanaTransactionActivity;
 }>();
+const emits = defineEmits(["togglePanel", "showLoginModal"]);
 
-const isPanelOpen = ref(false);
 const togglePanel = () => {
-  isPanelOpen.value = !isPanelOpen.value;
+  emits("togglePanel");
+};
+
+const onLogin = () => {
+  emits("showLoginModal");
 };
 </script>
 
 <template>
   <div class="torus-widget" :class="[buttonPosition]">
-    <PopupWidgetPanel :is-open="isPanelOpen" @onClose="togglePanel" />
+    <PopupWidgetPanel :last-transaction="lastTransaction" :is-open="isLoggedIn && isIframeFullScreen" @onClose="togglePanel" />
     <button v-if="isLoggedIn" class="torus-widget__button" @click="togglePanel">
       <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
     </button>
     <button v-else-if="isLoginInProgress" class="torus-widget__button">
       <RoundLoader class="w-5 h-5" color="border-white" />
     </button>
-    <button v-else class="torus-widget__button torus-widget__button--toggle">
+    <button v-else class="torus-widget__button torus-widget__button--toggle" @click="onLogin">
       <img class="torus-widget__button-img" :src="LoginUrl" alt="Login icon" />
       <span class="torus-widget__button-text">Login</span>
     </button>

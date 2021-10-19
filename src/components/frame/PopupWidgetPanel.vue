@@ -8,7 +8,7 @@ import { PlusIcon } from "@toruslabs/vue-icons/basic";
 import { CreditcardFaceIcon } from "@toruslabs/vue-icons/finance";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
-import SolanaMascot from "@/assets/solana-mascot.svg";
+import SolanaLogoLight from "@/assets/solana-light.svg";
 import ControllersModule from "@/modules/controllers";
 const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllersModule.selectedAddress);
@@ -16,17 +16,18 @@ const formattedBalance = computed(() => ControllersModule.userBalance);
 const currentFiatCurrency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
 const userInfo = computed(() => ControllersModule.selectedAccountPreferences.userInfo);
 
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { computed } from "vue";
 withDefaults(
   defineProps<{
     isOpen?: boolean;
+    lastTransaction: SolanaTransactionActivity;
   }>(),
   {
     isOpen: false,
   }
 );
-
 const emits = defineEmits(["onClose"]);
 
 const closePanel = () => {
@@ -57,7 +58,7 @@ const closePanel = () => {
                 <div class="flex text-xs text-app-text-500 dark:text-app-text-dark-500">
                   <div class="rounded-full border-2 border-app-gray-400">
                     <div class="rounded-full w-8 h-8 overflow-hidden border-2 border-white dark:border-app-gray-800">
-                      <img src="https://i.pravatar.cc/300" alt="" srcset="" />
+                      <img :src="userInfo.profileImage" alt="" srcset="" />
                     </div>
                   </div>
                   <div class="ml-2">
@@ -98,16 +99,15 @@ const closePanel = () => {
                     </div>
                     <div class="flex flex-grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
                       <div>
-                        <div>Received ETH</div>
-                        <div>from 0x2D2...d000a0</div>
+                        <div>Last Signature</div>
+                        <div>{{ addressSlicer(lastTransaction.signature) }}</div>
                       </div>
-                      <div class="ml-auto">0.0001 ETH</div>
                     </div>
                   </div>
                 </div>
               </div>
               <button class="torus-widget__button">
-                <img class="torus-widget__button-img" :src="SolanaMascot" alt="Login icon" />
+                <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
               </button>
             </div>
           </TransitionChild>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import { FormattedTransactionActivity, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { computed, onMounted } from "vue";
 
@@ -9,13 +9,15 @@ import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { isMain, promiseCreator } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
+import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
+
 const { resolve, promise } = promiseCreator<void>();
 let dappOrigin = window.location.ancestorOrigins[0] || "";
 const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
   apiKey: "torus-default",
-  network: SUPPORTED_NETWORKS["testnet"],
+  network: WALLET_SUPPORTED_NETWORKS["testnet"],
   dappMetadata: {
     icon: "",
     name: "",
@@ -56,12 +58,13 @@ const isIFrameFullScreen = computed(() => ControllerModule.torusState.EmbedContr
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
 const lastTransaction = computed(() => {
   const txns = allTransactions.value;
-  //   txns.sort((x, y) => {
-  //     const xTime = new Date(x.rawDate).getTime();
-  //     const yTime = new Date(y.rawDate).getTime();
-  //     return yTime - xTime;
-  //   });
-  return txns.length > 0 ? txns[0] : ({} as FormattedTransactionActivity);
+  // txns.sort((x, y) => {
+  //   const xTime = new Date(x.updated_at).getTime();
+  //   const yTime = new Date(y.updated_at).getTime();
+  //   return yTime - xTime;
+  // });
+  // return txns.length > 0 ? txns[0] : ({} as SolanaTransactionActivity);
+  return txns[0] as SolanaTransactionActivity;
 });
 // const toggleIframeFullScreen = () => {
 //   ControllerModule.toggleIframeFullScreen();

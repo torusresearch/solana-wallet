@@ -2,7 +2,6 @@
 import { InformationCircleIcon } from "@heroicons/vue/outline";
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
-import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { EXPLORER } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
@@ -10,6 +9,7 @@ import { computed } from "vue";
 
 import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 const props = defineProps<{
@@ -20,7 +20,8 @@ const emits = defineEmits(["onLogout"]);
 
 const explorerUrl = computed(() => {
   const blockExplorerUrl =
-    Object.values(SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torusState.NetworkControllerState.chainId)?.blockExplorerUrl || "";
+    Object.values(WALLET_SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torusState.NetworkControllerState.chainId)
+      ?.blockExplorerUrl || "";
   return `${EXPLORER}/account/${props.selectedAddress + blockExplorerUrl}`;
 });
 

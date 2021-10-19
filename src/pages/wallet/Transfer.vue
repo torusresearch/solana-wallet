@@ -51,7 +51,7 @@ const rules = computed(() => {
       // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage("Required", required),
     },
-    sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(0.0001)) },
+    sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(0)) },
     // transferId: { required },
     // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };

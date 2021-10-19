@@ -47,7 +47,9 @@ const openExplorerLink = (link: string) => {
     @click="toggleDetails(activity.blockExplorerUrl)"
   >
     <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0">
-      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ (activity.updated_at || 0) * 1000 }}</div>
+      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">
+        {{ new Date((activity.updated_at || 0) * 1000).toLocaleString() }}
+      </div>
     </div>
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
       <div class="flex">
