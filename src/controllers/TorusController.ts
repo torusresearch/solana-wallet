@@ -59,7 +59,7 @@ import { BUTTON_POSITION, OpenLoginPopupResponse, SignMessageChannelDataType, To
 
 import { PKG } from "../const";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
-const TARGET_NETWORK = "testnet";
+const TARGET_NETWORK = "mainnet";
 console.log(WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK]);
 
 export const DEFAULT_CONFIG = {
