@@ -42,6 +42,7 @@ export interface TorusControllerState extends BaseState {
   TransactionControllerState: TransactionState<Transaction>;
   EmbedControllerState: BaseEmbedControllerState;
   TokensTrackerState: TokensTrackerState;
+  RelayMap: { [keyOfRelay: string]: string };
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -52,6 +53,7 @@ export interface TorusControllerConfig extends BaseConfig {
   KeyringControllerConfig: BaseConfig;
   TransactionControllerConfig: TransactionConfig;
   TokensTrackerConfig: TokensTrackerConfig;
+  RelayHost: { [keyOfRelay: string]: string };
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
