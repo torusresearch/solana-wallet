@@ -12,13 +12,13 @@ import WalletTabs from "@/components/WalletTabs.vue";
       <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
         <WalletBalance :show-buttons="true" />
         <Card :height="'164px'">
-          <div class="grid grid-cols-3 h-full">
+          <div class="grid grid-cols-3">
             <div class="col-span-2">
               <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us for Solana breakpoint</div>
               <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">7 Nov 2021 @ Lisbon</div>
             </div>
             <div class="col-span-1 sol_logo">
-              <img class="float-right h-2/4 sm:h-16 sol_logo_image" :src="SolanaMascot" />
+              <img class="float-right h-2/4 lt-sm:h-16 sol_logo_image" :src="SolanaMascot" />
             </div>
           </div>
           <template #footer>

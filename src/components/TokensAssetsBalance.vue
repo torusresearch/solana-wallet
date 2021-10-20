@@ -30,6 +30,17 @@ function selectTab(tab: TOKEN_TABS) {
   }
   selectedTab.value = tab;
 }
+// depending on the totalItems we'd like to have dynamic column count in grid
+function getResponsiveClasses(totalItems = 0): string {
+  if (totalItems === 1) {
+    return "w-full";
+  } else if (totalItems === 2) {
+    return "w-full sm:w-1/2 gt-sm:w-1/2";
+  } else if (totalItems === 3) {
+    return "w-full sm:w-1/2 md:w-1/3 xl:w-1/3  lg:w-1/3";
+  }
+  return "w-full sm:w-1/2 md:w-1/3 xl:w-1/4  lg:w-1/4";
+}
 </script>
 
 <template>
@@ -58,9 +69,10 @@ function selectTab(tab: TOKEN_TABS) {
         class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
       >
         <div
-          v-for="token in tokens"
+          v-for="token in [...tokens, ...tokens, ...tokens, ...tokens, ...tokens]"
           :key="token.tokenAddress"
-          class="my-3 px-3 w-full overflow-hidden sm:my-3 sm:px-3 sm:w-1/2 md:my-3 md:px-3 md:w-1/3 lg:my-3 lg:px-3 lg:w-1/4 xl:my-3 xl:px-3 xl:w-1/4"
+          :class="getResponsiveClasses(tokens.length * 5)"
+          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
         >
           <div
             class="

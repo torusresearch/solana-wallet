@@ -49,9 +49,10 @@ export default {
   openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE",
   openLoginWhiteLabel: {
     dark: true,
-    // TODO: fill whitelabel info
-    // name: "Casper Wallet",
-    // logo: "https://images.toruswallet.io/casper.svg",
+    name: "Solana Wallet",
+    theme: {
+      primary: "#9945ff",
+    },
   } as WhiteLabelData,
 
   // key is the login provider
