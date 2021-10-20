@@ -27,6 +27,11 @@ const router = createRouter({
       meta: { title: "Confirm" },
     },
     {
+      path: "/confirm_message",
+      component: () => import("@/pages/ConfirmMessage.vue"),
+      meta: { title: "Sign Message" },
+    },
+    {
       path: "/redirect",
       component: () => import("@/pages/RedirectHandler.vue"),
       meta: { title: "redirecting" },

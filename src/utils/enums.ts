@@ -184,6 +184,7 @@ export type TransactionChannelDataType = {
   type: string;
   message?: string;
   origin: string;
+  signer: string;
   balance: string;
   selectedCurrency: string;
   currencyRate: string;
