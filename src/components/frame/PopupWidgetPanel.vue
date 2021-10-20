@@ -93,7 +93,7 @@ const closePanel = () => {
                     <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">LATEST ACTIVITY</div>
                     <div class="ml-auto"><Button variant="text">Open Wallet</Button></div>
                   </div>
-                  <div class="flex w-full items-center mt-2">
+                  <div v-if="lastTransaction" class="flex w-full items-center mt-2">
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
                       <img :src="SolanaLogo" alt="activity icon" />
                     </div>

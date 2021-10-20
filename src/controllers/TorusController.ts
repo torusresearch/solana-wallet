@@ -42,7 +42,6 @@ import {
   NetworkController,
   PreferencesController,
   TokensTrackerController,
-  TRANSACTION_TYPES,
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
@@ -55,12 +54,18 @@ import { Duplex } from "readable-stream";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import { BUTTON_POSITION, OpenLoginPopupResponse, SignMessageChannelDataType, TorusControllerConfig, TorusControllerState } from "@/utils/enums";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
+import {
+  BUTTON_POSITION,
+  OpenLoginPopupResponse,
+  SignMessageChannelDataType,
+  TorusControllerConfig,
+  TorusControllerState,
+  TransactionChannelDataType,
+} from "@/utils/enums";
 
 import { PKG } from "../const";
-import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 const TARGET_NETWORK = "mainnet";
-console.log(WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK]);
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
@@ -824,9 +829,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.info(req);
       // debugger;
 
-      const popupPayload: any = {
+      const popupPayload: TransactionChannelDataType = {
         type: req.method,
         message: req.params?.message || "",
+        signer: this.selectedAddress,
         // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
@@ -872,7 +878,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const windowId = req.windowId;
       log.info(windowId);
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
-      const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
+      const finalUrl = new URL(`${config.baseRoute}confirm_message?instanceId=${windowId}&integrity=true&id=${windowId}`);
       log.info(req);
       // debugger;
 
@@ -880,7 +886,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         type: req.method,
         data: req.params?.data,
         display: req.params?.display,
-        message: req.params?.message,
+        message: Buffer.from(req.params?.data || []).toString(),
+        signer: this.selectedAddress,
         // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,

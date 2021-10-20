@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
-
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
@@ -36,7 +34,7 @@ const onConfirm = () => {
   closeModal();
 };
 function openLink() {
-  window?.open(props?.requestedFrom, "_blank").focus();
+  window?.open(props?.requestedFrom, "_blank")?.focus();
 }
 </script>
 <template>
