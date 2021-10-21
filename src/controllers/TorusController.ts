@@ -351,7 +351,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         const txRes = await this.txController.addSignTransaction(tx, req);
         const result = await txRes.result;
         log.info(result);
-        return txRes.transactionMeta.transaction.serialize().toString("hex");
+        return txRes.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
       },
       signAllTransactions: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
@@ -397,7 +397,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     await ret_signed.result;
-    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ verifySignatures: false, requireAllSignatures: false }).toString("hex");
+    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
     const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
     if (gaslessHost) {
       signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
@@ -862,13 +862,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
       if (approve) {
-        if (req.method === "send_transaction") this.approveSignTransaction(txId);
-        // approve and publish
-        else if (req.method === "sign_transaction") this.txController.approveSignTransaction(txId, this.selectedAddress);
-        else throw new Error(`unexpected method : ${req.method}`);
+        this.approveSignTransaction(txId);
       } else {
-        if (req.method in ["send_transaction", "sign_transaction"]) this.txController.setTxStatusRejected(txId);
-        else throw new Error(`unexpected method : ${req.method}`);
+        this.txController.setTxStatusRejected(txId);
       }
     } catch (error) {
       log.error(error);
