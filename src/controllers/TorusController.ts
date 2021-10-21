@@ -74,7 +74,7 @@ export const DEFAULT_STATE = {
   CurrencyControllerState: {
     conversionDate: Date.now().toString(),
     conversionRate: 0,
-    currentCurrency: "sol",
+    currentCurrency: "usd",
     nativeCurrency: "sol",
     ticker: "sol",
   },

@@ -32,13 +32,13 @@ function selectTab(tab: TOKEN_TABS) {
 }
 // depending on the totalItems we'd like to have dynamic column count in grid
 function getResponsiveClasses(totalItems = 0): string {
-  if (totalItems === 1) {
-    return "w-full";
-  } else if (totalItems === 2) {
-    return "w-full sm:w-1/2 gt-sm:w-1/2";
-  } else if (totalItems === 3) {
-    return "w-full sm:w-1/2 md:w-1/3 xl:w-1/3  lg:w-1/3";
-  }
+  // if (totalItems === 1) { // for now showing in 4 grids whatsoever
+  //   return "w-full";
+  // } else if (totalItems === 2) {
+  //   return "w-full sm:w-1/2 gt-sm:w-1/2";
+  // } else if (totalItems === 3) {
+  //   return "w-full sm:w-1/2 md:w-1/3 xl:w-1/3  lg:w-1/3";
+  // }
   return "w-full sm:w-1/2 md:w-1/3 xl:w-1/4  lg:w-1/4";
 }
 </script>
