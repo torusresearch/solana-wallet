@@ -37,6 +37,7 @@ import {
   AccountTrackerController,
   CurrencyController,
   ExtendedAddressPreferences,
+  Ihandler,
   IProviderHandlers,
   KeyringController,
   NetworkController,
@@ -61,6 +62,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
+import { getRelaySigned } from "@/utils/helpers";
 
 import { PKG } from "../const";
 const TARGET_NETWORK = "testnet";
@@ -71,7 +73,8 @@ export const DEFAULT_CONFIG = {
   PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
-    usdc: "http://localhost:4422/relayer",
+    usdc: "https://solana-relayer.tor.us/relayer",
+    local: "http://localhost:4422/relayer",
   },
 };
 export const DEFAULT_STATE = {
@@ -341,9 +344,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
         const message = req.params?.message;
-        if (!message) {
-          throw new Error("empty error message");
-        }
+        if (!message) throw new Error("empty error message");
 
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data));
@@ -360,15 +361,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       sendTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
         const message = req.params?.message;
-        if (!message) {
-          throw new Error("empty error message");
-        }
-
-        log.info(req);
+        if (!message) throw new Error("empty error message");
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data), []);
-        const res = await this.txController.addTransaction(tx, req);
-        const resp = await res.result;
+        const resp = this.transfer(tx, req);
         return resp;
       },
       getProviderState: (req, res, _, end) => {
@@ -391,54 +387,42 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
-    const res = await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
-    log.info(res);
-    return;
+    await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }
   async approveTransaction(txId: string): Promise<void> {
-    const tx_meta = this.txController.getTransaction(txId);
-    const feePayer = tx_meta.transaction.feePayer?.toBase58() || "";
+    await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
+  }
+
+  async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
+    const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const ret_signed = await this.txController.addSignTransaction(tx, req);
+    await ret_signed.result;
+    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ verifySignatures: false, requireAllSignatures: false }).toString("hex");
+    const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+    if (gaslessHost) {
+      signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+    }
+    const signature = await conn.sendRawTransaction(Buffer.from(signed_tx, "hex"));
+    ret_signed.transactionMeta.transactionHash = signature;
+    this.txController.setTxStatusSubmitted(ret_signed.transactionMeta.id);
+    return signature;
+  }
+
+  getGaslessHost(feePayer: string): string | undefined {
+    if (!feePayer) return "";
     if (feePayer !== this.selectedAddress) {
       // TODO : to fix, check if feepayer in relayMap
       // use feepayer address get the key of the relay
       // then get the relay Host url
-      const relayer_publickey = this.state.RelayMap["usdc"];
-      if (relayer_publickey) {
-        const relay_signer = `${this.config.RelayHost["usdc"]}/partial_sign`;
-        await this.txController.approveTransaction(txId, this.selectedAddress, relay_signer);
+      const relayHost = this.config.RelayHost["usdc"];
+      if (relayHost) {
+        return `${relayHost}/partial_sign`;
       } else {
         throw new Error("Invalid Relay");
       }
     } else {
-      await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
+      return undefined;
     }
-    return;
-  }
-
-  async addSignTransaction(txParams: Transaction, origin?: string): Promise<{ signature: string }> {
-    const txRes = await this.txController.addSignTransaction(txParams);
-    log.info(txRes);
-    const signature = await txRes.result;
-    return { signature: signature };
-  }
-
-  async signAndTransfer(tx: Transaction): Promise<string> {
-    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
-    // ControllersModule.torus.signTransaction(tf);
-    const res = await this.addSignTransaction(tx, location.origin);
-    log.info(res);
-    const resp = await conn.sendRawTransaction(tx.serialize());
-    log.info(resp);
-    log.info("confirm");
-    return resp;
-  }
-
-  async transfer(tx: Transaction): Promise<string> {
-    // ControllersModule.torus.signTransaction(tf);
-    log.info(tx);
-    const res = await this.txController.addTransaction(tx);
-    const resp = await res.result;
-    return resp;
   }
 
   //   private isUnlocked(): boolean {
@@ -520,10 +504,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   signTransaction(transaction: Transaction): Transaction {
     return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
   }
-
-  // signAllTransaction( transactions : Transaction[]) :Transaction[] {
-  //   return this.keyringController.signTransaction(transactions, this.state.PreferencesControllerState.selectedAddress);
-  // }
 
   get selectedAddress(): string {
     return this.preferencesController.state.selectedAddress;
@@ -882,7 +862,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
       if (approve) {
-        if (req.method === "send_transaction") this.approveTransaction(txId);
+        if (req.method === "send_transaction") this.approveSignTransaction(txId);
         // approve and publish
         else if (req.method === "sign_transaction") this.txController.approveSignTransaction(txId, this.selectedAddress);
         else throw new Error(`unexpected method : ${req.method}`);

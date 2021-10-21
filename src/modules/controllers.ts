@@ -84,7 +84,7 @@ class ControllerModule extends VuexModule {
     // Good
     this.torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
       if (isMain) {
-        this.torus.approveTransaction(txMeta.id);
+        this.torus.approveSignTransaction(txMeta.id);
       } else {
         log.info(txMeta);
         log.info(req);
