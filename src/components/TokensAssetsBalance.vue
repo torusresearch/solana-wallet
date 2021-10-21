@@ -69,9 +69,9 @@ function getResponsiveClasses(totalItems = 0): string {
         class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
       >
         <div
-          v-for="token in [...tokens, ...tokens, ...tokens, ...tokens, ...tokens]"
+          v-for="token in tokens"
           :key="token.tokenAddress"
-          :class="getResponsiveClasses(tokens.length * 5)"
+          :class="getResponsiveClasses(tokens.length)"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
         >
           <div
