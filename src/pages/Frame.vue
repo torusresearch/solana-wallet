@@ -131,6 +131,7 @@ const closePanel = () => {
       @show-login-modal="loginFromWidget"
       @toggle-panel="ControllerModule.toggleIframeFullScreen"
       @close-panel="closePanel"
+      @show-wallet="ControllerModule.openWalletPopup"
     />
   </div>
 </template>

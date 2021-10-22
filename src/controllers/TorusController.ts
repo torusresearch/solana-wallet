@@ -4,18 +4,26 @@ import {
   BaseController,
   BaseEmbedController,
   BaseEmbedControllerState,
+  BillboardEvent,
   BROADCAST_CHANNELS,
   COMMUNICATION_NOTIFICATIONS,
   CommunicationWindowManager,
+  ContactPayload,
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
+  FEATURES_CONFIRM_WINDOW,
+  FEATURES_DEFAULT_WALLET_WINDOW,
+  FEATURES_PROVIDER_CHANGE_WINDOW,
+  getPopupFeatures,
   ICommunicationProviderHandlers,
+  PopupHandler,
   PopupWithBcHandler,
   PROVIDER_NOTIFICATIONS,
   providerAsMiddleware,
   ProviderConfig,
   SafeEventEmitterProvider,
+  THEME,
   TransactionState,
   TX_EVENTS,
   UserInfo,
@@ -521,6 +529,40 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.networkController._providerProxy as unknown as SafeEventEmitterProvider;
   }
 
+  async setCrashReport(status: boolean): Promise<boolean> {
+    return this.preferencesController.setCrashReport(status);
+  }
+
+  async addContact(contactPayload: ContactPayload): Promise<boolean> {
+    return this.preferencesController.addContact(contactPayload);
+  }
+
+  async deleteContact(contactId: number): Promise<boolean> {
+    return this.preferencesController.deleteContact(contactId);
+  }
+
+  async setTheme(theme: THEME): Promise<boolean> {
+    return this.preferencesController.setUserTheme(theme);
+  }
+
+  async setDefaultCurrency(currency: string): Promise<boolean> {
+    const { ticker } = this.networkController.getProviderConfig();
+    // This is SOL
+    this.currencyController.setNativeCurrency(ticker);
+    // This is USD
+    this.currencyController.setCurrentCurrency(currency);
+    await this.currencyController.updateConversionRate();
+    return this.preferencesController.setSelectedCurrency({ selectedCurrency: currency });
+  }
+
+  async setLocale(locale: string): Promise<boolean> {
+    return this.preferencesController.setUserLocale(locale);
+  }
+
+  async getBillboardData(): Promise<BillboardEvent[]> {
+    return this.preferencesController.getBillBoardData();
+  }
+
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
@@ -566,6 +608,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {
+    this.handleLogout();
+    res.result = true;
+    end();
+  }
+
+  public handleLogout(): void {
     this.emit("logout");
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.ACCOUNTS_CHANGED,
@@ -581,8 +629,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.communicationEngine?.emit("notification", {
       method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_OUT,
     });
-    res.result = true;
-    end();
   }
 
   closeIframeFullScreen(): void {
@@ -603,6 +649,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
         rid: id,
       },
     });
+  }
+
+  showWalletPopup(path: string, instanceId: string): void {
+    const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}`);
+    const walletPopupWindow = new PopupHandler({
+      config: {
+        features: getPopupFeatures(FEATURES_DEFAULT_WALLET_WINDOW),
+      },
+      state: { url: finalUrl },
+    });
+    walletPopupWindow.open();
   }
 
   public loginFromWidgetButton(): void {
@@ -817,6 +874,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationEngine: this.communicationEngine as JRPCEngine,
         communicationWindowManager: this.communicationManager,
         target: "_blank",
+        features: getPopupFeatures(FEATURES_PROVIDER_CHANGE_WINDOW),
       },
       instanceId: channelName,
     });
@@ -865,6 +923,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           communicationEngine: this.communicationEngine,
           communicationWindowManager: this.communicationManager,
           target: "_blank",
+          features: getPopupFeatures(FEATURES_CONFIRM_WINDOW),
         },
         instanceId: channelName,
       });
@@ -957,14 +1016,5 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(error);
       throw error;
     }
-  }
-
-  async setDefaultCurrency(currency: string): Promise<void> {
-    const { ticker } = this.networkController.getProviderConfig();
-    this.currencyController.setNativeCurrency(ticker);
-    this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
-    // TODO uncomment below to make the selected currency persistent in future sessions.
-    // return this.preferencesController.setSelectedCurrency({ selectedCurrency: currency });
   }
 }

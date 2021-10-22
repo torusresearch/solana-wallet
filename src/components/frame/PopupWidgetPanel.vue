@@ -28,10 +28,13 @@ withDefaults(
     isOpen: false,
   }
 );
-const emits = defineEmits(["onClose"]);
+const emits = defineEmits(["onClose", "showWallet"]);
 
 const closePanel = () => {
   emits("onClose");
+};
+const showWallet = (path: string) => {
+  emits("showWallet", path);
 };
 </script>
 
@@ -77,10 +80,14 @@ const closePanel = () => {
                   <div class="ml-auto flex">
                     <button
                       class="w-10 h-10 mr-2 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
+                      @click="() => showWallet('wallet/transfer')"
                     >
                       <ArrowBoldForvardIcon class="w-4 h-4 text-app-primary-500" />
                     </button>
-                    <button class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none">
+                    <button
+                      class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
+                      @click="() => showWallet('wallet/topup')"
+                    >
                       <PlusIcon class="w-4 h-4 text-app-primary-500" />
                     </button>
                   </div>
@@ -91,7 +98,7 @@ const closePanel = () => {
                 <div class="mt-5">
                   <div class="flex border-b pb-1">
                     <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">LATEST ACTIVITY</div>
-                    <div class="ml-auto"><Button variant="text">Open Wallet</Button></div>
+                    <div class="ml-auto"><Button variant="text" @click="() => showWallet('wallet/home')">Open Wallet</Button></div>
                   </div>
                   <div v-if="lastTransaction" class="flex w-full items-center mt-2">
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
