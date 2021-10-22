@@ -59,16 +59,16 @@ const onEmailLogin = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-app-gray-800 grid grid-cols-2">
-    <div class="col-span-1 flex items-center">
-      <div class="grid grid-cols-6 w-full">
-        <div class="col-span-4 col-start-2 w-full mx-auto">
+  <div class="min-h-screen bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3">
+    <div class="col-span-6 md:col-span-4 lg:col-span-3 min-h-screen flex items-center">
+      <div class="grid grid-cols-12 w-full">
+        <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
           <img class="block mb-7 h-7 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4">
             <div>Your Google</div>
             <div>digital wallet in one-click</div>
           </div>
-          <div class="grid grid-cols-3 gap-2 w-10/12">
+          <div class="grid grid-cols-3 gap-2 w-full">
             <div class="col-span-3">
               <Button variant="tertiary" :block="true" @click="onLogin('google')"
                 ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />Continue with Google</Button
@@ -90,7 +90,7 @@ const onEmailLogin = () => {
               </Button>
             </div>
           </div>
-          <div class="mt-3 relative w-10/12">
+          <div class="mt-3 relative w-full">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-app-text-400" />
             </div>
@@ -98,13 +98,13 @@ const onEmailLogin = () => {
               <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
             </div>
           </div>
-          <div class="mt-3 w-10/12">
+          <div class="mt-3 w-full">
             <form @submit.prevent="onEmailLogin">
               <TextField v-model.lazy="userEmail" variant="dark-bg" class="mb-3" placeholder="Enter your email" :errors="$v.userEmail.$errors" />
               <Button variant="tertiary" :block="true" type="submit">Continue with Email</Button>
             </form>
           </div>
-          <div class="mt-8 mb-2 w-10/12">
+          <div class="mt-8 mb-2 w-full">
             <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">Note:</div>
             <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
               Torus does not store any data related to your social logins.
@@ -128,7 +128,7 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div class="col-span-1 flex items-center">
+    <div class="col-span-6 md:col-span-2 lg:col-span-3 min-h-screen flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <img src="https://app.tor.us/v1.13.2/img/login-bg-1.4fa6ad65.svg" alt="" />
