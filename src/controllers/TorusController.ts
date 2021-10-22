@@ -251,32 +251,31 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ EmbedControllerState: state });
     });
 
+    this.updateRelayMap();
+  }
+
+  updateRelayMap = async (): Promise<void> => {
     // for (const k in this.config.RelayHost) {
     //   keyfetch.push(fetch(`${this.config.RelayHost[k]}/publickey`)) ;
     // }
     // const relaykey = this.config.RelayHost(element => {
     // });
-    const updateRelayMap = async () => {
-      const res = await fetch(`${this.config.RelayHost["usdc"]}/public_key`);
-      const res_json = await res.json();
-      this.update({
-        RelayMap: {
-          ...this.state.RelayMap,
-          ["usdc"]: res_json.key,
-        },
-      });
-      console.log(res_json.key);
-    };
-
-    updateRelayMap();
-
+    const res = await fetch(`${this.config.RelayHost["usdc"]}/public_key`);
+    const res_json = await res.json();
+    this.update({
+      RelayMap: {
+        ...this.state.RelayMap,
+        ["usdc"]: res_json.key,
+      },
+    });
+    console.log(res_json.key);
     // get all relay public address map
     // this.update({
     //   relayMap: {
     //     usdc: "",
     //   },
     // });
-  }
+  };
 
   get origin(): string {
     return this.preferencesController.iframeOrigin;
