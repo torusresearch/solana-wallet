@@ -75,7 +75,7 @@ const copySelectedAddress = () => {
       </div>
     </div>
   </div>
-  <div
+  <!-- <div
     class="
       flex
       cursor-pointer
@@ -94,7 +94,7 @@ const copySelectedAddress = () => {
   >
     <PlusIcon class="w-4 h-4 mr-2" aria-hidden="true" />
     <div>Import Account</div>
-  </div>
+  </div> -->
 
   <!-- Page navigation -->
   <router-link
@@ -120,7 +120,7 @@ const copySelectedAddress = () => {
     <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
   >
 
-  <div
+  <!-- <div
     class="
       flex
       cursor-pointer
@@ -139,7 +139,7 @@ const copySelectedAddress = () => {
   >
     <InformationCircleIcon class="w-4 h-4 mr-2" aria-hidden="true" />
     <div>Info and Support</div>
-  </div>
+  </div> -->
   <div class="p-4 border-t">
     <Button class="ml-auto" variant="text" @click="logout">Logout</Button>
   </div>

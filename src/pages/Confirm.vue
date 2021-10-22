@@ -55,6 +55,7 @@ onMounted(async () => {
 
     const from = decoded[0].fromPubkey;
     const to = decoded[0].toPubkey;
+
     const txAmount = decoded[0].lamports;
     const isGasless = tx.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;

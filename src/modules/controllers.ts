@@ -67,7 +67,8 @@ class ControllerModule extends VuexModule {
     // log.info(this.torusState.PreferencesControllerState.identities);
     const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
     const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
-    return value.toFixed(2).toString();
+    const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
+    return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString(); // SOL should be 4 decimal places
   }
 
   /**
