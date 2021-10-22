@@ -55,8 +55,10 @@ onMounted(async () => {
 
     const from = decoded[0].fromPubkey;
     const to = decoded[0].toPubkey;
-    const txFee = block.feeCalculator.lamportsPerSignature;
+
     const txAmount = decoded[0].lamports;
+    const isGasless = tx.feePayer?.toBase58() !== txData.signer;
+    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
     const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
 
     finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
@@ -66,7 +68,7 @@ onMounted(async () => {
     finalTxData.totalSolCost = totalSolCost.toString();
     finalTxData.transactionType = "";
     finalTxData.networkDisplayName = txData.networkDetails?.displayName;
-    finalTxData.isGasless = from.toBase58() !== txData.signer;
+    finalTxData.isGasless = isGasless;
   } catch (error) {
     log.error("error in tx", error);
   }

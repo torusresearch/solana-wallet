@@ -105,3 +105,21 @@ export function getDomainFromUrl(url: string): string {
   }
   return domain;
 }
+
+export const getRelaySigned = async (gaslessHost: string, signed_tx: string, blockhash: string): Promise<string> => {
+  log.info(gaslessHost);
+  const resp = await fetch(gaslessHost, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({
+      transaction: signed_tx,
+      recentBlockhash: blockhash,
+    }),
+  });
+  const res_json = await resp.json();
+  log.info(res_json);
+  return res_json.transaction;
+};
