@@ -65,7 +65,7 @@ import {
 import { getRelaySigned } from "@/utils/helpers";
 
 import { PKG } from "../const";
-const TARGET_NETWORK = "testnet";
+const TARGET_NETWORK = "mainnet";
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
@@ -268,7 +268,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         ["usdc"]: res_json.key,
       },
     });
-    console.log(res_json.key);
+    log.info(res_json.key);
     // get all relay public address map
     // this.update({
     //   relayMap: {
