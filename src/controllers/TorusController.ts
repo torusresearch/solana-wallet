@@ -347,10 +347,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data));
-        const txRes = await this.txController.addSignTransaction(tx, req);
-        const result = await txRes.result;
+        const ret_signed = await this.txController.addSignTransaction(tx, req);
+        const result = await ret_signed.result;
+        let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+        const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+        console.log(gaslessHost);
+        if (gaslessHost) {
+          signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+        }
         log.info(result);
-        return txRes.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+        return signed_tx;
       },
       signAllTransactions: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
