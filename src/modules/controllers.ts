@@ -137,6 +137,11 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  public closeIframeFullScreen(): void {
+    this.torus.closeIframeFullScreen();
+  }
+
+  @Action
   public toggleIframeFullScreen(): void {
     this.torus.toggleIframeFullScreen();
   }

@@ -585,6 +585,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     end();
   }
 
+  closeIframeFullScreen(): void {
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.IFRAME_STATUS,
+      params: {
+        isFullScreen: false,
+      },
+    });
+  }
+
   toggleIframeFullScreen(id?: string): void {
     const newState = !this.embedController.state.isIFrameFullScreen;
     this.communicationEngine?.emit("notification", {

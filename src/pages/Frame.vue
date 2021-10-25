@@ -114,6 +114,9 @@ const cancelLogin = (): void => {
 const loginFromWidget = () => {
   ControllerModule.torus.loginFromWidgetButton();
 };
+const closePanel = () => {
+  ControllerModule.closeIframeFullScreen();
+};
 </script>
 
 <template>
@@ -127,6 +130,7 @@ const loginFromWidget = () => {
       :is-login-in-progress="isLoginInProgress"
       @show-login-modal="loginFromWidget"
       @toggle-panel="ControllerModule.toggleIframeFullScreen"
+      @close-panel="closePanel"
     />
   </div>
 </template>
