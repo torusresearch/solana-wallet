@@ -263,8 +263,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       try {
         const res = await fetch(`${this.config.RelayHost[value]}/public_key`);
         const res_json = await res.json();
-        relayMap[value] = res_json;
-        relayKeyHost[res_json] = this.config.RelayHost[value];
+        relayMap[value] = res_json.key;
+        relayKeyHost[res_json.key] = this.config.RelayHost[value];
       } catch (e) {
         return { [value]: "" };
       }
