@@ -46,7 +46,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
-import { cloneDeep } from "lodash";
+import { cloneDeep, map as ld_map } from "lodash";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -73,6 +73,7 @@ export const DEFAULT_CONFIG = {
   PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
+    torus: "https://solana-relayer.tor.us/relayer",
     usdc: "https://solana-relayer.tor.us/relayer",
     local: "http://localhost:4422/relayer",
   },
@@ -116,6 +117,7 @@ export const DEFAULT_STATE = {
   },
   TokensTrackerState: { tokens: undefined },
   RelayMap: {},
+  RelayKeyHostMap: {},
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
@@ -255,26 +257,30 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   updateRelayMap = async (): Promise<void> => {
-    // for (const k in this.config.RelayHost) {
-    //   keyfetch.push(fetch(`${this.config.RelayHost[k]}/publickey`)) ;
-    // }
-    // const relaykey = this.config.RelayHost(element => {
-    // });
-    const res = await fetch(`${this.config.RelayHost["usdc"]}/public_key`);
-    const res_json = await res.json();
-    this.update({
-      RelayMap: {
-        ...this.state.RelayMap,
-        ["usdc"]: res_json.key,
-      },
+    const relaymap = { ...this.state.RelayMap };
+    const all_map = ld_map(this.config.RelayHost, async (v, k) => {
+      try {
+        const res = await fetch(`${v}/public_key`);
+        const res_json = await res.json();
+        return { [k]: res_json.key };
+      } catch (e) {
+        return { [k]: "" };
+      }
     });
-    log.info(res_json.key);
-    // get all relay public address map
-    // this.update({
-    //   relayMap: {
-    //     usdc: "",
-    //   },
-    // });
+    const all_res = await Promise.all(all_map);
+    const new_map = all_res.reduce((prev, current) => {
+      return { ...prev, ...current };
+    }, relaymap);
+
+    const relaykeyhostmap: { [keyof: string]: string } = {};
+    for (const key in new_map) {
+      relaykeyhostmap[new_map[key]] = this.config.RelayHost[key];
+    }
+
+    this.update({
+      RelayMap: new_map,
+      RelayKeyHostMap: relaykeyhostmap,
+    });
   };
 
   get origin(): string {
@@ -414,12 +420,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer) return "";
+    if (!feePayer) return undefined;
     if (feePayer !== this.selectedAddress) {
-      // TODO : to fix, check if feepayer in relayMap
-      // use feepayer address get the key of the relay
-      // then get the relay Host url
-      const relayHost = this.config.RelayHost["usdc"];
+      const relayHost = this.state.RelayKeyHostMap[feePayer];
       if (relayHost) {
         return `${relayHost}/partial_sign`;
       } else {
