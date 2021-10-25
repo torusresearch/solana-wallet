@@ -1,23 +1,39 @@
 <script setup lang="ts">
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT, PopupWhitelabelData } from "@toruslabs/base-controllers";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
-import log from "loglevel";
-import { onMounted } from "vue";
+// import log from "loglevel";
+import { onMounted, reactive } from "vue";
 
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-// import { TextField } from "@/components/common";
+import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
-// let providerData = reactive<ProviderChangeChannelEventData>({} as ProviderChangeChannelEventData);
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
+interface FinalTxData {
+  origin: string;
+  toNetwork: string;
+  fromNetwork: string;
+  whitelabelData: PopupWhitelabelData;
+}
+const finalProviderData = reactive<FinalTxData>({
+  origin: "",
+  toNetwork: "",
+  fromNetwork: "",
+  whitelabelData: {
+    theme: "light",
+  },
+});
 onMounted(async () => {
   const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
   const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
-  log.debug("provider data", providerData);
+  finalProviderData.origin = providerData.origin;
+  finalProviderData.toNetwork = providerData.newNetwork.displayName;
+  finalProviderData.fromNetwork = providerData.currentNetwork;
+  finalProviderData.whitelabelData = providerData.whitelabelData;
 });
 const approveProviderChange = async (): Promise<void> => {
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
@@ -38,19 +54,25 @@ const denyProviderChange = async () => {
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
         <div>
-          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode() ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Permissions</div>
       </div>
       <div class="p-5">
         <div>
-          <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
-            <!-- <div class="col-span-3"><TextField v-model="sendAmount" type="text" :disabled="true" /></div> -->
+          <div class="text-lg mb-5 text-app-text-500 dark:text-app-text-500 font-semibold text-center">
+            Allow <strong class="text-white">{{ finalProviderData.origin }}</strong> change your network
           </div>
+          <!-- <div class="grid grid-cols-3 items-center mb-4">
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
+          </div> -->
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Current Network:</div>
-            <!-- <div class="col-span-3"><TextField v-model="transactionFee" type="text" :disabled="true" /></div> -->
+            <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
+          </div>
+          <div class="grid grid-cols-3 items-center mb-4">
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested New Network:</div>
+            <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
           </div>
         </div>
       </div>

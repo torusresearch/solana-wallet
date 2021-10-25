@@ -46,7 +46,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
-import { cloneDeep } from "lodash";
+import { cloneDeep, map as ld_map } from "lodash";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -73,7 +73,7 @@ export const DEFAULT_CONFIG = {
   PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
-    usdc: "https://solana-relayer.tor.us/relayer",
+    torus: "https://solana-relayer.tor.us/relayer",
     local: "http://localhost:4422/relayer",
   },
 };
@@ -116,6 +116,7 @@ export const DEFAULT_STATE = {
   },
   TokensTrackerState: { tokens: undefined },
   RelayMap: {},
+  RelayKeyHostMap: {},
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
@@ -255,26 +256,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   updateRelayMap = async (): Promise<void> => {
-    // for (const k in this.config.RelayHost) {
-    //   keyfetch.push(fetch(`${this.config.RelayHost[k]}/publickey`)) ;
-    // }
-    // const relaykey = this.config.RelayHost(element => {
-    // });
-    const res = await fetch(`${this.config.RelayHost["usdc"]}/public_key`);
-    const res_json = await res.json();
-    this.update({
-      RelayMap: {
-        ...this.state.RelayMap,
-        ["usdc"]: res_json.key,
-      },
+    const relayMap: { [keyof: string]: string } = {};
+    const relayKeyHost: { [keyof: string]: string } = {};
+
+    const promises = Object.keys(this.config.RelayHost).map(async (value, index) => {
+      try {
+        const res = await fetch(`${this.config.RelayHost[value]}/public_key`);
+        const res_json = await res.json();
+        relayMap[value] = res_json;
+        relayKeyHost[res_json] = this.config.RelayHost[value];
+      } catch (e) {
+        return { [value]: "" };
+      }
     });
-    log.info(res_json.key);
-    // get all relay public address map
-    // this.update({
-    //   relayMap: {
-    //     usdc: "",
-    //   },
-    // });
+
+    await Promise.all(promises);
+
+    this.update({
+      RelayMap: relayMap,
+      RelayKeyHostMap: relayKeyHost,
+    });
   };
 
   get origin(): string {
@@ -347,10 +348,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         const data = Buffer.from(message, "hex");
         const tx = Transaction.populate(Message.from(data));
-        const txRes = await this.txController.addSignTransaction(tx, req);
-        const result = await txRes.result;
+        const ret_signed = await this.txController.addSignTransaction(tx, req);
+        const result = await ret_signed.result;
+        let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+        const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+        console.log(gaslessHost);
+        if (gaslessHost) {
+          signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+        }
         log.info(result);
-        return txRes.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+        return signed_tx;
       },
       signAllTransactions: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
@@ -408,19 +415,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer) return "";
-    if (feePayer !== this.selectedAddress) {
-      // TODO : to fix, check if feepayer in relayMap
-      // use feepayer address get the key of the relay
-      // then get the relay Host url
-      const relayHost = this.config.RelayHost["usdc"];
-      if (relayHost) {
-        return `${relayHost}/partial_sign`;
-      } else {
-        throw new Error("Invalid Relay");
-      }
+    if (!feePayer && feePayer === this.selectedAddress) return undefined;
+
+    const relayHost = this.state.RelayKeyHostMap[feePayer];
+    if (relayHost) {
+      return `${relayHost}/partial_sign`;
     } else {
-      return undefined;
+      throw new Error("Invalid Relay");
     }
   }
 
@@ -812,7 +813,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
     const result = (await providerChangeWindow.handleWithHandshake({
       origin: this.preferencesController.iframeOrigin,
-      network: req.params,
+      newNetwork: req.params,
       currentNetwork: this.networkController.state.providerConfig.displayName,
     })) as { approve: boolean };
     const { approve = false } = result;
