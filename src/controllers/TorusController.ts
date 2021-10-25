@@ -415,7 +415,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer && feePayer === this.selectedAddress) return undefined;
+    if (!feePayer || feePayer === this.selectedAddress) return undefined;
 
     const relayHost = this.state.RelayKeyHostMap[feePayer];
     if (relayHost) {
