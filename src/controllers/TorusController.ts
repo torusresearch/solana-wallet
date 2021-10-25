@@ -74,7 +74,6 @@ export const DEFAULT_CONFIG = {
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
-    usdc: "https://solana-relayer.tor.us/relayer",
     local: "http://localhost:4422/relayer",
   },
 };
@@ -257,29 +256,25 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   updateRelayMap = async (): Promise<void> => {
-    const relaymap = { ...this.state.RelayMap };
-    const all_map = ld_map(this.config.RelayHost, async (v, k) => {
+    const relayMap: { [keyof: string]: string } = {};
+    const relayKeyHost: { [keyof: string]: string } = {};
+
+    const promises = Object.keys(this.config.RelayHost).map(async (value, index) => {
       try {
-        const res = await fetch(`${v}/public_key`);
+        const res = await fetch(`${this.config.RelayHost[value]}/public_key`);
         const res_json = await res.json();
-        return { [k]: res_json.key };
+        relayMap[value] = res_json;
+        relayKeyHost[res_json] = this.config.RelayHost[value];
       } catch (e) {
-        return { [k]: "" };
+        return { [value]: "" };
       }
     });
-    const all_res = await Promise.all(all_map);
-    const new_map = all_res.reduce((prev, current) => {
-      return { ...prev, ...current };
-    }, relaymap);
 
-    const relaykeyhostmap: { [keyof: string]: string } = {};
-    for (const key in new_map) {
-      relaykeyhostmap[new_map[key]] = this.config.RelayHost[key];
-    }
+    await Promise.all(promises);
 
     this.update({
-      RelayMap: new_map,
-      RelayKeyHostMap: relaykeyhostmap,
+      RelayMap: relayMap,
+      RelayKeyHostMap: relayKeyHost,
     });
   };
 
@@ -420,16 +415,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer) return undefined;
-    if (feePayer !== this.selectedAddress) {
-      const relayHost = this.state.RelayKeyHostMap[feePayer];
-      if (relayHost) {
-        return `${relayHost}/partial_sign`;
-      } else {
-        throw new Error("Invalid Relay");
-      }
+    if (!feePayer && feePayer === this.selectedAddress) return undefined;
+
+    const relayHost = this.state.RelayKeyHostMap[feePayer];
+    if (relayHost) {
+      return `${relayHost}/partial_sign`;
     } else {
-      return undefined;
+      throw new Error("Invalid Relay");
     }
   }
 
