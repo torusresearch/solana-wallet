@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_UNSUCCESSFUL } from "@toruslabs/base-controllers";
-// import {  } from "@toruslabs/solana-controllers"
-import { SolanaTransactionActivity } from "@toruslabs/solana-controllers/types/src/Transaction/ITransaction";
-import { formatDistance } from "date-fns";
-// import { FormattedTransactionActivity } from "@toruslabs/casper-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import dateFormat from "dateformat";
 import { computed, ref } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
@@ -49,24 +47,28 @@ const openExplorerLink = (link: string) => {
     "
     @click="toggleDetails(activity.blockExplorerUrl)"
   >
-    <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0">
-      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ formatDistance(activity.updated_at * 1000, new Date()) }}</div>
+    <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0 flex items-center justify-start">
+      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
+        {{ dateFormat(new Date((activity.updated_at || 0) * 1000), "dS mmm, yyyy") }}
+        <br />
+        at {{ dateFormat(new Date((activity.updated_at || 0) * 1000), "H:MM:ss") }}
+      </div>
     </div>
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
       <div class="flex">
-        <div>
+        <div class="flex items-center justify-center logo-container">
           <!-- <img class="block h-7 w-auto" :src="ControllersModule.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /> -->
           <img class="block h-7 w-auto" :src="true ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
         </div>
-        <div class="text-left ml-4 break-words">
+        <div class="text-left ml-4 break-words overflow-hidden">
           <div v-if="activity.type" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
             {{ activity.send ? "Send " : "Received " }} {{ activity.totalAmountString }} Sol
             <span class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.send ? "to " : "from " }}</span>
           </div>
-          <div v-if="activity.type" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-words">
+          <div v-if="activity.type" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
             {{ activity.send ? activity.to : activity.from }}
           </div>
-          <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div>
+          <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div>
           <div v-if="!activity.type" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">{{ activity.signature }}</div>
         </div>
       </div>
@@ -74,58 +76,17 @@ const openExplorerLink = (link: string) => {
     <div class="col-span-6 sm:col-span-3 order-2 sm:order-3 text-right sm:text-left">
       <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">{{ activity.totalAmountString }}</div>
       <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">Sol</div>
-      <!-- <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.currencyAmountString }}</div> -->
     </div>
-    <div class="col-span-6 sm:col-span-2 text-right order-4">
+    <div class="col-span-6 sm:col-span-2 text-right order-4 flex items-center justify-end">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
         {{ activity.status }}
       </div>
     </div>
-    <!-- <div v-if="showDetails" class="col-span-12 order-5 text-xs text-app-text-600 dark:text-app-text-dark-500 pt-4">
-      <div class="grid grid-cols-8 py-1">
-        <div class="col-span-3 sm:col-span-1">
-          Started at
-          <div class="float-right pr-4">:</div>
-        </div>
-        <div class="col-span-5 sm:col-span-2">{{ activity.timeFormatted }} - {{ activity.dateFormatted }}</div>
-      </div>
-      <div class="grid grid-cols-8 py-1">
-        <div class="col-span-3 sm:col-span-1 pr-4">
-          Sent To
-          <div class="float-right">:</div>
-        </div>
-        <div class="col-span-5 sm:col-span-2 break-words">{{ activity.to }}</div>
-      </div>
-      <div class="grid grid-cols-8 py-1">
-        <div class="col-span-3 sm:col-span-1 pr-4">
-          Rate
-          <div class="float-right">:</div>
-        </div>
-        <div class="col-span-5 sm:col-span-2">{{ activity.rate }}</div>
-      </div>
-      <div class="grid grid-cols-8 py-1">
-        <div class="col-span-3 sm:col-span-1 pr-4">
-          Amount
-          <div class="float-right">:</div>
-        </div>
-        <div class="col-span-5 sm:col-span-2">{{ activity.totalAmountString }} / {{ activity.currencyAmountString }}</div>
-      </div>
-      <div class="grid grid-cols-8 py-1">
-        <div class="col-span-3 sm:col-span-1 pr-4">
-          Network
-          <div class="float-right">:</div>
-        </div>
-        <div class="col-span-5 sm:col-span-1 text-app-text-500 dark:text-app-text-500">
-          <NetworkDisplay :network="selectedNetworkDisplayName" />
-        </div>
-      </div>
-      <div class="pt-4">
-        <Button class="ml-auto" variant="tertiary" size="small" @click.stop="(e) => openExplorerLink(activity.explorerLink)"
-          >View on CSPR live</Button
-        >
-      </div>
-    </div> -->
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.logo-container {
+  min-width: 32px;
+}
+</style>

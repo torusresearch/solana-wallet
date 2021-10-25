@@ -1,10 +1,12 @@
+import { dom } from "@headlessui/vue/dist/utils/dom";
 import { PublicKey } from "@solana/web3.js";
 import copyToClipboard from "copy-to-clipboard";
+import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
-import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -14,7 +16,7 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
 export const isMain = window.self === window.top;
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
-  console.log("ruleVerifierId", value);
+  log.info("ruleVerifierId", value);
   if (selectedTypeOfLogin === SOL) {
     try {
       new PublicKey(value);
@@ -67,3 +69,57 @@ export function promiseCreator<T>(): {
     promise: promise,
   };
 }
+export function capitalizeFirstLetter(text: string): string {
+  if (!text) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
+  const finalAuthenticators: string[] = loginButtons
+    .reduce((authenticators: string[], authenticator) => {
+      if (Object.prototype.hasOwnProperty.call(authenticator, "jwtParameters")) {
+        authenticators.push(capitalizeFirstLetter(authenticator.name));
+      }
+      return authenticators;
+    }, [])
+    .sort((a, b) => {
+      if (a > b) return 1;
+      if (a < b) return -1;
+      return 0;
+    });
+
+  return finalAuthenticators.join(", ");
+}
+
+export const supportedCurrencies = (ticker: string): string[] => {
+  const returnArr = ["SOL", ...config.supportedCurrencies];
+  if (ticker !== "SOL") returnArr.unshift(ticker);
+  return returnArr;
+};
+
+export function getDomainFromUrl(url: string): string {
+  let domain: string;
+  try {
+    domain = new URL(url).hostname.replace("www.", "");
+  } catch (e) {
+    domain = "Invalid URL";
+  }
+  return domain;
+}
+
+export const getRelaySigned = async (gaslessHost: string, signed_tx: string, blockhash: string): Promise<string> => {
+  log.info(gaslessHost);
+  const resp = await fetch(gaslessHost, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({
+      transaction: signed_tx,
+      recentBlockhash: blockhash,
+    }),
+  });
+  const res_json = await resp.json();
+  log.info(res_json);
+  return res_json.transaction;
+};

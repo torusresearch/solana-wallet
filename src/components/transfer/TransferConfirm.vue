@@ -64,7 +64,7 @@ const fiatAmountString = computed(() => {
 });
 
 const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
+  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 const totalCryptoCostString = computed(() => {
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
@@ -189,8 +189,8 @@ const totalFiatCostString = computed(() => {
               </div>
 
               <div class="grid grid-cols-2 gap-3 m-6">
-                <div><Button class="ml-auto" block variant="tertiary" @click="onCancel">Cancel</Button></div>
-                <div><Button class="ml-auto" block variant="primary" @click="onConfirm">Confirm</Button></div>
+                <div><Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">Cancel</Button></div>
+                <div><Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">Confirm</Button></div>
               </div>
             </div>
           </TransitionChild>

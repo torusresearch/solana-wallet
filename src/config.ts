@@ -46,12 +46,13 @@ export default {
   },
 
   torusNetwork: VUE_APP_TORUS_NETWORK as OPENLOGIN_NETWORK_TYPE,
-  openLoginClientId: "BEtTHpsokz_HCDlJnqAy7hpvu4cCHaQe_6uI67yWC83_37xYCgRRg46SGIiz4PU8ewKQ4rUvp1IQ1P8v7nj2R9o",
+  openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE",
   openLoginWhiteLabel: {
     dark: true,
-    // TODO: fill whitelabel info
-    // name: "Casper Wallet",
-    // logo: "https://images.toruswallet.io/casper.svg",
+    name: "Solana Wallet",
+    theme: {
+      primary: "#9945ff",
+    },
   } as WhiteLabelData,
 
   // key is the login provider

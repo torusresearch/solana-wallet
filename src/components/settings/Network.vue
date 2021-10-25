@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 
 import { SelectField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
-const networks = Object.keys(SUPPORTED_NETWORKS).map((key) => {
-  const value = SUPPORTED_NETWORKS[key as keyof typeof SUPPORTED_NETWORKS];
+import { WALLET_SUPPORTED_NETWORKS } from "../../utils/const";
+const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
+  const value = WALLET_SUPPORTED_NETWORKS[key as keyof typeof WALLET_SUPPORTED_NETWORKS];
   return {
     label: value.displayName,
     value: value.chainId,

@@ -10,7 +10,7 @@ const appColors = {
 };
 
 module.exports = {
-  purge: ["index.html", "src/**/*.{ts,tsx,vue}"],
+  purge: ["public/index.html", "src/**/*.{ts,tsx,jsx,js,vue}", "node_modules/\\@toruslabs/**/*.{ts,tsx,jsx,js,vue}"],
   darkMode: "class",
   theme: {
     extend: {
@@ -40,6 +40,7 @@ module.exports = {
             400: "#A2A5B5",
             500: "#5C6C7F",
             600: "#0F1222",
+            accent: appColors.primary,
             dark: {
               400: "#EEF2F4",
               500: "#D3D3D4",
@@ -68,7 +69,14 @@ module.exports = {
         dark: "0 14px 28px rgba(0,0,0,0.16)",
         dark2: "5px 5px 10px #212121, -5px -5px 10px rgb(55 56 60 / 25%)",
       },
-    },
+      screens: {
+        'lt-sm': {'max': '767px'}, // less than sm
+        'sm-md': {'min': '768px', 'max': '1023px'}, // between sm and md
+        'md-lg': {'min': '1024px', 'max': '1279px'}, // between md and lg
+        'lg-xl': {'min': '1280px', 'max': '1535px'}, // between lg and xl
+        'gt-2xl': {'min': '1536px'}, // more than 2xl
+      },
+    }
   },
   variants: {
     extend: {

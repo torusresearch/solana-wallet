@@ -20,6 +20,7 @@ import {
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock } from "@toruslabs/solana-controllers";
 import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
 
@@ -40,6 +41,9 @@ export interface TorusControllerState extends BaseState {
   KeyringControllerState: KeyringControllerState;
   TransactionControllerState: TransactionState<Transaction>;
   EmbedControllerState: BaseEmbedControllerState;
+  TokensTrackerState: TokensTrackerState;
+  RelayMap: { [relay: string]: string };
+  RelayKeyHostMap: { [Pubkey: string]: string };
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -49,6 +53,8 @@ export interface TorusControllerConfig extends BaseConfig {
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
   TransactionControllerConfig: TransactionConfig;
+  TokensTrackerConfig: TokensTrackerConfig;
+  RelayHost: { [relay: string]: string };
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
@@ -118,26 +124,26 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
     label: "Solana address",
     value: SOL,
   },
-  {
-    label: "ENS domain",
-    value: ENS,
-  },
-  {
-    label: "Google account",
-    value: GOOGLE,
-  },
-  {
-    label: "Twitter handle",
-    value: TWITTER,
-  },
-  {
-    label: "Reddit username",
-    value: REDDIT,
-  },
-  {
-    label: "Discord ID",
-    value: DISCORD,
-  },
+  // {
+  //   label: "ENS domain",
+  //   value: ENS,
+  // },
+  // {
+  //   label: "Google account",
+  //   value: GOOGLE,
+  // },
+  // {
+  //   label: "Twitter handle",
+  //   value: TWITTER,
+  // },
+  // {
+  //   label: "Reddit username",
+  //   value: REDDIT,
+  // },
+  // {
+  //   label: "Discord ID",
+  //   value: DISCORD,
+  // },
 ];
 
 export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
@@ -168,15 +174,20 @@ export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_PO
 
 export interface EmbedInitParams {
   buttonPosition: BUTTON_POSITION_TYPE;
-  torusWidgetVisibility: boolean;
+  isIFrameFullScreen: boolean;
   apiKey: string;
   network: ProviderConfig;
+  dappMetadata: {
+    name: string;
+    icon: string;
+  };
 }
 
 export type TransactionChannelDataType = {
   type: string;
-  message: string;
+  message?: string;
   origin: string;
+  signer: string;
   balance: string;
   selectedCurrency: string;
   currencyRate: string;
@@ -184,3 +195,27 @@ export type TransactionChannelDataType = {
   network: string;
   networkDetails: ProviderConfig;
 };
+
+// export type SignMessageChannelDataType = Omit<TransactionChannelDataType, "message"> & {
+export type SignMessageChannelDataType = TransactionChannelDataType & {
+  data?: Uint8Array;
+  display?: string;
+};
+
+export interface LOGIN_CONFIG {
+  loginProvider: string;
+  name: string;
+  description: string;
+  logoHover: string;
+  logoLight: string;
+  logoDark: string;
+  showOnModal: boolean;
+  mainOption: boolean;
+  showOnDesktop: boolean;
+  showOnMobile: boolean;
+  hasLightLogo: boolean;
+  buttonDescription: string;
+}
+
+// const METHODS = {
+// }

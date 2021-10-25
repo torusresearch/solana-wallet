@@ -8,7 +8,7 @@ import ControllerModule from "./modules/controllers";
 import { isMain } from "./utils/helpers";
 
 onMounted(() => {
-  if (isMain) ControllerModule.init();
+  if (isMain) ControllerModule.init({ origin: location.origin });
 });
 </script>
 
