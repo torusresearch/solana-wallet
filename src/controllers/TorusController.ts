@@ -818,7 +818,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
     const result = (await providerChangeWindow.handleWithHandshake({
       origin: this.preferencesController.iframeOrigin,
-      network: req.params,
+      newNetwork: req.params,
       currentNetwork: this.networkController.state.providerConfig.displayName,
     })) as { approve: boolean };
     const { approve = false } = result;
