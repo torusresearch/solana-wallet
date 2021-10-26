@@ -62,7 +62,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRelaySigned } from "@/utils/helpers";
+import { getRelaySigned, normalizeJson } from "@/utils/helpers";
 
 import { PKG } from "../const";
 const TARGET_NETWORK = "mainnet";
@@ -641,8 +641,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
       logout: this.logout.bind(this),
-      getUserInfo: () => {
-        return {} as unknown as UserInfo;
+      getUserInfo: (req, res, _, end) => {
+        res.result = normalizeJson<UserInfo>(this.userInfo);
+        end();
       },
       getWalletInstanceId: () => {
         return "";
