@@ -3,11 +3,9 @@ import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import useVuelidate from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, reactive, ref } from "vue";
 
-import { Button, Card, MessageModal, SelectField, TextField } from "@/components/common";
-import { TransferConfirm, TransferTokenSelect } from "@/components/transfer";
-import WalletBalance from "@/components/WalletBalance.vue";
+import { Button, Card, SelectField, TextField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
@@ -21,6 +19,20 @@ const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
+
+const asyncWalletBalance = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
+});
+
+const asyncTransferConfirm = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer"),
+});
+const asyncTransferTokenSelect = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferTokenSelect" */ "@/components/transfer"),
+});
+const asyncMessageModal = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common"),
+});
 
 const messageModalState = reactive({
   showMessage: false,
@@ -121,7 +133,7 @@ const transferTypes = ALLOWED_VERIFIERS;
         <Card class="order-2 sm:order-1">
           <form action="#" method="POST">
             <div>
-              <TransferTokenSelect class="mb-6" />
+              <asyncTransferTokenSelect class="mb-6" />
               <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="col-span-3 sm:col-span-2">
                   <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
@@ -153,7 +165,7 @@ const transferTypes = ALLOWED_VERIFIERS;
                 <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
                 <!-- :crypto-tx-fee="state.transactionFee" -->
                 <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
-                <TransferConfirm
+                <asyncTransferConfirm
                   :sender-pub-key="ControllersModule.selectedAddress"
                   :receiver-pub-key="transferTo"
                   :crypto-amount="sendAmount"
@@ -168,9 +180,9 @@ const transferTypes = ALLOWED_VERIFIERS;
             </div>
           </form>
         </Card>
-        <WalletBalance class="self-start order-1 sm:order-2" />
+        <asyncWalletBalance class="self-start order-1 sm:order-2" />
       </dl>
-      <MessageModal
+      <asyncMessageModal
         :is-open="messageModalState.showMessage"
         :title="messageModalState.messageTitle"
         :description="messageModalState.messageDescription"

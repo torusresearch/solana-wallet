@@ -1,16 +1,28 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from "vue";
+
 import SolanaMascot from "@/assets/solana-mascot.svg";
 import { Button, Card } from "@/components/common";
-import TokensAssetsBalance from "@/components/TokensAssetsBalance.vue";
-import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
+
+const asyncWalletBalance = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
+  delay: 500,
+  suspensible: false,
+});
+
+const asyncTokensAssetsBalance = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokensAssetsBalance" */ "@/components/TokensAssetsBalance.vue"),
+  delay: 500,
+  suspensible: false,
+});
 </script>
 
 <template>
   <WalletTabs tab="home">
     <div class="py-2">
       <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        <WalletBalance :show-buttons="true" />
+        <asyncWalletBalance :show-buttons="true" />
         <Card :height="'164px'">
           <div class="grid grid-cols-3">
             <div class="col-span-2">
@@ -31,7 +43,7 @@ import WalletTabs from "@/components/WalletTabs.vue";
         </Card>
       </div>
       <div>
-        <TokensAssetsBalance class="mt-10" />
+        <asyncTokensAssetsBalance class="mt-10" />
       </div>
     </div>
   </WalletTabs>
