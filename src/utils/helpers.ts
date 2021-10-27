@@ -96,6 +96,10 @@ export const supportedCurrencies = (ticker: string): string[] => {
   return returnArr;
 };
 
+export const normalizeJson = <T>(json: unknown): T => {
+  return JSON.parse(JSON.stringify(json));
+};
+
 export function getDomainFromUrl(url: string): string {
   let domain: string;
   try {
