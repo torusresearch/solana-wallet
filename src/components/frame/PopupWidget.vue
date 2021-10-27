@@ -14,7 +14,10 @@ defineProps<{
   buttonPosition: string;
   lastTransaction: SolanaTransactionActivity;
 }>();
-const emits = defineEmits(["togglePanel", "showLoginModal"]);
+const emits = defineEmits(["closePanel", "togglePanel", "showLoginModal", "showWallet"]);
+const closePanel = () => {
+  emits("closePanel");
+};
 
 const togglePanel = () => {
   emits("togglePanel");
@@ -23,11 +26,20 @@ const togglePanel = () => {
 const onLogin = () => {
   emits("showLoginModal");
 };
+
+const showWallet = (path: string) => {
+  emits("showWallet", path);
+};
 </script>
 
 <template>
   <div class="torus-widget" :class="[buttonPosition]">
-    <PopupWidgetPanel :last-transaction="lastTransaction" :is-open="isLoggedIn && isIframeFullScreen" @onClose="togglePanel" />
+    <PopupWidgetPanel
+      :last-transaction="lastTransaction"
+      :is-open="isLoggedIn && isIframeFullScreen"
+      @onClose="closePanel"
+      @show-wallet="showWallet"
+    />
     <button v-if="isLoggedIn" class="torus-widget__button" @click="togglePanel">
       <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
     </button>
