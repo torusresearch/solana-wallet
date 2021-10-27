@@ -360,7 +360,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
         const result = await ret_signed.result;
         let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
         const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-        console.log(gaslessHost);
         if (gaslessHost) {
           signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
         }
@@ -390,8 +389,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         end();
       },
       getGaslessPublicKey: async (req) => {
-        if (!req.params) throw new Error("Invalid Relay");
-        const relayPublicKey = this.state.RelayMap[req.params.relay];
+        // if (!req.params) throw new Error("Invalid Relay");
+        // const relayPublicKey = this.state.RelayMap[req.params.relay];
+        const relayPublicKey = this.state.RelayMap["torus"];
         if (!relayPublicKey) throw new Error("Invalid Relay");
         return relayPublicKey;
       },
@@ -493,7 +493,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async setCurrentCurrency(currency: string): Promise<void> {
     const { ticker } = this.networkController.getProviderConfig();
-    // This is CSPR
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
