@@ -300,6 +300,7 @@ class ControllerModule extends VuexModule {
     }
   }
 
+  @Action
   async importAccount(privKey: string): Promise<void> {
     const address = await this.torus.addAccount(privKey.padStart(64, "0"), this.torus.userInfo);
     this.torus.setSelectedAccount(address);
