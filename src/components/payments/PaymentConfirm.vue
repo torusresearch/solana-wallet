@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { significantDigits } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
+import { DecodedDataType } from "@/utils/inst_decoder";
+
+import DecodedDisplay from "./DecodedDisplay.vue";
 
 const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate); // will change this to accept other tokens as well
 const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
@@ -22,6 +24,7 @@ const props = withDefaults(
     isGasless?: boolean;
     isOpen?: boolean;
     tokenLogoUrl?: string;
+    decodedInst: DecodedDataType[];
   }>(),
   {
     senderPubKey: "",
@@ -35,6 +38,7 @@ const props = withDefaults(
   }
 );
 
+const expand_inst = ref(false);
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
 const closeModal = () => {
@@ -72,6 +76,12 @@ const totalFiatCostString = computed(() => {
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
+
+// const countable = computed(() => props.cryptoAmount > 0);
+const breakJoin = (src: string): string => {
+  const items = src.match(/[A-Z][a-z]+/g) || [];
+  return items.join(" ");
+};
 </script>
 <template>
   <div
@@ -117,7 +127,18 @@ const totalFiatCostString = computed(() => {
           <p>Transaction Fee <img :src="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
           <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
         </span>
-        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent">View more details</p>
+
+        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent" @click="() => (expand_inst = !expand_inst)">
+          {{ expand_inst ? "Hide details" : "View more details" }}
+        </p>
+        <div v-if="expand_inst">
+          <div v-for="inst in decodedInst" :key="JSON.stringify(inst)" class="w-full text-app-text-500 dark:text-app-text-dark-500">
+            <p>{{ breakJoin(inst.type) }}</p>
+            <div v-for="el in Object.keys(inst.data)" :key="el">
+              <DecodedDisplay :data="inst.data[el]" :el="el" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <hr class="m-5" />

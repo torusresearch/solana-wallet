@@ -4,10 +4,12 @@ import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastCh
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
+// import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
+import { DecodedDataType, decodeInstruction } from "@/utils/inst_decoder";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
@@ -38,37 +40,50 @@ let finalTxData = reactive<FinalTxData>({
   isGasless: false,
 });
 
+let transaction = ref<Transaction>();
+let decodedInst = ref<DecodedDataType[]>();
+
 onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     const networkConfig = txData.networkDetails;
+
     const msg = Message.from(Buffer.from(txData.message || "", "hex"));
     const tx = Transaction.populate(msg);
+    transaction.value = tx;
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
 
-    const decoded = tx.instructions.map((inst) => {
-      const decoded_inst = SystemInstruction.decodeTransfer(inst);
-      return decoded_inst;
-    });
-
-    const from = decoded[0].fromPubkey;
-    const to = decoded[0].toPubkey;
-
-    const txAmount = decoded[0].lamports;
     const isGasless = tx.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
-    const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
 
-    finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
-    finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
-    finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
-    finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
-    finalTxData.totalSolCost = totalSolCost.toString();
-    finalTxData.transactionType = "";
-    finalTxData.networkDisplayName = txData.networkDetails?.displayName;
-    finalTxData.isGasless = isGasless;
+    decodedInst.value = tx.instructions.map((inst) => {
+      return decodeInstruction(inst);
+    });
+    try {
+      const decoded = tx.instructions.map((inst) => {
+        const decoded_inst = SystemInstruction.decodeTransfer(inst);
+        return decoded_inst;
+      });
+
+      const from = decoded[0].fromPubkey;
+      const to = decoded[0].toPubkey;
+
+      const txAmount = decoded[0].lamports;
+
+      const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
+      finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
+      finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
+      finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
+      finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+      finalTxData.totalSolCost = totalSolCost.toString();
+      finalTxData.transactionType = "";
+      finalTxData.networkDisplayName = txData.networkDetails?.displayName;
+      finalTxData.isGasless = isGasless;
+    } catch (e) {
+      console.log(e);
+    }
   } catch (error) {
     log.error("error in tx", error);
   }
@@ -96,7 +111,9 @@ const rejectTxn = async () => {
     :crypto-amount="finalTxData.totalSolAmount"
     :crypto-tx-fee="finalTxData.totalSolFee"
     :is-gasless="finalTxData.isGasless"
+    :decoded-inst="decodedInst || []"
     @on-close-modal="rejectTxn()"
     @transfer-confirm="approveTxn()"
   />
+  <!-- <PermissionsTx v-else-if="transaction" :transaction="transaction" @on-close-modal="rejectTxn()" @on-approved="approveTxn()" /> -->
 </template>
