@@ -84,6 +84,7 @@ export const DEFAULT_CONFIG = {
     torus: "https://solana-relayer.tor.us/relayer",
     local: "http://localhost:4422/relayer",
   },
+  TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
 };
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
