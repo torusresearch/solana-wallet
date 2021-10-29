@@ -12,6 +12,7 @@ import ControllerModule from "@/modules/controllers";
 let selectedTab = ref<TOKEN_TABS>(TOKEN_TABS.TOKEN_TAB);
 const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
 let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
+const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency.toLowerCase());
 
 const tokens = computed<SolanaToken[] | undefined>(() => ControllersModule.torusState.TokensTrackerState.tokens?.[publicKey]);
 const enum TOKEN_TABS {
@@ -40,6 +41,10 @@ function getResponsiveClasses(totalItems = 0): string {
   //   return "w-full sm:w-1/2 md:w-1/3 xl:w-1/3  lg:w-1/3";
   // }
   return "w-full sm:w-1/2 md:w-1/3 xl:w-1/4  lg:w-1/4";
+}
+
+function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLength = 5): number {
+  return parseFloat((perTokenPrice * tokenAmount).toFixed(subStringLength));
 }
 </script>
 
@@ -99,7 +104,10 @@ function getResponsiveClasses(totalItems = 0): string {
             </div>
             <div class="flex flex-row justify-between items-center w-100 token-footer">
               <p class="ml-3">{{ token.data.name }}</p>
-              <p class="mr-3">~0.87 USD</p>
+              <p class="mr-3">
+                ~{{ getUiTokenValue(token.price[currency === "sol" ? "usd" : currency], token.balance.uiAmount) }}
+                {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
+              </p>
             </div>
           </div>
         </div>
