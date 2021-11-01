@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
+import { SolanaToken } from "@toruslabs/solana-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { BigNumber } from "bignumber.js";
 import { computed } from "vue";
@@ -8,12 +9,17 @@ import { computed } from "vue";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SolanaLightLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
+import { tokens } from "@/components/transfer/token-helper";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
 
-const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate);
 const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
-
+const pricePerToken = computed(() => {
+  if (isSPLToken()) {
+    return props.token?.price?.[currency.value.toLowerCase()];
+  }
+  return ControllersModule.torusState.CurrencyControllerState.conversionRate;
+});
 const props = withDefaults(
   defineProps<{
     senderPubKey: string;
@@ -22,9 +28,10 @@ const props = withDefaults(
     receiverVerifier: string;
     cryptoAmount: number;
     cryptoTxFee: number;
-    token?: string;
+    tokenSymbol?: string;
     transferDisabled?: boolean;
     isOpen?: boolean;
+    token?: any;
   }>(),
   {
     senderPubKey: "",
@@ -33,7 +40,8 @@ const props = withDefaults(
     receiverVerifier: "solana",
     cryptoAmount: 0,
     cryptoTxFee: 0,
-    token: "SOL",
+    tokenSymbol: "SOL",
+    token: tokens[0],
     transferDisabled: false,
     isOpen: false,
   }
@@ -55,7 +63,7 @@ const onConfirm = () => {
 };
 
 const cryptoAmountString = computed(() => {
-  return `${props.cryptoAmount} ${props.token}`;
+  return `${props.cryptoAmount} ${props.tokenSymbol}`;
 });
 
 const fiatAmountString = computed(() => {
@@ -67,8 +75,11 @@ const fiatTxFeeString = computed(() => {
   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 const totalCryptoCostString = computed(() => {
+  if (isSPLToken()) {
+    return `${props.cryptoAmount} ${props.tokenSymbol} + ${props.cryptoTxFee} SOL`;
+  }
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
-  return `${totalCost.toString(10)} ${props.token}`;
+  return `${totalCost.toString(10)} ${props.tokenSymbol}`;
 });
 
 const totalFiatCostString = computed(() => {
@@ -76,6 +87,14 @@ const totalFiatCostString = computed(() => {
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
+
+const transactionLogo = computed(() => {
+  return props.token?.data?.logoURI || (app.value.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL);
+});
+
+function isSPLToken(): boolean {
+  return !!props.token.mintAddress;
+}
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
@@ -114,7 +133,7 @@ const totalFiatCostString = computed(() => {
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>
-                  <img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+                  <img class="h-7 mx-auto w-auto mb-1" :src="transactionLogo" alt="Solana Logo" />
                 </div>
                 <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</div>
               </DialogTitle>

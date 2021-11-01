@@ -1,38 +1,36 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
+import { SolanaToken } from "@toruslabs/solana-controllers";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 
-import BitcoinLogoURL from "@/assets/bitcoin.svg";
-import EthereumLogoURL from "@/assets/ethereum.svg";
-import EthereumLightLogoURL from "@/assets/ethereum-light.svg";
 import solicon from "@/assets/solana-mascot.svg";
-import TokenLogoURL from "@/assets/token.svg";
-import TokenLightLogoURL from "@/assets/token-light.svg";
 import { app } from "@/modules/app";
+import ControllerModule from "@/modules/controllers";
+import ControllersModule from "@/modules/controllers";
 
-interface Token {
-  name: string;
-  iconURL: string;
-}
+import { tokens } from "./token-helper";
 
-const mainToken: Token = {
-  name: "Solana",
-  iconURL: solicon,
-};
+// let tokens: { name: string; iconURL: string }[] = [
+//   {
+//     name: "Solana",
+//     iconURL: solicon,
+//   },
+// ];
+// const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
+// let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
+// const solTokens = computed<SolanaToken[] | undefined>(() => ControllersModule.torusState.TokensTrackerState.tokens?.[publicKey]);
+// tokens = tokens.concat(
+//   solTokens.value?.map((st) => {
+//     return { iconURL: st.data.logoURI || "", name: st.data.name, symbol: st.data.symbol, chainId: st.data.chainId };
+//   }) || []
+// );
 
-const tokens: Token[] = [
-  // {
-  //   name: "Ethereum",
-  //   iconURL: app.value.isDarkMode ? EthereumLightLogoURL : EthereumLogoURL,
-  // },
-  // {
-  //   name: "Bitcoin",
-  //   iconURL: BitcoinLogoURL,
-  // },
-];
-
-const selectedToken = ref(mainToken);
+const emits = defineEmits(["update:selectedToken"]);
+let selectedToken = ref(tokens[0]);
+watch(selectedToken, () => {
+  emits("update:selectedToken", selectedToken.value);
+});
 </script>
 <template>
   <Listbox v-model="selectedToken" as="div">
@@ -72,7 +70,7 @@ const selectedToken = ref(mainToken);
             sm:text-sm
           "
         >
-          <ListboxOption v-slot="{ active, selected }" as="template" :value="mainToken">
+          <ListboxOption v-slot="{ active, selected }" as="template" :value="selectedToken">
             <li
               :class="[
                 active ? 'bg-app-gray-200' : '',
@@ -80,17 +78,17 @@ const selectedToken = ref(mainToken);
               ]"
             >
               <div class="flex items-center">
-                <img :src="mainToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
-                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ mainToken.name }}</span>
+                <img :src="selectedToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
+                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ selectedToken.name }}</span>
               </div>
             </li>
           </ListboxOption>
 
-          <!-- <div class="flex items-center px-3 py-4 border-t">
-            <img :src="app.isDarkMode ? TokenLightLogoURL : TokenLogoURL" class="h-4 w-4 mr-2" />
-            <div class="font-body text-app-text-600 dark:text-app-text-dark-500 capitalize">Tokens</div>
-          </div>
-          <ListboxOption v-for="item in tokens" :key="item.name" v-slot="{ active, selected }" as="template" :value="item">
+          <!--          <div class="flex items-center px-3 py-4 border-t">-->
+          <!--            <img :src="app.isDarkMode ? TokenLightLogoURL : TokenLogoURL" class="h-4 w-4 mr-2" />-->
+          <!--            <div class="font-body text-app-text-600 dark:text-app-text-dark-500 capitalize">Tokens</div>-->
+          <!--          </div>-->
+          <ListboxOption v-for="item in tokens" v-slot="{ active, selected }" :key="item.name" as="template" :value="item">
             <li
               :class="[
                 active ? 'bg-app-gray-200' : '',
@@ -98,11 +96,11 @@ const selectedToken = ref(mainToken);
               ]"
             >
               <div class="flex items-center">
-                <img :src="item.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
-                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ item.name }}</span>
+                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
+                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ item?.name }}</span>
               </div>
             </li>
-          </ListboxOption> -->
+          </ListboxOption>
         </ListboxOptions>
       </transition>
     </div>
