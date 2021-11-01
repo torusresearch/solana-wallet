@@ -135,19 +135,4 @@ hr {
   width: 0px;
   height: 0px;
 }
-
-.scrollbar::-webkit-scrollbar-track {
-  border-radius: 100vh;
-  background: #f7f4ed;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  background: #e0cbcb;
-  border-radius: 100vh;
-  border: 1px solid #f6f7ed;
-}
-
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #c0a0b9;
-}
 </style>
