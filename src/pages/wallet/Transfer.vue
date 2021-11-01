@@ -46,10 +46,6 @@ const validVerifier = (value: string) => {
   return ruleVerifierId(transferType.value.value, value);
 };
 
-// const ensRule = () => {
-//   return transferType.value.value === ENS && !ensError.value;
-// };
-
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
@@ -93,9 +89,6 @@ const closeModal = () => {
 const LAMPORTS = 1000000000;
 
 const openModal = async () => {
-  // transfer("5YQHtZcg8EQo3rjVL2PmFwFix1x8i3PjDsyuW6kkQ9rF", 2)
-  //   .then((val) => console.log("VALUE", val))
-  //   .catch((e) => console.log("ERROR", e));
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
 

@@ -1,30 +1,11 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
-import { SolanaToken } from "@toruslabs/solana-controllers";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
-import solicon from "@/assets/solana-mascot.svg";
 import { app } from "@/modules/app";
-import ControllerModule from "@/modules/controllers";
-import ControllersModule from "@/modules/controllers";
 
 import { tokens } from "./token-helper";
-
-// let tokens: { name: string; iconURL: string }[] = [
-//   {
-//     name: "Solana",
-//     iconURL: solicon,
-//   },
-// ];
-// const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-// let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
-// const solTokens = computed<SolanaToken[] | undefined>(() => ControllersModule.torusState.TokensTrackerState.tokens?.[publicKey]);
-// tokens = tokens.concat(
-//   solTokens.value?.map((st) => {
-//     return { iconURL: st.data.logoURI || "", name: st.data.name, symbol: st.data.symbol, chainId: st.data.chainId };
-//   }) || []
-// );
 
 const emits = defineEmits(["update:selectedToken"]);
 let selectedToken = ref(tokens[0]);
