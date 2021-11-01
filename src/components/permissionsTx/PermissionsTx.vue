@@ -7,7 +7,7 @@ import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import { app } from "@/modules/app";
 import { getDomainFromUrl } from "@/utils/helpers";
-import { DecodedDataType } from "@/utils/inst_decoder";
+import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
 import InstructionDisplay from "../payments/InstructionDisplay.vue";

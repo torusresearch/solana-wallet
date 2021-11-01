@@ -10,7 +10,7 @@ import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 // import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { DecodedDataType, decodeInstruction } from "@/utils/inst_decoder";
+import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 

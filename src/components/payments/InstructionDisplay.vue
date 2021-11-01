@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DecodedDataType } from "@/utils/inst_decoder";
+import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import DecodedDisplay from "./DecodedDisplay.vue";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

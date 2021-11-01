@@ -1,4 +1,4 @@
-import * as borsh_1 from "@project-serum/borsh";
+import * as bors from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
@@ -7,15 +7,16 @@ export type DecodedDataType = {
   type: string;
   data: { [key: string]: string | PublicKey | number | undefined | null };
 };
-export const decodeInstruction = (inst: TransactionInstruction): DecodedDataType => {
-  if (inst.programId.equals(SystemProgram.programId)) {
-    return decodeSystemInstruction(inst);
-  } else if (inst.programId.equals(StakeProgram.programId)) {
-    return decodeStakeInstruction(inst);
-  } else if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
-    return decodeTokenInstruction(inst);
+
+export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {
+  if (instruction.programId.equals(SystemProgram.programId)) {
+    return decodeSystemInstruction(instruction);
+  } else if (instruction.programId.equals(StakeProgram.programId)) {
+    return decodeStakeInstruction(instruction);
+  } else if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
+    return decodeTokenInstruction(instruction);
   } else {
-    return decodeUnknownInstruction(inst);
+    return decodeUnknownInstruction(instruction);
   }
 };
 
@@ -138,12 +139,12 @@ export const decodeStakeInstruction = (inst: TransactionInstruction): DecodedDat
   };
 };
 
-export const decodeUnknownInstruction = (inst: TransactionInstruction): DecodedDataType => {
+export const decodeUnknownInstruction = (instruction: TransactionInstruction): DecodedDataType => {
   return {
     type: "Unknown",
     data: {
-      programId: inst.programId.toBase58(),
-      data: inst.data.toString("hex"),
+      programId: instruction.programId.toBase58(),
+      data: instruction.data.toString("hex"),
     },
   };
 };
@@ -226,26 +227,23 @@ export declare type TokenInstructionLayout =
         decimals: number;
       };
     };
-const TokenInstructionLayout = borsh_1.rustEnum([
-  borsh_1.struct(
-    [borsh_1.u8("decimals"), borsh_1.publicKey("mintAuthority"), borsh_1.option(borsh_1.publicKey(), "freezeAuthority")],
-    "initializeMint"
-  ),
-  borsh_1.struct([], "initializeAccount"),
-  borsh_1.struct([borsh_1.u8("m")], "initializeMultisig"),
-  borsh_1.struct([borsh_1.u64("amount")], "transfer"),
-  borsh_1.struct([borsh_1.u64("amount")], "approve"),
-  borsh_1.struct([], "revoke"),
-  borsh_1.struct([borsh_1.u8("authorityType"), borsh_1.option(borsh_1.publicKey(), "newAuthority")], "setAuthority"),
-  borsh_1.struct([borsh_1.u64("amount")], "mintTo"),
-  borsh_1.struct([borsh_1.u64("amount")], "burn"),
-  borsh_1.struct([], "closeAccount"),
-  borsh_1.struct([], "freezeAccount"),
-  borsh_1.struct([], "thawAccount"),
-  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "transferChecked"),
-  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "approveChecked"),
-  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "mintToChecked"),
-  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "burnChecked"),
+const TokenInstructionLayout = bors.rustEnum([
+  bors.struct([bors.u8("decimals"), bors.publicKey("mintAuthority"), bors.option(bors.publicKey(), "freezeAuthority")], "initializeMint"),
+  bors.struct([], "initializeAccount"),
+  bors.struct([bors.u8("m")], "initializeMultisig"),
+  bors.struct([bors.u64("amount")], "transfer"),
+  bors.struct([bors.u64("amount")], "approve"),
+  bors.struct([], "revoke"),
+  bors.struct([bors.u8("authorityType"), bors.option(bors.publicKey(), "newAuthority")], "setAuthority"),
+  bors.struct([bors.u64("amount")], "mintTo"),
+  bors.struct([bors.u64("amount")], "burn"),
+  bors.struct([], "closeAccount"),
+  bors.struct([], "freezeAccount"),
+  bors.struct([], "thawAccount"),
+  bors.struct([bors.u64("amount"), bors.u8("decimals")], "transferChecked"),
+  bors.struct([bors.u64("amount"), bors.u8("decimals")], "approveChecked"),
+  bors.struct([bors.u64("amount"), bors.u8("decimals")], "mintToChecked"),
+  bors.struct([bors.u64("amount"), bors.u8("decimals")], "burnChecked"),
 ]);
 
 function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDataType {

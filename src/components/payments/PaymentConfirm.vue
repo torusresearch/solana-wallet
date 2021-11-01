@@ -8,7 +8,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
-import { DecodedDataType } from "@/utils/inst_decoder";
+import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
