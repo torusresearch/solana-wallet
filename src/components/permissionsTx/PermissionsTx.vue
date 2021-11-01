@@ -130,6 +130,7 @@ hr {
 .scrollbar {
   max-height: 65vh;
   overflow: scroll;
+  scrollbar-width: none;
 }
 .scrollbar::-webkit-scrollbar {
   width: 0px;

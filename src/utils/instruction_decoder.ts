@@ -1,7 +1,7 @@
 import * as bors from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, TransactionInstruction } from "@solana/web3.js";
-import BN from "bn.js";
+import BN from "bignumber.js";
 
 export type DecodedDataType = {
   type: string;
