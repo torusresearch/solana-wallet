@@ -12,7 +12,7 @@ import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 
 const { resolve, promise } = promiseCreator<void>();
-let dappOrigin = window.location.ancestorOrigins[0] || "";
+let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";
 const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
