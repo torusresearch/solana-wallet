@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -7,6 +7,7 @@ import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
+import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 // import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/inst_decoder";
@@ -40,9 +41,8 @@ let finalTxData = reactive<FinalTxData>({
   isGasless: false,
 });
 
-let transaction = ref<Transaction>();
 let decodedInst = ref<DecodedDataType[]>();
-
+let origin = ref("");
 onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
@@ -51,7 +51,6 @@ onMounted(async () => {
 
     const msg = Message.from(Buffer.from(txData.message || "", "hex"));
     const tx = Transaction.populate(msg);
-    transaction.value = tx;
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
 
@@ -61,7 +60,12 @@ onMounted(async () => {
     decodedInst.value = tx.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
+    origin.value = txData.origin;
+
     try {
+      if (tx.instructions.length > 1) return;
+      if (!tx.instructions[0].programId.equals(SystemProgram.programId)) return;
+      if (SystemInstruction.decodeInstructionType(tx.instructions[0]) !== "Transfer") return;
       const decoded = tx.instructions.map((inst) => {
         const decoded_inst = SystemInstruction.decodeTransfer(inst);
         return decoded_inst;
@@ -82,7 +86,7 @@ onMounted(async () => {
       finalTxData.networkDisplayName = txData.networkDetails?.displayName;
       finalTxData.isGasless = isGasless;
     } catch (e) {
-      console.log(e);
+      log.error(e);
     }
   } catch (error) {
     log.error("error in tx", error);
@@ -105,6 +109,7 @@ const rejectTxn = async () => {
 
 <template>
   <PaymentConfirm
+    v-if="finalTxData.totalSolAmount"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
@@ -115,5 +120,11 @@ const rejectTxn = async () => {
     @on-close-modal="rejectTxn()"
     @transfer-confirm="approveTxn()"
   />
-  <!-- <PermissionsTx v-else-if="transaction" :transaction="transaction" @on-close-modal="rejectTxn()" @on-approved="approveTxn()" /> -->
+  <PermissionsTx
+    v-else-if="decodedInst"
+    :decoded-inst="decodedInst || []"
+    :origin="origin"
+    @on-close-modal="rejectTxn()"
+    @on-approved="approveTxn()"
+  />
 </template>

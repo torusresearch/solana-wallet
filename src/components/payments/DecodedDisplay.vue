@@ -2,17 +2,19 @@
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { computed } from "vue-demi";
+
+import { DecodedDataType } from "@/utils/inst_decoder";
 const props = withDefaults(
   defineProps<{
     el: string;
-    data: string | PublicKey | number | undefined;
+    data: DecodedDataType["data"][""];
   }>(),
   {}
 );
 const data_disp = computed(() => {
   let disp: string;
   if (props.data instanceof PublicKey) disp = props.data.toBase58();
-  if (props.el === "lamports") disp = ((props.data as number) / LAMPORTS_PER_SOL).toString();
+  if (props.el === "lamports") disp = ((props.data as unknown as number) / LAMPORTS_PER_SOL).toString();
   else disp = props.data?.toString() as string;
   return addressSlicer(disp);
 });

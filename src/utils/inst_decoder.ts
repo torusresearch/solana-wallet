@@ -1,15 +1,19 @@
+import * as borsh_1 from "@project-serum/borsh";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, TransactionInstruction } from "@solana/web3.js";
-// import {  } from "base58";
+import BN from "bn.js";
+
 export type DecodedDataType = {
   type: string;
-  data: { [key: string]: string | PublicKey | number | undefined };
+  data: { [key: string]: string | PublicKey | number | undefined | null };
 };
-
 export const decodeInstruction = (inst: TransactionInstruction): DecodedDataType => {
   if (inst.programId.equals(SystemProgram.programId)) {
     return decodeSystemInstruction(inst);
   } else if (inst.programId.equals(StakeProgram.programId)) {
     return decodeStakeInstruction(inst);
+  } else if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
+    return decodeTokenInstruction(inst);
   } else {
     return decodeUnknownInstruction(inst);
   }
@@ -143,3 +147,223 @@ export const decodeUnknownInstruction = (inst: TransactionInstruction): DecodedD
     },
   };
 };
+
+export declare type TokenInstructionLayout =
+  | {
+      initializeMint: {
+        decimals: number;
+        mintAuthority: PublicKey;
+        freezeAuthority: PublicKey | null;
+      };
+    }
+  | {
+      initializeAccount: any;
+    }
+  | {
+      initializeMultisig: {
+        m: number;
+      };
+    }
+  | {
+      transfer: {
+        amount: BN;
+      };
+    }
+  | {
+      approve: {
+        amount: BN;
+      };
+    }
+  | {
+      revoke: any;
+    }
+  | {
+      setAuthority: {
+        authorityType: number;
+        newAuthority: PublicKey | null;
+      };
+    }
+  | {
+      mintTo: {
+        amount: BN;
+      };
+    }
+  | {
+      burn: {
+        amount: BN;
+      };
+    }
+  | {
+      closeAccount: any;
+    }
+  | {
+      freezeAccount: any;
+    }
+  | {
+      thawAccount: any;
+    }
+  | {
+      transferChecked: {
+        amount: BN;
+        decimals: number;
+      };
+    }
+  | {
+      approveChecked: {
+        amount: BN;
+        decimals: number;
+      };
+    }
+  | {
+      mintToChecked: {
+        amount: BN;
+        decimals: number;
+      };
+    }
+  | {
+      burnChecked: {
+        amount: BN;
+        decimals: number;
+      };
+    };
+const TokenInstructionLayout = borsh_1.rustEnum([
+  borsh_1.struct(
+    [borsh_1.u8("decimals"), borsh_1.publicKey("mintAuthority"), borsh_1.option(borsh_1.publicKey(), "freezeAuthority")],
+    "initializeMint"
+  ),
+  borsh_1.struct([], "initializeAccount"),
+  borsh_1.struct([borsh_1.u8("m")], "initializeMultisig"),
+  borsh_1.struct([borsh_1.u64("amount")], "transfer"),
+  borsh_1.struct([borsh_1.u64("amount")], "approve"),
+  borsh_1.struct([], "revoke"),
+  borsh_1.struct([borsh_1.u8("authorityType"), borsh_1.option(borsh_1.publicKey(), "newAuthority")], "setAuthority"),
+  borsh_1.struct([borsh_1.u64("amount")], "mintTo"),
+  borsh_1.struct([borsh_1.u64("amount")], "burn"),
+  borsh_1.struct([], "closeAccount"),
+  borsh_1.struct([], "freezeAccount"),
+  borsh_1.struct([], "thawAccount"),
+  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "transferChecked"),
+  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "approveChecked"),
+  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "mintToChecked"),
+  borsh_1.struct([borsh_1.u64("amount"), borsh_1.u8("decimals")], "burnChecked"),
+]);
+
+function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDataType {
+  const decoded_data = TokenInstructionLayout.decode(instruction.data) as TokenInstructionLayout;
+  if ("initializeMint" in decoded_data) {
+    const type = "initializeMint";
+    const params = {
+      decimals: decoded_data.initializeMint.decimals,
+      mint: instruction.keys[0].pubkey,
+      mintAuthority: decoded_data.initializeMint.mintAuthority,
+      freezeAuthority: decoded_data.initializeMint.freezeAuthority,
+    };
+    return { type, data: params };
+  } else if ("initializeAccount" in decoded_data) {
+    const type = "initializeAccount";
+    const params = {
+      account: instruction.keys[0].pubkey,
+      mint: instruction.keys[1].pubkey,
+      owner: instruction.keys[2].pubkey,
+    };
+    return { type, data: params };
+  } else if ("transfer" in decoded_data) {
+    const type = "transfer";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      destination: instruction.keys[1].pubkey,
+      owner: instruction.keys[2].pubkey,
+      amount: decoded_data.transfer.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("approve" in decoded_data) {
+    const type = "approve";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      delegate: instruction.keys[1].pubkey,
+      owner: instruction.keys[2].pubkey,
+      amount: decoded_data.approve.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("revoke" in decoded_data) {
+    const type = "revoke";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      owner: instruction.keys[1].pubkey,
+    };
+    return { type, data: params };
+  } else if ("setAuthority" in decoded_data) {
+    const type = "setAuthority";
+    const params = {
+      target: instruction.keys[0].pubkey,
+      currentAuthority: instruction.keys[1].pubkey,
+      newAuthority: decoded_data.setAuthority.newAuthority,
+      authorityType: decoded_data.setAuthority.authorityType,
+    };
+    return { type, data: params };
+  } else if ("mintTo" in decoded_data) {
+    const type = "mintTo";
+    const params = {
+      mint: instruction.keys[0].pubkey,
+      destination: instruction.keys[1].pubkey,
+      mintAuthority: instruction.keys[2].pubkey,
+      amount: decoded_data.mintTo.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("burn" in decoded_data) {
+    const type = "burn";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      mint: instruction.keys[1].pubkey,
+      owner: instruction.keys[2].pubkey,
+      amount: decoded_data.burn.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("closeAccount" in decoded_data) {
+    const type = "closeAccount";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      destination: instruction.keys[1].pubkey,
+      owner: instruction.keys[2].pubkey,
+    };
+    return { type, data: params };
+  } else if ("transferChecked" in decoded_data) {
+    const type = "transfer";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      destination: instruction.keys[2].pubkey,
+      owner: instruction.keys[3].pubkey,
+      amount: decoded_data.transferChecked.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("approveChecked" in decoded_data) {
+    const type = "approve";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      delegate: instruction.keys[2].pubkey,
+      owner: instruction.keys[3].pubkey,
+      amount: decoded_data.approveChecked.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("mintToChecked" in decoded_data) {
+    const type = "mintTo";
+    const params = {
+      mint: instruction.keys[0].pubkey,
+      destination: instruction.keys[1].pubkey,
+      mintAuthority: instruction.keys[2].pubkey,
+      amount: decoded_data.mintToChecked.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else if ("burnChecked" in decoded_data) {
+    const type = "burn";
+    const params = {
+      source: instruction.keys[0].pubkey,
+      mint: instruction.keys[1].pubkey,
+      owner: instruction.keys[2].pubkey,
+      amount: decoded_data.burnChecked.amount.toNumber(),
+    };
+    return { type, data: params };
+  } else {
+    throw new Error("Unsupported token instruction type");
+  }
+}

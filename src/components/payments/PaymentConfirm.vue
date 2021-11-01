@@ -10,7 +10,7 @@ import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/inst_decoder";
 
-import DecodedDisplay from "./DecodedDisplay.vue";
+import InstructionDisplay from "./InstructionDisplay.vue";
 
 const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate); // will change this to accept other tokens as well
 const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
@@ -76,12 +76,6 @@ const totalFiatCostString = computed(() => {
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
-
-// const countable = computed(() => props.cryptoAmount > 0);
-const breakJoin = (src: string): string => {
-  const items = src.match(/[A-Z][a-z]+/g) || [];
-  return items.join(" ");
-};
 </script>
 <template>
   <div
@@ -116,7 +110,7 @@ const breakJoin = (src: string): string => {
       </div>
     </div>
     <hr class="m-5" />
-    <div class="mt-4 px-6 items-center">
+    <div class="mt-4 px-6 items-center scrollbar">
       <div class="flex flex-col justify-start items-start">
         <span class="flex flex-row justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
           <p>You Pay</p>
@@ -131,14 +125,7 @@ const breakJoin = (src: string): string => {
         <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent" @click="() => (expand_inst = !expand_inst)">
           {{ expand_inst ? "Hide details" : "View more details" }}
         </p>
-        <div v-if="expand_inst">
-          <div v-for="inst in decodedInst" :key="JSON.stringify(inst)" class="w-full text-app-text-500 dark:text-app-text-dark-500">
-            <p>{{ breakJoin(inst.type) }}</p>
-            <div v-for="el in Object.keys(inst.data)" :key="el">
-              <DecodedDisplay :data="inst.data[el]" :el="el" />
-            </div>
-          </div>
-        </div>
+        <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
       </div>
     </div>
     <hr class="m-5" />
@@ -173,5 +160,29 @@ hr {
 }
 .logo {
   transform: translateX(100%);
+}
+
+.scrollbar {
+  max-height: 65vh;
+  overflow: scroll;
+}
+.scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  border-radius: 100vh;
+  background: #f7f4ed;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background: #e0cbcb;
+  border-radius: 100vh;
+  border: 1px solid #f6f7ed;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c0a0b9;
 }
 </style>
