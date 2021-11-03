@@ -54,7 +54,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
-import { cloneDeep, map as ld_map } from "lodash";
+import { cloneDeep } from "lodash";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -268,7 +268,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const relayMap: { [keyof: string]: string } = {};
     const relayKeyHost: { [keyof: string]: string } = {};
 
-    const promises = Object.keys(this.config.RelayHost).map(async (value, index) => {
+    const promises = Object.keys(this.config.RelayHost).map(async (value) => {
       try {
         const res = await fetch(`${this.config.RelayHost[value]}/public_key`);
         const res_json = await res.json();
@@ -392,6 +392,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getGaslessPublicKey: async (req) => {
         // if (!req.params) throw new Error("Invalid Relay");
         // const relayPublicKey = this.state.RelayMap[req.params.relay];
+        log.info(req.origin);
         const relayPublicKey = this.state.RelayMap["torus"];
         if (!relayPublicKey) throw new Error("Invalid Relay");
         return relayPublicKey;
@@ -953,7 +954,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       const popupPayload: SignMessageChannelDataType = {
         type: req.method,
-        data: req.params?.data,
+        data: Buffer.from(req.params?.data || []).toString("hex"),
         display: req.params?.display,
         message: Buffer.from(req.params?.data || []).toString(),
         signer: this.selectedAddress,
