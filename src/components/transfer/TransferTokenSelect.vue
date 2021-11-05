@@ -3,6 +3,8 @@ import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } f
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { ref, watch } from "vue";
 
+import NftLogo from "@/assets/nft_token.svg";
+import SolTokenLogo from "@/assets/sol_token.svg";
 import { app } from "@/modules/app";
 
 import { tokens } from "./token-helper";
@@ -16,7 +18,7 @@ watch(selectedToken, () => {
 <template>
   <Listbox v-model="selectedToken" as="div">
     <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Select item to transfer</ListboxLabel>
-    <div class="mt-1 relative">
+    <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
           <img :src="selectedToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
@@ -51,24 +53,12 @@ watch(selectedToken, () => {
             sm:text-sm
           "
         >
-          <ListboxOption v-slot="{ active, selected }" as="template" :value="selectedToken">
-            <li
-              :class="[
-                active ? 'bg-app-gray-200' : '',
-                'cursor-pointer select-none relative py-2 pl-3 pr-9 text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
-              ]"
-            >
-              <div class="flex items-center">
-                <img :src="selectedToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
-                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ selectedToken.name }}</span>
-              </div>
+          <ListboxOption :key="tokens" as="template" :value="null" :disabled="true">
+            <li class="option-separator">
+              <img class="block h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
+              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">TOKENS</p>
             </li>
           </ListboxOption>
-
-          <!--          <div class="flex items-center px-3 py-4 border-t">-->
-          <!--            <img :src="app.isDarkMode ? TokenLightLogoURL : TokenLogoURL" class="h-4 w-4 mr-2" />-->
-          <!--            <div class="font-body text-app-text-600 dark:text-app-text-dark-500 capitalize">Tokens</div>-->
-          <!--          </div>-->
           <ListboxOption v-for="item in tokens" v-slot="{ active, selected }" :key="item.name" as="template" :value="item">
             <li
               :class="[
@@ -78,10 +68,17 @@ watch(selectedToken, () => {
             >
               <div class="flex items-center">
                 <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
-                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ item?.name }}</span>
+                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
+                  <p>{{ item?.name }} ({{ item?.symbol }})</p>
+                  <p class="text-app-gray-500">{{ item?.symbol === "SOL" ? "" : "SPL" }}</p></span
+                >
               </div>
             </li>
           </ListboxOption>
+          <li class="option-separator mb-4">
+            <img class="block h-4 w-auto" :src="NftLogo" alt="Tokens" />
+            <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">NFTS</p>
+          </li>
         </ListboxOptions>
       </transition>
     </div>
@@ -91,5 +88,19 @@ watch(selectedToken, () => {
 <style scoped>
 .select-container {
   height: 54px;
+}
+.option-separator {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  margin-left: 13px;
+  height: 45px;
+}
+.coin-name {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
 }
 </style>
