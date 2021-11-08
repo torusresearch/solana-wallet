@@ -55,6 +55,12 @@ export default {
     },
   } as WhiteLabelData,
 
+  // Topup
+  rampApiHost: "https://ramp-network-api.tor.us",
+  rampAPIKEY: "dw9fe8drpzmdfuks79ub5hvmqzuyjbme4kwkwkqf",
+
+  rampHost: "https://widget-instant.ramp.network",
+
   // key is the login provider
   loginConfig: {
     [LOGIN_PROVIDER.GOOGLE]: {

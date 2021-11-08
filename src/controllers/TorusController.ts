@@ -24,6 +24,7 @@ import {
   ProviderConfig,
   SafeEventEmitterProvider,
   THEME,
+  TopupInput,
   TransactionState,
   TX_EVENTS,
   UserInfo,
@@ -714,8 +715,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getWalletInstanceId: () => {
         return "";
       },
-      topup: async () => {
-        return false;
+      topup: async (req) => {
+        const result = await this.handleTopUp(req);
+        return result;
       },
       handleWindowRpc: this.communicationManager.handleWindowRpc,
       getProviderState: (req, res, _, end) => {
@@ -990,7 +992,56 @@ export default class TorusController extends BaseController<TorusControllerConfi
       return false;
     }
   }
+  async handleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
+    try {
+      const windowId = req.params?.windowId;
+      const params = req.params?.params || {};
 
+      const parameters = {
+        userAddress: this.selectedAddress || undefined,
+        userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
+        swapAsset: params.selectedCryptoCurrency || undefined,
+        // swapAmount: params.amount || undefined,
+        fiatValue: params.fiatValue?.toString() || undefined,
+        fiatCurrency: params.selectedCurrency || undefined,
+        variant: "hosted-auto",
+        webhookStatusUrl: `${config.rampApiHost}/transaction`,
+        hostUrl: "https://app.tor.us",
+        hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
+        hostAppName: "Torus",
+        // hostApiKey: config.rampAPIKEY,
+        finalUrl: `${config.baseRoute}/redirect?windowId=${windowId}&topup=success`, // redirect url
+      };
+
+      // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
+      const parameterString = new URLSearchParams(JSON.parse(JSON.stringify(parameters)));
+      // const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
+      const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
+
+      log.info(windowId);
+      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${windowId}`;
+
+      const topUpPopUpWindow = new PopupWithBcHandler({
+        state: {
+          url: finalUrl,
+          windowId,
+        },
+        config: {
+          dappStorageKey: config.dappStorageKey || undefined,
+          communicationEngine: this.communicationEngine,
+          communicationWindowManager: this.communicationManager,
+          target: "_blank",
+        },
+        instanceId: channelName,
+      });
+      await topUpPopUpWindow.handle();
+      return true;
+      // debugger;
+    } catch (e) {
+      log.error(e);
+      return false;
+    }
+  }
   public async triggerLogin({
     loginProvider,
     login_hint,
