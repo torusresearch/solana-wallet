@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { significantDigits } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
+import { DecodedDataType } from "@/utils/instruction_decoder";
+
+import InstructionDisplay from "./InstructionDisplay.vue";
 
 const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate); // will change this to accept other tokens as well
 const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
@@ -22,6 +24,7 @@ const props = withDefaults(
     isGasless?: boolean;
     isOpen?: boolean;
     tokenLogoUrl?: string;
+    decodedInst: DecodedDataType[];
   }>(),
   {
     senderPubKey: "",
@@ -35,6 +38,7 @@ const props = withDefaults(
   }
 );
 
+const expand_inst = ref(false);
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
 const closeModal = () => {
@@ -106,7 +110,7 @@ const totalFiatCostString = computed(() => {
       </div>
     </div>
     <hr class="m-5" />
-    <div class="mt-4 px-6 items-center">
+    <div class="mt-4 px-6 items-center scrollbar">
       <div class="flex flex-col justify-start items-start">
         <span class="flex flex-row justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
           <p>You Pay</p>
@@ -117,7 +121,11 @@ const totalFiatCostString = computed(() => {
           <p>Transaction Fee <img :src="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
           <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
         </span>
-        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent">View more details</p>
+
+        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent" @click="() => (expand_inst = !expand_inst)">
+          {{ expand_inst ? "Hide details" : "View more details" }}
+        </p>
+        <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
       </div>
     </div>
     <hr class="m-5" />
@@ -152,5 +160,15 @@ hr {
 }
 .logo {
   transform: translateX(100%);
+}
+
+.scrollbar {
+  max-height: 65vh;
+  overflow: scroll;
+  scrollbar-width: none;
+}
+.scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
 }
 </style>

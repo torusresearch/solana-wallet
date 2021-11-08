@@ -12,7 +12,7 @@ import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 
 const { resolve, promise } = promiseCreator<void>();
-let dappOrigin = window.location.ancestorOrigins[0] || "";
+let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";
 const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
@@ -114,6 +114,9 @@ const cancelLogin = (): void => {
 const loginFromWidget = () => {
   ControllerModule.torus.loginFromWidgetButton();
 };
+const closePanel = () => {
+  ControllerModule.closeIframeFullScreen();
+};
 </script>
 
 <template>
@@ -127,6 +130,8 @@ const loginFromWidget = () => {
       :is-login-in-progress="isLoginInProgress"
       @show-login-modal="loginFromWidget"
       @toggle-panel="ControllerModule.toggleIframeFullScreen"
+      @close-panel="closePanel"
+      @show-wallet="ControllerModule.openWalletPopup"
     />
   </div>
 </template>
