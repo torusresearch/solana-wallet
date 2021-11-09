@@ -998,10 +998,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const params = req.params?.params || {};
 
       const parameters = {
-        userAddress: this.selectedAddress || undefined,
+        userAddress: params.selectedAddress || this.selectedAddress || undefined,
         userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
-        swapAsset: params.selectedCryptoCurrency || undefined,
-        // @ts-expect-error: temporay hack to allow cryptoAmount: TOFIX: update controller
+        swapAsset: params.selectedCryptoCurrency || "SOLANA_SOL" || undefined,
         swapAmount: params.cryptoAmount || undefined,
         fiatValue: params.fiatValue || undefined,
         fiatCurrency: params.selectedCurrency || undefined,
@@ -1016,8 +1015,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
       const parameterString = new URLSearchParams(JSON.parse(JSON.stringify(parameters)));
-      // const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
-      const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
+      const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
+
+      // testnet
+      // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
 
       log.info(windowId);
       const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${windowId}`;
@@ -1038,9 +1039,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       await topUpPopUpWindow.handle();
       return true;
       // debugger;
-    } catch (e) {
-      log.error(e);
-      return false;
+    } catch (err) {
+      log.error(err);
+      throw err;
     }
   }
   public async triggerLogin({
