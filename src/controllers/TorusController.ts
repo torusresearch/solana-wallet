@@ -17,6 +17,7 @@ import {
   FEATURES_PROVIDER_CHANGE_WINDOW,
   getPopupFeatures,
   ICommunicationProviderHandlers,
+  PaymentParams,
   PopupHandler,
   PopupWithBcHandler,
   PROVIDER_NOTIFICATIONS,
@@ -716,7 +717,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return "";
       },
       topup: async (req) => {
-        const result = await this.handleTopUp(req);
+        const result = await this.embedhandleTopUp(req);
         return result;
       },
       handleWindowRpc: this.communicationManager.handleWindowRpc,
@@ -992,10 +993,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
       return false;
     }
   }
-  async handleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
+
+  async embedhandleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
+    const windowId = req.params?.windowId;
+    const params = req.params?.params || {};
+    const result = await this.handleTopUp(params, windowId);
+    return result;
+  }
+
+  async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
     try {
-      const windowId = req.params?.windowId;
-      const params = req.params?.params || {};
+      const instanceId = windowId || this.getWindowId();
 
       const parameters = {
         userAddress: params.selectedAddress || this.selectedAddress || undefined,
@@ -1010,7 +1018,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         // hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${windowId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
@@ -1021,7 +1029,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
 
       log.info(windowId);
-      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${windowId}`;
+      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
 
       const topUpPopUpWindow = new PopupWithBcHandler({
         state: {
@@ -1071,4 +1079,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       throw error;
     }
   }
+
+  getWindowId = (): string => Math.random().toString(36).slice(2);
 }

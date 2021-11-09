@@ -21,23 +21,10 @@ const cryptoCurrencyRate = ref(0);
 const receivingCryptoAmount = ref(0);
 const amount = ref(0);
 const isLoadingQuote = ref(false);
-let transferData: { feeRate: any; rate: any; decimals: number } | undefined;
+let rampQuoteData: { feeRate: any; rate: any; decimals: number } | undefined;
 
 watch(selectedCryptocurrency, throttle(refreshTransferEstimate, 500));
 watch([selectedCurrency, amount], throttle(evaluateTransactionQuote, 500));
-
-async function refreshTransferEstimate(val: any) {
-  transferData = undefined;
-  isLoadingQuote.value = true;
-  try {
-    transferData = await getQuote({ ramp_symbol: val.ramp_symbol });
-    isLoadingQuote.value = false;
-  } catch (e) {
-    // TODO : show error
-    isLoadingQuote.value = false;
-  }
-  evaluateTransactionQuote();
-}
 
 export async function getQuote(payload: { ramp_symbol?: any }): Promise<{
   feeRate: number;
@@ -63,12 +50,26 @@ export async function getQuote(payload: { ramp_symbol?: any }): Promise<{
   return { feeRate, rate, decimals: asset.decimals };
 }
 
+async function refreshTransferEstimate(val: any) {
+  rampQuoteData = undefined;
+  isLoadingQuote.value = true;
+  try {
+    rampQuoteData = await getQuote({ ramp_symbol: val.ramp_symbol });
+    isLoadingQuote.value = false;
+  } catch (e) {
+    // TODO : show error
+    isLoadingQuote.value = false;
+  }
+  evaluateTransactionQuote();
+}
+
 async function evaluateTransactionQuote() {
-  const rate = transferData?.rate[selectedCurrency.value.value] || 0; // per unit price of token in fiat currency
-  const feeRate = transferData?.feeRate[selectedCurrency.value.value] / 100 || 0; // per unit price of transaction fees for 1 token in fiat currency
-  cryptoCurrencyRate.value = transferData?.rate[selectedCurrency.value.value] || 0;
+  const rate = rampQuoteData?.rate[selectedCurrency.value.value] || 0; // per unit price of token in fiat currency
+  const feeRate = rampQuoteData?.feeRate[selectedCurrency.value.value] / 100 || 0; // per unit price of transaction fees for 1 token in fiat currency
+  cryptoCurrencyRate.value = rampQuoteData?.rate[selectedCurrency.value.value] || 0;
   receivingCryptoAmount.value = rate && !$v.value.$invalid ? amount.value / (1 + feeRate) / rate : 0; // Final Crypto amount
 }
+
 const rules = {
   amount: {
     required: helpers.withMessage("Required", required),
@@ -82,10 +83,10 @@ const $v = useVuelidate(rules, { amount });
 const onSave = () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
-    ControllerModule.whatever(
-      selectedCryptocurrency.value.ramp_symbol,
-      Math.trunc(receivingCryptoAmount.value * Math.pow(10, transferData?.decimals || 0))
-    );
+    ControllerModule.torus.handleTopUp({
+      selectedCryptoCurrency: selectedCryptocurrency.value.ramp_symbol,
+      cryptoAmount: Math.trunc(receivingCryptoAmount.value * Math.pow(10, rampQuoteData?.decimals || 0)),
+    });
   }
 };
 
