@@ -17,6 +17,8 @@ import config from "../../../config";
 const selectedProvider = topupProviders[RAMPNETWORK];
 const selectedCryptocurrency = ref(selectedProvider.validCryptocurrencies[0]);
 const selectedCurrency = ref(selectedProvider.validCurrencies[0]);
+const currency = ControllerModule.torus.currentCurrency;
+
 const cryptoCurrencyRate = ref(0);
 const receivingCryptoAmount = ref(0);
 const amount = ref(0);
@@ -26,7 +28,7 @@ let rampQuoteData: { feeRate: any; rate: any; decimals: number } | undefined;
 watch(selectedCryptocurrency, throttle(refreshTransferEstimate, 500));
 watch([selectedCurrency, amount], throttle(evaluateTransactionQuote, 500));
 
-export async function getQuote(payload: { ramp_symbol?: any }): Promise<{
+async function getQuote(payload: { ramp_symbol?: any }): Promise<{
   feeRate: number;
   rate: number;
   decimals: number;
@@ -91,6 +93,7 @@ const onSave = () => {
 };
 
 onMounted(() => {
+  selectedCurrency.value = selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || selectedProvider.validCurrencies[0];
   refreshTransferEstimate(selectedCryptocurrency.value);
 });
 </script>

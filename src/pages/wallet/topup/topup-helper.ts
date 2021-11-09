@@ -36,7 +36,7 @@ export const topupProviders = {
         ramp_symbol: "SOLANA_USDC",
       },
     ],
-    validCurrencies: ["EUR", "GBP", "USD", "PLN"].map((k) => {
+    validCurrencies: ["USD", "EUR", "GBP", "PLN"].map((k) => {
       return { value: k, label: k };
     }),
   },

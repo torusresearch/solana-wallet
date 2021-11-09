@@ -527,6 +527,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.embedController._communicationProviderProxy;
   }
 
+  get currentCurrency(): string {
+    return this.currencyController.state.currentCurrency;
+  }
+
   get provider(): SafeEventEmitterProvider {
     return this.networkController._providerProxy as unknown as SafeEventEmitterProvider;
   }
