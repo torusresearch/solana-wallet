@@ -1001,8 +1001,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         userAddress: this.selectedAddress || undefined,
         userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
         swapAsset: params.selectedCryptoCurrency || undefined,
-        // swapAmount: params.amount || undefined,
-        fiatValue: params.fiatValue?.toString() || undefined,
+        // @ts-expect-error: temporay hack to allow cryptoAmount: TOFIX: update controller
+        swapAmount: params.cryptoAmount || undefined,
+        fiatValue: params.fiatValue || undefined,
         fiatCurrency: params.selectedCurrency || undefined,
         variant: "hosted-auto",
         webhookStatusUrl: `${config.rampApiHost}/transaction`,
@@ -1010,7 +1011,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         // hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}/redirect?windowId=${windowId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?instanceId=${windowId}&topup=success`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
