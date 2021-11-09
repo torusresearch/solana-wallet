@@ -1,14 +1,18 @@
 <script setup lang="ts">
+import { get } from "@toruslabs/http-helpers";
 import { onMounted } from "@vue/runtime-core";
 import useVuelidate from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import { throttle } from "lodash";
+import log from "loglevel";
 import { ref, watch } from "vue";
 
 import { Button, SelectField, TextField } from "@/components/common";
-import { fetchRampNetworkOrder, getQuote } from "@/components/topup/topup-utils/ramp";
+import ControllerModule from "@/modules/controllers";
 import { topupProviders } from "@/pages/wallet/topup/topup-helper";
 import { RAMPNETWORK } from "@/utils/enums";
+
+import config from "../../../config";
 
 const selectedProvider = topupProviders[RAMPNETWORK];
 const selectedCryptocurrency = ref(selectedProvider.validCryptocurrencies[0]);
@@ -35,6 +39,30 @@ async function refreshTransferEstimate(val: any) {
   evaluateTransactionQuote();
 }
 
+export async function getQuote(payload: { ramp_symbol?: any }): Promise<{
+  feeRate: number;
+  rate: number;
+  decimals: number;
+}> {
+  let response: any;
+  try {
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    };
+    response = get(`${config.rampApiQuoteHost}`, options);
+  } catch (error) {
+    log.error(error);
+    throw error;
+  }
+  const asset = (await response).assets.find((item: any) => item.symbol === payload.ramp_symbol); // the ramp asset object
+  const rate = asset.price;
+  const feeRate = asset.maxFeePercent;
+  return { feeRate, rate, decimals: asset.decimals };
+}
+
 async function evaluateTransactionQuote() {
   const rate = transferData?.rate[selectedCurrency.value.value] || 0; // per unit price of token in fiat currency
   const feeRate = transferData?.feeRate[selectedCurrency.value.value] / 100 || 0; // per unit price of transaction fees for 1 token in fiat currency
@@ -54,10 +82,10 @@ const $v = useVuelidate(rules, { amount });
 const onSave = () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
-    fetchRampNetworkOrder({
-      cryptoCurrencySymbol: selectedCryptocurrency.value.ramp_symbol,
-      cryptoCurrencyValue: Math.trunc(receivingCryptoAmount.value * Math.pow(10, transferData?.decimals || 0)),
-    });
+    ControllerModule.whatever(
+      selectedCryptocurrency.value.ramp_symbol,
+      Math.trunc(receivingCryptoAmount.value * Math.pow(10, transferData?.decimals || 0))
+    );
   }
 };
 

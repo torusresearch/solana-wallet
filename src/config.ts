@@ -33,7 +33,6 @@ export default {
   baseRoute,
   commonApiHost: "https://common-api.tor.us",
   metadataHost: "https://metadata.tor.us",
-  rampApiHost: "https://ramp-network-api.tor.us",
   api: "https://api.tor.us",
   redirect_uri: redirectURI,
   dappStorageKey,
@@ -58,6 +57,7 @@ export default {
 
   // Topup
   rampApiHost: "https://ramp-network-api.tor.us",
+  rampApiQuoteHost: "https://api-instant.ramp.network/api/host-api/assets",
   rampAPIKEY: "dw9fe8drpzmdfuks79ub5hvmqzuyjbme4kwkwkqf",
 
   rampHost: "https://widget-instant.ramp.network",
@@ -260,7 +260,4 @@ export default {
       buttonDescription: "Sign up/in with Email",
     },
   },
-  rampHost: "https://widget-instant.ramp.network",
-  rampApiQuoteHost: "https://api-instant.ramp.network/api/host-api/assets",
-  rampAPIKEY: "dw9fe8drpzmdfuks79ub5hvmqzuyjbme4kwkwkqf",
 };
