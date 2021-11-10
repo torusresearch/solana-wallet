@@ -4,11 +4,11 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import WalletTabs from "@/components/WalletTabs.vue";
-import { TopupProvider, TopupProviders } from "@/pages/wallet/topup/topup-helper";
 import { RAMPNETWORK } from "@/utils/enums";
+import { TopupProvider, TopupProviders } from "@/utils/topup";
 const router = useRouter();
 
-const selectedProvider = ref<TopupProvider>(<TopupProvider>{});
+const selectedProvider = ref<TopupProvider>();
 const providers = Object.values(TopupProviders);
 onMounted(() => {
   selectedProvider.value = TopupProviders[RAMPNETWORK];
@@ -16,8 +16,6 @@ onMounted(() => {
   if (routeName === "walletTopup") {
     // no gateway is selected, navigate to first one
     router.push({ name: "rampNetwork" });
-  } else if (routeName === "rampNetwork") {
-    selectedProvider.value = TopupProviders[RAMPNETWORK];
   }
 });
 </script>

@@ -7,11 +7,10 @@ import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 
 import { Button, SelectField, TextField } from "@/components/common";
+import config from "@/config";
 import ControllerModule from "@/modules/controllers";
-import { TopupProviders } from "@/pages/wallet/topup/topup-helper";
 import { RAMPNETWORK } from "@/utils/enums";
-
-import config from "../../../config";
+import { TopupProviders } from "@/utils/topup";
 
 const selectedProvider = TopupProviders[RAMPNETWORK];
 const selectedCryptocurrency = ref(selectedProvider.validCryptocurrencies[0]);
@@ -22,15 +21,20 @@ const cryptoCurrencyRate = ref(0);
 const receivingCryptoAmount = ref(0);
 const amount = ref(0);
 const isLoadingQuote = ref(false);
-let rampQuoteData: { feeRate: { [currency: string]: number }; rate: { [currency: string]: number }; decimals: number } | undefined;
-type QuoteAsset = { symbol: string; price: { [currency: string]: number }; maxFeePercent: { [currency: string]: number }; decimals: number };
+type QuoteAsset = {
+  symbol: string;
+  price: { [currency: string]: number };
+  maxFeePercent: { [currency: string]: number };
+  decimals: number;
+};
 type QuoteApiResponse = {
   assets: QuoteAsset[];
 };
+let rampQuoteData: { feeRate: { [currency: string]: number }; rate: { [currency: string]: number }; decimals: number } | undefined;
 const rules = {
   amount: {
     required: helpers.withMessage("Required", required),
-    minValue: helpers.withMessage("Minimum transaction amount is 50.", minValue(50)),
+    minValue: helpers.withMessage("Minimum transaction amount is 10.", minValue(10)),
     maxValue: helpers.withMessage("Maximum transaction amount is 20,000.", maxValue(20000)),
   },
 };
@@ -53,7 +57,7 @@ async function getQuote(
     log.error(error);
     throw error;
   }
-  const asset: QuoteAsset = <QuoteAsset>(await response).assets.find((item) => item.symbol === rampSymbol); // the ramp asset object
+  const asset = (await response).assets.find((item) => item.symbol === rampSymbol) as QuoteAsset; // the ramp asset object
   return { feeRate: asset.maxFeePercent, rate: asset.price, decimals: asset.decimals };
 }
 
