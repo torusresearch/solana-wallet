@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { InformationCircleIcon } from "@heroicons/vue/outline";
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { EXPLORER } from "@toruslabs/solana-controllers";
-import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
+import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import { computed } from "vue";
 

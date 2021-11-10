@@ -27,7 +27,7 @@ interface FinalTxData {
   networkDisplayName: string;
   isGasless: boolean;
 }
-let finalTxData = reactive<FinalTxData>({
+const finalTxData = reactive<FinalTxData>({
   slicedSenderAddress: "",
   slicedReceiverAddress: "",
   totalSolAmount: 0,
@@ -41,8 +41,8 @@ let finalTxData = reactive<FinalTxData>({
   isGasless: false,
 });
 
-let decodedInst = ref<DecodedDataType[]>();
-let origin = ref("");
+const decodedInst = ref<DecodedDataType[]>();
+const origin = ref("");
 onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);

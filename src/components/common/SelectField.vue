@@ -20,7 +20,7 @@ const value = computed({
   get: () => {
     return props.modelValue ? props.modelValue : props.items[0];
   },
-  set: (value) => emits("update:modelValue", value),
+  set: (val) => emits("update:modelValue", val),
 });
 </script>
 

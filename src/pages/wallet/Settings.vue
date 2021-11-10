@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { GlobeIcon, ListIcon, OptionsIcon, UserIcon } from "@toruslabs/vue-icons/basic";
+import { GlobeIcon, OptionsIcon } from "@toruslabs/vue-icons/basic";
 import { MonitorIcon } from "@toruslabs/vue-icons/gadgets";
 import { LockIcon } from "@toruslabs/vue-icons/security";
 
 import { Panel } from "@/components/common";
-import { AccountDetails, AccountManagement, AddressBook, CrashReporting, Display, Network } from "@/components/settings";
+import { AccountDetails, CrashReporting, Display, Network } from "@/components/settings";
 import WalletTabs from "@/components/WalletTabs.vue";
 </script>
 

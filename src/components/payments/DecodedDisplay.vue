@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { computed } from "vue-demi";
+import { computed } from "vue";
 
 import { DecodedDataType } from "@/utils/instruction_decoder";
 const props = withDefaults(

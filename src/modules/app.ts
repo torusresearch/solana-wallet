@@ -19,14 +19,13 @@ export function setDarkMode(isDarkMode: boolean): void {
   state.value.isDarkMode = isDarkMode;
 }
 
-export function addToast(toast: ToastMessageType): void {
-  state.value.toastMessages.push(toast);
-  setTimeout(removeToast, 5000, toast);
-}
-
 export function removeToast(toast: ToastMessageType): void {
   const target = state.value.toastMessages.indexOf(toast);
   state.value.toastMessages.splice(target, 1);
 }
 
+export function addToast(toast: ToastMessageType): void {
+  state.value.toastMessages.push(toast);
+  setTimeout(removeToast, 5000, toast);
+}
 export const app = readonly(state);

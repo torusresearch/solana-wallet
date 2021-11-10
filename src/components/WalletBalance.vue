@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "@vue/reactivity";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";

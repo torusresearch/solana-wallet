@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "@vue/runtime-core";
+import { onMounted } from "vue";
 
 import { Toast } from "@/components/common";
 import { app } from "@/modules/app";

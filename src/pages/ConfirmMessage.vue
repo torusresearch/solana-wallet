@@ -13,7 +13,7 @@ interface MsgData {
   data?: Uint8Array;
   message: string;
 }
-let msg_data = reactive<MsgData>({
+const msg_data = reactive<MsgData>({
   origin: "",
   message: "",
 });

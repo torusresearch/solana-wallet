@@ -7,7 +7,7 @@
     @apply bg-app-primary-500
     hover:bg-app-primary-400
     active:bg-app-primary-300
-    disabled:bg-app-primary-100
+    disabled:bg-app-gray-500
     rounded-md
     px-8
     font-body

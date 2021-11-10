@@ -75,8 +75,8 @@ const setActiveButton = (provider: string) => {
                   :is-embed="true"
                   :active-button="activeButton"
                   :login-buttons="loginButtonsArray"
-                  @onLogin="onLogin"
-                  @onHover="setActiveButton"
+                  @on-login="onLogin"
+                  @on-hover="setActiveButton"
                 />
                 <LoginFooter :third-party-authenticator-list="thirdPartyAuthenticatorList" :is-embed="true" />
               </div>
