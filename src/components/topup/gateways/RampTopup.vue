@@ -8,6 +8,7 @@ import { onMounted, ref, watch } from "vue";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import config from "@/config";
+import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { RAMPNETWORK } from "@/utils/enums";
 import { TopupProviders } from "@/utils/topup";
@@ -87,10 +88,12 @@ watch([selectedCurrency, amount], throttle(evaluateTransactionQuote, 500));
 const onSave = () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
-    ControllerModule.torus.handleTopUp({
-      selectedCryptoCurrency: selectedCryptocurrency.value.ramp_symbol,
-      cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (rampQuoteData?.decimals || 0)),
-    });
+    ControllerModule.torus
+      .handleTopUp({
+        selectedCryptoCurrency: selectedCryptocurrency.value.ramp_symbol,
+        cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (rampQuoteData?.decimals || 0)),
+      })
+      .catch(() => addToast({ message: "Transaction could not complete.", type: "error" }));
   }
 };
 
