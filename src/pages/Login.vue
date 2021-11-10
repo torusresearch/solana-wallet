@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import useVuelidate from "@vuelidate/core";
+import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";

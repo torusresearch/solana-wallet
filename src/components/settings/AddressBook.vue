@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { TrashIcon } from "@toruslabs/vue-icons/basic";
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
-import useVuelidate from "@vuelidate/core";
+import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import { ref } from "vue";
 
