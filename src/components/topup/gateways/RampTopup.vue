@@ -19,7 +19,7 @@ const currency = ControllerModule.torus.currentCurrency;
 
 const cryptoCurrencyRate = ref(0);
 const receivingCryptoAmount = ref(0);
-const amount = ref(0);
+const amount = ref(100);
 const isLoadingQuote = ref(false);
 type QuoteAsset = {
   symbol: string;
@@ -120,7 +120,7 @@ onMounted(() => {
             <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
               Includes transaction cost of {{ selectedProvider.fee }} <br />
-              Minimum transaction amount: 50 {{ selectedCurrency.value }}
+              Minimum transaction amount: 10 {{ selectedCurrency.value }}
             </p>
           </div>
           <div class="col-span-3 sm:col-span-1">

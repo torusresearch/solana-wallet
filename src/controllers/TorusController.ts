@@ -832,7 +832,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostUrl: "https://app.tor.us",
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
-        // hostApiKey: config.rampAPIKEY,
+        hostApiKey: config.rampAPIKEY,
         finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
       };
 
