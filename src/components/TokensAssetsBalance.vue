@@ -1,27 +1,23 @@
 <script setup lang="ts">
 import { SolanaToken } from "@toruslabs/solana-controllers";
-import { computed } from "@vue/reactivity";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import { addToast } from "@/modules/app";
-import ControllersModule from "@/modules/controllers";
 import ControllerModule from "@/modules/controllers";
 
-let selectedTab = ref<TOKEN_TABS>(TOKEN_TABS.TOKEN_TAB);
-const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency.toLowerCase());
-
-const tokens = computed<SolanaToken[] | undefined>(() => ControllersModule.torusState.TokensTrackerState.tokens?.[publicKey]);
 const enum TOKEN_TABS {
   NFT_TAB = "NFT_TAB",
   TOKEN_TAB = "TOKEN_TAB",
 }
-onMounted(() => {
-  selectTab(TOKEN_TABS.TOKEN_TAB);
-});
+
+const selectedTab = ref<TOKEN_TABS>(TOKEN_TABS.TOKEN_TAB);
+const { selectedAddress } = ControllerModule.torusState.PreferencesControllerState;
+const publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
+const currency = computed(() => ControllerModule.torusState.CurrencyControllerState.currentCurrency.toLowerCase());
+
+const tokens = computed<SolanaToken[] | undefined>(() => ControllerModule.torusState.TokensTrackerState.tokens?.[publicKey]);
 
 function selectTab(tab: TOKEN_TABS) {
   if (tab !== TOKEN_TABS.TOKEN_TAB) {
@@ -31,8 +27,13 @@ function selectTab(tab: TOKEN_TABS) {
   }
   selectedTab.value = tab;
 }
+
+onMounted(() => {
+  selectTab(TOKEN_TABS.TOKEN_TAB);
+});
+
 // depending on the totalItems we'd like to have dynamic column count in grid
-function getResponsiveClasses(totalItems = 0): string {
+function getResponsiveClasses(): string {
   // if (totalItems === 1) { // for now showing in 4 grids whatsoever
   //   return "w-full";
   // } else if (totalItems === 2) {
@@ -75,8 +76,8 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
       >
         <div
           v-for="token in tokens"
-          :key="token.tokenAddress"
-          :class="getResponsiveClasses(tokens.length)"
+          :key="token.tokenAddress.toString()"
+          :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
         >
           <div
@@ -98,14 +99,14 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
                 <p class="coin-name">{{ token.data.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
-                <p class="coin-value">{{ token.balance.uiAmountString }}</p>
+                <p class="coin-value">{{ token.balance?.uiAmountStrings }}</p>
                 <p class="coin-currency">{{ token.data.symbol }}</p></span
               >
             </div>
             <div class="flex flex-row justify-between items-center w-100 token-footer">
               <p class="ml-3">{{ token.data.name }}</p>
               <p class="mr-3">
-                ~{{ getUiTokenValue(token.price[currency === "sol" ? "usd" : currency], token.balance.uiAmount) }}
+                ~{{ getUiTokenValue(token.price?.[currency === "sol" ? "usd" : currency] || 0, token.balance?.uiAmount || 0) }}
                 {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
               </p>
             </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import useVuelidate from "@vuelidate/core";
+import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
@@ -30,12 +30,12 @@ onMounted(() => {
   if (address) router.push("/wallet/home");
 });
 
-const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail: string) => {
+const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
   try {
     isLoading.value = true;
     await ControllerModule.triggerLogin({
       loginProvider,
-      login_hint: userEmail,
+      login_hint: emailString,
     });
     const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
     if (address) router.push("/wallet/home");

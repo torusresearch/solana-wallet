@@ -6,7 +6,6 @@ import { BigNumber } from "bignumber.js";
 import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-import SolanaLightLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
@@ -114,7 +113,7 @@ const totalFiatCostString = computed(() => {
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>
-                  <img class="h-7 mx-auto w-auto mb-1" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+                  <img class="h-7 mx-auto w-auto mb-1" :src="SolanaLogoURL" alt="Solana Logo" />
                 </div>
                 <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</div>
               </DialogTitle>
@@ -125,7 +124,7 @@ const totalFiatCostString = computed(() => {
                       class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12"
                     >
                       <!-- <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" /> -->
-                      <img class="w-6" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+                      <img class="w-6" :src="SolanaLogoURL" alt="Solana Logo" />
                     </div>
                   </div>
                   <div class="flex-grow line_connect">
@@ -136,7 +135,7 @@ const totalFiatCostString = computed(() => {
                       class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12"
                     >
                       <!-- <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" /> -->
-                      <img class="w-6" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+                      <img class="w-6" :src="SolanaLogoURL" alt="Solana Logo" />
                     </div>
                   </div>
                 </div>

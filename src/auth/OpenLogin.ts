@@ -22,6 +22,7 @@ class OpenLoginFactory {
           uxMode: "redirect",
         });
         await instance.init();
+        // eslint-disable-next-line require-atomic-updates
         OpenLoginFactory._instance = instance;
       } catch (error) {
         log.error(error, "Unable to create openlogin instance");

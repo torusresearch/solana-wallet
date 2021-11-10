@@ -1,4 +1,3 @@
-import { dom } from "@headlessui/vue/dist/utils/dom";
 import { PublicKey } from "@solana/web3.js";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
@@ -54,19 +53,19 @@ export const copyText = (text: string): void => {
 
 export function promiseCreator<T>(): {
   resolve: ((value: T | PromiseLike<T>) => void) | null;
-  reject: ((reason?: any) => void) | null;
+  reject: ((reason?: unknown) => void) | null;
   promise: Promise<T>;
 } {
-  let resolve: ((value: T | PromiseLike<T>) => void) | null = null;
-  let reject: ((reason?: any) => void) | null = null;
-  const promise = new Promise<T>(function (res, rej) {
-    resolve = res;
-    reject = rej;
+  let res: ((value: T | PromiseLike<T>) => void) | null = null;
+  let rej: ((reason?: unknown) => void) | null = null;
+  const promise = new Promise<T>((resolve, reject): void => {
+    res = resolve;
+    rej = reject;
   });
   return {
-    resolve: resolve,
-    reject: reject,
-    promise: promise,
+    resolve: res,
+    reject: rej,
+    promise,
   };
 }
 export function capitalizeFirstLetter(text: string): string {

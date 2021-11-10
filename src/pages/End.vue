@@ -12,7 +12,7 @@ import type { OpenLoginPopupResponse } from "../utils/enums";
 
 async function endLogin() {
   try {
-    const hash = useRoute().hash;
+    const { hash } = useRoute();
     const hashParams = new URLSearchParams(hash.slice(1));
     const error = hashParams.get("error");
 
@@ -22,7 +22,7 @@ async function endLogin() {
 
     const openLoginInstance = await OpenLoginFactory.getInstance();
     const openLoginState = openLoginInstance.state;
-    const privKey = openLoginState.privKey;
+    const { privKey } = openLoginState;
 
     if (!privKey) {
       throw new Error("Login unsuccessful");

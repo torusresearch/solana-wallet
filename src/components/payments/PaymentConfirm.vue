@@ -54,18 +54,18 @@ const onConfirm = () => {
   closeModal();
 };
 
-const cryptoAmountString = computed(() => {
-  return `${props.cryptoAmount} ${props.token}`;
-});
-
-const fiatAmountString = computed(() => {
-  const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
-  return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
-});
-
-const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
-});
+// const cryptoAmountString = computed(() => {
+//   return `${props.cryptoAmount} ${props.token}`;
+// });
+//
+// const fiatAmountString = computed(() => {
+//   const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
+//   return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
+// });
+//
+// const fiatTxFeeString = computed(() => {
+//   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
+// });
 const totalCryptoCostString = computed(() => {
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
   return `${totalCost.toString(10)} ${props.token}`;
