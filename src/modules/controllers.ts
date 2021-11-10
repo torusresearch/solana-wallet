@@ -203,8 +203,8 @@ class ControllerModule extends VuexModule {
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
     this.torus.init({ config: DEFAULT_CONFIG, state: merge(this.torusState, state) });
     this.torus.setOrigin(origin);
-    this.torus.on("store", (state: TorusControllerState) => {
-      this.updateTorusState(state);
+    this.torus.on("store", (el: TorusControllerState) => {
+      this.updateTorusState(el);
     });
     // this.torus.setupUntrustedCommunication();
     // Good
