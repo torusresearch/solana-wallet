@@ -9,6 +9,13 @@ import { Button, SelectField, TextField } from "@/components/common";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 
+const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
+const transferTypes = ALLOWED_VERIFIERS;
+
+const name = ref("");
+const address = ref("");
+const ensError = ref("");
+
 const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
@@ -54,12 +61,6 @@ const contacts = [
   },
 ];
 
-const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTypes = ALLOWED_VERIFIERS;
-
-const name = ref("");
-const address = ref("");
-const ensError = ref("");
 const rules = {
   name: { required: helpers.withMessage("Required", required) },
   address: {
@@ -68,7 +69,6 @@ const rules = {
     required: helpers.withMessage("Required", required),
   },
 };
-
 const $v = useVuelidate(rules, { name, address });
 
 const onSave = () => {

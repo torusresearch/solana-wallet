@@ -3,7 +3,18 @@ import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 import { app } from "@/modules/app";
 import { RAMPNETWORK } from "@/utils/enums";
 
-export const topupProviders = {
+export type TopupProvider = {
+  name: string;
+  description: string;
+  paymentMethod: string;
+  fee: string;
+  limit: string;
+  logo: () => string;
+  validCryptocurrencies: { value: string; label: string; ramp_symbol: string }[];
+  validCurrencies: { value: string; label: string }[];
+};
+
+export const TopupProviders: { [providerName: string]: TopupProvider } = {
   [RAMPNETWORK]: {
     name: "Ramp",
     description:

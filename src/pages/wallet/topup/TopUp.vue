@@ -1,25 +1,23 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import { onMounted } from "@vue/runtime-core";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import WalletTabs from "@/components/WalletTabs.vue";
-import { app } from "@/modules/app";
-import { topupProviders } from "@/pages/wallet/topup/topup-helper";
+import { TopupProvider, TopupProviders } from "@/pages/wallet/topup/topup-helper";
 import { RAMPNETWORK } from "@/utils/enums";
 const router = useRouter();
 
-const selectedProvider = ref<any>(undefined);
-const providers = Object.values(topupProviders);
+const selectedProvider = ref<TopupProvider>(<TopupProvider>{});
+const providers = Object.values(TopupProviders);
 onMounted(() => {
-  selectedProvider.value = topupProviders[RAMPNETWORK];
+  selectedProvider.value = TopupProviders[RAMPNETWORK];
   const routeName = router.currentRoute.value.name;
   if (routeName === "walletTopup") {
     // no gateway is selected, navigate to first one
     router.push({ name: "rampNetwork" });
   } else if (routeName === "rampNetwork") {
-    selectedProvider.value = topupProviders[RAMPNETWORK];
+    selectedProvider.value = TopupProviders[RAMPNETWORK];
   }
 });
 </script>

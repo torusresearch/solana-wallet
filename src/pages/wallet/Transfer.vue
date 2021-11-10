@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import useVuelidate from "@vuelidate/core";
+import { useVuelidate } from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, defineAsyncComponent, reactive, ref } from "vue";
@@ -8,7 +8,7 @@ import { computed, defineAsyncComponent, reactive, ref } from "vue";
 import { Button, Card, SelectField, TextField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -107,12 +107,12 @@ const confirmTransfer = async () => {
       toPubkey: new PublicKey(transferTo.value),
       lamports: sendAmount.value * LAMPORTS,
     });
-    let tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
+    const tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
     const res = await ControllersModule.torus.transfer(tf);
     // const res = await ControllersModule.torus.providertransfer(tf);
     log.info(res);
 
-    showMessageModal({ messageTitle: `Your transfer is being processed.`, messageStatus: STATUS_INFO });
+    showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
     // resetForm();
   } catch (error) {
     // log.error("send error", error);
@@ -174,7 +174,7 @@ const transferTypes = ALLOWED_VERIFIERS;
                   :is-open="isOpen"
                   :crypto-tx-fee="transactionFee"
                   @transfer-confirm="confirmTransfer"
-                  @onCloseModal="closeModal"
+                  @on-close-modal="closeModal"
                 />
               </div>
             </div>
@@ -187,7 +187,7 @@ const transferTypes = ALLOWED_VERIFIERS;
         :title="messageModalState.messageTitle"
         :description="messageModalState.messageDescription"
         :status="messageModalState.messageStatus"
-        @onClose="onMessageModalClosed"
+        @on-close="onMessageModalClosed"
       />
     </div>
   </WalletTabs>

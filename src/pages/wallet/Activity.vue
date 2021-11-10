@@ -53,7 +53,21 @@ const periods = [
     label: "Last 6 months",
   },
 ];
+const actionType = ref(actionTypes[0]);
+const period = ref(periods[0]);
 
+const oneWeekAgoDate = computed(() => {
+  const minDate = new Date();
+  return minDate.setDate(minDate.getDate() - 7);
+});
+const oneMonthAgoDate = computed(() => {
+  const minDate = new Date();
+  return minDate.setMonth(minDate.getMonth() - 1);
+});
+const sixMonthAgoDate = computed(() => {
+  const minDate = new Date();
+  return minDate.setMonth(minDate.getMonth() - 6);
+});
 const allTransactions = computed(() => ControllersModule.selectedNetworkTransactions);
 
 const filteredTransaction = computed(() => {
@@ -91,22 +105,6 @@ const filteredTransaction = computed(() => {
   });
 
   return transactions;
-});
-
-const actionType = ref(actionTypes[0]);
-const period = ref(periods[0]);
-
-const oneWeekAgoDate = computed(() => {
-  const minDate = new Date();
-  return minDate.setDate(minDate.getDate() - 7);
-});
-const oneMonthAgoDate = computed(() => {
-  const minDate = new Date();
-  return minDate.setMonth(minDate.getMonth() - 1);
-});
-const sixMonthAgoDate = computed(() => {
-  const minDate = new Date();
-  return minDate.setMonth(minDate.getMonth() - 6);
 });
 </script>
 

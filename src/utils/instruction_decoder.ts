@@ -8,18 +8,6 @@ export type DecodedDataType = {
   data: { [key: string]: string | PublicKey | number | undefined | null };
 };
 
-export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {
-  if (instruction.programId.equals(SystemProgram.programId)) {
-    return decodeSystemInstruction(instruction);
-  } else if (instruction.programId.equals(StakeProgram.programId)) {
-    return decodeStakeInstruction(instruction);
-  } else if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
-    return decodeTokenInstruction(instruction);
-  } else {
-    return decodeUnknownInstruction(instruction);
-  }
-};
-
 export const decodeSystemInstruction = (inst: TransactionInstruction): DecodedDataType => {
   // get layout
   let decoded;
@@ -67,7 +55,7 @@ export const decodeSystemInstruction = (inst: TransactionInstruction): DecodedDa
   //   }
 
   return {
-    type: "system" + type,
+    type: `system${type}`,
     data: decoded,
   };
 };
@@ -134,7 +122,7 @@ export const decodeStakeInstruction = (inst: TransactionInstruction): DecodedDat
   //   }
 
   return {
-    type: "stake" + type,
+    type: `stake${type}`,
     data: decoded,
   };
 };
@@ -149,84 +137,23 @@ export const decodeUnknownInstruction = (instruction: TransactionInstruction): D
   };
 };
 
-export declare type TokenInstructionLayout =
-  | {
-      initializeMint: {
-        decimals: number;
-        mintAuthority: PublicKey;
-        freezeAuthority: PublicKey | null;
-      };
-    }
-  | {
-      initializeAccount: any;
-    }
-  | {
-      initializeMultisig: {
-        m: number;
-      };
-    }
-  | {
-      transfer: {
-        amount: BN;
-      };
-    }
-  | {
-      approve: {
-        amount: BN;
-      };
-    }
-  | {
-      revoke: any;
-    }
-  | {
-      setAuthority: {
-        authorityType: number;
-        newAuthority: PublicKey | null;
-      };
-    }
-  | {
-      mintTo: {
-        amount: BN;
-      };
-    }
-  | {
-      burn: {
-        amount: BN;
-      };
-    }
-  | {
-      closeAccount: any;
-    }
-  | {
-      freezeAccount: any;
-    }
-  | {
-      thawAccount: any;
-    }
-  | {
-      transferChecked: {
-        amount: BN;
-        decimals: number;
-      };
-    }
-  | {
-      approveChecked: {
-        amount: BN;
-        decimals: number;
-      };
-    }
-  | {
-      mintToChecked: {
-        amount: BN;
-        decimals: number;
-      };
-    }
-  | {
-      burnChecked: {
-        amount: BN;
-        decimals: number;
-      };
-    };
+export declare type TokenInstructionLayoutType =
+  | { initializeMint: { decimals: number; mintAuthority: PublicKey; freezeAuthority: PublicKey | null } }
+  | { initializeAccount: unknown }
+  | { initializeMultisig: { m: number } }
+  | { transfer: { amount: BN } }
+  | { approve: { amount: BN } }
+  | { revoke: unknown }
+  | { setAuthority: { authorityType: number; newAuthority: PublicKey | null } }
+  | { mintTo: { amount: BN } }
+  | { burn: { amount: BN } }
+  | { closeAccount: unknown }
+  | { freezeAccount: unknown }
+  | { thawAccount: unknown }
+  | { transferChecked: { amount: BN; decimals: number } }
+  | { approveChecked: { amount: BN; decimals: number } }
+  | { mintToChecked: { amount: BN; decimals: number } }
+  | { burnChecked: { amount: BN; decimals: number } };
 const TokenInstructionLayout = bors.rustEnum([
   bors.struct([bors.u8("decimals"), bors.publicKey("mintAuthority"), bors.option(bors.publicKey(), "freezeAuthority")], "initializeMint"),
   bors.struct([], "initializeAccount"),
@@ -247,7 +174,7 @@ const TokenInstructionLayout = bors.rustEnum([
 ]);
 
 function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDataType {
-  const decoded_data = TokenInstructionLayout.decode(instruction.data) as TokenInstructionLayout;
+  const decoded_data = TokenInstructionLayout.decode(instruction.data) as TokenInstructionLayoutType;
   if ("initializeMint" in decoded_data) {
     const type = "initializeMint";
     const params = {
@@ -361,7 +288,17 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
       amount: decoded_data.burnChecked.amount.toNumber(),
     };
     return { type, data: params };
-  } else {
-    throw new Error("Unsupported token instruction type");
   }
+  throw new Error("Unsupported token instruction type");
 }
+
+export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {
+  if (instruction.programId.equals(SystemProgram.programId)) {
+    return decodeSystemInstruction(instruction);
+  } else if (instruction.programId.equals(StakeProgram.programId)) {
+    return decodeStakeInstruction(instruction);
+  } else if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
+    return decodeTokenInstruction(instruction);
+  }
+  return decodeUnknownInstruction(instruction);
+};

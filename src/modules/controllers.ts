@@ -20,9 +20,9 @@ import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { PostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
-import { cloneDeep, merge, omit } from "lodash";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
@@ -36,6 +36,7 @@ import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
 import { addToast } from "./app";
+
 @Module({
   name: CONTROLLER_MODULE_KEY,
   namespaced: true,
@@ -46,22 +47,8 @@ class ControllerModule extends VuexModule {
   public torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
+
   public instanceId = "";
-
-  @Mutation
-  public setInstanceId(instanceId: string) {
-    this.instanceId = instanceId;
-  }
-
-  @Mutation
-  public updateTorusState(state: TorusControllerState): void {
-    this.torusState = { ...state };
-  }
-
-  @Mutation
-  public resetTorusController(): void {
-    this.torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
-  }
 
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
@@ -79,9 +66,10 @@ class ControllerModule extends VuexModule {
       }
     );
   }
+
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
     const txns = this.selectedAccountPreferences.currentNetworkTxsList;
-    return txns ? txns : [];
+    return txns || [];
   }
 
   get network(): string {
@@ -99,15 +87,30 @@ class ControllerModule extends VuexModule {
   }
 
   get selectedNetworkDisplayName(): string {
-    const network = this.torusState.NetworkControllerState.providerConfig.displayName;
-    return network;
+    return this.torusState.NetworkControllerState.providerConfig.displayName;
   }
 
   get contacts(): Contact[] {
     return [...this.selectedAccountPreferences.contacts];
   }
+
   get isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
+  }
+
+  @Mutation
+  public setInstanceId(instanceId: string) {
+    this.instanceId = instanceId;
+  }
+
+  @Mutation
+  public updateTorusState(state: TorusControllerState): void {
+    this.torusState = { ...state };
+  }
+
+  @Mutation
+  public resetTorusController(): void {
+    this.torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
   }
 
   @Action
@@ -119,6 +122,7 @@ class ControllerModule extends VuexModule {
   handleSuccess(message: string): void {
     addToast({ type: "success", message: message || "" });
   }
+
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
     const isSet = await this.torus.setCrashReport(status);
@@ -191,6 +195,7 @@ class ControllerModule extends VuexModule {
   public closeIframeFullScreen(): void {
     this.torus.closeIframeFullScreen();
   }
+
   /**
    * Call once on refresh
    */
@@ -260,7 +265,7 @@ class ControllerModule extends VuexModule {
   @Action
   logout(): void {
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
-    const origin = this.torus.origin;
+    const { origin } = this.torus;
     this.torus.init({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
     this.torus.setOrigin(origin);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
@@ -364,9 +369,8 @@ installStorePlugin({
           ...(parsedValue[CONTROLLER_MODULE_KEY] || {}),
         },
       };
-    } else {
-      return value || {};
     }
+    return value || {};
   },
 });
 

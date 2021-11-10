@@ -17,7 +17,7 @@ const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
   apiKey: "torus-default",
-  network: WALLET_SUPPORTED_NETWORKS["testnet"],
+  network: WALLET_SUPPORTED_NETWORKS.testnet,
   dappMetadata: {
     icon: "",
     name: "",
@@ -121,7 +121,7 @@ const closePanel = () => {
 
 <template>
   <div class="min-h-screen flex justify-center ite1ms-center">
-    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @onClose="cancelLogin" @on-login="onLogin" />
+    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @on-close="cancelLogin" @on-login="onLogin" />
     <PopupWidget
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"

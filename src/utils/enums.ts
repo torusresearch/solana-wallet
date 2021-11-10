@@ -18,8 +18,7 @@ import {
   TransactionState,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
-import { SolanaBlock } from "@toruslabs/solana-controllers";
-import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
@@ -156,7 +155,7 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [GOOGLE]: "Invalid Email Address",
   [REDDIT]: "Invalid Reddit username",
   [DISCORD]: "Invalid Discord ID",
-  [TWITTER]: `Twitter username begins with "@"`,
+  [TWITTER]: "Twitter username begins with '@'",
   [GITHUB]: "Invalid GitHub username",
   [ENS]: "Invalid ENS address",
 };
