@@ -44,7 +44,7 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
+  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -110,7 +110,7 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
+    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
   }
 
   @Action
@@ -201,10 +201,10 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
-    this.torus.init({ config: DEFAULT_CONFIG, state: merge(this.torusState, state) });
+    this.torus.init({ _config: DEFAULT_CONFIG, _state: merge(this.torusState, state) });
     this.torus.setOrigin(origin);
-    this.torus.on("store", (el: TorusControllerState) => {
-      this.updateTorusState(el);
+    this.torus.on("store", (_state: TorusControllerState) => {
+      this.updateTorusState(_state);
     });
     // this.torus.setupUntrustedCommunication();
     // Good
@@ -266,7 +266,7 @@ class ControllerModule extends VuexModule {
   logout(): void {
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     const { origin } = this.torus;
-    this.torus.init({ config: DEFAULT_CONFIG, state: DEFAULT_STATE });
+    this.torus.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
     this.torus.setOrigin(origin);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
@@ -365,7 +365,7 @@ installStorePlugin({
       const parsedValue = JSON.parse(value || "{}");
       return {
         [CONTROLLER_MODULE_KEY]: {
-          torus: new TorusController({ config: DEFAULT_CONFIG, state: DEFAULT_STATE }),
+          torus: new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE }),
           ...(parsedValue[CONTROLLER_MODULE_KEY] || {}),
         },
       };

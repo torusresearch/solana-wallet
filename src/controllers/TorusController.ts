@@ -154,8 +154,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private engine?: JRPCEngine;
 
-  constructor({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }) {
-    super({ config, state });
+  constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
+    super({ config: _config, state: _state });
   }
 
   get origin(): string {
@@ -191,11 +191,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   /**
    * Always call init function before using this controller
    */
-  public init({ config, state }: { config: Partial<TorusControllerConfig>; state: Partial<TorusControllerState> }): void {
-    log.info(config, state, "restoring config & state");
+  public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
+    log.info(_config, _state, "restoring config & state");
     this.initialize();
-    this.configure(config, true, true);
-    this.update(state, true);
+    this.configure(_config, true, true);
+    this.update(_state, true);
     this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
     this.initializeProvider();
     this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
