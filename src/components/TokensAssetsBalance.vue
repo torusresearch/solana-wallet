@@ -76,7 +76,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
       >
         <div
           v-for="token in tokens"
-          :key="token.tokenAddress.toBase58()"
+          :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
         >

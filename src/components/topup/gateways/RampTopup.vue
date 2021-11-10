@@ -6,7 +6,7 @@ import { throttle } from "lodash-es";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 
-import { Button, SelectField, TextField } from "@/components/common";
+import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import config from "@/config";
 import ControllerModule from "@/modules/controllers";
 import { RAMPNETWORK } from "@/utils/enums";
@@ -64,8 +64,8 @@ async function getQuote(
 function evaluateTransactionQuote() {
   const rate = rampQuoteData?.rate[selectedCurrency.value.value] || 0; // per unit price of token in fiat currency
   const feeRate = (rampQuoteData?.feeRate[selectedCurrency.value.value] || 0) / 100; // per unit price of transaction fees for 1 token in fiat currency
-  cryptoCurrencyRate.value = rate;
-  receivingCryptoAmount.value = rate && !$v.value.$invalid ? amount.value / (1 + feeRate) / rate : 0; // Final Crypto amount
+  cryptoCurrencyRate.value = Number(rate.toFixed(4));
+  receivingCryptoAmount.value = Number((rate && !$v.value.$invalid ? amount.value / (1 + feeRate) / rate : 0).toFixed(4)); // Final Crypto amount
 }
 
 async function refreshTransferEstimate(val: { value: string; label: string; ramp_symbol: string }) {
@@ -136,18 +136,25 @@ onMounted(() => {
             Rate: 1 {{ selectedCryptocurrency.value }} = {{ cryptoCurrencyRate }} {{ selectedCurrency.value }}
           </div>
         </div>
-        <p v-if="isLoadingQuote" class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500">
-          Please wait while we fetch fresh quote prices.
-        </p>
+        <div v-if="isLoadingQuote" class="flex flex-row items-start justify-end">
+          <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">Please wait while we fetch fresh quote prices.</p>
+          <RoundLoader class="loader"></RoundLoader>
+        </div>
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">
           <div>The process would take approximately 5 - 10 min.</div>
           <div>Please prepare your Identity Card/Passport to complete the purchase.</div>
         </div>
       </div>
       <div class="px-4 py-3 mb-4 sm:px-6">
-        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="$v.$dirty && $v.$invalid">Save</Button>
+        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">Save</Button>
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">You will be redirected to the third party page</div>
       </div>
     </div>
   </form>
 </template>
+<style>
+.loader {
+  width: 15px;
+  height: 15px;
+}
+</style>
