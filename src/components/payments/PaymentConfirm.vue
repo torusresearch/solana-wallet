@@ -12,8 +12,8 @@ import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
-const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate); // will change this to accept other tokens as well
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const pricePerToken = computed(() => ControllersModule.torus.conversionRate); // will change this to accept other tokens as well
+const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(
   defineProps<{

@@ -51,10 +51,10 @@ function startLogin() {
   }
 }
 startLogin();
-const isLoggedIn = computed(() => ControllerModule.torusState.PreferencesControllerState.selectedAddress !== "");
-const isLoginInProgress = computed(() => ControllerModule.torusState.EmbedControllerState.loginInProgress);
-const oauthModalVisibility = computed(() => ControllerModule.torusState.EmbedControllerState.oauthModalVisibility);
-const isIFrameFullScreen = computed(() => ControllerModule.torusState.EmbedControllerState.isIFrameFullScreen);
+const isLoggedIn = computed(() => !!ControllerModule.torus.selectedAddress);
+const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
+const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
+const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
 const lastTransaction = computed(() => {
   const txns = allTransactions.value;

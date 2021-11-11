@@ -52,6 +52,7 @@ import {
   KeyringController,
   NetworkController,
   PreferencesController,
+  SolanaToken,
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
@@ -172,6 +173,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController.state.selectedAddress;
   }
 
+  get tokens(): { [address: string]: SolanaToken[] } {
+    return this.tokensTracker.state.tokens || {};
+  }
+
+  get conversionRate(): number {
+    return this.currencyController.state.conversionRate;
+  }
+
   get userInfo(): UserInfo {
     return this.preferencesController.state.identities[this.selectedAddress]?.userInfo || cloneDeep(DEFAULT_PREFERENCES.userInfo);
   }
@@ -181,11 +190,42 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get currentCurrency(): string {
-    return this.currencyController.state.currentCurrency;
+    // fiat currency
+    return this.currencyController?.state?.currentCurrency;
+  }
+
+  get nativeCurrency(): string {
+    // crypto currency
+    return this.currencyController?.state?.nativeCurrency;
+  }
+
+  get currentNetworkName(): string {
+    return this.networkController.state.providerConfig.displayName;
   }
 
   get provider(): SafeEventEmitterProvider {
     return this.networkController._providerProxy as unknown as SafeEventEmitterProvider;
+  }
+
+  get chainId(): string {
+    // crypto currency
+    return this.networkController?.state?.chainId;
+  }
+
+  get privateKey(): string {
+    return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
+  }
+
+  get embedLoginInProgress(): boolean {
+    return this.embedController.state.loginInProgress;
+  }
+
+  get embedOauthModalVisibility(): boolean {
+    return this.embedController.state.oauthModalVisibility;
+  }
+
+  get embedIsIFrameFullScreen(): boolean {
+    return this.embedController.state.isIFrameFullScreen;
   }
 
   /**
