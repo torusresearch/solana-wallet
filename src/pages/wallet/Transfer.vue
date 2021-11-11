@@ -80,10 +80,10 @@ const showMessageModal = (params: { messageTitle: string; messageDescription?: s
 };
 
 const onMessageModalClosed = () => {
+  messageModalState.showMessage = false;
   messageModalState.messageDescription = "";
   messageModalState.messageTitle = "";
   messageModalState.messageStatus = STATUS_INFO;
-  messageModalState.showMessage = false;
 };
 
 const closeModal = () => {
@@ -116,10 +116,12 @@ const confirmTransfer = async () => {
     // resetForm();
   } catch (error) {
     // log.error("send error", error);
-    showMessageModal({
-      messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
-      messageStatus: STATUS_ERROR,
-    });
+    setTimeout(() => {
+      showMessageModal({
+        messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
+        messageStatus: STATUS_ERROR,
+      });
+    }, 500);
   }
 };
 
