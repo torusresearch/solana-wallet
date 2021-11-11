@@ -8,6 +8,8 @@ import { useRouter } from "vue-router";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
+import TorusLogoURL from "@/assets/torus-logo.svg";
+import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { addToast, app } from "@/modules/app";
 
 import { Button } from "../components/common";
@@ -63,10 +65,13 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-4 lg:col-span-3 min-h-screen flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
-          <img class="block mb-7 h-7 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
-          <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4">
-            <div>Your Google</div>
-            <div>digital wallet in one-click</div>
+          <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
+          <div class="flex items-center border-b w-56 pb-4 mb-9">
+            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">build on</div>
+            <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+          </div>
+          <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4" :style="{ maxWidth: '360px' }">
+            Your blockchain wallet in one-click
           </div>
           <div class="grid grid-cols-3 gap-2 w-full">
             <div class="col-span-3">
