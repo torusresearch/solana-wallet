@@ -10,9 +10,9 @@ defineProps<{
 }>();
 
 const router = useRouter();
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
-const token = computed(() => ControllersModule.torusState.CurrencyControllerState.nativeCurrency);
-const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate);
+const currency = computed(() => ControllersModule.torus.currentCurrency);
+const token = computed(() => ControllersModule.torus.nativeCurrency);
+const conversionRate = computed(() => ControllersModule.torus.conversionRate);
 
 const formattedBalance = computed(() => ControllersModule.userBalance);
 const updateCurrency = (newCurrency: string) => {
@@ -33,7 +33,7 @@ const updateCurrency = (newCurrency: string) => {
         <!--        <span class="font-body uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ currency }}</span>-->
       </div>
       <div class="ml-auto font-body uppercase text-xs self-end text-app-text-400 dark:text-app-text-dark-600">
-        1 {{ token }} = {{ pricePerToken }} {{ currency }}
+        1 {{ token }} = {{ conversionRate }} {{ currency }}
       </div>
     </div>
     <template v-if="showButtons" #footer>

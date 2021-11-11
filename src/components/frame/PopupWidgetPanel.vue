@@ -13,11 +13,12 @@ import { computed } from "vue";
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import ControllersModule from "@/modules/controllers";
+
 const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllersModule.selectedAddress);
 const formattedBalance = computed(() => ControllersModule.userBalance);
-const currentFiatCurrency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
-const userInfo = computed(() => ControllersModule.selectedAccountPreferences.userInfo);
+const currentFiatCurrency = computed(() => ControllersModule.torus.currentCurrency);
+const userInfo = computed(() => ControllersModule.torus.userInfo);
 
 withDefaults(
   defineProps<{

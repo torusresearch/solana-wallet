@@ -13,11 +13,9 @@ const enum TOKEN_TABS {
 }
 
 const selectedTab = ref<TOKEN_TABS>(TOKEN_TABS.TOKEN_TAB);
-const { selectedAddress } = ControllerModule.torusState.PreferencesControllerState;
-const publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
-const currency = computed(() => ControllerModule.torusState.CurrencyControllerState.currentCurrency.toLowerCase());
-
-const tokens = computed<SolanaToken[] | undefined>(() => ControllerModule.torusState.TokensTrackerState.tokens?.[publicKey]);
+const publicKey = computed(() => ControllerModule.torus.selectedAddress);
+const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
+const tokens = computed<SolanaToken[]>(() => ControllerModule.torus.tokens?.[publicKey.value]);
 
 function selectTab(tab: TOKEN_TABS) {
   if (tab !== TOKEN_TABS.TOKEN_TAB) {

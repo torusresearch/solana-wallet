@@ -6,11 +6,10 @@ import ControllerModule from "./controllers";
 export function requireLoggedIn(): void {
   const router = useRouter();
   onMounted(() => {
-    const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-    if (!address) router.push("/login");
+    if (!ControllerModule.torus.selectedAddress) router.push("/login");
   });
 
-  const currentAddress = computed(() => ControllerModule.torusState.PreferencesControllerState.selectedAddress);
+  const currentAddress = computed(() => ControllerModule.torus.selectedAddress);
 
   // TODO: check if prefsController fucks up
   watch(currentAddress, (newAddr, oldAddr) => {

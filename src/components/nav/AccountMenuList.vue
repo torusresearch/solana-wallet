@@ -19,14 +19,13 @@ const emits = defineEmits(["onLogout"]);
 
 const explorerUrl = computed(() => {
   const blockExplorerUrl =
-    Object.values(WALLET_SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torusState.NetworkControllerState.chainId)
-      ?.blockExplorerUrl || "";
+    Object.values(WALLET_SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torus.chainId)?.blockExplorerUrl || "";
   return `${EXPLORER}/account/${props.selectedAddress + blockExplorerUrl}`;
 });
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
 
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const currency = computed(() => ControllersModule.torus.currentCurrency);
 const formattedBalance = computed(() => ControllersModule.userBalance);
 
 const logout = () => {

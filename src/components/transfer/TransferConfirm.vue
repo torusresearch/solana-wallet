@@ -10,8 +10,8 @@ import { Button } from "@/components/common";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
 
-const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate);
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const pricePerToken = computed(() => ControllersModule.torus.conversionRate);
+const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(
   defineProps<{

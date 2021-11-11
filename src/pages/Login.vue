@@ -26,8 +26,7 @@ const rules = computed(() => {
 const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
-  const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-  if (address) router.push("/wallet/home");
+  if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -37,8 +36,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    const address = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-    if (address) router.push("/wallet/home");
+    if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
   } catch (error) {
     log.error(error);
     addToast({
