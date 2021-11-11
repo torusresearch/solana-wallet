@@ -59,7 +59,7 @@ export const decodeSystemInstruction = (inst: TransactionInstruction): DecodedDa
       decoded = SystemInstruction.decodeNonceAuthorize(inst);
       break;
     default:
-      return { type: "", data: {} };
+      return decodeUnknownInstruction(inst);
   }
 
   //   if (!decoded || (decoded.fromPubkey && !publicKey.equals(decoded.fromPubkey))) {
@@ -126,7 +126,7 @@ export const decodeStakeInstruction = (inst: TransactionInstruction): DecodedDat
       break;
     }
     default:
-      return { type: "", data: {} };
+      return decodeUnknownInstruction(inst);
   }
 
   //   if (!decoded || (decoded.fromPubkey && !publicKey.equals(decoded.fromPubkey))) {
@@ -158,7 +158,7 @@ export declare type TokenInstructionLayout =
       };
     }
   | {
-      initializeAccount: any;
+      initializeAccount: unknown;
     }
   | {
       initializeMultisig: {
@@ -176,7 +176,7 @@ export declare type TokenInstructionLayout =
       };
     }
   | {
-      revoke: any;
+      revoke: unknown;
     }
   | {
       setAuthority: {
@@ -195,13 +195,13 @@ export declare type TokenInstructionLayout =
       };
     }
   | {
-      closeAccount: any;
+      closeAccount: unknown;
     }
   | {
-      freezeAccount: any;
+      freezeAccount: unknown;
     }
   | {
-      thawAccount: any;
+      thawAccount: unknown;
     }
   | {
       transferChecked: {
@@ -362,6 +362,7 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     };
     return { type, data: params };
   } else {
-    throw new Error("Unsupported token instruction type");
+    // throw new Error("Unsupported token instruction type");
+    return decodeUnknownInstruction(instruction);
   }
 }

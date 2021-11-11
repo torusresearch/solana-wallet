@@ -16,8 +16,8 @@ const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetw
 const showDetails = ref(false);
 
 const toggleDetails = (link: string) => {
-  showDetails.value = !showDetails.value;
-  window.open(link, "_blank");
+  // showDetails.value = !showDetails.value;
+  openExplorerLink(link);
 };
 const getTxStatusColor = (status: string): string => {
   if (status === ACTIVITY_STATUS_SUCCESSFUL) return "#9BE8C7";
@@ -49,9 +49,9 @@ const openExplorerLink = (link: string) => {
   >
     <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0 flex items-center justify-start">
       <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
-        {{ dateFormat(new Date((activity.updated_at || 0) * 1000), "dS mmm, yyyy") }}
+        {{ dateFormat(new Date(activity.updatedAt || 0), "dS mmm, yyyy") }}
         <br />
-        at {{ dateFormat(new Date((activity.updated_at || 0) * 1000), "H:MM:ss") }}
+        at {{ dateFormat(new Date(activity.updatedAt || 0), "H:MM:ss") }}
       </div>
     </div>
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
@@ -61,15 +61,17 @@ const openExplorerLink = (link: string) => {
           <img class="block h-7 w-auto" :src="true ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
-          <div v-if="activity.type" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
+          <div v-if="activity.type === 'transfer'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
             {{ activity.send ? "Send " : "Received " }} {{ activity.totalAmountString }} Sol
             <span class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.send ? "to " : "from " }}</span>
           </div>
-          <div v-if="activity.type" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
+          <div v-if="activity.type === 'transfer'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
             {{ activity.send ? activity.to : activity.from }}
           </div>
           <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div>
-          <div v-if="!activity.type" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">{{ activity.signature }}</div>
+          <div v-if="!(activity.type === 'transfer')" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">
+            {{ activity.signature }}
+          </div>
         </div>
       </div>
     </div>

@@ -104,13 +104,11 @@ export const DEFAULT_STATE = {
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
-    api: "",
-    signInPrefix: "Solana Signin",
   },
   TransactionControllerState: {
     transactions: {},
     unapprovedTxs: {},
-    currentNetworkTxsList: [],
+    // currentNetworkTxsList: [],
   },
   EmbedControllerState: {
     buttonPosition: BUTTON_POSITION.BOTTOM_RIGHT,
@@ -217,13 +215,23 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.networkController._blockTrackerProxy.on("latest", () => {
       if (this.preferencesController.state.selectedAddress) {
-        this.preferencesController.sync(this.preferencesController.state.selectedAddress);
+        // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
+        this.preferencesController.updateSolanaTransactions(this.selectedAddress);
+        this.tokensTracker.fetchSolTokens();
+        this.accountTracker.refresh();
       }
     });
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
       log.info("network changed");
+      this.preferencesController.recalculatePastTx(this.state.PreferencesControllerState.selectedAddress as string);
+      this.engine?.emit("notification", {
+        method: PROVIDER_NOTIFICATIONS.CHAIN_CHANGED,
+        params: {
+          chainId: this.networkController.state.chainId,
+        },
+      });
     });
 
     this.networkController.lookupNetwork();
@@ -255,6 +263,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.txController.on("store", (state: TransactionState<Transaction>) => {
       this.update({ TransactionControllerState: state });
+      Object.keys(state.transactions).forEach((txId) => {
+        // if( [TransactionStatus])
+        this.preferencesController.patchNewTx(state.transactions[txId], this.preferencesController.state.selectedAddress).catch((err) => {
+          log.error("error while patching a new tx", err);
+        });
+      });
     });
 
     this.embedController.on("store", (state) => {
@@ -412,15 +426,24 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     await ret_signed.result;
-    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
-    const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-    if (gaslessHost) {
-      signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+    try {
+      let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+      const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+      if (gaslessHost) {
+        signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+      }
+      const signature = await conn.sendRawTransaction(Buffer.from(signed_tx, "hex"));
+      ret_signed.transactionMeta.transactionHash = signature;
+      ret_signed.transactionMeta.rawTransaction = signed_tx;
+      this.txController.setTxStatusSubmitted(ret_signed.transactionMeta.id);
+
+      this.preferencesController.patchNewTx(ret_signed.transactionMeta, this.selectedAddress);
+      return signature;
+    } catch (error) {
+      log.warn("error while submiting transaction", error);
+      this.txController.setTxStatusFailed(ret_signed.transactionMeta.id, error as Error);
+      throw error;
     }
-    const signature = await conn.sendRawTransaction(Buffer.from(signed_tx, "hex"));
-    ret_signed.transactionMeta.transactionHash = signature;
-    this.txController.setTxStatusSubmitted(ret_signed.transactionMeta.id);
-    return signature;
   }
 
   getGaslessHost(feePayer: string): string | undefined {
@@ -481,8 +504,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       address,
       calledFromEmbed: false,
       userInfo,
-      rehydrate: true,
-      jwtToken: "bypass init for now",
     });
     return address;
   }
