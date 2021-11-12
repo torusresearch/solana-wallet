@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { TrashIcon } from "@toruslabs/vue-icons/basic";
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
-import useVuelidate from "@vuelidate/core";
+import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import { ref } from "vue";
 
 import { Button, SelectField, TextField } from "@/components/common";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
+
+const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
+const transferTypes = ALLOWED_VERIFIERS;
+
+const name = ref("");
+const address = ref("");
+const ensError = ref("");
 
 const validVerifier = (value: string) => {
   if (!transferType.value) return true;
@@ -54,12 +61,6 @@ const contacts = [
   },
 ];
 
-const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTypes = ALLOWED_VERIFIERS;
-
-const name = ref("");
-const address = ref("");
-const ensError = ref("");
 const rules = {
   name: { required: helpers.withMessage("Required", required) },
   address: {
@@ -68,7 +69,6 @@ const rules = {
     required: helpers.withMessage("Required", required),
   },
 };
-
 const $v = useVuelidate(rules, { name, address });
 
 const onSave = () => {

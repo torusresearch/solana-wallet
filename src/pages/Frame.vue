@@ -17,7 +17,7 @@ const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
   apiKey: "torus-default",
-  network: WALLET_SUPPORTED_NETWORKS["testnet"],
+  network: WALLET_SUPPORTED_NETWORKS.testnet,
   dappMetadata: {
     icon: "",
     name: "",
@@ -51,10 +51,10 @@ function startLogin() {
   }
 }
 startLogin();
-const isLoggedIn = computed(() => ControllerModule.torusState.PreferencesControllerState.selectedAddress !== "");
-const isLoginInProgress = computed(() => ControllerModule.torusState.EmbedControllerState.loginInProgress);
-const oauthModalVisibility = computed(() => ControllerModule.torusState.EmbedControllerState.oauthModalVisibility);
-const isIFrameFullScreen = computed(() => ControllerModule.torusState.EmbedControllerState.isIFrameFullScreen);
+const isLoggedIn = computed(() => !!ControllerModule.torus.selectedAddress);
+const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
+const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
+const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
 const lastTransaction = computed(() => {
   const txns = allTransactions.value;
@@ -121,7 +121,7 @@ const closePanel = () => {
 
 <template>
   <div class="min-h-screen flex justify-center ite1ms-center">
-    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @onClose="cancelLogin" @on-login="onLogin" />
+    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @on-close="cancelLogin" @on-login="onLogin" />
     <PopupWidget
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"

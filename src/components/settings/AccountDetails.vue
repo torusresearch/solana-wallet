@@ -2,7 +2,7 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { CopyIcon, EyeIcon, EyeNoIcon } from "@toruslabs/vue-icons/basic";
 import { KeyIcon } from "@toruslabs/vue-icons/security";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import { Button } from "@/components/common";
 import { app } from "@/modules/app";
@@ -11,10 +11,7 @@ import { copyText } from "@/utils/helpers";
 
 const isOpen = ref(false);
 const isKeyShown = ref(false);
-const key =
-  ControllersModule.torusState.KeyringControllerState.wallets.find(
-    (it) => it.address === ControllersModule.torusState.PreferencesControllerState.selectedAddress
-  )?.privateKey ?? "Key not found";
+const key = computed(() => ControllersModule.torus.privateKey);
 
 const closeModal = () => {
   isOpen.value = false;
@@ -23,7 +20,7 @@ const openModal = () => {
   isOpen.value = true;
 };
 function copyPrivKey() {
-  copyText(key);
+  copyText(key.value);
 }
 </script>
 <template>

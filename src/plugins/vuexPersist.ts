@@ -1,6 +1,27 @@
-import { merge } from "lodash";
+import { merge } from "lodash-es";
 import log from "loglevel";
 import { MutationPayload, Payload, Plugin, Store } from "vuex";
+
+const defaultRestoreStateFn = (key: string, storage: Storage) => {
+  const value = storage.getItem(key);
+  if (typeof value === "string") {
+    // If string, parse, or else, just return
+    return JSON.parse(value || "{}");
+  }
+  return value || {};
+};
+
+const defaultFilterFn = () => true;
+
+const defaultSaveStateFn = (key: string, state: Record<string, unknown>, storage: Storage) =>
+  storage.setItem(
+    key, // Second argument is state _object_ if localforage, stringified otherwise
+    JSON.stringify(state)
+  );
+
+const defaultReducerFn = <S>(state: unknown, moduleKey: string): Partial<S> => {
+  return { [moduleKey]: (state as Record<string, unknown>)[moduleKey] } as Partial<S>;
+};
 
 export interface ModulePersistOptions<S> {
   /**
@@ -10,16 +31,16 @@ export interface ModulePersistOptions<S> {
 
   /**
    * Method to retrieve state from persistence
-   * @param key
-   * @param [storage]
+   * @param key -
+   * @param storage -
    */
   restoreState?: (key: string, storage: Storage) => S;
 
   /**
    * Method to save state into persistence
-   * @param key
-   * @param state
-   * @param [storage]
+   * @param key -
+   * @param state -
+   * @param storage -
    */
   saveState?: (key: string, state: Record<string, unknown>, storage: Storage) => void;
 
@@ -27,7 +48,7 @@ export interface ModulePersistOptions<S> {
    * Function to reduce state to the object you want to save.
    * Be default, we save the entire state.
    * You can use this if you want to save only a portion of it.
-   * @param state
+   * @param state -
    */
   reducer?: (state: S, moduleKey: string) => Partial<S>;
 
@@ -40,7 +61,7 @@ export interface ModulePersistOptions<S> {
    * Method to filter which mutations will trigger state saving
    * Be default returns true for all mutations.
    * Check mutations using <code>mutation.type</code>
-   * @param mutation object of type {@link Payload}
+   * @param mutation - object of type {@link Payload}
    */
   filter?: (mutation: Payload) => boolean;
 
@@ -53,7 +74,9 @@ export interface VuexPersistModules<S> {
 
 export default class VuexPersistence<S> {
   public modules: VuexPersistModules<S>;
+
   public subscribed: boolean;
+
   // Maintain a reference to store
   public store: Store<S> | null;
 
@@ -67,8 +90,8 @@ export default class VuexPersistence<S> {
     if (!this.store) throw new Error("Install the plugin first");
     if (this.modules[moduleOptions.moduleName]) throw new Error("Module already installed");
     log.info("registering module", moduleOptions.moduleName);
-    const key = moduleOptions.key;
-    const storage = moduleOptions.storage;
+    const { key } = moduleOptions;
+    const { storage } = moduleOptions;
     moduleOptions.restoreState = moduleOptions.restoreState || defaultRestoreStateFn;
     moduleOptions.filter = moduleOptions.filter || defaultFilterFn;
     moduleOptions.saveState = moduleOptions.saveState || defaultSaveStateFn;
@@ -102,32 +125,11 @@ export default class VuexPersistence<S> {
 
     this.subscribed = true;
   };
+
   /**
    * Creates a subscriber on the store. automatically is used
    * when this is used a vuex plugin. Not for manual usage.
-   * @param store
+   * @param store -
    */
   private subscriber = (store: Store<S>) => (handler: (mutation: MutationPayload, state: S) => unknown) => store.subscribe(handler);
 }
-
-const defaultRestoreStateFn = (key: string, storage: Storage) => {
-  const value = storage.getItem(key);
-  if (typeof value === "string") {
-    // If string, parse, or else, just return
-    return JSON.parse(value || "{}");
-  } else {
-    return value || {};
-  }
-};
-
-const defaultFilterFn = () => true;
-
-const defaultSaveStateFn = (key: string, state: Record<string, unknown>, storage: Storage) =>
-  storage.setItem(
-    key, // Second argument is state _object_ if localforage, stringified otherwise
-    JSON.stringify(state)
-  );
-
-const defaultReducerFn = <S>(state: unknown, moduleKey: string): Partial<S> => {
-  return { [moduleKey]: (state as Record<string, unknown>)[moduleKey] } as Partial<S>;
-};

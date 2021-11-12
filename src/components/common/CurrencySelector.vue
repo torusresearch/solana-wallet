@@ -17,7 +17,7 @@ const value = computed({
   get: () => {
     return props.currency;
   },
-  set: (value) => emits("onChange", value),
+  set: (val) => emits("onChange", val),
 });
 </script>
 

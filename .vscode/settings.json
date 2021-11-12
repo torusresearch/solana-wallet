@@ -6,7 +6,4 @@
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
-  "eslint.options": {
-    "extends": ["@toruslabs/vue"]
-  }
 }

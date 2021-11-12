@@ -3,13 +3,7 @@ import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } f
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { ref } from "vue";
 
-import BitcoinLogoURL from "@/assets/bitcoin.svg";
-import EthereumLogoURL from "@/assets/ethereum.svg";
-import EthereumLightLogoURL from "@/assets/ethereum-light.svg";
 import solicon from "@/assets/solana-mascot.svg";
-import TokenLogoURL from "@/assets/token.svg";
-import TokenLightLogoURL from "@/assets/token-light.svg";
-import { app } from "@/modules/app";
 
 interface Token {
   name: string;
@@ -20,17 +14,6 @@ const mainToken: Token = {
   name: "Solana",
   iconURL: solicon,
 };
-
-const tokens: Token[] = [
-  // {
-  //   name: "Ethereum",
-  //   iconURL: app.value.isDarkMode ? EthereumLightLogoURL : EthereumLogoURL,
-  // },
-  // {
-  //   name: "Bitcoin",
-  //   iconURL: BitcoinLogoURL,
-  // },
-];
 
 const selectedToken = ref(mainToken);
 </script>

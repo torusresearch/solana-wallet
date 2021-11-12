@@ -16,7 +16,7 @@ import {
   TwitterIcon,
   WechatIcon,
 } from "@toruslabs/vue-icons/auth";
-import useVuelidate from "@vuelidate/core";
+import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import { computed, ref, RenderFunction } from "vue";
 
