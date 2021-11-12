@@ -68,7 +68,7 @@ const openExplorerLink = (link: string) => {
           <div v-if="activity.type === 'transfer'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
             {{ activity.send ? activity.to : activity.from }}
           </div>
-          <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div>
+          <!-- <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div> -->
           <div v-if="!(activity.type === 'transfer')" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">
             {{ activity.signature }}
           </div>

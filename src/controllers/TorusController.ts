@@ -25,6 +25,7 @@ import {
   SafeEventEmitterProvider,
   THEME,
   TransactionState,
+  TransactionStatus,
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
@@ -216,7 +217,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.networkController._blockTrackerProxy.on("latest", () => {
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
-        this.preferencesController.updateSolanaTransactions(this.selectedAddress);
+        this.preferencesController.updateDisplayActivities();
         this.tokensTracker.fetchSolTokens();
         this.accountTracker.refresh();
       }
@@ -225,7 +226,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
       log.info("network changed");
-      this.preferencesController.recalculatePastTx(this.state.PreferencesControllerState.selectedAddress as string);
+      if (this.selectedAddress) {
+        this.preferencesController.initializeDisplayActivity();
+      }
+
       this.engine?.emit("notification", {
         method: PROVIDER_NOTIFICATIONS.CHAIN_CHANGED,
         params: {
@@ -265,9 +269,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ TransactionControllerState: state });
       Object.keys(state.transactions).forEach((txId) => {
         // if( [TransactionStatus])
-        this.preferencesController.patchNewTx(state.transactions[txId], this.preferencesController.state.selectedAddress).catch((err) => {
-          log.error("error while patching a new tx", err);
-        });
+        if (state.transactions[txId].status === TransactionStatus.submitted) {
+          this.preferencesController.patchNewTx(state.transactions[txId], this.selectedAddress).catch((err) => {
+            log.error("error while patching a new tx", err);
+          });
+        }
       });
     });
 
@@ -511,6 +517,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
     this.preferencesController.sync(address);
+    this.preferencesController.initializeDisplayActivity();
   }
 
   async setCurrentCurrency(currency: string): Promise<void> {

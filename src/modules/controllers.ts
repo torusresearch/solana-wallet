@@ -72,20 +72,15 @@ class ControllerModule extends VuexModule {
     return (
       preferences || {
         ...DEFAULT_PREFERENCES,
-        formattedPastTransactions: [],
-        fetchedPastTx: [],
-        currentNetworkTxsList: [],
+        incomingBackendTransactions: [],
+        displayActivities: {},
         network_selected: "testnet",
       }
     );
   }
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
-    const txns = this.selectedAccountPreferences.currentNetworkTxsList;
+    const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
     return txns ? txns : [];
-  }
-
-  get network(): string {
-    return "testnet";
   }
 
   get userBalance(): string {
