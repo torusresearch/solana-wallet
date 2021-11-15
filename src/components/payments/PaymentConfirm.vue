@@ -12,8 +12,8 @@ import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
-const pricePerToken = computed(() => ControllersModule.torusState.CurrencyControllerState.conversionRate); // will change this to accept other tokens as well
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const pricePerToken = computed(() => ControllersModule.torus.conversionRate); // will change this to accept other tokens as well
+const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(
   defineProps<{
@@ -54,18 +54,18 @@ const onConfirm = () => {
   closeModal();
 };
 
-const cryptoAmountString = computed(() => {
-  return `${props.cryptoAmount} ${props.token}`;
-});
-
-const fiatAmountString = computed(() => {
-  const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
-  return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
-});
-
-const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
-});
+// const cryptoAmountString = computed(() => {
+//   return `${props.cryptoAmount} ${props.token}`;
+// });
+//
+// const fiatAmountString = computed(() => {
+//   const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
+//   return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
+// });
+//
+// const fiatTxFeeString = computed(() => {
+//   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
+// });
 const totalCryptoCostString = computed(() => {
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
   return `${totalCost.toString(10)} ${props.token}`;

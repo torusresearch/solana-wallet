@@ -2,7 +2,7 @@
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
-import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
+import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import { computed } from "vue";
 
@@ -17,17 +17,13 @@ const props = defineProps<{
 const emits = defineEmits(["onLogout"]);
 
 const explorerUrl = computed(() => {
-  const blockExplorerUrl = ControllersModule.torusState.NetworkControllerState.providerConfig.blockExplorerUrl;
-  const chainId = ControllersModule.torusState.NetworkControllerState.chainId;
-  // const blockExplorerUrl =
-  //   Object.values(WALLET_SUPPORTED_NETWORKS).find((v) => v.chainId === ControllersModule.torusState.NetworkControllerState.chainId)
-  //     ?.blockExplorerUrl || "";
+  const { blockExplorerUrl, chainId } = ControllersModule.torusState.NetworkControllerState.providerConfig;
   return `${blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(chainId)}`;
 });
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
 
-const currency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
+const currency = computed(() => ControllersModule.torus.currentCurrency);
 const formattedBalance = computed(() => ControllersModule.userBalance);
 
 const logout = () => {

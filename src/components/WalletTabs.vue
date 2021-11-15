@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
@@ -14,9 +16,8 @@ defineProps<{
 }>();
 
 const tabs = NAVIGATION_LIST;
-const user = ControllerModule.torus.userInfo;
-const selectedAddress = ControllerModule.torusState.PreferencesControllerState.selectedAddress;
-let publicKey = ControllerModule.torusState.KeyringControllerState.wallets.find((x) => x.address === selectedAddress)?.publicKey || "";
+const user = computed(() => ControllerModule.torus.userInfo);
+const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = () => {
   ControllerModule.logout();
 };
@@ -49,10 +50,10 @@ const logout = () => {
           </div>
         </div>
         <div class="ml-6 hidden sm:flex items-center">
-          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="publicKey" @on-logout="logout" /></AccountMenu>
+          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
         </div>
         <div class="ml-6 flex sm:hidden items-center">
-          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="publicKey" @on-logout="logout" /></AccountMenuMobile>
+          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
     </nav>

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { WifiIcon } from "@heroicons/vue/outline";
+import { computed } from "vue";
 
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
-const network = ControllersModule.torusState.NetworkControllerState.providerConfig.displayName;
+const network = computed(() => ControllersModule.torus.currentNetworkName);
 </script>
 
 <template>

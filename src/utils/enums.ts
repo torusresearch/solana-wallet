@@ -18,15 +18,19 @@ import {
   TransactionState,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
-import { SolanaBlock } from "@toruslabs/solana-controllers";
-import { SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
+import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;
+
+export const RAMPNETWORK = "rampnetwork";
+
+export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=1200";
 
 export type OpenLoginPopupResponse = {
   userInfo: OpenloginUserInfo;
@@ -76,12 +80,12 @@ export const NAVIGATION_LIST = {
     route: "transfer",
     icon: ArrowBoldForvardIcon,
   },
-  // topup: {
-  //   name: "Top Up",
-  //   title: "Select a Provider",
-  //   route: "topup",
-  //   icon: DatabaseIcon,
-  // },
+  topup: {
+    name: "Top Up",
+    title: "Select a Provider",
+    route: "topup",
+    icon: DatabaseIcon,
+  },
   activity: {
     name: "Activity",
     title: "Transaction Activities",
@@ -151,7 +155,7 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [GOOGLE]: "Invalid Email Address",
   [REDDIT]: "Invalid Reddit username",
   [DISCORD]: "Invalid Discord ID",
-  [TWITTER]: `Twitter username begins with "@"`,
+  [TWITTER]: "Twitter username begins with '@'",
   [GITHUB]: "Invalid GitHub username",
   [ENS]: "Invalid ENS address",
 };

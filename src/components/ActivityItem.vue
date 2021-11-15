@@ -2,19 +2,20 @@
 import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_UNSUCCESSFUL } from "@toruslabs/base-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import dateFormat from "dateformat";
-import { computed, ref } from "vue";
 
+// import { ref } from "vue";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-import SolanaLightLogoURL from "@/assets/solana-mascot.svg";
-import { Button, NetworkDisplay } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+// import ControllersModule from "@/modules/controllers";
 defineProps<{
   activity: SolanaTransactionActivity;
 }>();
 
-const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
-const showDetails = ref(false);
+// const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
+// const showDetails = ref(false);
 
+const openExplorerLink = (link: string) => {
+  window.open(link, "_blank");
+};
 const toggleDetails = (link: string) => {
   // showDetails.value = !showDetails.value;
   openExplorerLink(link);
@@ -23,10 +24,6 @@ const getTxStatusColor = (status: string): string => {
   if (status === ACTIVITY_STATUS_SUCCESSFUL) return "#9BE8C7";
   if (status === ACTIVITY_STATUS_UNSUCCESSFUL || status === ACTIVITY_STATUS_CANCELLED) return "#FEA29F";
   return "#E0E0E0";
-};
-
-const openExplorerLink = (link: string) => {
-  window.open(link, "_blank");
 };
 </script>
 <template>
@@ -58,7 +55,7 @@ const openExplorerLink = (link: string) => {
       <div class="flex">
         <div class="flex items-center justify-center logo-container">
           <!-- <img class="block h-7 w-auto" :src="ControllersModule.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /> -->
-          <img class="block h-7 w-auto" :src="true ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+          <img class="block h-7 w-auto" :src="SolanaLogoURL" alt="Casper Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
           <div v-if="activity.type === 'transfer'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">

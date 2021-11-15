@@ -37,7 +37,7 @@ const showWallet = (path: string) => {
     <PopupWidgetPanel
       :last-transaction="lastTransaction"
       :is-open="isLoggedIn && isIframeFullScreen"
-      @onClose="closePanel"
+      @on-close="closePanel"
       @show-wallet="showWallet"
     />
     <button v-if="isLoggedIn" class="torus-widget__button" @click="togglePanel">
