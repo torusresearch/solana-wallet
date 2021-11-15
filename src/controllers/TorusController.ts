@@ -430,24 +430,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
     const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
-    const ret_signed = await this.txController.addSignTransaction(tx, req);
-    await ret_signed.result;
+    const signedTransaction = await this.txController.addSignTransaction(tx, req);
+    await signedTransaction.result;
     try {
-      let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+      // serialize transaction
+      let serializedTransaction = signedTransaction.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
       const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
       if (gaslessHost) {
-        signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+        serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
       }
-      const signature = await conn.sendRawTransaction(Buffer.from(signed_tx, "hex"));
-      ret_signed.transactionMeta.transactionHash = signature;
-      ret_signed.transactionMeta.rawTransaction = signed_tx;
-      this.txController.setTxStatusSubmitted(ret_signed.transactionMeta.id);
 
-      this.preferencesController.patchNewTx(ret_signed.transactionMeta, this.selectedAddress);
+      // submit onchain
+      const signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+
+      // attach necessary info and update controller state
+      signedTransaction.transactionMeta.transactionHash = signature;
+      signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
+      this.txController.setTxStatusSubmitted(signedTransaction.transactionMeta.id);
+
+      this.preferencesController.patchNewTx(signedTransaction.transactionMeta, this.selectedAddress);
       return signature;
     } catch (error) {
       log.warn("error while submiting transaction", error);
-      this.txController.setTxStatusFailed(ret_signed.transactionMeta.id, error as Error);
+      this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
     }
   }
