@@ -13,7 +13,7 @@ const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   };
 });
 const selectedNetwork = computed({
-  get: () => networks.find((it) => it.value === ControllersModule.torusState.NetworkControllerState.chainId),
+  get: () => networks.find((it) => it.value === ControllersModule.torus.chainId),
   set: (value) => {
     if (value) ControllersModule.setNetwork(value.value);
   },

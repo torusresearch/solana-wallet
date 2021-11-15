@@ -2,23 +2,24 @@
 import { Dialog, DialogOverlay, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { WifiIcon } from "@heroicons/vue/outline";
 import { addressSlicer } from "@toruslabs/base-controllers";
+import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import Button from "@toruslabs/vue-components/common/Button.vue";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { GoogleIcon } from "@toruslabs/vue-icons/auth";
 import { PlusIcon } from "@toruslabs/vue-icons/basic";
 import { CreditcardFaceIcon } from "@toruslabs/vue-icons/finance";
+import { computed } from "vue";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import ControllersModule from "@/modules/controllers";
+
 const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllersModule.selectedAddress);
 const formattedBalance = computed(() => ControllersModule.userBalance);
-const currentFiatCurrency = computed(() => ControllersModule.torusState.CurrencyControllerState.currentCurrency);
-const userInfo = computed(() => ControllersModule.selectedAccountPreferences.userInfo);
+const currentFiatCurrency = computed(() => ControllersModule.torus.currentCurrency);
+const userInfo = computed(() => ControllersModule.torus.userInfo);
 
-import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
-import Button from "@toruslabs/vue-components/common/Button.vue";
-import { computed } from "vue";
 withDefaults(
   defineProps<{
     isOpen?: boolean;
