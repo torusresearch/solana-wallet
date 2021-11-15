@@ -7,10 +7,10 @@ import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
+import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
-
-const pricePerToken = computed(() => ControllersModule.torus.conversionRate);
+import Value = BigNumber.Value;
 const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(
@@ -21,9 +21,10 @@ const props = withDefaults(
     receiverVerifier: string;
     cryptoAmount: number;
     cryptoTxFee: number;
-    token?: string;
+    tokenSymbol?: string;
     transferDisabled?: boolean;
     isOpen?: boolean;
+    token: Partial<SolAndSplToken>;
   }>(),
   {
     senderPubKey: "",
@@ -32,12 +33,24 @@ const props = withDefaults(
     receiverVerifier: "solana",
     cryptoAmount: 0,
     cryptoTxFee: 0,
-    token: "SOL",
+    tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    token: tokens.value[0],
   }
 );
 
+function isSPLToken(): boolean {
+  return !!props.token.mintAddress;
+}
+const pricePerToken = computed(() => {
+  if (isSPLToken()) {
+    return <Value>props.token?.price?.[currency.value.toLowerCase()];
+  }
+  return <Value>ControllersModule.torus.conversionRate;
+});
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
 const closeModal = () => {
@@ -54,7 +67,7 @@ const onConfirm = () => {
 };
 
 const cryptoAmountString = computed(() => {
-  return `${props.cryptoAmount} ${props.token}`;
+  return `${props.cryptoAmount} ${props.tokenSymbol}`;
 });
 
 const fiatAmountString = computed(() => {
@@ -66,8 +79,11 @@ const fiatTxFeeString = computed(() => {
   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 const totalCryptoCostString = computed(() => {
+  if (isSPLToken()) {
+    return `${props.cryptoAmount} ${props.tokenSymbol} + ${props.cryptoTxFee} SOL`;
+  }
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
-  return `${totalCost.toString(10)} ${props.token}`;
+  return `${totalCost.toString(10)} ${props.tokenSymbol}`;
 });
 
 const totalFiatCostString = computed(() => {

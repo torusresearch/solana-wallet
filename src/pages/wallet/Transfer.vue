@@ -6,9 +6,10 @@ import log from "loglevel";
 import { computed, defineAsyncComponent, reactive, ref } from "vue";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
+import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_SUCCESS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -19,7 +20,6 @@ const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
-
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
 });
@@ -34,6 +34,9 @@ const asyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
 
+const transferTypes = ALLOWED_VERIFIERS;
+const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
+
 const messageModalState = reactive({
   showMessage: false,
   messageTitle: "",
@@ -45,10 +48,6 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
-
-// const ensRule = () => {
-//   return transferType.value.value === ENS && !ensError.value;
-// };
 
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
@@ -101,31 +100,52 @@ const openModal = async () => {
   transactionFee.value = fee / LAMPORTS;
 };
 const confirmTransfer = async () => {
-  try {
-    const ti = SystemProgram.transfer({
-      fromPubkey: new PublicKey(ControllersModule.selectedAddress),
-      toPubkey: new PublicKey(transferTo.value),
-      lamports: sendAmount.value * LAMPORTS,
-    });
-    const tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
-    const res = await ControllersModule.torus.transfer(tf);
-    // const res = await ControllersModule.torus.providertransfer(tf);
-    log.info(res);
-
-    showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
-    // resetForm();
-  } catch (error) {
-    // log.error("send error", error);
-    setTimeout(() => {
+  if (selectedToken?.value?.mintAddress) {
+    // SPL TRANSFER
+    try {
+      showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+      await ControllersModule.torus.transferSpl(
+        transferTo.value,
+        sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
+        selectedToken?.value?.mintAddress.toString()
+      );
+      showMessageModal({ messageTitle: "Your transfer is complete.", messageStatus: STATUS_SUCCESS });
+    } catch (e) {
       showMessageModal({
-        messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
+        messageTitle: `Fail to submit transaction: ${(e as Error)?.message || "Something went wrong"}`,
         messageStatus: STATUS_ERROR,
       });
-    }, 500);
+    }
+  } else {
+    try {
+      showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+      const ti = SystemProgram.transfer({
+        fromPubkey: new PublicKey(ControllersModule.selectedAddress),
+        toPubkey: new PublicKey(transferTo.value),
+        lamports: sendAmount.value * LAMPORTS,
+      });
+      const tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
+      const res = await ControllersModule.torus.transfer(tf);
+      // const res = await ControllersModule.torus.providertransfer(tf);
+      log.info(res);
+
+      showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+      // resetForm();
+    } catch (error) {
+      // log.error("send error", error);
+      setTimeout(() => {
+        showMessageModal({
+          messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
+          messageStatus: STATUS_ERROR,
+        });
+      }, 500);
+    }
   }
 };
 
-const transferTypes = ALLOWED_VERIFIERS;
+function updateSelectedToken($event: Partial<SolAndSplToken>) {
+  selectedToken.value = $event;
+}
 </script>
 
 <template>
@@ -135,7 +155,7 @@ const transferTypes = ALLOWED_VERIFIERS;
         <Card class="order-2 sm:order-1">
           <form action="#" method="POST">
             <div>
-              <asyncTransferTokenSelect class="mb-6" />
+              <asyncTransferTokenSelect class="mb-6" @update:selected-token="updateSelectedToken($event)" />
               <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="col-span-3 sm:col-span-2">
                   <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
@@ -148,21 +168,6 @@ const transferTypes = ALLOWED_VERIFIERS;
               <div class="mb-6">
                 <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
               </div>
-              <!--
-              <div class="mb-6">
-                <TextField v-model="transferId" label="Transfer ID (Memo)" :errors="$v.transferId.$errors" />
-              </div>
-
-              <div class="mb-6">
-                <TextField v-model="transactionFee" label="Transaction Fee" :errors="$v.transactionFee.$errors" />
-              </div> -->
-
-              <!-- <div class="text-right mb-6">
-                <div class="font-body font-bold text-sm text-app-text-600 dark:text-app-text-dark-400">Total cost</div>
-                <div class="font-body font-bold text-2xl text-app-text-500 dark:text-app-text-dark-500">0 SOL</div>
-                <div class="font-body text-xs font-light text-app-text-600 dark:text-app-text-dark-500">0 USD</div>
-              </div> -->
-
               <div class="flex">
                 <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
                 <!-- :crypto-tx-fee="state.transactionFee" -->
@@ -174,6 +179,8 @@ const transferTypes = ALLOWED_VERIFIERS;
                   :receiver-verifier="selectedVerifier"
                   :receiver-verifier-id="transferTo"
                   :is-open="isOpen"
+                  :token-symbol="selectedToken?.data?.symbol || 'SOL'"
+                  :token="selectedToken"
                   :crypto-tx-fee="transactionFee"
                   @transfer-confirm="confirmTransfer"
                   @on-close-modal="closeModal"

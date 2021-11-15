@@ -47,6 +47,7 @@ import {
   AccountTrackerController,
   CurrencyController,
   ExtendedAddressPreferences,
+  getSplTransactionObject,
   Ihandler,
   IProviderHandlers,
   KeyringController,
@@ -401,6 +402,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     ret_signed.transactionMeta.transactionHash = signature;
     this.txController.setTxStatusSubmitted(ret_signed.transactionMeta.id);
     return signature;
+  }
+
+  async transferSpl(receiver: string, amount: number, tokenMintAddress: string) {
+    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const transactionObject: Transaction = await getSplTransactionObject(
+      this.networkController.state.providerConfig.rpcTarget,
+      this.selectedAddress,
+      receiver,
+      amount,
+      tokenMintAddress
+    );
+    transactionObject.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    await this.transfer(transactionObject);
   }
 
   getGaslessHost(feePayer: string): string | undefined {
