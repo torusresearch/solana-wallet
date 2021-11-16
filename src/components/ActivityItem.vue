@@ -59,7 +59,7 @@ const getTxStatusColor = (status: string): string => {
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
           <div v-if="activity.type === 'transfer'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
-            {{ activity.send ? "Send " : "Received " }} {{ activity.totalAmountString }} Sol
+            {{ activity.send ? "Send " : "Received " }} {{ Number(activity.totalAmountString) }} {{ activity.cryptoCurrency }}
             <span class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.send ? "to " : "from " }}</span>
           </div>
           <div v-if="activity.type === 'transfer'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
@@ -72,9 +72,9 @@ const getTxStatusColor = (status: string): string => {
         </div>
       </div>
     </div>
-    <div class="col-span-6 sm:col-span-3 order-2 sm:order-3 text-right sm:text-left">
-      <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">{{ activity.totalAmountString }}</div>
-      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">Sol</div>
+    <div v-if="activity.type === 'transfer'" class="col-span-6 sm:col-span-3 order-2 sm:order-3 text-right sm:text-left">
+      <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">{{ Number(activity.totalAmountString) }}</div>
+      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.cryptoCurrency }}</div>
     </div>
     <div class="col-span-6 sm:col-span-2 text-right order-4 flex items-center justify-end">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
