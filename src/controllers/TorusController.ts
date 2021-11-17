@@ -83,7 +83,7 @@ const TARGET_NETWORK = "mainnet";
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
   NetworkControllerConfig: { providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK] },
-  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
+  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin", commonApiHost: config.commonApiHost },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
@@ -169,7 +169,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get selectedAddress(): string {
-    return this.preferencesController.state.selectedAddress;
+    return this.preferencesController?.state.selectedAddress;
   }
 
   get tokens(): { [address: string]: SolanaToken[] } {
@@ -216,15 +216,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get embedLoginInProgress(): boolean {
-    return this.embedController.state.loginInProgress;
+    return this.embedController?.state.loginInProgress || false;
   }
 
   get embedOauthModalVisibility(): boolean {
-    return this.embedController.state.oauthModalVisibility;
+    return this.embedController?.state.oauthModalVisibility || false;
   }
 
   get embedIsIFrameFullScreen(): boolean {
-    return this.embedController.state.isIFrameFullScreen;
+    return this.embedController?.state.isIFrameFullScreen || false;
   }
 
   /**
