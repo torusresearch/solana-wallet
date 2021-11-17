@@ -56,7 +56,6 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
-
 import { BigNumber } from "bignumber.js";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";

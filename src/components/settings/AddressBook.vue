@@ -1,78 +1,103 @@
 <script setup lang="ts">
+import { Contact } from "@toruslabs/base-controllers";
 import { TrashIcon } from "@toruslabs/vue-icons/basic";
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
-import { ref } from "vue";
+import { computed, reactive, ref } from "vue";
 
 import { Button, SelectField, TextField } from "@/components/common";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, ENS, TransferType } from "@/utils/enums";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 
-const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTypes = ALLOWED_VERIFIERS;
-
-const name = ref("");
-const address = ref("");
 const ensError = ref("");
+const searchFilter = ref("");
+const typeFilter = ref<TransferType>();
+
+const transferTypes = ALLOWED_VERIFIERS;
+const filterTypes = [
+  {
+    label: "All",
+    value: "",
+  },
+  ...transferTypes,
+];
+
+const props = defineProps<{ stateContacts: Contact[] }>();
+
+const emits = defineEmits(["saveContact", "deleteContact"]);
+
+const contacts = computed<Contact[]>(() => {
+  return props.stateContacts.filter((contact) => {
+    if (typeFilter?.value?.value && typeFilter.value.value !== contact.contact_verifier) return false;
+    if (searchFilter?.value) {
+      const nameFilter = new RegExp(searchFilter.value, "i");
+      if (!contact.display_name.match(nameFilter)) return false;
+    }
+    return !!contact;
+  });
+});
+
+const newContactState = reactive<{
+  name: string;
+  address: string;
+  transferType: TransferType;
+}>({
+  name: "",
+  address: "",
+  transferType: transferTypes[0],
+});
 
 const validVerifier = (value: string) => {
-  if (!transferType.value) return true;
-  return ruleVerifierId(transferType.value.value, value);
+  if (!newContactState.transferType) return true;
+  return ruleVerifierId(newContactState.transferType.value, value);
 };
 
-const ensRule = () => {
-  return transferType.value.value === ENS && !ensError.value;
+const ensRule = (transferType: TransferType) => {
+  if (transferType.value === "ENS" && ensError?.value) return false;
+  return true;
 };
 
 const getErrorMessage = () => {
-  const selectedType = transferType.value?.value || "";
+  const selectedType = newContactState.transferType?.value || "";
   if (!selectedType) return "";
   return ALLOWED_VERIFIERS_ERRORS[selectedType];
 };
 
-const contacts = [
-  {
-    id: 67,
-    created_at: "2019-11-18T18:31:37.000Z",
-    updated_at: "2019-11-18T18:31:37.000Z",
-    verifier: "google",
-    contact: "llenoil@gmail.com",
-    name: "LionellMain",
-    public_address: "0xA902444A4194e0e065baEFc52490637fe8593407",
-  },
-  {
-    id: 1815,
-    created_at: "2020-12-04T07:34:37.000Z",
-    updated_at: "2020-12-04T07:34:37.000Z",
-    verifier: "eth",
-    contact: "0xF12Ae14aF3C0aB0406E36424f9a83F4Edc9b4964",
-    name: "Lionell Torus tKey",
-    public_address: "0xA902444A4194e0e065baEFc52490637fe8593407",
-  },
-  {
-    id: 1862,
-    created_at: "2020-12-21T10:53:53.000Z",
-    updated_at: "2020-12-21T10:53:53.000Z",
-    verifier: "eth",
-    contact: "0x3E2a1F4f6b6b5d281Ee9a9B36Bb33F7FBf0614C3",
-    name: "Chai",
-    public_address: "0xA902444A4194e0e065baEFc52490637fe8593407",
-  },
-];
+const validNewContact = (value: string): boolean => {
+  return !props.stateContacts.some((x) => x.contact_verifier_id.toLowerCase() === value.toLowerCase());
+};
 
 const rules = {
   name: { required: helpers.withMessage("Required", required) },
   address: {
     validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
-    ensRule: helpers.withMessage(ensError.value, ensRule),
     required: helpers.withMessage("Required", required),
+    isDuplicateContact: helpers.withMessage("Duplicate", validNewContact),
+  },
+  transferType: {
+    ensRule: helpers.withMessage("ENS Error", ensRule),
   },
 };
-const $v = useVuelidate(rules, { name, address });
+const $v = useVuelidate(rules, newContactState);
 
 const onSave = () => {
   $v.value.$touch();
+  if (!$v.value.$error && !$v.value.$invalid) {
+    emits("saveContact", {
+      display_name: newContactState.name,
+      contact_verifier_id: newContactState.address,
+      contact_verifier: newContactState.transferType.value,
+    });
+    $v.value.$reset();
+    newContactState.name = "";
+    newContactState.address = "";
+    newContactState.transferType = transferTypes[0];
+  }
+};
+
+const onDelete = (contactId: number) => {
+  emits("deleteContact", contactId);
 };
 </script>
 <template>
@@ -80,8 +105,8 @@ const onSave = () => {
     <div class="grid grid-cols-3 items-center mb-4">
       <div class="col-span-3 sm:col-span-1 font-body text-sm text-app-text-600 dark:text-app-text-dark-500">List of Contacts</div>
       <div class="col-span-3 sm:col-span-2 flex gap-2">
-        <TextField size="small" placeholder="Search by name" />
-        <TextField size="small" placeholder="Filter by type" />
+        <TextField v-model="searchFilter" size="small" placeholder="Search by name" />
+        <SelectField v-model="typeFilter" size="small" placeholder="Filter by type" :items="filterTypes" />
       </div>
     </div>
     <ul class="border dark:border-gray-900 rounded-md divide-y dark:divide-gray-900 shadow dark:shadow-dark mb-4">
@@ -91,12 +116,12 @@ const onSave = () => {
             <GithubIcon class="w-3 h-3" />
           </div>
           <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">
-            {{ contact.name }} -
-            <span class="text-app-text-500 dark:text-app-text-dark-500">{{ contact.contact }}</span>
+            {{ contact.display_name }} -
+            <span class="text-app-text-500 dark:text-app-text-dark-500">{{ contact.contact_verifier_id }}</span>
           </div>
         </div>
         <div class="ml-auto">
-          <TrashIcon class="w-4 h-4 text-app-text-500 dark:text-app-text-dark-500" />
+          <TrashIcon class="w-4 h-4 text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="() => onDelete(contact.id)" />
         </div>
       </li>
     </ul>
@@ -104,14 +129,14 @@ const onSave = () => {
     <form @submit.prevent="onSave">
       <div class="mb-4 grid grid-cols-3 gap-2">
         <div class="col-span-3 sm:col-span-2">
-          <TextField v-model.lazy="name" :errors="$v.name.$errors" placeholder="Enter Contact Name" />
+          <TextField v-model.lazy="newContactState.name" :errors="$v.name.$errors" placeholder="Enter Contact Name" />
         </div>
         <div class="col-span-3 sm:col-span-1">
-          <SelectField v-model="transferType" :items="transferTypes" />
+          <SelectField v-model="newContactState.transferType" :items="transferTypes" />
         </div>
       </div>
       <div class="mb-4">
-        <TextField v-model.lazy="address" :errors="$v.address.$errors" placeholder="Enter ETH Address" />
+        <TextField v-model.lazy="newContactState.address" :errors="$v.address.$errors" placeholder="Enter SOL Address" />
       </div>
       <div>
         <Button class="ml-auto" variant="tertiary" type="submit">Add Contact</Button>
