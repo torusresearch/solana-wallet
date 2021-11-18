@@ -8,7 +8,7 @@ import { useRouter } from "vue-router";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
-import { addToast, app } from "@/modules/app";
+import { addToast } from "@/modules/app";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -61,7 +61,7 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-4 lg:col-span-3 min-h-screen flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
-          <img class="block mb-7 h-7 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+          <img class="block mb-7 h-7 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4">
             <div>Your Google</div>
             <div>digital wallet in one-click</div>

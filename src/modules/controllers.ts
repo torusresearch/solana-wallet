@@ -66,6 +66,10 @@ class ControllerModule extends VuexModule {
     );
   }
 
+  get crashReport(): boolean {
+    return this.selectedAccountPreferences.crashReport || false;
+  }
+
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
     const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
     return txns || [];
@@ -90,7 +94,7 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
-    return this.selectedAccountPreferences.theme === "dark";
+    return this.selectedAccountPreferences.theme === "dark" || false;
   }
 
   @Mutation
