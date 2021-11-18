@@ -10,7 +10,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "prepare": "husky install",
-    "test": "playwright test --config=playwright.config.ts --headed",
+    "test": "playwright test --config=playwright.config.ts",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz"
   },
   "dependencies": {
