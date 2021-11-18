@@ -29,7 +29,7 @@ const logout = () => {
       <div class="flex h-16 px-4">
         <div class="flex-none flex items-center">
           <router-link to="/wallet/home">
-            <img class="block h-4 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Casper Logo" />
+            <img class="block h-4 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </router-link>
         </div>
         <div class="flex flex-grow">

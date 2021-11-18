@@ -55,8 +55,7 @@ const getTxStatusColor = (status: string): string => {
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
       <div class="flex">
         <div class="flex items-center justify-center logo-container">
-          <!-- <img class="block h-7 w-auto" :src="ControllersModule.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /> -->
-          <img class="block h-7 w-auto" :src="SolanaLogoURL" alt="Casper Logo" />
+          <img class="block h-7 w-auto" :src="SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
           <div v-if="activity.type" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">

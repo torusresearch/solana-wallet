@@ -22,7 +22,7 @@ const selectedNetwork = computed({
 <template>
   <div class="pb-4">
     <div class="mb-4">
-      <SelectField v-if="selectedNetwork" v-model="selectedNetwork" label="Select Network" :items="networks" />
+      <SelectField v-if="selectedNetwork" id="network_select" v-model="selectedNetwork" label="Select Network" :items="networks" />
       <div v-else class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500 mb-16">Loading network...</div>
     </div>
   </div>

@@ -115,7 +115,7 @@ onMounted(() => {
 
         <div class="grid grid-cols-3">
           <div class="col-span-3 sm:col-span-1">
-            <SelectField v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
+            <SelectField id="ramp_crypto_select" v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-4">
@@ -126,14 +126,14 @@ onMounted(() => {
               Minimum transaction amount: 10 {{ selectedCurrency.value }}
             </p>
           </div>
-          <div class="col-span-3 sm:col-span-1">
-            <SelectField v-model="selectedCurrency" class="sm:mt-6" :items="selectedProvider.validCurrencies" />
+          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1">
+            <SelectField id="ramp_fiat_select" v-model="selectedCurrency" class="sm:mt-6" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
         <div v-if="!isLoadingQuote" class="flex flex-col items-end mb-5">
           <div class="text-app-text-600 dark:text-app-text-dark-500">You receive</div>
           <div class="text-2xl font-bold text-app-text-600 dark:text-app-text-dark-500">
-            {{ receivingCryptoAmount }} {{ selectedCryptocurrency.value }}
+            <span id="res_crypto_amt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
           </div>
           <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">
             Rate: 1 {{ selectedCryptocurrency.value }} = {{ cryptoCurrencyRate }} {{ selectedCurrency.value }}
