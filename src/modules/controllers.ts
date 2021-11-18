@@ -62,6 +62,7 @@ class ControllerModule extends VuexModule {
         incomingBackendTransactions: [],
         displayActivities: {},
         network_selected: "testnet",
+        theme: "dark",
       }
     );
   }
@@ -94,7 +95,7 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
-    return this.selectedAccountPreferences.theme === "dark" || false;
+    return this.selectedAccountPreferences.theme === "dark";
   }
 
   @Mutation
