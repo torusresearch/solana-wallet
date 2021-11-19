@@ -29,7 +29,17 @@ const emits = defineEmits(["saveContact", "deleteContact"]);
 
 const contacts = computed<Contact[]>(() => {
   return props.stateContacts.filter((contact) => {
-    if (typeFilter?.value?.value && typeFilter.value.value !== contact.contact_verifier) return false;
+    switch (typeFilter?.value?.value) {
+      case "sol":
+        if (contact.contact_verifier !== "solana") return false;
+        break;
+      case null:
+      case undefined:
+      case "":
+        break;
+      default:
+        if (contact.contact_verifier !== typeFilter?.value?.value) return false;
+    }
     if (searchFilter?.value) {
       const nameFilter = new RegExp(searchFilter.value, "i");
       if (!contact.display_name.match(nameFilter)) return false;
@@ -68,8 +78,15 @@ const validNewContact = (value: string): boolean => {
   return !props.stateContacts.some((x) => x.contact_verifier_id.toLowerCase() === value.toLowerCase());
 };
 
+const isAlnum = (value: string): boolean => {
+  return /^[a-zA-Z0-9]+$/.test(value);
+};
+
 const rules = {
-  name: { required: helpers.withMessage("Required", required) },
+  name: {
+    required: helpers.withMessage("Required", required),
+    checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
+  },
   address: {
     validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
     required: helpers.withMessage("Required", required),
@@ -87,7 +104,7 @@ const onSave = () => {
     emits("saveContact", {
       display_name: newContactState.name,
       contact_verifier_id: newContactState.address,
-      contact_verifier: newContactState.transferType.value,
+      contact_verifier: newContactState.transferType.value === "sol" ? "solana" : newContactState.transferType.value,
     });
     $v.value.$reset();
     newContactState.name = "";
