@@ -214,7 +214,7 @@ span.or-text {
 button.continue {
   background-color: rgba(214, 164, 255, 0.12);
   color: rgb(214, 164, 255);
-  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 button.continue:hover,
 button.continue:active {
@@ -224,6 +224,7 @@ button.continue:active {
   height: 3.5rem !important;
   background-color: #4285f4 !important;
   border: none !important;
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 
 .embed-google:hover {
