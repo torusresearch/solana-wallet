@@ -22,8 +22,8 @@ onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
     const channel_msg = await bcHandler.getMessageFromChannel<SignMessageChannelDataType>();
-    msg_data.data = channel_msg.data;
-    msg_data.message = Buffer.from(channel_msg.data || []).toString() || "";
+    msg_data.data = Buffer.from(channel_msg.data || "", "hex");
+    msg_data.message = channel_msg.message || "";
     msg_data.origin = channel_msg.origin;
   } catch (error) {
     log.error("error in tx", error);

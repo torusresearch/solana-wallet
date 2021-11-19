@@ -57,6 +57,7 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+
 import { BigNumber } from "bignumber.js";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -848,7 +849,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       const popupPayload: SignMessageChannelDataType = {
         type: req.method,
-        data: req.params?.data,
+        data: Buffer.from(req.params?.data || []).toString("hex"),
         display: req.params?.display,
         message: Buffer.from(req.params?.data || []).toString(),
         signer: this.selectedAddress,
