@@ -27,6 +27,7 @@ import {
   THEME,
   TopupInput,
   TransactionState,
+  TransactionStatus,
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
@@ -83,7 +84,7 @@ const TARGET_NETWORK = "mainnet";
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
   NetworkControllerConfig: { providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK] },
-  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin" },
+  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin", commonApiHost: config.commonApiHost },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
@@ -109,13 +110,11 @@ export const DEFAULT_STATE = {
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
-    api: "",
-    signInPrefix: "Solana Signin",
   },
   TransactionControllerState: {
     transactions: {},
     unapprovedTxs: {},
-    currentNetworkTxsList: [],
+    // currentNetworkTxsList: [],
   },
   EmbedControllerState: {
     buttonPosition: BUTTON_POSITION.BOTTOM_RIGHT,
@@ -171,7 +170,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get selectedAddress(): string {
-    return this.preferencesController.state.selectedAddress;
+    return this.preferencesController?.state.selectedAddress;
   }
 
   get tokens(): { [address: string]: SolanaToken[] } {
@@ -218,15 +217,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get embedLoginInProgress(): boolean {
-    return this.embedController.state.loginInProgress;
+    return this.embedController?.state.loginInProgress || false;
   }
 
   get embedOauthModalVisibility(): boolean {
-    return this.embedController.state.oauthModalVisibility;
+    return this.embedController?.state.oauthModalVisibility || false;
   }
 
   get embedIsIFrameFullScreen(): boolean {
-    return this.embedController.state.isIFrameFullScreen;
+    return this.embedController?.state.isIFrameFullScreen || false;
   }
 
   /**
@@ -300,13 +299,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.networkController._blockTrackerProxy.on("latest", () => {
       if (this.preferencesController.state.selectedAddress) {
-        this.preferencesController.sync(this.preferencesController.state.selectedAddress);
+        // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
+        this.preferencesController.updateDisplayActivities();
+        this.tokensTracker.fetchSolTokens();
+        this.accountTracker.refresh();
       }
     });
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", () => {
       log.info("network changed");
+      if (this.selectedAddress) {
+        this.preferencesController.initializeDisplayActivity();
+      }
+
+      this.engine?.emit("notification", {
+        method: PROVIDER_NOTIFICATIONS.CHAIN_CHANGED,
+        params: {
+          chainId: this.networkController.state.chainId,
+        },
+      });
     });
 
     this.networkController.lookupNetwork();
@@ -338,6 +350,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
       this.update({ TransactionControllerState: state2 });
+      Object.keys(state2.transactions).forEach((txId) => {
+        // if( [TransactionStatus])
+        if (state2.transactions[txId].status === TransactionStatus.submitted) {
+          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress).catch((err) => {
+            log.error("error while patching a new tx", err);
+          });
+        }
+      });
     });
 
     this.embedController.on("store", (state2) => {
@@ -391,17 +411,31 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
     const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
-    const ret_signed = await this.txController.addSignTransaction(tx, req);
-    await ret_signed.result;
-    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
-    const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-    if (gaslessHost) {
-      signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+    const signedTransaction = await this.txController.addSignTransaction(tx, req);
+    await signedTransaction.result;
+    try {
+      // serialize transaction
+      let serializedTransaction = signedTransaction.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+      const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+      if (gaslessHost) {
+        serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
+      }
+
+      // submit onchain
+      const signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+
+      // attach necessary info and update controller state
+      signedTransaction.transactionMeta.transactionHash = signature;
+      signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
+      this.txController.setTxStatusSubmitted(signedTransaction.transactionMeta.id);
+
+      this.preferencesController.patchNewTx(signedTransaction.transactionMeta, this.selectedAddress);
+      return signature;
+    } catch (error) {
+      log.warn("error while submiting transaction", error);
+      this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
+      throw error;
     }
-    const signature = await conn.sendRawTransaction(Buffer.from(signed_tx, "hex"));
-    ret_signed.transactionMeta.transactionHash = signature;
-    this.txController.setTxStatusSubmitted(ret_signed.transactionMeta.id);
-    return signature;
   }
 
   getGaslessHost(feePayer: string): string | undefined {
@@ -421,8 +455,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       address,
       calledFromEmbed: false,
       userInfo,
-      rehydrate: true,
-      jwtToken: "bypass init for now",
     });
     return address;
   }
@@ -430,6 +462,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
     this.preferencesController.sync(address);
+    this.preferencesController.initializeDisplayActivity();
   }
 
   async setCurrentCurrency(currency: string): Promise<void> {

@@ -6,7 +6,6 @@ import { computed, ref } from "vue";
 import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
-import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
 
@@ -79,7 +78,7 @@ const totalFiatCostString = computed(() => {
 </script>
 <template>
   <div
-    :class="{ dark: app.isDarkMode }"
+    :class="{ dark: ControllersModule.isDarkMode }"
     class="
       inline-block
       w-screen

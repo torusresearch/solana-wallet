@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, defineAsyncComponent, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
@@ -20,6 +21,7 @@ const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
 
+const router = useRouter();
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
 });
@@ -90,22 +92,20 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
-const LAMPORTS = 1000000000;
-
 const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
 
   const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
   blockhash.value = b_hash;
-  transactionFee.value = fee / LAMPORTS;
+  transactionFee.value = fee / LAMPORTS_PER_SOL;
 };
 const confirmTransfer = async () => {
   try {
     const ti = SystemProgram.transfer({
       fromPubkey: new PublicKey(ControllersModule.selectedAddress),
       toPubkey: new PublicKey(transferTo.value),
-      lamports: sendAmount.value * LAMPORTS,
+      lamports: sendAmount.value * LAMPORTS_PER_SOL,
     });
     const tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
     const res = await ControllersModule.torus.transfer(tf);
@@ -113,6 +113,7 @@ const confirmTransfer = async () => {
     log.info(res);
 
     showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+    router.push("/wallet/activity");
     // resetForm();
   } catch (error) {
     // log.error("send error", error);

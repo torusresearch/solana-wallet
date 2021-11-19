@@ -33,7 +33,7 @@ export default {
   baseRoute,
   commonApiHost: "https://common-api.tor.us",
   metadataHost: "https://metadata.tor.us",
-  api: "https://api.tor.us",
+  api: "https://solana-api.tor.us",
   redirect_uri: redirectURI,
   dappStorageKey,
 
