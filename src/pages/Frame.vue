@@ -37,11 +37,12 @@ function startLogin() {
         if (!dappOrigin) {
           dappOrigin = origin;
         }
-        const { buttonPosition, apiKey, network, dappMetadata } = data;
+        const { buttonPosition, apiKey, network, dappMetadata, extInitData } = data;
         initParams.buttonPosition = buttonPosition;
         initParams.apiKey = apiKey;
         initParams.network = network;
         initParams.dappMetadata = dappMetadata;
+        initParams.extInitData = extInitData;
         if (resolve) resolve();
       }
     };
@@ -120,8 +121,13 @@ const closePanel = () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex justify-center ite1ms-center">
-    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @on-close="cancelLogin" @on-login="onLogin" />
+  <div class="min-h-screen flex justify-center items-center">
+    <PopupLogin
+      :is-open="oauthModalVisibility && !isLoggedIn"
+      :other-wallets="initParams.extInitData?.otherWallets"
+      @on-close="cancelLogin"
+      @on-login="onLogin"
+    />
     <PopupWidget
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"
