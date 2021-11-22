@@ -2,6 +2,8 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ComputedRef } from "@vue/reactivity";
 import { BigNumber } from "bignumber.js";
 import { computed } from "vue";
 
@@ -10,7 +12,6 @@ import { Button } from "@/components/common";
 import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
 import { app } from "@/modules/app";
 import ControllersModule from "@/modules/controllers";
-import Value = BigNumber.Value;
 const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(
@@ -45,11 +46,11 @@ const props = withDefaults(
 function isSPLToken(): boolean {
   return !!props.token.mintAddress;
 }
-const pricePerToken = computed(() => {
+const pricePerToken: ComputedRef<number> = computed<number>((): number => {
   if (isSPLToken()) {
-    return <Value>props.token?.price?.[currency.value.toLowerCase()];
+    return props.token?.price?.[currency.value.toLowerCase()] || 0;
   }
-  return <Value>ControllersModule.torus.conversionRate;
+  return ControllersModule.torus.conversionRate;
 });
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
