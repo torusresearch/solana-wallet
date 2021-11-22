@@ -40,7 +40,7 @@ const setActiveButton = (provider: string) => {
 };
 </script>
 <template>
-  <TransitionRoot appear :show="true" as="template">
+  <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :class="{ dark: ControllersModule.isDarkMode || true }" as="div">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 flex justify-center items-center">
