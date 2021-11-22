@@ -185,6 +185,7 @@ export interface EmbedInitParams {
     name: string;
     icon: string;
   };
+  extraParams?: { [keyof: string]: string };
 }
 
 export type TransactionChannelDataType = {
@@ -202,7 +203,7 @@ export type TransactionChannelDataType = {
 
 // export type SignMessageChannelDataType = Omit<TransactionChannelDataType, "message"> & {
 export type SignMessageChannelDataType = TransactionChannelDataType & {
-  data?: Uint8Array;
+  data?: string;
   display?: string;
 };
 

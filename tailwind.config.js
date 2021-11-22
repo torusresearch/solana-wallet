@@ -86,6 +86,7 @@ module.exports = {
       borderColor: ["disabled"],
       outline: ["focus"],
       boxShadow: ["dark"],
+      textOpacity: ["hover"]
     },
   },
   plugins: [require("@tailwindcss/forms")],

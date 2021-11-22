@@ -2,22 +2,25 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/solid";
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
-import { LoginButtons, LoginFooter, LoginTitle } from "@/components/login";
+import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
+import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import ControllersModule from "@/modules/controllers";
 import { LOGIN_CONFIG } from "@/utils/enums";
-import { thirdPartyAuthenticators } from "@/utils/helpers";
 
 withDefaults(
   defineProps<{
     isOpen?: boolean;
+    otherWallets?: string;
   }>(),
   {
     isOpen: false,
+    otherWallets: "false",
   }
 );
+
 const emits = defineEmits(["onClose", "onLogin"]);
 
 const closeModal = () => {
@@ -31,13 +34,6 @@ const onLogin = (provider: string, userEmail: string) => {
 const loginButtonsArray: LOGIN_CONFIG[] = Object.values(config.loginConfig);
 
 const activeButton = ref<string>(LOGIN_PROVIDER.GOOGLE);
-const activeButtonDetails = computed(() => {
-  return loginButtonsArray.find((x) => x.loginProvider === activeButton.value);
-});
-
-const thirdPartyAuthenticatorList = computed(() => {
-  return thirdPartyAuthenticators(loginButtonsArray);
-});
 
 const setActiveButton = (provider: string) => {
   activeButton.value = provider;
@@ -47,11 +43,8 @@ const setActiveButton = (provider: string) => {
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :class="{ dark: ControllersModule.isDarkMode || true }" as="div">
       <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="min-h-screen px-4 text-center">
+        <div class="min-h-screen px-4 flex justify-center items-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
-
-          <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
-
           <TransitionChild
             as="template"
             enter="duration-300 ease-out"
@@ -62,15 +55,19 @@ const setActiveButton = (provider: string) => {
             leave-to="opacity-0 scale-95"
           >
             <div class="login-container">
-              <DialogTitle
-                as="div"
-                class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md py-7 px-6 relative focus-within:outline-none"
-                tabindex="0"
-              >
-                <LoginTitle :is-embed="true" :button-details="activeButtonDetails" />
-                <XIcon class="w-6 h-6 absolute top-3 right-3 text-app-text-500 cursor-pointer" @click="closeModal" />
+              <DialogTitle as="div" class="py-0 px-4 relative focus-within:outline-none bg-transparent w-full" tabindex="0">
+                <h1 class="font-bold text-white login-title mt-14 text-center">Setup your digital wallet</h1>
+                <div
+                  class="w-8 h-8 absolute top-4 right-4 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
+                  @click="closeModal"
+                >
+                  <XIcon class="w-6 h-6 text-white text-opacity-70 hover:text-opacity-100" />
+                </div>
               </DialogTitle>
-              <div class="p-6">
+              <p class="text-white text-opacity-80 font-normal text-xl mt-4 text-center px-7">
+                Powered by Torus — Use it now, and on any app that accepts Torus.
+              </p>
+              <div class="mt-14 w-full px-4">
                 <LoginButtons
                   :is-embed="true"
                   :active-button="activeButton"
@@ -78,7 +75,18 @@ const setActiveButton = (provider: string) => {
                   @on-login="onLogin"
                   @on-hover="setActiveButton"
                 />
-                <LoginFooter :third-party-authenticator-list="thirdPartyAuthenticatorList" :is-embed="true" />
+              </div>
+              <div class="flex justify-center items-center mt-9">
+                <span class="text-white text-opacity-70 mr-2 text-xs font-normal">Powered by</span>
+                <img :src="TorusLogoLightURL" alt="Torus Logo" class="h-4 w-auto opacity-70" />
+              </div>
+              <div
+                v-if="otherWallets === 'true'"
+                class="mt-auto pt-4 pb-6 px-2 w-full border-t-2 border-solid border-white border-opacity-10 text-center"
+              >
+                <span class="cursor-pointer text-base text-white font-normal hover:text-opacity-80" tabindex="0"
+                  >Want to try a different wallet?</span
+                >
               </div>
             </div>
           </TransitionChild>
@@ -90,18 +98,28 @@ const setActiveButton = (provider: string) => {
 
 <style scoped>
 .login-container {
-  @apply inline-block
+  @apply flex
+    flex-col
+    items-center
     w-full
     max-w-sm
     my-8
     overflow-hidden
     text-left
-    align-middle
     transition-all
     transform
     bg-white
     dark:bg-app-gray-800
     shadow
-    rounded-md;
+    rounded-lg;
+  height: 45rem;
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  background-color: #10141f !important;
+}
+
+.login-title {
+  font-size: 1.75rem;
+  line-height: 2.1rem;
 }
 </style>

@@ -22,10 +22,12 @@ const initParams = {
     icon: "",
     name: "",
   },
+  extraParams: {},
 } as EmbedInitParams;
 
 const hashParams = new URLSearchParams(window.location.hash.slice(1));
 const specifiedOrigin = hashParams.get("origin");
+
 function startLogin() {
   try {
     const handleMessage = (ev: MessageEvent) => {
@@ -37,11 +39,12 @@ function startLogin() {
         if (!dappOrigin) {
           dappOrigin = origin;
         }
-        const { buttonPosition, apiKey, network, dappMetadata } = data;
+        const { buttonPosition, apiKey, network, dappMetadata, extraParams } = data;
         initParams.buttonPosition = buttonPosition;
         initParams.apiKey = apiKey;
         initParams.network = network;
         initParams.dappMetadata = dappMetadata;
+        initParams.extraParams = extraParams;
         if (resolve) resolve();
       }
     };
@@ -51,6 +54,7 @@ function startLogin() {
   }
 }
 startLogin();
+
 const isLoggedIn = computed(() => !!ControllerModule.torus.selectedAddress);
 const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
@@ -66,9 +70,7 @@ const lastTransaction = computed(() => {
   // return txns.length > 0 ? txns[0] : ({} as SolanaTransactionActivity);
   return txns[0] as SolanaTransactionActivity;
 });
-// const toggleIframeFullScreen = () => {
-//   ControllerModule.toggleIframeFullScreen();
-// };
+
 onMounted(async () => {
   if (!isMain) {
     await promise;
@@ -120,8 +122,13 @@ const closePanel = () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex justify-center ite1ms-center">
-    <PopupLogin :is-open="oauthModalVisibility && !isLoggedIn" @on-close="cancelLogin" @on-login="onLogin" />
+  <div class="min-h-screen flex justify-center items-center">
+    <PopupLogin
+      :is-open="oauthModalVisibility && !isLoggedIn"
+      :other-wallets="initParams.extraParams?.otherWallets"
+      @on-close="cancelLogin"
+      @on-login="onLogin"
+    />
     <PopupWidget
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"
