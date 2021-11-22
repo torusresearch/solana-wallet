@@ -7,6 +7,8 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "camelcase": 0,
+    "no-new": 0,
     "vue/multi-word-component-names": 0,
     "@typescript-eslint/naming-convention": [
       "error",

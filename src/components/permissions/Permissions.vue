@@ -5,6 +5,7 @@ import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
+
 const props = withDefaults(
   defineProps<{
     requestedFrom: string;
@@ -69,7 +70,7 @@ function openLink() {
           <a :href="props.requestedFrom" target="_blank" class="text-sm font-body text-app-text-accent dark:text-app-text-accent">{{
             getDomainFromUrl(props.requestedFrom)
           }}</a>
-          <div class="open-link" @click="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
+          <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
         </div>
       </div>
 

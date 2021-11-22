@@ -117,11 +117,15 @@ const totalFiatCostString = computed(() => {
         </span>
 
         <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>Transaction Fee <img :src="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+          <p>Transaction Fee <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
           <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
         </span>
 
-        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent" @click="() => (expand_inst = !expand_inst)">
+        <p
+          class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent"
+          @click="() => (expand_inst = !expand_inst)"
+          @keydown="() => (expand_inst = !expand_inst)"
+        >
           {{ expand_inst ? "Hide details" : "View more details" }}
         </p>
         <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />

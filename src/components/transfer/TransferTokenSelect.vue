@@ -23,7 +23,7 @@ const selectedToken = ref(mainToken);
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
-          <img :src="selectedToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
+          <img :src="selectedToken.iconURL" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedToken.name }}
           </span>
@@ -63,7 +63,7 @@ const selectedToken = ref(mainToken);
               ]"
             >
               <div class="flex items-center">
-                <img :src="mainToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
+                <img :src="mainToken.iconURL" alt="main token" class="flex-shrink-0 h-6 w-6 rounded-full" />
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']">{{ mainToken.name }}</span>
               </div>
             </li>

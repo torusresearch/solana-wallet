@@ -48,6 +48,7 @@ const value = computed({
         :class="size === 'small' ? 'text-xs' : 'text-base'"
         :type="type"
         :placeholder="placeholder"
+        aria-label="text field"
       />
     </div>
     <div v-if="errors?.length" class="flex mt-1 px-1">
