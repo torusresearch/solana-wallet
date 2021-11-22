@@ -2,8 +2,6 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ComputedRef } from "@vue/reactivity";
 import { BigNumber } from "bignumber.js";
 import { computed } from "vue";
 
@@ -46,7 +44,7 @@ const props = withDefaults(
 function isSPLToken(): boolean {
   return !!props.token.mintAddress;
 }
-const pricePerToken: ComputedRef<number> = computed<number>((): number => {
+const pricePerToken = computed<number>((): number => {
   if (isSPLToken()) {
     return props.token?.price?.[currency.value.toLowerCase()] || 0;
   }
