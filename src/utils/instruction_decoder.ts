@@ -8,6 +8,16 @@ export type DecodedDataType = {
   data: { [key: string]: string | PublicKey | number | undefined | null };
 };
 
+export const decodeUnknownInstruction = (instruction: TransactionInstruction): DecodedDataType => {
+  return {
+    type: "Unknown",
+    data: {
+      programId: instruction.programId.toBase58(),
+      data: instruction.data.toString("hex"),
+    },
+  };
+};
+
 export const decodeSystemInstruction = (inst: TransactionInstruction): DecodedDataType => {
   // get layout
   let decoded;
@@ -47,7 +57,7 @@ export const decodeSystemInstruction = (inst: TransactionInstruction): DecodedDa
       decoded = SystemInstruction.decodeNonceAuthorize(inst);
       break;
     default:
-      return { type: "", data: {} };
+      return decodeUnknownInstruction(inst);
   }
 
   //   if (!decoded || (decoded.fromPubkey && !publicKey.equals(decoded.fromPubkey))) {
@@ -114,7 +124,7 @@ export const decodeStakeInstruction = (inst: TransactionInstruction): DecodedDat
       break;
     }
     default:
-      return { type: "", data: {} };
+      return decodeUnknownInstruction(inst);
   }
 
   //   if (!decoded || (decoded.fromPubkey && !publicKey.equals(decoded.fromPubkey))) {
@@ -124,16 +134,6 @@ export const decodeStakeInstruction = (inst: TransactionInstruction): DecodedDat
   return {
     type: `stake${type}`,
     data: decoded,
-  };
-};
-
-export const decodeUnknownInstruction = (instruction: TransactionInstruction): DecodedDataType => {
-  return {
-    type: "Unknown",
-    data: {
-      programId: instruction.programId.toBase58(),
-      data: instruction.data.toString("hex"),
-    },
   };
 };
 
@@ -154,6 +154,7 @@ export declare type TokenInstructionLayoutType =
   | { approveChecked: { amount: BN; decimals: number } }
   | { mintToChecked: { amount: BN; decimals: number } }
   | { burnChecked: { amount: BN; decimals: number } };
+
 const TokenInstructionLayout = bors.rustEnum([
   bors.struct([bors.u8("decimals"), bors.publicKey("mintAuthority"), bors.option(bors.publicKey(), "freezeAuthority")], "initializeMint"),
   bors.struct([], "initializeAccount"),
@@ -289,7 +290,8 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     };
     return { type, data: params };
   }
-  throw new Error("Unsupported token instruction type");
+  // throw new Error("Unsupported token instruction type");
+  return decodeUnknownInstruction(instruction);
 }
 
 export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {

@@ -81,7 +81,7 @@ const filteredTransaction = computed(() => {
       isScoped = true;
     } else {
       let minDate;
-      const itemDate = new Date(item.rawDate);
+      const itemDate = item.updatedAt || 0;
       if (period.value.value === ACTIVITY_PERIOD_WEEK_ONE) {
         minDate = oneWeekAgoDate.value;
       } else if (period.value.value === ACTIVITY_PERIOD_MONTH_ONE) {
@@ -89,7 +89,7 @@ const filteredTransaction = computed(() => {
       } else {
         minDate = sixMonthAgoDate.value;
       }
-      isScoped = minDate <= itemDate.getTime();
+      isScoped = minDate <= itemDate;
     }
 
     if (item.action) {
@@ -110,7 +110,7 @@ const filteredTransaction = computed(() => {
 
 <template>
   <WalletTabs tab="activity">
-    <div v-for="tx in filteredTransaction" :key="tx.id" class="pt-7">
+    <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7">
       <ActivityItem :activity="tx" />
     </div>
     <template #rightPanel>

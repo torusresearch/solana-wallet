@@ -4,7 +4,6 @@ import { computed } from "vue";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
-import { app } from "@/modules/app";
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";

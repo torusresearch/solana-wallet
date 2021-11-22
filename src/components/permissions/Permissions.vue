@@ -3,9 +3,8 @@ import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
-import { app } from "@/modules/app";
+import ControllersModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
-
 const props = withDefaults(
   defineProps<{
     requestedFrom: string;
@@ -39,7 +38,7 @@ function openLink() {
 </script>
 <template>
   <div
-    :class="{ dark: app.isDarkMode }"
+    :class="{ dark: ControllersModule.isDarkMode }"
     class="
       inline-block
       w-screen
