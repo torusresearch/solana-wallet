@@ -185,7 +185,7 @@ export interface EmbedInitParams {
     name: string;
     icon: string;
   };
-  extInitData?: { [keyof: string]: string };
+  extraParams?: { [keyof: string]: string };
 }
 
 export type TransactionChannelDataType = {
