@@ -5,7 +5,6 @@ import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
-
 const props = withDefaults(
   defineProps<{
     requestedFrom: string;
