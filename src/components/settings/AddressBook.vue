@@ -10,7 +10,6 @@ import { Button, SelectField, TextField } from "@/components/common";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 
-const ensError = ref("");
 const searchFilter = ref("");
 const typeFilter = ref<TransferType>();
 
@@ -63,11 +62,6 @@ const validVerifier = (value: string) => {
   return ruleVerifierId(newContactState.transferType.value, value);
 };
 
-const ensRule = (transferType: TransferType) => {
-  if (transferType.value === "ENS" && ensError?.value) return false;
-  return true;
-};
-
 const getErrorMessage = () => {
   const selectedType = newContactState.transferType?.value || "";
   if (!selectedType) return "";
@@ -82,18 +76,20 @@ const isAlnum = (value: string): boolean => {
   return /^[a-zA-Z0-9]+$/.test(value);
 };
 
+const lengthCheck = (min: number, max: number, value: string): boolean => {
+  return value.length >= min && value.length <= max;
+};
+
 const rules = {
   name: {
     required: helpers.withMessage("Required", required),
     checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
+    lengthCheck: helpers.withMessage("Name should be less than 255 characters", (value: string) => lengthCheck(0, 255, value)),
   },
   address: {
     validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
     required: helpers.withMessage("Required", required),
     isDuplicateContact: helpers.withMessage("Duplicate", validNewContact),
-  },
-  transferType: {
-    ensRule: helpers.withMessage("ENS Error", ensRule),
   },
 };
 const $v = useVuelidate(rules, newContactState);
@@ -109,7 +105,7 @@ const onSave = () => {
     $v.value.$reset();
     newContactState.name = "";
     newContactState.address = "";
-    newContactState.transferType = transferTypes[0];
+    [newContactState.transferType] = [...transferTypes];
   }
 };
 
