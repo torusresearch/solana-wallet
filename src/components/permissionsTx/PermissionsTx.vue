@@ -11,6 +11,7 @@ import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
 import InstructionDisplay from "../payments/InstructionDisplay.vue";
+
 const props = withDefaults(
   defineProps<{
     logoUrl?: string;
@@ -76,7 +77,7 @@ function openLink() {
           <a :href="props.origin" target="_blank" class="text-sm font-body text-app-text-accent dark:text-app-text-accent">{{
             getDomainFromUrl(props.origin)
           }}</a>
-          <div class="open-link" @click="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
+          <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
         </div>
       </div>
 
@@ -87,7 +88,11 @@ function openLink() {
             {{ decodedInst.length }} Transaction Instruction(s) to approve
           </p>
         </div>
-        <p class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent" @click="() => (expand_inst = !expand_inst)">
+        <p
+          class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent"
+          @click="() => (expand_inst = !expand_inst)"
+          @keydown="() => (expand_inst = !expand_inst)"
+        >
           {{ expand_inst ? "Hide details" : "View more details" }}
         </p>
         <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />

@@ -6,6 +6,7 @@ import { onMounted, reactive } from "vue";
 
 import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
+
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
 interface MsgData {

@@ -3,6 +3,7 @@ import { WifiIcon } from "@heroicons/vue/outline";
 import { computed } from "vue";
 
 import ControllersModule from "@/modules/controllers";
+
 const network = computed(() => ControllersModule.torus.currentNetworkName);
 </script>
 

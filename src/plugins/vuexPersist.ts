@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import { merge } from "lodash-es";
 import log from "loglevel";
 import { MutationPayload, Payload, Plugin, Store } from "vuex";
@@ -86,7 +87,8 @@ export default class VuexPersistence<S> {
     this.store = null;
   }
 
-  public addModule(moduleOptions: ModulePersistOptions<S>): void {
+  public addModule(options: ModulePersistOptions<S>): void {
+    const moduleOptions = { ...options };
     if (!this.store) throw new Error("Install the plugin first");
     if (this.modules[moduleOptions.moduleName]) throw new Error("Module already installed");
     log.info("registering module", moduleOptions.moduleName);

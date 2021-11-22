@@ -4,6 +4,7 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import { computed } from "vue";
 
 import { DecodedDataType } from "@/utils/instruction_decoder";
+
 const props = withDefaults(
   defineProps<{
     el: string;

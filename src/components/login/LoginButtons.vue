@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
 import Button from "@toruslabs/vue-components/common/Button.vue";
-import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import {
   AppleIcon,
   DiscordIcon,
@@ -131,54 +130,134 @@ const onEmailLogin = () => {
     emits("onLogin", LOGIN_PROVIDER.EMAIL_PASSWORDLESS, userEmail.value);
   }
 };
-const toggleViewMore = () => {
-  viewMoreOptions.value = !viewMoreOptions.value;
-};
 </script>
 
 <template>
-  <div class="grid grid-cols-3 gap-2 w-full" :class="{ 'sm:w-10/12': !isEmbed }">
+  <div :class="isEmbed ? 'grid grid-cols-3 gap-4 w-full' : 'grid grid-cols-3 gap-2 w-full sm:w-10/12'">
     <div class="col-span-3">
-      <Button variant="tertiary" :block="true" @click="login(LOGIN_PROVIDER.GOOGLE)" @mouseover="hover(LOGIN_PROVIDER.GOOGLE)">
-        <img v-if="activeButton === LOGIN_PROVIDER.GOOGLE" class="w-6 mr-2" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
+      <Button
+        :size="isEmbed ? 'large' : 'medium'"
+        :class="isEmbed && 'embed-google relative'"
+        :variant="isEmbed ? 'secondary' : 'tertiary'"
+        :block="true"
+        @click="login(LOGIN_PROVIDER.GOOGLE)"
+        @keydown="login(LOGIN_PROVIDER.GOOGLE)"
+        @mouseover="hover(LOGIN_PROVIDER.GOOGLE)"
+        @focus="hover(LOGIN_PROVIDER.GOOGLE)"
+      >
+        <div v-if="isEmbed" class="w-12 h-12 absolute left-1 flex justify-center items-center rounded-md bg-white">
+          <img class="w-6 h-6" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
+        </div>
+        <img v-else-if="activeButton === LOGIN_PROVIDER.GOOGLE" class="w-6 h-6" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
         <component :is="iconList[LOGIN_PROVIDER.GOOGLE].default" v-else class="w-6 h-6 mr-1 text-app-text-400" />
-        <span class="text-app-text-400">Continue with Google</span></Button
+        <span :class="isEmbed ? 'text-white font-bold' : 'text-app-text-400'">Continue with Google</span></Button
       >
     </div>
     <div v-for="loginButton in mainButtons" :key="loginButton.loginProvider" class="col-span-1">
       <Button
         v-if="loginButton.loginProvider"
-        variant="tertiary"
+        :size="isEmbed ? 'large' : 'medium'"
+        :class="isEmbed && `embed-${loginButton.loginProvider}`"
+        :variant="isEmbed ? 'secondary' : 'tertiary'"
         icon
         :block="true"
         :title="loginButton.loginProvider"
         @click="login(loginButton.loginProvider)"
+        @keydown="login(loginButton.loginProvider)"
         @mouseover="hover(loginButton.loginProvider)"
+        @focus="hover(loginButton.loginProvider)"
       >
-        <img v-if="activeButton === loginButton.loginProvider" class="w-6 mr-1" :src="iconList[loginButton.loginProvider].active" alt="" />
-        <component :is="iconList[loginButton.loginProvider].default" v-else class="w-6 h-6 mr-1 text-app-text-400" />
+        <img
+          v-if="activeButton === loginButton.loginProvider && !isEmbed"
+          class="w-6 mr-1"
+          :src="iconList[loginButton.loginProvider].active"
+          alt=""
+        />
+        <component :is="iconList[loginButton.loginProvider].default" v-else class="w-8 h-8 mr-0 text-white" />
       </Button>
     </div>
   </div>
-  <div class="mt-3 relative w-full" :class="{ 'sm:w-10/12': !isEmbed }">
+  <div :class="isEmbed ? 'mt-6 relative w-full' : 'mt-3 relative w-full sm:w-10/12'">
     <div class="absolute inset-0 flex items-center" aria-hidden="true">
       <div class="w-full border-t border-app-text-400" />
     </div>
     <div class="relative flex justify-center text-sm">
-      <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
+      <span
+        :class="
+          isEmbed ? 'px-2 text-white text-opacity-80 or-text' : 'px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600'
+        "
+        >or</span
+      >
     </div>
   </div>
-  <div class="mt-3 w-full" :class="{ 'sm:w-10/12': !isEmbed }">
+  <div :class="isEmbed ? 'mt-7 w-full' : 'sm:w-10/12 mt-3 w-full'">
     <form @submit.prevent="onEmailLogin">
-      <TextField v-model.lazy="userEmail" variant="dark-bg" class="mb-3" placeholder="Enter your email" :errors="$v.userEmail.$errors" />
-      <Button variant="tertiary" :block="true" type="submit">Continue with Email</Button>
+      <TextField
+        v-model.lazy="userEmail"
+        :size="isEmbed ? 'large' : 'medium'"
+        variant="dark-bg"
+        placeholder="Enter your email"
+        :errors="$v.userEmail.$errors"
+      />
+      <Button
+        :size="isEmbed ? 'large' : 'medium'"
+        :variant="isEmbed ? 'primary' : 'tertiary'"
+        :class="isEmbed ? 'mt-4 font-bold continue text-base' : 'mt-3'"
+        :block="true"
+        type="submit"
+        >Continue with Email</Button
+      >
     </form>
-  </div>
-  <div class="mt-2 w-full flex justify-end" :class="{ 'sm:w-10/12': !isEmbed }">
-    <Button variant="text" class="text-app-text-500 text-sm" type="button" @click="toggleViewMore"
-      >{{ viewMoreOptions ? "View less options" : "View more options" }}<ChevronBottomIcon class="ml-1 h-3 w-3 text-gray-400" aria-hidden="true"
-    /></Button>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+span.or-text {
+  background-color: #10141f;
+}
+button.continue {
+  background-color: rgba(214, 164, 255, 0.12);
+  color: rgb(214, 164, 255);
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+button.continue:hover,
+button.continue:active {
+  background-color: rgba(214, 164, 255, 0.2) !important;
+}
+.embed-google {
+  height: 3.5rem !important;
+  background-color: #4285f4 !important;
+  border: none !important;
+  font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+.embed-google:hover {
+  background-color: rgba(66, 133, 244, 0.8) !important;
+}
+.embed-facebook {
+  height: 3.5rem !important;
+  background-color: #1977f3 !important;
+  border: none !important;
+}
+.embed-facebook:hover {
+  background-color: rgba(25, 119, 243, 0.8) !important;
+}
+.embed-twitter {
+  height: 3.5rem !important;
+  background-color: #4d9fec !important;
+  border: none !important;
+}
+
+.embed-twitter:hover {
+  background-color: rgba(77, 159, 236, 0.8) !important;
+}
+
+.embed-discord {
+  height: 3.5rem !important;
+  background-color: #5865f2 !important;
+  border: none !important;
+}
+.embed-discord:hover {
+  background-color: rgba(88, 101, 242, 0.8) !important;
+}
+</style>

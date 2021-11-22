@@ -3,6 +3,7 @@ import { Switch } from "@headlessui/vue";
 import { computed } from "vue";
 
 import ControllersModule from "@/modules/controllers";
+
 const enabled = computed(() => ControllersModule.crashReport);
 </script>
 <template>

@@ -7,17 +7,19 @@ import SolTokenLogo from "@/assets/sol_token.svg";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 
-const enum TOKEN_TABS {
-  NFT_TAB = "NFT_TAB",
-  TOKEN_TAB = "TOKEN_TAB",
-}
+const TOKEN_TABS = {
+  NFT_TAB: "NFT_TAB",
+  TOKEN_TAB: "TOKEN_TAB",
+} as const;
 
-const selectedTab = ref<TOKEN_TABS>(TOKEN_TABS.TOKEN_TAB);
+export type TOKEN_TABS_TYPE = typeof TOKEN_TABS[keyof typeof TOKEN_TABS];
+
+const selectedTab = ref<TOKEN_TABS_TYPE>(TOKEN_TABS.TOKEN_TAB);
 const publicKey = computed(() => ControllerModule.torus.selectedAddress);
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 const tokens = computed<SolanaToken[]>(() => ControllerModule.torus.tokens?.[publicKey.value]);
 
-function selectTab(tab: TOKEN_TABS) {
+function selectTab(tab: TOKEN_TABS_TYPE) {
   if (tab !== TOKEN_TABS.TOKEN_TAB) {
     addToast({ message: "Feature under development", type: "error" });
     // for now only supporting the TOKEN tabs, not NFTs
@@ -54,6 +56,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         class="tok-tab flex flex-row justify-center items-center"
         :class="[selectedTab === TOKEN_TABS.NFT_TAB ? 'tab-active' : '']"
         @click="selectTab(TOKEN_TABS.NFT_TAB)"
+        @keydown="selectTab(TOKEN_TABS.NFT_TAB)"
       >
         <img class="block h-4 w-auto" :src="NftLogo" alt="NFT Logo" />
         <p class="ml-2 text-sm">NFTs</p>
@@ -62,6 +65,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         class="tok-tab flex flex-row justify-center items-center"
         :class="[selectedTab === TOKEN_TABS.TOKEN_TAB ? 'tab-active' : '']"
         @click="selectTab(TOKEN_TABS.TOKEN_TAB)"
+        @keydown="selectTab(TOKEN_TABS.TOKEN_TAB)"
       >
         <img class="block h-4 w-auto" :src="SolTokenLogo" alt="NFT Logo" />
         <p class="ml-2 text-sm">Tokens</p>
