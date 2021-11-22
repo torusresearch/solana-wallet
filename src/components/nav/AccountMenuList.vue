@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/*
+ eslint-disable vuejs-accessibility/anchor-has-content
+*/
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
@@ -10,6 +13,7 @@ import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
+
 const props = defineProps<{
   user: OpenloginUserInfo;
   selectedAddress: string;

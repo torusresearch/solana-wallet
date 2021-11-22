@@ -141,7 +141,9 @@ const onEmailLogin = () => {
         :variant="isEmbed ? 'secondary' : 'tertiary'"
         :block="true"
         @click="login(LOGIN_PROVIDER.GOOGLE)"
+        @keydown="login(LOGIN_PROVIDER.GOOGLE)"
         @mouseover="hover(LOGIN_PROVIDER.GOOGLE)"
+        @focus="hover(LOGIN_PROVIDER.GOOGLE)"
       >
         <div v-if="isEmbed" class="w-12 h-12 absolute left-1 flex justify-center items-center rounded-md bg-white">
           <img class="w-6 h-6" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
@@ -161,7 +163,9 @@ const onEmailLogin = () => {
         :block="true"
         :title="loginButton.loginProvider"
         @click="login(loginButton.loginProvider)"
+        @keydown="login(loginButton.loginProvider)"
         @mouseover="hover(loginButton.loginProvider)"
+        @focus="hover(loginButton.loginProvider)"
       >
         <img
           v-if="activeButton === loginButton.loginProvider && !isEmbed"

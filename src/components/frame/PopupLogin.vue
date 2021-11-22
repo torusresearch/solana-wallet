@@ -60,6 +60,7 @@ const setActiveButton = (provider: string) => {
                 <div
                   class="w-8 h-8 absolute top-4 right-4 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
                   @click="closeModal"
+                  @keydown="closeModal"
                 >
                   <XIcon class="w-6 h-6 text-white text-opacity-70 hover:text-opacity-100" />
                 </div>

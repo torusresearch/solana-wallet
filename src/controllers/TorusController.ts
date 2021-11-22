@@ -1,3 +1,6 @@
+/* eslint-disable class-methods-use-this */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-underscore-dangle */
 import { Connection, LAMPORTS_PER_SOL, Message, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -376,6 +379,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         const res_json = await res.json();
         relayMap[value] = res_json.key;
         relayKeyHost[res_json.key] = this.config.RelayHost[value];
+        return undefined;
       } catch (e) {
         return { [value]: "" };
       }

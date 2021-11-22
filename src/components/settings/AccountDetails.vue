@@ -36,6 +36,7 @@ function copyPrivKey() {
       dark:text-app-text-dark-500
     "
     @click="openModal"
+    @keydown="openModal"
   >
     <KeyIcon class="w-5 h-5 mr-5" />
     <div class="font-body">Account Details</div>

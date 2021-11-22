@@ -5,12 +5,12 @@ import log from "loglevel";
 import config from "@/config";
 
 class OpenLoginFactory {
-  private static _instance: OpenLogin;
+  private static instance: OpenLogin;
 
   private static mutex = new Mutex();
 
   public static async getInstance(): Promise<OpenLogin> {
-    if (!OpenLoginFactory._instance) {
+    if (!OpenLoginFactory.instance) {
       const releaseLock = await this.mutex.acquire();
       try {
         const instance = new OpenLogin({
@@ -22,8 +22,8 @@ class OpenLoginFactory {
           uxMode: "redirect",
         });
         await instance.init();
-        // eslint-disable-next-line require-atomic-updates
-        OpenLoginFactory._instance = instance;
+
+        OpenLoginFactory.instance = instance;
       } catch (error) {
         log.error(error, "Unable to create openlogin instance");
         throw error;
@@ -31,7 +31,7 @@ class OpenLoginFactory {
         releaseLock();
       }
     }
-    return OpenLoginFactory._instance;
+    return OpenLoginFactory.instance;
   }
 }
 export default OpenLoginFactory;

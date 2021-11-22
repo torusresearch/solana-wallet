@@ -30,7 +30,7 @@ const asyncTokensAssetsBalance = defineAsyncComponent({
               <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">7 Nov 2021 @ Lisbon</div>
             </div>
             <div class="col-span-1 sol_logo">
-              <img class="float-right h-2/4 lt-sm:h-16 sol_logo_image" :src="SolanaMascot" />
+              <img class="float-right h-2/4 lt-sm:h-16 sol_logo_image" alt="Solana Mascot" :src="SolanaMascot" />
             </div>
           </div>
           <template #footer>
