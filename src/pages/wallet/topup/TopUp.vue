@@ -6,6 +6,7 @@ import { useRouter } from "vue-router";
 import WalletTabs from "@/components/WalletTabs.vue";
 import { RAMPNETWORK } from "@/utils/enums";
 import { TopupProvider, TopupProviders } from "@/utils/topup";
+
 const router = useRouter();
 
 const selectedProvider = ref<TopupProvider>();

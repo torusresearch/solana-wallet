@@ -109,7 +109,7 @@ export function getDomainFromUrl(url: string): string {
   return domain;
 }
 
-export const getRelaySigned = async (gaslessHost: string, signed_tx: string, blockhash: string): Promise<string> => {
+export const getRelaySigned = async (gaslessHost: string, signedTx: string, blockhash: string): Promise<string> => {
   log.info(gaslessHost);
   const resp = await fetch(gaslessHost, {
     headers: {
@@ -118,11 +118,11 @@ export const getRelaySigned = async (gaslessHost: string, signed_tx: string, blo
     },
     method: "POST",
     body: JSON.stringify({
-      transaction: signed_tx,
+      transaction: signedTx,
       recentBlockhash: blockhash,
     }),
   });
-  const res_json = await resp.json();
-  log.info(res_json);
-  return res_json.transaction;
+  const resJson = await resp.json();
+  log.info(resJson);
+  return resJson.transaction;
 };

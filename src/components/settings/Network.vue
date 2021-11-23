@@ -5,6 +5,7 @@ import { SelectField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
 import { WALLET_SUPPORTED_NETWORKS } from "../../utils/const";
+
 const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   const value = WALLET_SUPPORTED_NETWORKS[key as keyof typeof WALLET_SUPPORTED_NETWORKS];
   return {

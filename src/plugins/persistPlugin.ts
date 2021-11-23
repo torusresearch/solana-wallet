@@ -22,8 +22,8 @@ export default function installStorePlugin({
 }: {
   key: string;
   storage?: STORAGE_TYPE;
-  saveState?: (key: string, state: Record<string, unknown>, storage?: Storage) => void;
-  restoreState?: (key: string, storage?: Storage) => unknown;
+  saveState?: (key2: string, state: Record<string, unknown>, storage2?: Storage) => void;
+  restoreState?: (key2: string, storage2?: Storage) => unknown;
   filter?: (mutation: Payload) => boolean;
   moduleKey?: string;
 }): void {

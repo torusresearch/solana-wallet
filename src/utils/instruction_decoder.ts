@@ -175,17 +175,18 @@ const TokenInstructionLayout = bors.rustEnum([
 ]);
 
 function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDataType {
-  const decoded_data = TokenInstructionLayout.decode(instruction.data) as TokenInstructionLayoutType;
-  if ("initializeMint" in decoded_data) {
+  const decodedData = TokenInstructionLayout.decode(instruction.data) as TokenInstructionLayoutType;
+  if ("initializeMint" in decodedData) {
     const type = "initializeMint";
     const params = {
-      decimals: decoded_data.initializeMint.decimals,
+      decimals: decodedData.initializeMint.decimals,
       mint: instruction.keys[0].pubkey,
-      mintAuthority: decoded_data.initializeMint.mintAuthority,
-      freezeAuthority: decoded_data.initializeMint.freezeAuthority,
+      mintAuthority: decodedData.initializeMint.mintAuthority,
+      freezeAuthority: decodedData.initializeMint.freezeAuthority,
     };
     return { type, data: params };
-  } else if ("initializeAccount" in decoded_data) {
+  }
+  if ("initializeAccount" in decodedData) {
     const type = "initializeAccount";
     const params = {
       account: instruction.keys[0].pubkey,
@@ -193,59 +194,66 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
       owner: instruction.keys[2].pubkey,
     };
     return { type, data: params };
-  } else if ("transfer" in decoded_data) {
+  }
+  if ("transfer" in decodedData) {
     const type = "transfer";
     const params = {
       source: instruction.keys[0].pubkey,
       destination: instruction.keys[1].pubkey,
       owner: instruction.keys[2].pubkey,
-      amount: decoded_data.transfer.amount.toNumber(),
+      amount: decodedData.transfer.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("approve" in decoded_data) {
+  }
+  if ("approve" in decodedData) {
     const type = "approve";
     const params = {
       source: instruction.keys[0].pubkey,
       delegate: instruction.keys[1].pubkey,
       owner: instruction.keys[2].pubkey,
-      amount: decoded_data.approve.amount.toNumber(),
+      amount: decodedData.approve.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("revoke" in decoded_data) {
+  }
+  if ("revoke" in decodedData) {
     const type = "revoke";
     const params = {
       source: instruction.keys[0].pubkey,
       owner: instruction.keys[1].pubkey,
     };
     return { type, data: params };
-  } else if ("setAuthority" in decoded_data) {
+  }
+  if ("setAuthority" in decodedData) {
     const type = "setAuthority";
     const params = {
       target: instruction.keys[0].pubkey,
       currentAuthority: instruction.keys[1].pubkey,
-      newAuthority: decoded_data.setAuthority.newAuthority,
-      authorityType: decoded_data.setAuthority.authorityType,
+      newAuthority: decodedData.setAuthority.newAuthority,
+      authorityType: decodedData.setAuthority.authorityType,
     };
     return { type, data: params };
-  } else if ("mintTo" in decoded_data) {
+  }
+  if ("mintTo" in decodedData) {
     const type = "mintTo";
     const params = {
       mint: instruction.keys[0].pubkey,
       destination: instruction.keys[1].pubkey,
       mintAuthority: instruction.keys[2].pubkey,
-      amount: decoded_data.mintTo.amount.toNumber(),
+      amount: decodedData.mintTo.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("burn" in decoded_data) {
+  }
+  if ("burn" in decodedData) {
     const type = "burn";
     const params = {
       source: instruction.keys[0].pubkey,
       mint: instruction.keys[1].pubkey,
       owner: instruction.keys[2].pubkey,
-      amount: decoded_data.burn.amount.toNumber(),
+      amount: decodedData.burn.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("closeAccount" in decoded_data) {
+  }
+  if ("closeAccount" in decodedData) {
     const type = "closeAccount";
     const params = {
       source: instruction.keys[0].pubkey,
@@ -253,40 +261,44 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
       owner: instruction.keys[2].pubkey,
     };
     return { type, data: params };
-  } else if ("transferChecked" in decoded_data) {
+  }
+  if ("transferChecked" in decodedData) {
     const type = "transfer";
     const params = {
       source: instruction.keys[0].pubkey,
       destination: instruction.keys[2].pubkey,
       owner: instruction.keys[3].pubkey,
-      amount: decoded_data.transferChecked.amount.toNumber(),
+      amount: decodedData.transferChecked.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("approveChecked" in decoded_data) {
+  }
+  if ("approveChecked" in decodedData) {
     const type = "approve";
     const params = {
       source: instruction.keys[0].pubkey,
       delegate: instruction.keys[2].pubkey,
       owner: instruction.keys[3].pubkey,
-      amount: decoded_data.approveChecked.amount.toNumber(),
+      amount: decodedData.approveChecked.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("mintToChecked" in decoded_data) {
+  }
+  if ("mintToChecked" in decodedData) {
     const type = "mintTo";
     const params = {
       mint: instruction.keys[0].pubkey,
       destination: instruction.keys[1].pubkey,
       mintAuthority: instruction.keys[2].pubkey,
-      amount: decoded_data.mintToChecked.amount.toNumber(),
+      amount: decodedData.mintToChecked.amount.toNumber(),
     };
     return { type, data: params };
-  } else if ("burnChecked" in decoded_data) {
+  }
+  if ("burnChecked" in decodedData) {
     const type = "burn";
     const params = {
       source: instruction.keys[0].pubkey,
       mint: instruction.keys[1].pubkey,
       owner: instruction.keys[2].pubkey,
-      amount: decoded_data.burnChecked.amount.toNumber(),
+      amount: decodedData.burnChecked.amount.toNumber(),
     };
     return { type, data: params };
   }
@@ -297,9 +309,11 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
 export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {
   if (instruction.programId.equals(SystemProgram.programId)) {
     return decodeSystemInstruction(instruction);
-  } else if (instruction.programId.equals(StakeProgram.programId)) {
+  }
+  if (instruction.programId.equals(StakeProgram.programId)) {
     return decodeStakeInstruction(instruction);
-  } else if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
+  }
+  if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
     return decodeTokenInstruction(instruction);
   }
   return decodeUnknownInstruction(instruction);

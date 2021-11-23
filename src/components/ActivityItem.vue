@@ -42,6 +42,7 @@ const getTxStatusColor = (status: string): string => {
       gap-2
       cursor-pointer
     "
+    @keydown="toggleDetails(activity.blockExplorerUrl)"
     @click="toggleDetails(activity.blockExplorerUrl)"
   >
     <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0 flex items-center justify-start">

@@ -44,9 +44,9 @@ test("Settings Page Should render", async ({ context }) => {
   // **************DISPLAY CHANGES********
   // CHOOSE LIGHT
   await page.click("text=Light");
-  await expect(await (await page.$$(".dark")).length).toEqual(0);
+  await expect((await page.$$(".dark")).length).toEqual(0);
 
   // CHOOSE DARK
   await page.click("text=Dark");
-  await expect(await (await page.$$(".dark")).length).toEqual(1);
+  await expect((await page.$$(".dark")).length).toEqual(1);
 });
