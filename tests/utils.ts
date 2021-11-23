@@ -7,6 +7,10 @@ export function getDomain(): string {
   return `${process.env.TESTING_DOMAIN}`;
 }
 
+export function getBackendDomain(): string {
+  return `${process.env.BACKEND_DOMAIN}`;
+}
+
 export function wait(millSeconds = 1000) {
   return new Promise((resolve) => {
     setTimeout(() => {
