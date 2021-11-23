@@ -202,7 +202,7 @@ export type TransactionChannelDataType = {
 
 // export type SignMessageChannelDataType = Omit<TransactionChannelDataType, "message"> & {
 export type SignMessageChannelDataType = TransactionChannelDataType & {
-  data?: Uint8Array;
+  data?: string;
   display?: string;
 };
 
