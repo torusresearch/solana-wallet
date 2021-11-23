@@ -1,3 +1,6 @@
+/* eslint-disable class-methods-use-this */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-underscore-dangle */
 import { Connection, LAMPORTS_PER_SOL, Message, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
