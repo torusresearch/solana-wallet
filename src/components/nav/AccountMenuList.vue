@@ -3,7 +3,7 @@
  eslint-disable vuejs-accessibility/anchor-has-content
 */
 import { QrcodeIcon } from "@heroicons/vue/solid";
-import { OpenloginUserInfo } from "@toruslabs/openlogin";
+import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
@@ -15,7 +15,7 @@ import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
 const props = defineProps<{
-  user: OpenloginUserInfo;
+  user: UserInfo;
   selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
