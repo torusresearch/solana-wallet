@@ -9,6 +9,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
 import ControllersModule from "@/modules/controllers";
+
 const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(

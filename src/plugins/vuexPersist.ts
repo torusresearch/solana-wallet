@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import { merge } from "lodash-es";
 import log from "loglevel";
 import { MutationPayload, Payload, Plugin, Store } from "vuex";

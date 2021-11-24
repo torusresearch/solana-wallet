@@ -67,7 +67,7 @@ watch(selectedToken, () => {
               ]"
             >
               <div class="flex items-center">
-                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
+                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
                   <p>{{ item?.name }} ({{ item?.symbol }})</p>
                   <p class="text-app-gray-500">{{ item?.symbol === "SOL" ? "" : "SPL" }}</p></span

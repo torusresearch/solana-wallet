@@ -320,12 +320,12 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
   return decodeUnknownInstruction(instruction);
 };
 
-export const constructTokenData = (rawTransaction?: string, tokenMap?: SolanaToken[]): TokenTransferData | undefined => {
-  if (!tokenMap) return;
-  if (!rawTransaction) return;
+export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToken[] = []): TokenTransferData | {} => {
+  // if (!tokenMap) return;
+  // if (!rawTransaction) return;
 
   // reconstruct Transaction as transaction object function is not accessible
-  const tx = Transaction.from(Buffer.from(rawTransaction, "hex"));
+  const tx = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
   const { instructions } = tx;
 
   // Expect SPL token transfer transaction have only 1 instruction
@@ -343,19 +343,19 @@ export const constructTokenData = (rawTransaction?: string, tokenMap?: SolanaTok
           tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === from);
 
         // if tokenState (info) not found, assume unknown transaction
-        if (!tokenState) return;
+        // if (!tokenState) return;
         // const mintAddress = new PublicKey(tokenState.mintAddress).toBase58();
         // const token = getTokenData(mintAddress);
         // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
         return {
-          tokenName: tokenState.data?.symbol as string | "unknown",
+          tokenName: tokenState?.data?.symbol as string | "unknown",
           amount: decoded.data.amount as number,
-          decimals: tokenState.data?.decimals as number,
+          decimals: tokenState?.data?.decimals as number,
           from: new PublicKey(decoded.data.owner || "").toBase58(),
           to,
-          mintAddress: tokenState.data.address,
-          logoURI: tokenState.data?.logoURI as string,
-          conversionRate: tokenState.price || {},
+          mintAddress: tokenState?.data.address || "",
+          logoURI: tokenState?.data?.logoURI as string,
+          conversionRate: tokenState?.price || {},
         };
       }
     }
