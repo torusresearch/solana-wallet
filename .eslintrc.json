@@ -21,7 +21,6 @@
     "@typescript-eslint/quotes": [2, "double"],
     "no-console": 2,
     "@typescript-eslint/comma-dangle": 0,
-    "@typescript-eslint/no-shadow": ["warn"],
     "prettier/prettier": [
       2,
       {
@@ -30,7 +29,9 @@
         "semi": true,
         "trailingComma": "es5"
       }
-    ]
+    ],
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"]
   },
   "settings": {
     "import/resolver": {

@@ -4,32 +4,27 @@ import { computed, onMounted, ref } from "vue";
 
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
-import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 
-const TOKEN_TABS = {
-  NFT_TAB: "NFT_TAB",
-  TOKEN_TAB: "TOKEN_TAB",
-} as const;
+const enum TOKEN_TAB_TYPES {
+  NFT_TAB = "NFT_TAB",
+  TOKEN_TAB = "TOKEN_TAB",
+}
 
-export type TOKEN_TABS_TYPE = typeof TOKEN_TABS[keyof typeof TOKEN_TABS];
-
-const selectedTab = ref<TOKEN_TABS_TYPE>(TOKEN_TABS.TOKEN_TAB);
+const selectedTab = ref<TOKEN_TAB_TYPES>(TOKEN_TAB_TYPES.TOKEN_TAB);
 const publicKey = computed(() => ControllerModule.torus.selectedAddress);
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 const tokens = computed<SolanaToken[]>(() => ControllerModule.torus.tokens?.[publicKey.value]);
 
-function selectTab(tab: TOKEN_TABS_TYPE) {
-  if (tab !== TOKEN_TABS.TOKEN_TAB) {
-    addToast({ message: "Feature under development", type: "error" });
-    // for now only supporting the TOKEN tabs, not NFTs
-    return;
-  }
+function selectTab(tab: TOKEN_TAB_TYPES) {
   selectedTab.value = tab;
 }
 
+function filteredTokens(isFungible = true) {
+  return tokens?.value?.filter((val) => val.isFungible === isFungible) || [];
+}
 onMounted(() => {
-  selectTab(TOKEN_TABS.TOKEN_TAB);
+  selectTab(TOKEN_TAB_TYPES.TOKEN_TAB);
 });
 
 // depending on the totalItems we'd like to have dynamic column count in grid
@@ -54,18 +49,18 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
     <div class="tab-group-container flex flex-row justify-center items-start w-full">
       <div
         class="tok-tab flex flex-row justify-center items-center"
-        :class="[selectedTab === TOKEN_TABS.NFT_TAB ? 'tab-active' : '']"
-        @click="selectTab(TOKEN_TABS.NFT_TAB)"
-        @keydown="selectTab(TOKEN_TABS.NFT_TAB)"
+        :class="[selectedTab === TOKEN_TAB_TYPES.NFT_TAB ? 'tab-active' : '']"
+        @click="selectTab(TOKEN_TAB_TYPES.NFT_TAB)"
+        @keydown="selectTab(TOKEN_TAB_TYPES.NFT_TAB)"
       >
         <img class="block h-4 w-auto" :src="NftLogo" alt="NFT Logo" />
         <p class="ml-2 text-sm">NFTs</p>
       </div>
       <div
         class="tok-tab flex flex-row justify-center items-center"
-        :class="[selectedTab === TOKEN_TABS.TOKEN_TAB ? 'tab-active' : '']"
-        @click="selectTab(TOKEN_TABS.TOKEN_TAB)"
-        @keydown="selectTab(TOKEN_TABS.TOKEN_TAB)"
+        :class="[selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB ? 'tab-active' : '']"
+        @click="selectTab(TOKEN_TAB_TYPES.TOKEN_TAB)"
+        @keydown="selectTab(TOKEN_TAB_TYPES.TOKEN_TAB)"
       >
         <img class="block h-4 w-auto" :src="SolTokenLogo" alt="NFT Logo" />
         <p class="ml-2 text-sm">Tokens</p>
@@ -73,11 +68,11 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
     </div>
     <div class="tab-info w-full">
       <div
-        v-if="selectedTab === TOKEN_TABS.TOKEN_TAB && tokens?.length"
+        v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB && filteredTokens(true)?.length"
         class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
       >
         <div
-          v-for="token in tokens"
+          v-for="token in filteredTokens(true)"
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
@@ -98,7 +93,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
                 <img class="block h-5 w-auto" :src="token.data.logoURI" alt="TOKEN Logo" />
-                <p class="coin-name">{{ token.data.name }}</p></span
+                <p class="token-name">{{ token.data.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
                 <p class="coin-value">{{ token.balance?.uiAmountStrings }}</p>
@@ -112,6 +107,36 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
                 {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB && filteredTokens(false)?.length"
+        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
+      >
+        <div
+          v-for="token in filteredTokens(false)"
+          :key="token.tokenAddress.toString()"
+          :class="getResponsiveClasses()"
+          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
+        >
+          <div
+            class="
+              nft-item
+              shadow
+              dark:shadow-dark
+              flex flex-col
+              justify-start
+              align-start
+              w-100
+              border-solid border-app-gray-200
+              dark:border-transparent
+            "
+          >
+            <img :src="token.data.uriMetaData.image" class="nft-face" alt="NFT LOGO" />
+            <p class="token-name">{{ token.data.uriMetaData.name }} ({{ token.data.uriMetaData.symbol }})</p>
+            <p class="token-footer">{{ token.data.uriMetaData.description }}</p>
           </div>
         </div>
       </div>
@@ -139,7 +164,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   color: #a2a5b5;
 }
 
-.dark .coin-name,
+.dark .token-name,
 .dark .coin-value,
 .dark .coin-currency {
   color: #d3d5e2 !important;
@@ -157,11 +182,18 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   margin: auto;
   overflow: hidden;
 }
-.coin-name {
+.nft-item {
+  max-width: 320px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  margin: auto;
+  overflow: hidden;
+}
+.token-name {
   font-weight: bold;
   font-size: 12px;
   line-height: 14px;
-  margin-left: 4px;
+  margin-top: 4px;
 }
 .coin-value {
   margin-right: 4px;
@@ -193,5 +225,10 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 }
 .dark .token-footer {
   background: #2d2f34;
+}
+
+.nft-face {
+  height: 180px;
+  object-fit: cover;
 }
 </style>
