@@ -5,14 +5,14 @@ import log from "loglevel";
 import config from "@/config";
 
 class OpenLoginFactory {
-  private static _instance: OpenLogin;
+  private static instance: OpenLogin;
 
   private static mutex = new Mutex();
 
   public static async getInstance(): Promise<OpenLogin> {
-    if (!OpenLoginFactory._instance) {
-      const releaseLock = await this.mutex.acquire();
-      try {
+    const releaseLock = await this.mutex.acquire();
+    try {
+      if (!OpenLoginFactory.instance) {
         const instance = new OpenLogin({
           clientId: config.openLoginClientId,
           network: config.torusNetwork,
@@ -22,16 +22,17 @@ class OpenLoginFactory {
           uxMode: "redirect",
         });
         await instance.init();
+
         // eslint-disable-next-line require-atomic-updates
-        OpenLoginFactory._instance = instance;
-      } catch (error) {
-        log.error(error, "Unable to create openlogin instance");
-        throw error;
-      } finally {
-        releaseLock();
+        OpenLoginFactory.instance = instance;
       }
+    } catch (error) {
+      log.error(error, "Unable to create openlogin instance");
+      throw error;
+    } finally {
+      releaseLock();
     }
-    return OpenLoginFactory._instance;
+    return OpenLoginFactory.instance;
   }
 }
 export default OpenLoginFactory;

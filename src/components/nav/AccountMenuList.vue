@@ -10,6 +10,7 @@ import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
+
 const props = defineProps<{
   user: OpenloginUserInfo;
   selectedAddress: string;

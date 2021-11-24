@@ -21,7 +21,7 @@ watch(selectedToken, () => {
     <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
-          <img :src="selectedToken.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" />
+          <img :src="selectedToken.iconURL" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedToken.name }}
           </span>
@@ -53,7 +53,7 @@ watch(selectedToken, () => {
             sm:text-sm
           "
         >
-          <ListboxOption :key="tokens" as="template" :value="null" :disabled="true">
+          <ListboxOption :key="'tokenstring'" as="template" :value="null" :disabled="true">
             <li class="option-separator">
               <img class="block h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
               <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">TOKENS</p>

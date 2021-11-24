@@ -86,7 +86,8 @@ export default class VuexPersistence<S> {
     this.store = null;
   }
 
-  public addModule(moduleOptions: ModulePersistOptions<S>): void {
+  public addModule(options: ModulePersistOptions<S>): void {
+    const moduleOptions = { ...options };
     if (!this.store) throw new Error("Install the plugin first");
     if (this.modules[moduleOptions.moduleName]) throw new Error("Module already installed");
     log.info("registering module", moduleOptions.moduleName);
