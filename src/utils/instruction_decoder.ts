@@ -320,9 +320,9 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
   return decodeUnknownInstruction(instruction);
 };
 
-export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToken[] = []): TokenTransferData | {} => {
-  // if (!tokenMap) return;
-  // if (!rawTransaction) return;
+export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToken[] = []): TokenTransferData | undefined => {
+  if (!tokenMap) return undefined;
+  if (!rawTransaction) return undefined;
 
   // reconstruct Transaction as transaction object function is not accessible
   const tx = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
@@ -343,7 +343,7 @@ export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToke
           tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === from);
 
         // if tokenState (info) not found, assume unknown transaction
-        // if (!tokenState) return;
+        if (!tokenState) return undefined;
         // const mintAddress = new PublicKey(tokenState.mintAddress).toBase58();
         // const token = getTokenData(mintAddress);
         // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
@@ -360,4 +360,5 @@ export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToke
       }
     }
   }
+  return undefined;
 };
