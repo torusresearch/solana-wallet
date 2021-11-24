@@ -105,9 +105,6 @@
     "typescript": "^4.5.2",
     "workbox-webpack-plugin": "^6.4.1"
   },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
   "engines": {
     "node": ">=14.17.0",
     "npm": ">=6.x",
