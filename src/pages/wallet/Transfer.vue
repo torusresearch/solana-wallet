@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
-import { helpers, minValue, required } from "@vuelidate/validators";
+import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, defineAsyncComponent, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
+// import MessageModal from "@/components/common/MessageModal.vue";
 import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
+// import TransferConfirm from "@/components/transfer/TransferConfirm.vue";
+// import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
+// import WalletBalance from "@/components/WalletBalance.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_SUCCESS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { ruleVerifierId } from "@/utils/helpers";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
+import { delay, ruleVerifierId } from "@/utils/helpers";
+
 // const ensError = ref("");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
@@ -21,19 +26,19 @@ const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
-
+const transferDisabled = ref(true);
+const transferConfirmed = ref(false);
 const router = useRouter();
-const asyncWalletBalance = defineAsyncComponent({
+const AsyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
 });
-
-const asyncTransferConfirm = defineAsyncComponent({
+const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
 });
-const asyncTransferTokenSelect = defineAsyncComponent({
+const AsyncTransferTokenSelect = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferTokenSelect" */ "@/components/transfer/TransferTokenSelect.vue"),
 });
-const asyncMessageModal = defineAsyncComponent({
+const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
 
@@ -58,6 +63,10 @@ const getErrorMessage = () => {
   return ALLOWED_VERIFIERS_ERRORS[selectedType];
 };
 
+const getTokenBalance = () => {
+  if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllersModule.solBalance);
+  return selectedToken.value.balance?.uiAmount || 0;
+};
 const rules = computed(() => {
   return {
     transferTo: {
@@ -65,7 +74,10 @@ const rules = computed(() => {
       // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage("Required", required),
     },
-    sendAmount: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(0)) },
+    sendAmount: {
+      greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),
+      lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
+    },
     // transferId: { required },
     // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
@@ -86,6 +98,9 @@ const onMessageModalClosed = () => {
   messageModalState.messageDescription = "";
   messageModalState.messageTitle = "";
   messageModalState.messageStatus = STATUS_INFO;
+  if (transferConfirmed.value) {
+    router.push("/wallet/activity");
+  }
 };
 
 const closeModal = () => {
@@ -99,28 +114,22 @@ const openModal = async () => {
   const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
   blockhash.value = b_hash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
+  transferDisabled.value = false;
 };
+
 const confirmTransfer = async () => {
-  if (selectedToken?.value?.mintAddress) {
-    // SPL TRANSFER
-    try {
-      showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+  // Delay needed for the messagemodel
+  await delay(500);
+  try {
+    if (selectedToken?.value?.mintAddress) {
+      // SPL TRANSFER
       await ControllersModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken?.value?.mintAddress.toString()
       );
-      showMessageModal({ messageTitle: "Your transfer is complete.", messageStatus: STATUS_SUCCESS });
-      router.push("/wallet/activity");
-    } catch (e) {
-      showMessageModal({
-        messageTitle: `Fail to submit transaction: ${(e as Error)?.message || "Something went wrong"}`,
-        messageStatus: STATUS_ERROR,
-      });
-    }
-  } else {
-    try {
-      showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+    } else {
+      // SOL TRANSFER
       const ti = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllersModule.selectedAddress),
         toPubkey: new PublicKey(transferTo.value),
@@ -130,20 +139,15 @@ const confirmTransfer = async () => {
       const res = await ControllersModule.torus.transfer(tf);
       // const res = await ControllersModule.torus.providertransfer(tf);
       log.info(res);
-
-      showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
-      router.push("/wallet/activity");
-
-      // resetForm();
-    } catch (error) {
-      // log.error("send error", error);
-      setTimeout(() => {
-        showMessageModal({
-          messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
-          messageStatus: STATUS_ERROR,
-        });
-      }, 500);
     }
+    // resetForm();
+    transferConfirmed.value = true;
+    showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+  } catch (error) {
+    showMessageModal({
+      messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
+      messageStatus: STATUS_ERROR,
+    });
   }
 };
 
@@ -159,7 +163,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
         <Card class="order-2 sm:order-1">
           <form action="#" method="POST">
             <div>
-              <asyncTransferTokenSelect class="mb-6" @update:selected-token="updateSelectedToken($event)" />
+              <AsyncTransferTokenSelect class="mb-6" @update:selected-token="updateSelectedToken($event)" />
               <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="col-span-3 sm:col-span-2">
                   <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
@@ -176,7 +180,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                 <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
                 <!-- :crypto-tx-fee="state.transactionFee" -->
                 <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
-                <asyncTransferConfirm
+                <AsyncTransferConfirm
                   :sender-pub-key="ControllersModule.selectedAddress"
                   :receiver-pub-key="transferTo"
                   :crypto-amount="sendAmount"
@@ -186,6 +190,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                   :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                   :token="selectedToken"
                   :crypto-tx-fee="transactionFee"
+                  :transfer-disabled="transferDisabled"
                   @transfer-confirm="confirmTransfer"
                   @on-close-modal="closeModal"
                 />
@@ -193,9 +198,9 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
             </div>
           </form>
         </Card>
-        <asyncWalletBalance class="self-start order-1 sm:order-2" />
+        <AsyncWalletBalance class="self-start order-1 sm:order-2" />
       </dl>
-      <asyncMessageModal
+      <AsyncMessageModal
         :is-open="messageModalState.showMessage"
         :title="messageModalState.messageTitle"
         :description="messageModalState.messageDescription"

@@ -61,8 +61,8 @@ const onCancel = () => {
 };
 
 const onConfirm = () => {
-  emits("transferConfirm");
   closeModal();
+  emits("transferConfirm");
 };
 
 const cryptoAmountString = computed(() => {
@@ -204,7 +204,7 @@ const totalFiatCostString = computed(() => {
 
               <div class="grid grid-cols-2 gap-3 m-6">
                 <div><Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">Cancel</Button></div>
-                <div><Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">Confirm</Button></div>
+                <div><Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">Confirm</Button></div>
               </div>
             </div>
           </TransitionChild>
