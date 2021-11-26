@@ -34,7 +34,7 @@ const updateCurrency = (newCurrency: string) => {
       </div>
       <div class="ml-auto font-body uppercase text-xs self-end text-app-text-400 dark:text-app-text-dark-600">
         1 {{ token }} =
-        <span id="conversion_rate">{{ conversionRate }}</span>
+        <span id="conversionRate">{{ conversionRate }}</span>
         {{ currency }}
       </div>
     </div>

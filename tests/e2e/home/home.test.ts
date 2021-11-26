@@ -29,17 +29,17 @@ test("Home Page Should render", async ({ context }) => {
   await wait(4000);
 
   // ENSURE On selecting EUR as currency, conversion rate has a positive value
-  await page.click("#currency_selector");
+  await page.click("#currencySelector");
   await page.click("li[role='option']:has-text('EUR')");
   await wait(1000);
-  const eurRate = Number(await getInnerText(page, "#conversion_rate"));
+  const eurRate = Number(await getInnerText(page, "#conversionRate"));
   expect(eurRate).toBeGreaterThan(0);
 
   // ENSURE On selecting USD as currency, conversion rate has a positive value
-  await page.click("#currency_selector");
+  await page.click("#currencySelector");
   await page.click("li[role='option']:has-text('USD')");
   await wait(1000);
-  const usdRate = Number(await getInnerText(page, "#conversion_rate"));
+  const usdRate = Number(await getInnerText(page, "#conversionRate"));
   expect(usdRate).toBeGreaterThan(0);
 
   // ENSURE the rate of EUR and USD are different, means the system working correctly

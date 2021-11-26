@@ -38,7 +38,7 @@ test.describe("Transfer page", async () => {
     await Promise.all([page.click("text=Settings"), wait(1500)]);
 
     // Switch network to solana testnet
-    await page.click("#network_select");
+    await page.click("#networkSelect");
     await page.click("ul[role='listbox'] div:has-text('Solana Testnet')");
 
     // Click transfer tab

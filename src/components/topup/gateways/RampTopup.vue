@@ -133,7 +133,7 @@ onMounted(() => {
         <div v-if="!isLoadingQuote" class="flex flex-col items-end mb-5">
           <div class="text-app-text-600 dark:text-app-text-dark-500">You receive</div>
           <div class="text-2xl font-bold text-app-text-600 dark:text-app-text-dark-500">
-            <span id="res_crypto_amt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
+            <span id="resCryptoAmt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
           </div>
           <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">
             Rate: 1 {{ selectedCryptocurrency.value }} = {{ cryptoCurrencyRate }} {{ selectedCurrency.value }}

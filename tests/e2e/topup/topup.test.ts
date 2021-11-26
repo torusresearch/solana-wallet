@@ -19,13 +19,13 @@ test("Popup Page Should render", async ({ context }) => {
   // set amount to be transfered as 100 US Dollars, expect a positive value for expected SOL
   await page.click("img[alt=Ramp]");
   await page.fill("input[type='number']", "100");
-  const usdToSol100 = Number(await getInnerText(page, "#res_crypto_amt"));
+  const usdToSol100 = Number(await getInnerText(page, "#resCryptoAmt"));
   expect(usdToSol100).toBeGreaterThan(0);
   await wait(2000);
 
   // set amount to be transfered as 200 US Dollars, expect a positive value for expected SOL
   await page.fill("input[type='number']", "200");
-  const usdToSol200 = Number(await getInnerText(page, "#res_crypto_amt"));
+  const usdToSol200 = Number(await getInnerText(page, "#resCryptoAmt"));
   expect(usdToSol200).toBeGreaterThan(0);
 
   // ensure that on clicking save, it is refirected to Ramp Payment page having torus logo

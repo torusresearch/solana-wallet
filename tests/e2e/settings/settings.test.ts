@@ -21,21 +21,21 @@ test("Settings Page Should render", async ({ context }) => {
 
   // **************NETWORK CHANGES********
   // NETWORK CHANGES TESTING : MAINNET
-  await page.click("#network_select");
+  await page.click("#networkSelect");
   await page.click("ul[role='listbox'] div:has-text('Solana Mainnet')");
   await page.click("text=Home");
   await ensureTextualElementExists(page, "Solana Mainnet");
   await page.click("text=settings");
 
   // NETWORK CHANGES TESTING : TESTNET
-  await page.click("#network_select");
+  await page.click("#networkSelect");
   await page.click("ul[role='listbox'] div:has-text('Solana Testnet')");
   await page.click("text=Home");
   await ensureTextualElementExists(page, "Solana Testnet");
   await page.click("text=settings");
 
   // NETWORK CHANGES TESTING : DEVNET
-  await page.click("#network_select");
+  await page.click("#networkSelect");
   await page.click("ul[role='listbox'] div:has-text('Solana Devnet')");
   await page.click("text=Home");
   await ensureTextualElementExists(page, "Solana Devnet");

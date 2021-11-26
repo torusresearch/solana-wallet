@@ -22,7 +22,7 @@ const value = computed({
 </script>
 
 <template>
-  <div id="currency_selector" class="relative">
+  <div id="currencySelector" class="relative">
     <div class="relative">
       <Listbox v-model="value" as="div" class="w-16">
         <ListboxButton class="flex currencies-center">
