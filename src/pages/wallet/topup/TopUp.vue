@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllersModule from "@/modules/controllers";
 import { RAMPNETWORK } from "@/utils/enums";
 import { TopupProvider, TopupProviders } from "@/utils/topup";
 
@@ -11,13 +12,19 @@ const router = useRouter();
 
 const selectedProvider = ref<TopupProvider>();
 const providers = Object.values(TopupProviders);
+let logoutTimeout: unknown;
 onMounted(() => {
   selectedProvider.value = TopupProviders[RAMPNETWORK];
   const routeName = router.currentRoute.value.name;
+  logoutTimeout = ControllersModule.initJWTCheck();
   if (routeName === "walletTopup") {
     // no gateway is selected, navigate to first one
     router.push({ name: "rampNetwork" });
   }
+});
+
+onUnmounted(() => {
+  if (logoutTimeout) clearTimeout(logoutTimeout as number);
 });
 </script>
 

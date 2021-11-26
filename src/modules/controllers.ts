@@ -23,6 +23,7 @@ import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
+import jwt_decode from "jwt-decode";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -37,6 +38,12 @@ import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
 import { addToast } from "./app";
+
+interface JwtToken {
+  public_address: string;
+  exp: number;
+  iat: number;
+}
 
 @Module({
   name: CONTROLLER_MODULE_KEY,
@@ -233,6 +240,18 @@ class ControllerModule extends VuexModule {
       });
       popupStoreChannel.setupStoreChannels();
     }
+  }
+
+  @Action
+  public initJWTCheck(): NodeJS.Timeout | null {
+    let decodedToken: JwtToken;
+    if (this.selectedAccountPreferences?.jwtToken) {
+      decodedToken = jwt_decode<JwtToken>(this.selectedAccountPreferences.jwtToken);
+      return setTimeout(() => {
+        this.logout();
+      }, decodedToken.exp * 1000 - Date.now());
+    }
+    return null;
   }
 
   @Action

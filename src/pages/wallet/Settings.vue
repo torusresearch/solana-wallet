@@ -2,10 +2,20 @@
 import { GlobeIcon, OptionsIcon } from "@toruslabs/vue-icons/basic";
 import { MonitorIcon } from "@toruslabs/vue-icons/gadgets";
 import { LockIcon } from "@toruslabs/vue-icons/security";
+import { onMounted, onUnmounted } from "vue";
 
 import { Panel } from "@/components/common";
 import { AccountDetails, CrashReporting, Display, Network } from "@/components/settings";
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllersModule from "@/modules/controllers";
+
+let logoutTimeout: unknown;
+onMounted(() => {
+  logoutTimeout = ControllersModule.initJWTCheck();
+});
+onUnmounted(() => {
+  if (logoutTimeout) clearTimeout(logoutTimeout as number);
+});
 </script>
 
 <template>

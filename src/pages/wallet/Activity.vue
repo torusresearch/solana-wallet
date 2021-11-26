@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import ActivityItem from "@/components/ActivityItem.vue";
 import { SelectField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
+
+let logoutTimeout: unknown;
+onMounted(() => {
+  logoutTimeout = ControllersModule.initJWTCheck();
+});
+onUnmounted(() => {
+  if (logoutTimeout) clearTimeout(logoutTimeout as number);
+});
 
 const ACTIVITY_ACTION_ALL = "walletActivity.allTransactions";
 const ACTIVITY_ACTION_SEND = "walletActivity.send";

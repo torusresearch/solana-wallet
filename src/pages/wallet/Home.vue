@@ -1,9 +1,18 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, onMounted, onUnmounted } from "vue";
 
 import SolanaMascot from "@/assets/solana-mascot.svg";
 import { Button, Card } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllersModule from "@/modules/controllers";
+
+let logoutTimeout: unknown;
+onMounted(() => {
+  logoutTimeout = ControllersModule.initJWTCheck();
+});
+onUnmounted(() => {
+  if (logoutTimeout) clearTimeout(logoutTimeout as number);
+});
 
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),

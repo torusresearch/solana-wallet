@@ -3,7 +3,7 @@ import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, defineAsyncComponent, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
@@ -11,6 +11,15 @@ import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
+
+let logoutTimeout: unknown;
+onMounted(() => {
+  logoutTimeout = ControllersModule.initJWTCheck();
+});
+onUnmounted(() => {
+  if (logoutTimeout) clearTimeout(logoutTimeout as number);
+});
+
 // const ensError = ref("");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
