@@ -321,12 +321,10 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
 };
 
 export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToken[] = []): TokenTransferData | undefined => {
-  if (!tokenMap) return undefined;
-  if (!rawTransaction) return undefined;
+  if (!tokenMap || !rawTransaction) return undefined;
 
   // reconstruct Transaction as transaction object function is not accessible
-  const tx = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
-  const { instructions } = tx;
+  const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
 
   // Expect SPL token transfer transaction have only 1 instruction
   if (instructions.length === 1) {

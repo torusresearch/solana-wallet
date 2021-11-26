@@ -65,6 +65,7 @@ const onConfirm = () => {
   emits("transferConfirm");
 };
 
+// Amount to send
 const cryptoAmountString = computed(() => {
   return `${props.cryptoAmount} ${props.tokenSymbol}`;
 });
@@ -74,9 +75,13 @@ const fiatAmountString = computed(() => {
   return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
 });
 
-const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+// Total cost
+const totalFiatCostString = computed(() => {
+  const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
+  const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
+  return `${totalFee.toString(10)} ${currency.value}`;
 });
+
 const totalCryptoCostString = computed(() => {
   if (isSPLToken()) {
     return `${props.cryptoAmount} ${props.tokenSymbol} + ${props.cryptoTxFee} SOL`;
@@ -85,10 +90,9 @@ const totalCryptoCostString = computed(() => {
   return `${totalCost.toString(10)} ${props.tokenSymbol}`;
 });
 
-const totalFiatCostString = computed(() => {
-  const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
-  const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
-  return `${totalFee.toString(10)} ${currency.value}`;
+// Transaction fee
+const fiatTxFeeString = computed(() => {
+  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 </script>
 <template>

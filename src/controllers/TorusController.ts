@@ -356,10 +356,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ TransactionControllerState: state2 });
       Object.keys(state2.transactions).forEach((txId) => {
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
+          // Check if token transfer
           const tokenTransfer = constructTokenData(
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
+
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
             log.error("error while patching a new tx", err);
           });

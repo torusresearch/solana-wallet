@@ -118,7 +118,7 @@ const openModal = async () => {
 };
 
 const confirmTransfer = async () => {
-  // Delay needed for the messagemodel
+  // Delay needed for the message modal
   await delay(500);
   try {
     if (selectedToken?.value?.mintAddress) {
@@ -130,14 +130,13 @@ const confirmTransfer = async () => {
       );
     } else {
       // SOL TRANSFER
-      const ti = SystemProgram.transfer({
+      const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllersModule.selectedAddress),
         toPubkey: new PublicKey(transferTo.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
-      const tf = new Transaction({ recentBlockhash: blockhash.value }).add(ti);
-      const res = await ControllersModule.torus.transfer(tf);
-      // const res = await ControllersModule.torus.providertransfer(tf);
+      const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
+      const res = await ControllersModule.torus.transfer(tx);
       log.info(res);
     }
     // resetForm();
