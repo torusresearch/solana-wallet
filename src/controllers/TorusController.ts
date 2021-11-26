@@ -58,6 +58,7 @@ import {
   NetworkController,
   PreferencesController,
   SolanaToken,
+  TokenInfoController,
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
@@ -138,6 +139,8 @@ export const DEFAULT_STATE = {
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
+
+  private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
 
@@ -250,6 +253,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
     this.initializeCommunicationProvider();
 
+    this.tokenInfoController = new TokenInfoController({
+      state: {
+        tokenInfoMap: {},
+      },
+    });
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -272,6 +280,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
     });
 
     this.accountTracker = new AccountTrackerController({
@@ -297,6 +306,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       provider: this.networkController._providerProxy,
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
+      getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
