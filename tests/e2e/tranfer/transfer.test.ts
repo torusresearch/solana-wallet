@@ -61,8 +61,8 @@ test.describe("Transfer page", async () => {
     await wait(8000);
 
     // see that the transaction is success and the amount transferred is same as intended
-    const successMessages = (await page2.$$(".badge-soft-success")).map((el) => el.innerText());
-    expect((await successMessages[0]).includes("Success")).toBeTruthy();
-    expect((await successMessages[1]).includes(transferAmount)).toBeTruthy();
+    const successMessages = await Promise.all((await page2.$$(".badge-soft-success")).map((el) => el.innerText()));
+    expect(successMessages[0].includes("Success")).toBeTruthy();
+    expect(successMessages[1].includes(transferAmount)).toBeTruthy();
   });
 });
