@@ -30,5 +30,5 @@ test("Popup Page Should render", async ({ context }) => {
 
   // ensure that on clicking save, it is refirected to Ramp Payment page having torus logo
   await Promise.all([page.waitForEvent("popup"), page.click("text=Save")]);
-  await expect(await (await page.$$("img[alt=Ramp]")).length).toEqual(1);
+  await expect((await page.$$("img[alt=Ramp]")).length).toEqual(1);
 });

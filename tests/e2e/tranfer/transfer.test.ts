@@ -22,14 +22,14 @@ test.describe("Transfer page", async () => {
     await page.fill("input[type='text']", "asdasdasdasdasdasd");
     await page.fill("input[type='number']", "1");
     await page.click("button:has-text('Transfer')");
-    await expect(await (await page.$$("text=Invalid SOL Address")).length).toEqual(1);
+    await expect((await page.$$("text=Invalid SOL Address")).length).toEqual(1);
 
     // if address is a valid sol address, should show popup
     await page.fill("input[type='text']", "5YQHtZcg8EQo3rjVL2PmFwFix1x8i3PjDsyuW6kkQ9rF");
     await page.fill("input[type='number']", "1");
     await page.click("button:has-text('Transfer')");
     await wait(1000);
-    await expect(await (await page.$$("text=Total Cost")).length).toEqual(1);
+    await expect((await page.$$("text=Total Cost")).length).toEqual(1);
     page.click("button:has-text('Cancel')");
   });
   test("Transaction should happen correctly", async () => {
@@ -58,7 +58,7 @@ test.describe("Transfer page", async () => {
 
     // click on the first transaction, which takes to the sol explorer
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await wait(5000);
+    await wait(8000);
 
     // see that the transaction is success and the amount transferred is same as intended
     const successMessages = (await page2.$$(".badge-soft-success")).map((el) => el.innerText());
