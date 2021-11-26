@@ -28,20 +28,7 @@ const getTxStatusColor = (status: string): string => {
 </script>
 <template>
   <div
-    class="
-      w-full
-      bg-white
-      dark:bg-app-gray-700
-      border border-app-gray-400
-      dark:border-transparent
-      shadow
-      dark:shadow-dark
-      rounded-md
-      p-4
-      grid grid-cols-12
-      gap-2
-      cursor-pointer
-    "
+    class="w-full bg-white dark:bg-app-gray-700 border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark rounded-md p-4 grid grid-cols-12 gap-2 cursor-pointer"
     @keydown="toggleDetails(activity.blockExplorerUrl)"
     @click="toggleDetails(activity.blockExplorerUrl)"
   >
@@ -55,8 +42,7 @@ const getTxStatusColor = (status: string): string => {
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
       <div class="flex">
         <div class="flex items-center justify-center logo-container">
-          <!-- <img class="block h-7 w-auto" :src="ControllersModule.isDarkMode ? CasperLightLogoURL : CasperLogoURL" alt="Casper Logo" /> -->
-          <img class="block h-7 w-auto" :src="SolanaLogoURL" alt="Casper Logo" />
+          <img class="block h-7 w-auto" :src="SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
           <div v-if="activity.type === 'transfer'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">

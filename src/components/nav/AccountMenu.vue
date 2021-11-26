@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItems } from "@headlessui/vue";
-import { OpenloginUserInfo } from "@toruslabs/openlogin";
+import { UserInfo } from "@toruslabs/base-controllers";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 
 defineProps<{
-  user: OpenloginUserInfo;
+  user: UserInfo;
 }>();
 </script>
 
@@ -28,21 +28,7 @@ defineProps<{
       leave-to-class="transform opacity-0 scale-95"
     >
       <MenuItems
-        class="
-          origin-top-right
-          absolute
-          right-0
-          mt-2
-          w-96
-          rounded-md
-          shadow-lg
-          dark:shadow-dark
-          py-1
-          bg-white
-          dark:bg-app-gray-700
-          ring-1 ring-black ring-opacity-5
-          focus:outline-none
-        "
+        class="origin-top-right absolute right-0 mt-2 w-96 rounded-md shadow-lg dark:shadow-dark py-1 bg-white dark:bg-app-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none"
         ><slot />
       </MenuItems>
     </transition>

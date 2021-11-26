@@ -3,7 +3,7 @@
  eslint-disable vuejs-accessibility/anchor-has-content
 */
 import { QrcodeIcon } from "@heroicons/vue/solid";
-import { OpenloginUserInfo } from "@toruslabs/openlogin";
+import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
@@ -15,7 +15,7 @@ import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
 const props = defineProps<{
-  user: OpenloginUserInfo;
+  user: UserInfo;
   selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
@@ -102,20 +102,7 @@ const copySelectedAddress = () => {
     v-for="nav in pageNavigation"
     :key="nav.route"
     :to="`/wallet/${nav.route}`"
-    class="
-      flex
-      cursor-pointer
-      sm:hidden
-      items-center
-      w-full
-      text-left
-      px-4
-      py-4
-      text-sm
-      font-bold
-      text-app-text-600
-      dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-
-    "
+    class="flex cursor-pointer sm:hidden items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-"
   >
     <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
   >
