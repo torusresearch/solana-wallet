@@ -94,21 +94,7 @@ const totalFiatCostString = computed(() => {
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="
-                inline-block
-                w-full
-                max-w-sm
-                my-8
-                overflow-hidden
-                text-left
-                align-middle
-                transition-all
-                transform
-                bg-white
-                dark:bg-app-gray-700
-                shadow-xl
-                rounded-md
-              "
+              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>

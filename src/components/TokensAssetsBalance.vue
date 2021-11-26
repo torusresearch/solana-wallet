@@ -83,17 +83,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
         >
           <div
-            class="
-              token-item
-              shadow
-              dark:shadow-dark
-              flex flex-col
-              justify-start
-              align-start
-              w-100
-              border-solid border-app-gray-200
-              dark:border-transparent
-            "
+            class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
