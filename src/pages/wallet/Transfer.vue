@@ -13,15 +13,16 @@ import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, ruleVerifierId } from "@/utils/helpers";
+import { debounceAsyncValidator, delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
-// const ensError = ref("");
+const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTo = ref("");
+const transferTo = ref<string>("");
+const transferToOrig = ref<string>("");
 const sendAmount = ref(0);
 const transferId = ref("");
 const transactionFee = ref(0);
@@ -80,6 +81,12 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
+const addressPromise = () => {
+  return ControllerModule.getSNSAddress({
+    type: transferType.value.value,
+    address: transferTo.value,
+  });
+};
 
 const tokenAddressVerifier = async (value: string) => {
   // if not selected token, It is possible transfering sol, skip token address check
@@ -88,7 +95,15 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount = new PublicKey(value);
+  let associatedAccount;
+  if (transferType.value.value === "sns") {
+    try {
+      associatedAccount = new PublicKey((await addressPromise()) as string);
+    } catch (e) {
+      // since our sns validator will return false anyway
+      return true;
+    }
+  } else associatedAccount = new PublicKey(value);
   // try generate associatedAccount. if it failed, it might be token associatedAccount
   // if succeed generate associatedAccount, it is valid main Sol Account.
   try {
@@ -116,6 +131,19 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
+async function snsRule(this: any, value: any, debounce: any): Promise<boolean> {
+  if (!value) return true;
+  if (transferType.value.value !== "sns") return true;
+  if (!this.$v.transferTo.validTransferTo || !this.$v.transferTo.required) return true;
+  try {
+    await debounce();
+    const address = await addressPromise();
+    return address !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
@@ -130,8 +158,8 @@ const rules = computed(() => {
   return {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
-      // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage(t("walletTransfer.required"), required),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator(snsRule, 1000))),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
@@ -169,12 +197,17 @@ const onMessageModalClosed = () => {
 
 const closeModal = () => {
   isOpen.value = false;
+  transferTo.value = transferToOrig.value;
 };
 
 const openModal = async () => {
   $v.value.$touch();
-  if (!$v.value.$invalid) isOpen.value = true;
-
+  if (!$v.value.$invalid) {
+    const address = await addressPromise();
+    transferToOrig.value = transferTo.value;
+    transferTo.value = address || "";
+    isOpen.value = true;
+  }
   const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
@@ -249,7 +282,12 @@ watch([tokens, nftTokens], () => {
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
               <div class="col-span-3 sm:col-span-2">
-                <ComboBox v-model="transferTo" :label="t('walletActivity.sendTo')" :errors="$v.transferTo.$errors" :items="contacts" />
+                <ComboBox
+                  v-model="transferTo"
+                  :label="t('walletActivity.sendTo')"
+                  :errors="isOpen ? undefined : $v.transferTo.$errors"
+                  :items="contacts"
+                />
               </div>
               <div class="col-span-3 sm:col-span-1">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
