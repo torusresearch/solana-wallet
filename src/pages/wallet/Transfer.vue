@@ -183,6 +183,7 @@ const confirmTransfer = async () => {
 
 function updateSelectedToken($event: Partial<SolAndSplToken>) {
   transferTo.value = "";
+  sendAmount.value = 0;
   selectedToken.value = $event;
 }
 </script>
