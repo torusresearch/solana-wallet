@@ -346,14 +346,14 @@ export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToke
         // const token = getTokenData(mintAddress);
         // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
         return {
-          tokenName: tokenState?.data?.symbol as string | "unknown",
+          tokenName: tokenState.data?.symbol as string | "unknown",
           amount: decoded.data.amount as number,
-          decimals: tokenState?.data?.decimals as number,
+          decimals: tokenState.data?.decimals as number,
           from: new PublicKey(decoded.data.owner || "").toBase58(),
           to,
-          mintAddress: tokenState?.data.address || "",
-          logoURI: tokenState?.data?.logoURI as string,
-          conversionRate: tokenState?.price || {},
+          mintAddress: tokenState.data?.address || "",
+          logoURI: (tokenState.data?.logoURI as string) || "",
+          conversionRate: tokenState.price || {},
         };
       }
     }

@@ -257,6 +257,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: {
         tokenInfoMap: {},
       },
+      provider: this.networkController._providerProxy,
     });
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
@@ -307,6 +308,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
       getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
+      getMetaplexData: this.tokenInfoController.getMetaplexData,
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
@@ -330,6 +332,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.info("network changed");
       if (this.selectedAddress) {
         this.preferencesController.initializeDisplayActivity();
+
+        // Get latest metaplex data
+        this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
       }
 
       this.engine?.emit("notification", {
@@ -464,10 +469,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async transferSpl(receiver: string, amount: number, tokenMintAddress: string): Promise<string> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
-    // const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress)
-    const tokenMap = this.tokensTracker?.state?.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] || [] : [];
-    const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
-
+    const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress);
+    // const tokenMap = this.tokensTracker?.state?.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] || [] : [];
+    // const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
+    const decimals = tokenInfo.decimals || 9;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress);
     const sourceAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);

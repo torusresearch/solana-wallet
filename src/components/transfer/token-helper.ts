@@ -23,7 +23,7 @@ export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
   return [
     SOLANA_TOKEN,
     ...(onlySplTokens?.value?.map((st) => {
-      return { ...st, name: st.data.name, iconURL: `${st.data.logoURI}`, symbol: st.data?.symbol };
+      return { ...st, name: st.data?.name || "", iconURL: `${st.data?.logoURI}` || "", symbol: st.data?.symbol };
     }) || []),
   ];
 });
