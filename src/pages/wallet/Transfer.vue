@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
@@ -57,6 +58,32 @@ const validVerifier = (value: string) => {
   return ruleVerifierId(transferType.value.value, value);
 };
 
+const tokenAddressVerifier = async (value: string) => {
+  // if not selected token, It is possible transfering sol, skip token address check
+  if (!selectedToken?.value?.mintAddress) {
+    return true;
+  }
+
+  const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
+  let assocAccount = new PublicKey(value);
+  // try generate assocAccount. if it failed, it might be token assocAccount
+  try {
+    assocAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, assocAccount);
+  } catch (e) {
+    log.info("failed to generate assocAccount, account key in might be assocAccount");
+  }
+  const accountInfo = await ControllersModule.torus.connection.getParsedAccountInfo(assocAccount);
+  log.info(accountInfo);
+  // check if the assoc account is (owned by) token selected
+  if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
+    const data = accountInfo.value.data as ParsedAccountData;
+    if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
@@ -73,6 +100,7 @@ const rules = computed(() => {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
       // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage("Required", required),
+      tokenAddress: helpers.withMessage("Invalid token account address", helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
       greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),

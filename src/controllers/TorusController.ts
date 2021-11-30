@@ -232,6 +232,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.embedController?.state.isIFrameFullScreen || false;
   }
 
+  get connection(): Connection {
+    // return await getSolanaConnection(this.networkController._providerProxy);
+    return new Connection(this.networkController.getProviderConfig().rpcTarget);
+  }
+
   /**
    * Always call init function before using this controller
    */
