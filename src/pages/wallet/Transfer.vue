@@ -80,6 +80,9 @@ const tokenAddressVerifier = async (value: string) => {
     if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
       return true;
     }
+  } else if (assocAccount.toBase58() !== value) {
+    // this is new assoc account ( new assoc account generated, key in value is main sol account)
+    return true;
   }
   return false;
 };
