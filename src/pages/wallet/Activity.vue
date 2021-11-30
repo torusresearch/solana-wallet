@@ -110,7 +110,7 @@ const filteredTransaction = computed(() => {
 
 <template>
   <WalletTabs tab="activity">
-    <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7">
+    <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
       <ActivityItem :activity="tx" />
     </div>
     <template #rightPanel>

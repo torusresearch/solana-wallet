@@ -33,7 +33,9 @@ const updateCurrency = (newCurrency: string) => {
         <!--        <span class="font-body uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ currency }}</span>-->
       </div>
       <div class="ml-auto font-body uppercase text-xs self-end text-app-text-400 dark:text-app-text-dark-600">
-        1 {{ token }} = {{ conversionRate }} {{ currency }}
+        1 {{ token }} =
+        <span id="conversionRate">{{ conversionRate }}</span>
+        {{ currency }}
       </div>
     </div>
     <template v-if="showButtons" #footer>
