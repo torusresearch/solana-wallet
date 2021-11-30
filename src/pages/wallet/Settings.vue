@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { GlobeIcon, OptionsIcon } from "@toruslabs/vue-icons/basic";
+import { ContactPayload } from "@toruslabs/base-controllers";
+import { GlobeIcon, ListIcon, OptionsIcon } from "@toruslabs/vue-icons/basic";
 import { MonitorIcon } from "@toruslabs/vue-icons/gadgets";
 import { LockIcon } from "@toruslabs/vue-icons/security";
+import { computed } from "vue";
 
 import { Panel } from "@/components/common";
-import { AccountDetails, CrashReporting, Display, Network } from "@/components/settings";
+import { AccountDetails, AddressBook, CrashReporting, Display, Network } from "@/components/settings";
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllersModule from "@/modules/controllers";
+
+const contacts = computed(() => ControllersModule.contacts);
+
+const saveContact = async (contactPayload: ContactPayload): Promise<void> => {
+  await ControllersModule.addContact(contactPayload);
+};
+
+const deleteContact = async (contactId: number): Promise<void> => {
+  await ControllersModule.deleteContact(contactId);
+};
 </script>
 
 <template>
@@ -19,12 +32,12 @@ import WalletTabs from "@/components/WalletTabs.vue";
               <template #leftIcon><LockIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
             </Panel>
           </div>
-          <!--          <div class="mb-4">-->
-          <!--            <Panel title="Address Book" disabled>-->
-          <!--              <AddressBook />-->
-          <!--              <template #leftIcon><ListIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>-->
-          <!--            </Panel>-->
-          <!--          </div>-->
+          <div class="mb-4">
+            <Panel title="Address Book" disabled>
+              <AddressBook :state-contacts="contacts" @save-contact="saveContact" @delete-contact="deleteContact" />
+              <template #leftIcon><ListIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
+            </Panel>
+          </div>
           <div class="mb-4">
             <Panel title="Crash Reporting" disabled>
               <CrashReporting />
