@@ -6,6 +6,7 @@ import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import Landing from "@/assets/auth/landing.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
@@ -134,11 +135,9 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-2 lg:col-span-3 min-h-screen flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
-          <img src="https://app.tor.us/v1.13.2/img/login-bg-1.4fa6ad65.svg" alt="" />
-          <div class="font-header text-xl mb-2">Interact with thousands of apps on the blockchain</div>
-          <div class="font-body text-base">Access the decentralised world with Torus</div>
-
-          <Button size="small" variant="tertiary" class="mx-auto mt-5">Visit our website</Button>
+          <img :src="Landing" alt="" />
+          <div class="font-header text-xl mb-2">Send and receive digital currencies easily.</div>
+          <div class="font-body text-base">Transacting on blockchain has never been easier. <br />An email is all you need to get started.</div>
         </div>
       </div>
     </div>
