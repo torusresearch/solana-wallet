@@ -22,9 +22,8 @@ const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
 const transferTo = ref<string>("");
-const transferToOrig = ref<string>("");
+const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
-const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
@@ -131,10 +130,9 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
-async function snsRule(this: any, value: any, debounce: any): Promise<boolean> {
+async function snsRule(value: any, debounce: any): Promise<boolean> {
   if (!value) return true;
   if (transferType.value.value !== "sns") return true;
-  if (!this.$v.transferTo.validTransferTo || !this.$v.transferTo.required) return true;
   try {
     await debounce();
     const address = await addressPromise();
@@ -159,7 +157,7 @@ const rules = computed(() => {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
       required: helpers.withMessage(t("walletTransfer.required"), required),
-      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator(snsRule, 1000))),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator<string>(snsRule, 500))),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
@@ -170,12 +168,7 @@ const rules = computed(() => {
   };
 });
 
-const $v = useVuelidate(rules, {
-  transferTo,
-  transferId,
-  sendAmount,
-  transactionFee,
-});
+const $v = useVuelidate(rules, { transferTo, sendAmount });
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -197,15 +190,13 @@ const onMessageModalClosed = () => {
 
 const closeModal = () => {
   isOpen.value = false;
-  transferTo.value = transferToOrig.value;
 };
 
 const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
     const address = await addressPromise();
-    transferToOrig.value = transferTo.value;
-    transferTo.value = address || "";
+    resolvedAddress.value = address || transferTo.value;
     isOpen.value = true;
   }
   const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
@@ -221,7 +212,7 @@ const confirmTransfer = async () => {
     if (selectedToken?.value?.mintAddress) {
       // SPL TRANSFER
       await ControllerModule.torus.transferSpl(
-        transferTo.value,
+        resolvedAddress.value || transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken.value as SolAndSplToken
       );
@@ -229,7 +220,7 @@ const confirmTransfer = async () => {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(transferTo.value),
+        toPubkey: new PublicKey(resolvedAddress.value || transferTo.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
@@ -271,6 +262,9 @@ watch([tokens, nftTokens], () => {
     updateSelectedToken(tokens.value[0]);
   }
 });
+watch(transferType, (cur, prev) => {
+  if (cur.value !== prev.value) transferTo.value = "";
+});
 </script>
 
 <template>
@@ -305,7 +299,7 @@ watch([tokens, nftTokens], () => {
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="transferTo"
+                :receiver-pub-key="resolvedAddress || transferTo"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="transferTo"
@@ -319,7 +313,7 @@ watch([tokens, nftTokens], () => {
               />
               <TransferNFT
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="transferTo"
+                :receiver-pub-key="resolvedAddress || transferTo"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="transferTo"

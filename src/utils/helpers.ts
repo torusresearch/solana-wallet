@@ -182,7 +182,7 @@ export async function convertCurrency(inputCurrencySymbol: string, outputCurrenc
   }
 }
 
-export function debounceAsyncValidator(validator: (...args: any[]) => Promise<boolean>, delayAmount: number) {
+export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => Promise<void>) => Promise<boolean>, delayAmount: number) => {
   let currentTimer: NodeJS.Timeout | null = null;
   let currentPromiseReject: {
     (arg0: Error): void;
@@ -200,12 +200,12 @@ export function debounceAsyncValidator(validator: (...args: any[]) => Promise<bo
     });
   }
 
-  return function callback(this: any, value: any): Promise<boolean> {
+  return function callback(value: T): Promise<boolean> {
     if (currentTimer) {
       currentPromiseReject?.(new Error("replaced"));
       clearTimeout(currentTimer);
       currentTimer = null;
     }
-    return validator.call(this, value, debounce);
+    return validator(value, debounce);
   };
-}
+};
