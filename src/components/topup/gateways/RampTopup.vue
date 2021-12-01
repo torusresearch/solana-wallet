@@ -149,7 +149,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="px-4 py-3 mb-4 sm:px-6">
-        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">Save</Button>
+        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">Top Up</Button>
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">You will be redirected to the third party page</div>
       </div>
     </div>

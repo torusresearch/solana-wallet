@@ -23,6 +23,7 @@
     "@sentry/tracing": "^6.15.0",
     "@sentry/vue": "^6.15.0",
     "@solana/spl-token": "^0.1.8",
+    "@solana/spl-token-registry": "^0.2.291",
     "@solana/web3.js": "^1.30.2",
     "@toruslabs/base-controllers": "^1.2.1",
     "@toruslabs/http-helpers": "^1.4.0",

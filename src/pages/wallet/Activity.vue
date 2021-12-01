@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import ActivityItem from "@/components/ActivityItem.vue";
+import ActivityItem from "@/components/activity/ActivityItem.vue";
 import { SelectField } from "@/components/common";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";

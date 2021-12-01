@@ -1,7 +1,8 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { Connection, LAMPORTS_PER_SOL, Message, Transaction } from "@solana/web3.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -57,6 +58,7 @@ import {
   NetworkController,
   PreferencesController,
   SolanaToken,
+  TokenInfoController,
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
@@ -78,6 +80,7 @@ import {
   TransactionChannelDataType,
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { constructTokenData } from "@/utils/instruction_decoder";
 
 import { PKG } from "../const";
 
@@ -136,6 +139,8 @@ export const DEFAULT_STATE = {
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
+
+  private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
 
@@ -230,6 +235,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.embedController?.state.isIFrameFullScreen || false;
   }
 
+  get connection(): Connection {
+    // return await getSolanaConnection(this.networkController._providerProxy);
+    return new Connection(this.networkController.getProviderConfig().rpcTarget);
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -243,6 +253,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
     this.initializeCommunicationProvider();
 
+    this.tokenInfoController = new TokenInfoController({
+      provider: this.networkController._providerProxy,
+    });
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -265,6 +278,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
     });
 
     this.accountTracker = new AccountTrackerController({
@@ -290,6 +304,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       provider: this.networkController._providerProxy,
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
+      getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
+      getMetaplexData: this.tokenInfoController.getMetaplexData.bind(this.tokenInfoController),
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
@@ -309,10 +325,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     // ensure accountTracker updates balances after network change
-    this.networkController.on("networkDidChange", () => {
+    this.networkController.on("networkDidChange", async () => {
       log.info("network changed");
       if (this.selectedAddress) {
+        // Get latest metaplex data
+        await this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
         this.preferencesController.initializeDisplayActivity();
+        log.info(this.tokenInfoController.state);
       }
 
       this.engine?.emit("notification", {
@@ -353,9 +372,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
       this.update({ TransactionControllerState: state2 });
       Object.keys(state2.transactions).forEach((txId) => {
-        // if( [TransactionStatus])
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
-          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress).catch((err) => {
+          // Check if token transfer
+          const tokenTransfer = constructTokenData(
+            state2.transactions[txId].rawTransaction,
+            this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
+          );
+
+          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
             log.error("error while patching a new tx", err);
           });
         }
@@ -431,14 +455,81 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signedTransaction.transactionMeta.transactionHash = signature;
       signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
       this.txController.setTxStatusSubmitted(signedTransaction.transactionMeta.id);
-
-      this.preferencesController.patchNewTx(signedTransaction.transactionMeta, this.selectedAddress);
       return signature;
     } catch (error) {
       log.warn("error while submiting transaction", error);
       this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
     }
+  }
+
+  async transferSpl(receiver: string, amount: number, tokenMintAddress: string): Promise<string> {
+    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const transaction = new Transaction();
+    const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress);
+    // const tokenMap = this.tokensTracker?.state?.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] || [] : [];
+    // const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
+    const decimals = tokenInfo.decimals || 9;
+    const mintAccount = new PublicKey(tokenMintAddress);
+    const signer = new PublicKey(this.selectedAddress);
+    const sourceAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
+    const receiverAccount = new PublicKey(receiver);
+    let assocAccount = new PublicKey(receiver);
+    try {
+      assocAccount = await Token.getAssociatedTokenAddress(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        new PublicKey(tokenMintAddress),
+        receiverAccount
+      );
+    } catch (e) {
+      log.info("error generating assoc, account passed is possible assocAccount");
+    }
+
+    const receiverAccountInfo = await connection.getAccountInfo(assocAccount);
+
+    if (receiverAccountInfo?.owner?.toString() === TOKEN_PROGRAM_ID.toString()) {
+      const transferInsturction = Token.createTransferCheckedInstruction(
+        TOKEN_PROGRAM_ID,
+        sourceAccount,
+        mintAccount,
+        assocAccount,
+        signer,
+        [],
+        amount,
+        decimals
+      );
+      transaction.add(transferInsturction);
+    } else {
+      // Not a Token Account (associcate Account)
+      // address is a wallet pub key
+
+      const catai = await Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        new PublicKey(tokenMintAddress),
+        assocAccount,
+        receiverAccount,
+        new PublicKey(this.selectedAddress)
+      );
+      transaction.add(catai);
+
+      const transferInsturction = Token.createTransferCheckedInstruction(
+        TOKEN_PROGRAM_ID,
+        sourceAccount,
+        mintAccount,
+        assocAccount,
+        signer,
+        [],
+        amount,
+        decimals
+      );
+      transaction.add(transferInsturction);
+    }
+
+    transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    const res = await this.transfer(transaction);
+    return res;
   }
 
   getGaslessHost(feePayer: string): string | undefined {

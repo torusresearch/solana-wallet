@@ -1,8 +1,9 @@
 import * as bors from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, TransactionInstruction } from "@solana/web3.js";
+import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { SolanaToken, TokenTransferData } from "@toruslabs/solana-controllers";
 import BN from "bignumber.js";
-
+// import log from "loglevel";
 export type DecodedDataType = {
   type: string;
   data: { [key: string]: string | PublicKey | number | undefined | null };
@@ -263,7 +264,7 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     return { type, data: params };
   }
   if ("transferChecked" in decodedData) {
-    const type = "transfer";
+    const type = "transferChecked";
     const params = {
       source: instruction.keys[0].pubkey,
       destination: instruction.keys[2].pubkey,
@@ -273,7 +274,7 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     return { type, data: params };
   }
   if ("approveChecked" in decodedData) {
-    const type = "approve";
+    const type = "approveChecked";
     const params = {
       source: instruction.keys[0].pubkey,
       delegate: instruction.keys[2].pubkey,
@@ -283,7 +284,7 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     return { type, data: params };
   }
   if ("mintToChecked" in decodedData) {
-    const type = "mintTo";
+    const type = "mintToChecked";
     const params = {
       mint: instruction.keys[0].pubkey,
       destination: instruction.keys[1].pubkey,
@@ -293,7 +294,7 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     return { type, data: params };
   }
   if ("burnChecked" in decodedData) {
-    const type = "burn";
+    const type = "burnChecked";
     const params = {
       source: instruction.keys[0].pubkey,
       mint: instruction.keys[1].pubkey,
@@ -317,4 +318,45 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
     return decodeTokenInstruction(instruction);
   }
   return decodeUnknownInstruction(instruction);
+};
+
+export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToken[] = []): TokenTransferData | undefined => {
+  if (!tokenMap || !rawTransaction) return undefined;
+
+  // reconstruct Transaction as transaction object function is not accessible
+  const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
+
+  // Expect SPL token transfer transaction have only 1 instruction
+  if (instructions.length === 1) {
+    if (TOKEN_PROGRAM_ID.equals(instructions[0].programId)) {
+      const decoded = decodeTokenInstruction(instructions[0]);
+      // There are transfer and transferChecked type
+      if (decoded.type.includes("transfer")) {
+        const from = new PublicKey(decoded.data.source || "").toBase58();
+        const to = new PublicKey(decoded.data.destination || "").toBase58();
+
+        // get token's info data from token account address
+        const tokenState =
+          tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === to) ||
+          tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === from);
+
+        // if tokenState (info) not found, assume unknown transaction
+        if (!tokenState) return undefined;
+        // const mintAddress = new PublicKey(tokenState.mintAddress).toBase58();
+        // const token = getTokenData(mintAddress);
+        // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
+        return {
+          tokenName: tokenState.data?.symbol as string | "unknown",
+          amount: decoded.data.amount as number,
+          decimals: tokenState.data?.decimals as number,
+          from: new PublicKey(decoded.data.owner || "").toBase58(),
+          to,
+          mintAddress: tokenState.data?.address || "",
+          logoURI: (tokenState.data?.logoURI as string) || "",
+          conversionRate: tokenState.price || {},
+        };
+      }
+    }
+  }
+  return undefined;
 };
