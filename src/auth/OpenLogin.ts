@@ -23,7 +23,6 @@ class OpenLoginFactory {
         });
         await instance.init();
 
-        // eslint-disable-next-line require-atomic-updates
         OpenLoginFactory.instance = instance;
       }
     } catch (error) {
