@@ -65,14 +65,15 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let assocAccount = new PublicKey(value);
-  // try generate assocAccount. if it failed, it might be token assocAccount
+  let associatedAccount = new PublicKey(value);
+  // try generate associatedAccount. if it failed, it might be token associatedAccount
   try {
-    assocAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, assocAccount);
+    associatedAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
   } catch (e) {
-    log.info("failed to generate assocAccount, account key in might be assocAccount");
+    log.info("failed to generate associatedAccount, account key in might be associatedAccount");
   }
-  const accountInfo = await ControllersModule.torus.connection.getParsedAccountInfo(assocAccount);
+
+  const accountInfo = await ControllersModule.torus.connection.getParsedAccountInfo(associatedAccount);
   log.info(accountInfo);
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
@@ -80,7 +81,7 @@ const tokenAddressVerifier = async (value: string) => {
     if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
       return true;
     }
-  } else if (assocAccount.toBase58() !== value) {
+  } else if (associatedAccount.toBase58() !== value) {
     // this is new assoc account ( new assoc account generated, key in value is main sol account)
     return true;
   }
@@ -97,6 +98,7 @@ const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllersModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
+
 const rules = computed(() => {
   return {
     transferTo: {
