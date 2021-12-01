@@ -254,9 +254,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.initializeCommunicationProvider();
 
     this.tokenInfoController = new TokenInfoController({
-      state: {
-        tokenInfoMap: {},
-      },
       provider: this.networkController._providerProxy,
     });
     this.currencyController = new CurrencyController({
@@ -308,7 +305,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
       getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
-      getMetaplexData: this.tokenInfoController.getMetaplexData,
+      getMetaplexData: this.tokenInfoController.getMetaplexData.bind(this.tokenInfoController),
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
@@ -328,13 +325,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     // ensure accountTracker updates balances after network change
-    this.networkController.on("networkDidChange", () => {
+    this.networkController.on("networkDidChange", async () => {
       log.info("network changed");
       if (this.selectedAddress) {
-        this.preferencesController.initializeDisplayActivity();
-
         // Get latest metaplex data
-        this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
+        await this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
+        this.preferencesController.initializeDisplayActivity();
+        log.info(this.tokenInfoController.state);
       }
 
       this.engine?.emit("notification", {
