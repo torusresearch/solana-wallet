@@ -132,7 +132,8 @@ export const DEFAULT_STATE = {
       icon: "",
     },
   },
-  TokensTrackerState: { tokens: undefined },
+  TokensTrackerState: { tokens: undefined, splTokens: {} },
+  TokenInfoState: { tokenInfoMap: {}, tokenTickerMap: {}, metaplexMetaMap: {}, tokenPriceMap: {} },
   RelayMap: {},
   RelayKeyHostMap: {},
 };
@@ -363,8 +364,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokensTracker.on("store", (state2) => {
       this.update({ TokensTrackerState: state2 });
+      log.info(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
+    this.tokenInfoController.on("store", (state2) => {
+      this.update({ TokenInfoState: state2 });
+    });
     this.keyringController.on("store", (state2) => {
       this.update({ KeyringControllerState: state2 });
     });

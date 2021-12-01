@@ -46,6 +46,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
 <template>
   <div class="flex flex-col justify-start items-center w-100">
+    <!-- Tabs -->
     <div class="tab-group-container flex flex-row justify-center items-start w-full">
       <div
         class="tok-tab flex flex-row justify-center items-center"
@@ -66,13 +67,16 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         <p class="ml-2 text-sm">Tokens</p>
       </div>
     </div>
+    <!-- Tabs -->
+
+    <!-- List of token/nft Cards -->
     <div class="tab-info w-full">
       <div
         v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB && filteredTokens(true)?.length"
         class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
       >
         <div
-          v-for="token in filteredTokens(true)"
+          v-for="token in ControllerModule.splTokens"
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
@@ -92,16 +96,16 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
-                <img class="block h-5 w-auto" :src="token.data.logoURI" alt="TOKEN Logo" />
-                <p class="token-name">{{ token.data.name }}</p></span
+                <img class="block h-5 w-auto" :src="token.data?.logoURI" alt="TOKEN Logo" />
+                <p class="token-name">{{ token.data?.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
                 <p class="coin-value">{{ token.balance?.uiAmountStrings }}</p>
-                <p class="coin-currency">{{ token.data.symbol }}</p></span
+                <p class="coin-currency">{{ token.data?.symbol }}</p></span
               >
             </div>
             <div class="flex flex-row justify-between items-center w-100 token-footer">
-              <p class="ml-3">{{ token.data.name }}</p>
+              <p class="ml-3">{{ token.data?.name }}</p>
               <p class="mr-3">
                 ~{{ getUiTokenValue(token.price?.[currency === "sol" ? "usd" : currency] || 0, token.balance?.uiAmount || 0) }}
                 {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
@@ -111,12 +115,9 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         </div>
       </div>
 
-      <div
-        v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB && filteredTokens(false)?.length"
-        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
-      >
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3">
         <div
-          v-for="token in filteredTokens(false)"
+          v-for="token in ControllerModule.nftData"
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
@@ -134,9 +135,9 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
               dark:border-transparent
             "
           >
-            <img :src="token.data.uriMetaData.image" class="nft-face" alt="NFT LOGO" />
-            <p class="token-name">{{ token.data.uriMetaData.name }} ({{ token.data.uriMetaData.symbol }})</p>
-            <p class="token-footer">{{ token.data.uriMetaData.description }}</p>
+            <img :src="token.metaplexData?.offChainMetaData?.image" class="nft-face" alt="NFT LOGO" />
+            <p class="token-name">{{ token.metaplexData?.offChainMetaData?.name }} ({{ token.metaplexData?.offChainMetaData?.symbol }})</p>
+            <p class="token-footer">{{ token.metaplexData?.offChainMetaData?.description }}</p>
           </div>
         </div>
       </div>
