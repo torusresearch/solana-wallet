@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
@@ -6,6 +8,7 @@ import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
 
+const { t } = useI18n();
 const props = withDefaults(
   defineProps<{
     requestedFrom: string;
@@ -46,11 +49,13 @@ function openLink() {
       <div>
         <img class="h-7 mx-auto w-auto mb-1 mr-5" :src="props.logoUrl" alt="Dapp Logo" />
       </div>
-      <p class="text-left font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">Permissions</p>
+      <p class="text-left font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+        {{ t("dappTransfer.permission") }}
+      </p>
     </div>
     <div class="mt-4 px-6 items-center px-4">
       <div class="flex flex-col justify-start items-start mt-12">
-        <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Requested from:</p>
+        <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ `${t("dappInfo.requestFrom")}:` }}</p>
         <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
           <a :href="props.requestedFrom" target="_blank" class="text-sm font-body text-app-text-accent dark:text-app-text-accent">{{
             getDomainFromUrl(props.requestedFrom)
@@ -62,7 +67,9 @@ function openLink() {
       <div class="flex flex-col justify-start items-start mt-8">
         <div class="w-full flex flex-row justify-start items-center">
           <img :src="SubtractURL" alt="Message Info" class="mr-2" />
-          <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Data to approve</p>
+          <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
+            {{ `${t("dappTransfer.data")} ${t("dappTransfer.to")} ${t("dappTransfer.approve")}` }}
+          </p>
         </div>
         <div class="w-full bg-white dark:bg-app-gray-700 h-12 mt-3 rounded-md approval-msg">
           <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500 m-4">{{ props.approvalMessage }}</p>
@@ -72,8 +79,12 @@ function openLink() {
     <div class="spacer"></div>
     <hr class="mx-6" />
     <div class="grid grid-cols-2 gap-3 m-6 px-4 rounded-md my-8">
-      <div><Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">Cancel</Button></div>
-      <div><Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">Approve</Button></div>
+      <div>
+        <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+      </div>
+      <div>
+        <Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
+      </div>
     </div>
   </div>
 </template>

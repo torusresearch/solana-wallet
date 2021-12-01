@@ -25,6 +25,7 @@ import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
+import { useI18n } from "vue-i18n";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import config from "@/config";
@@ -126,34 +127,37 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
+    const { t } = useI18n();
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
         localStorage.setItem("torus-enable-crash-reporter", String(status));
       }
-      this.handleSuccess(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
     }
   }
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
+    const { t } = useI18n();
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.ADD_CONTACT_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.ADD_CONTACT_FAILED));
     }
   }
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
+    const { t } = useI18n();
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.DELETE_CONTACT_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.DELETE_CONTACT_FAILED));
     }
   }
 
@@ -164,21 +168,23 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
+    const { t } = useI18n();
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.SET_CURRENCY_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.SET_CURRENCY_FAILED));
     }
   }
 
   @Action
   public async setLocale(locale: string): Promise<void> {
+    const { t } = useI18n();
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.SET_LOCALE_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.SET_LOCALE_FAILED));
     }
   }
 

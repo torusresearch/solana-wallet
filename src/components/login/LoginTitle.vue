@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
+import { useI18n } from "vue-i18n";
 
 import { LOGIN_CONFIG } from "@/utils/enums";
 
@@ -12,14 +13,16 @@ withDefaults(
     isEmbed: false,
   }
 );
+
+const { t } = useI18n();
 </script>
 
 <template>
   <div v-if="buttonDetails" class="font-header text-app-text-500 dark:text-app-text-dark-400" :class="{ 'mb-4': !isEmbed }">
     <template v-if="isEmbed">
-      <div class="text-2xl">Sign in</div>
+      <div class="text-2xl">{{ t("dappLogin.signIn") }}</div>
       <div class="text-lg">
-        Your digital wallet with
+        {{ t("dappLogin.yourDigital") }}
         <span v-if="buttonDetails.loginProvider === LOGIN_PROVIDER.GOOGLE">
           <span class="verifier-title__google-blue">G</span>
           <span class="verifier-title__google-red">o</span>
@@ -33,7 +36,7 @@ withDefaults(
     </template>
     <template v-else>
       <div class="text-2xl sm:text-3xl">
-        Your
+        {{ t("login.your") }}
         <span v-if="buttonDetails.loginProvider === LOGIN_PROVIDER.GOOGLE">
           <span class="verifier-title__google-blue">G</span>
           <span class="verifier-title__google-red">o</span>
@@ -44,7 +47,7 @@ withDefaults(
         </span>
         <span v-else :class="[`verifier-title__${buttonDetails.name.toLowerCase()}`]">{{ buttonDetails.name }}</span>
       </div>
-      <div class="text-2xl sm:text-3xl">digital wallet in one-click</div>
+      <div class="text-2xl sm:text-3xl">{{ t("login.digitalWallet") }}</div>
     </template>
   </div>
 </template>

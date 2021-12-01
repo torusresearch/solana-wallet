@@ -5,6 +5,7 @@ import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import { throttle } from "lodash-es";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import config from "@/config";
@@ -12,6 +13,8 @@ import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { RAMPNETWORK } from "@/utils/enums";
 import { TopupProviders } from "@/utils/topup";
+
+const { t } = useI18n();
 
 const selectedProvider = TopupProviders[RAMPNETWORK];
 const selectedCryptocurrency = ref(selectedProvider.validCryptocurrencies[0]);
@@ -122,8 +125,8 @@ onMounted(() => {
           <div class="col-span-3 sm:col-span-2">
             <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
-              Includes transaction cost of {{ selectedProvider.fee }} <br />
-              Minimum transaction amount: 10 {{ selectedCurrency.value }}
+              {{ `${t("walletTopup.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
+              {{ `${t("walletTopup.minTransactionAmount")} 10 ${selectedCryptocurrency.value}` }}
             </p>
           </div>
           <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1">
@@ -131,26 +134,28 @@ onMounted(() => {
           </div>
         </div>
         <div v-if="!isLoadingQuote" class="flex flex-col items-end mb-5">
-          <div class="text-app-text-600 dark:text-app-text-dark-500">You receive</div>
+          <div class="text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTopUp.receive") }}</div>
           <div class="text-2xl font-bold text-app-text-600 dark:text-app-text-dark-500">
             <span id="resCryptoAmt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
           </div>
           <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">
-            Rate: 1 {{ selectedCryptocurrency.value }} = {{ cryptoCurrencyRate }} {{ selectedCurrency.value }}
+            {{ `${t("walletTopUp.rate")}: 1 ${selectedCryptocurrency.value} = ${cryptoCurrencyRate} ${selectedCurrency.value}` }}
           </div>
         </div>
         <div v-if="isLoadingQuote" class="flex flex-row items-start justify-end">
-          <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">Please wait while we fetch fresh quote prices.</p>
+          <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">{{ t("walletTopup.waitFetch") }}</p>
           <RoundLoader class="loader"></RoundLoader>
         </div>
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">
-          <div>The process would take approximately 5 - 10 min.</div>
-          <div>Please prepare your Identity Card/Passport to complete the purchase.</div>
+          <div>{{ `${t("walletTopUp.theProcess")} 5 - 10 ${t("walletTransfer.minute")}` }}</div>
+          <div>{{ t("walletTopUp.receiveHint") }}</div>
         </div>
       </div>
       <div class="px-4 py-3 mb-4 sm:px-6">
-        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">Save</Button>
-        <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">You will be redirected to the third party page</div>
+        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">{{
+          t("walletTransfer.save")
+        }}</Button>
+        <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTopUp.redirectMessage") }}</div>
       </div>
     </div>
   </form>

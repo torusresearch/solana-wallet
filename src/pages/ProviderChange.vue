@@ -3,13 +3,16 @@ import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, P
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
-// import log from "loglevel";
 import { onMounted, reactive } from "vue";
+// import log from "loglevel";
+import { useI18n } from "vue-i18n";
 
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
+
+const { t } = useI18n();
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
@@ -56,30 +59,39 @@ const denyProviderChange = async () => {
         <div>
           <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
         </div>
-        <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Permissions</div>
+        <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">
+          {{ `${t("dappTransfer.confirm")} ${t("dappTransfer.permission")}` }}
+        </div>
       </div>
       <div class="p-5">
         <div>
           <div class="text-lg mb-5 text-app-text-500 dark:text-app-text-500 font-semibold text-center">
-            Allow <strong class="text-white">{{ finalProviderData.origin }}</strong> change your network
+            {{ t("dappPermission.allow") }} <strong class="text-white">{{ finalProviderData.origin }}</strong>
+            {{ t("dappPermission.changeNetwork", { network: finalProviderData.toNetwork }) }}
           </div>
           <!-- <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
           </div> -->
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Current Network:</div>
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">
+              {{ `${t("dappPermission.currentNetwork")}:` }}
+            </div>
             <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested New Network:</div>
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">{{ t("dappPermission.requestNew") }}</div>
             <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">Cancel</Button></div>
-        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">Confirm</Button></div>
+        <div>
+          <Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">{{ t("dappProvider.cancel") }}</Button>
+        </div>
+        <div>
+          <Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">{{ t("dappProvider.confirm") }}</Button>
+        </div>
       </div>
     </div>
   </div>

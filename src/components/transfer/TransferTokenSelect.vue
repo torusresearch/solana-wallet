@@ -2,6 +2,7 @@
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import solicon from "@/assets/solana-mascot.svg";
 
@@ -9,6 +10,8 @@ interface Token {
   name: string;
   iconURL: string;
 }
+
+const { t } = useI18n();
 
 const mainToken: Token = {
   name: "Solana",
@@ -19,7 +22,7 @@ const selectedToken = ref(mainToken);
 </script>
 <template>
   <Listbox v-model="selectedToken" as="div">
-    <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Select item to transfer</ListboxLabel>
+    <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">

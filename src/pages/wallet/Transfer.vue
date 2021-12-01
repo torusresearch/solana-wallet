@@ -4,6 +4,7 @@ import { useVuelidate } from "@vuelidate/core";
 import { helpers, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, defineAsyncComponent, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
@@ -11,6 +12,8 @@ import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
+
+const { t } = useI18n();
 // const ensError = ref("");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
@@ -139,7 +142,7 @@ const transferTypes = ALLOWED_VERIFIERS;
               <asyncTransferTokenSelect class="mb-6" />
               <div class="grid grid-cols-3 gap-3 mb-6">
                 <div class="col-span-3 sm:col-span-2">
-                  <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
+                  <TextField v-model="transferTo" :label="t('walletActivity.sendTo')" :errors="$v.transferTo.$errors" />
                 </div>
                 <div class="col-span-3 sm:col-span-1">
                   <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
@@ -147,7 +150,7 @@ const transferTypes = ALLOWED_VERIFIERS;
               </div>
 
               <div class="mb-6">
-                <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
+                <TextField v-model="sendAmount" :label="t('walletActivity.amount')" :errors="$v.sendAmount.$errors" type="number" />
               </div>
               <!--
               <div class="mb-6">
@@ -165,7 +168,9 @@ const transferTypes = ALLOWED_VERIFIERS;
               </div> -->
 
               <div class="flex">
-                <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
+                <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"
+                  ><span class="text-base">{{ t("dappTransfer.transfer") }}</span></Button
+                >
                 <!-- :crypto-tx-fee="state.transactionFee" -->
                 <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
                 <asyncTransferConfirm

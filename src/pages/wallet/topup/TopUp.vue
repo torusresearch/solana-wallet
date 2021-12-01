@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import WalletTabs from "@/components/WalletTabs.vue";
 import { RAMPNETWORK } from "@/utils/enums";
 import { TopupProvider, TopupProviders } from "@/utils/topup";
 
+const { t } = useI18n();
 const router = useRouter();
 
 const selectedProvider = ref<TopupProvider>();
@@ -26,7 +28,7 @@ onMounted(() => {
     <div class="py-2">
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
         <RadioGroup v-model="selectedProvider">
-          <RadioGroupLabel class="sr-only">Server size</RadioGroupLabel>
+          <RadioGroupLabel class="sr-only">{{ t("walletTopup.serverSize") }}</RadioGroupLabel>
           <div class="space-y-4">
             <RadioGroupOption v-for="provider in providers" :key="provider.name" v-slot="{ checked }" :value="provider" as="template">
               <div
@@ -44,16 +46,19 @@ onMounted(() => {
                 </div>
                 <RadioGroupDescription as="div" class="col-span-1">
                   <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
-                    Pay with {{ provider.paymentMethod }}
+                    {{ `${t("walletTopUp.paywith")} ${provider.paymentMethod}` }}
                   </div>
                   <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
-                    <span class="font-bold">Fees</span>: {{ provider.fee }}
+                    <span class="font-bold">{{ `${t("walletTopUp.fees")}:` }}</span
+                    >: {{ provider.fee }}
                   </div>
                   <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
-                    <span class="font-bold">Limit</span>: {{ provider.limit }}
+                    <span class="font-bold">{{ t("walletTopUp.limits") }}</span
+                    >: {{ provider.limit }}
                   </div>
                   <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 sm:ml-0">
-                    <span class="font-bold">Currencies</span>:
+                    <span class="font-bold">{{ t("walletTopUp.currencies") }}</span
+                    >:
                     {{ provider.validCryptocurrencies.map((k) => k.value).join(", ") }}
                   </div>
                 </RadioGroupDescription>

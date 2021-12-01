@@ -5,7 +5,7 @@ import log from "loglevel";
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
-import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { DISCORD, GITHUB, GOOGLE, LOCALE_EN, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -125,4 +125,12 @@ export const getRelaySigned = async (gaslessHost: string, signedTx: string, bloc
   const resJson = await resp.json();
   log.info(resJson);
   return resJson.transaction;
+};
+
+export const getUserLanguage = (): string => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let userLanguage = (window.navigator as any).userLanguage || window.navigator.language || "en-US";
+  userLanguage = userLanguage.split("-");
+  userLanguage = userLanguage[0] || LOCALE_EN;
+  return userLanguage;
 };

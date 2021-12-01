@@ -8,12 +8,14 @@ import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
+const { t } = useI18n();
 const props = defineProps<{
   user: UserInfo;
   selectedAddress: string;
@@ -42,7 +44,7 @@ const copySelectedAddress = () => {
 <template>
   <div class="flex items-center p-4">
     <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
-    <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
+    <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
   </div>
   <div class="px-3 pb-3">
     <div class="shadow dark:shadow-dark2 rounded-md py-2 px-3">
@@ -128,7 +130,7 @@ const copySelectedAddress = () => {
     <div>Info and Support</div>
   </div> -->
   <div class="p-4 border-t">
-    <Button class="ml-auto" variant="text" @click="logout">Logout</Button>
+    <Button class="ml-auto" variant="text" @click="logout">{{ t("accountMenu.logOut") }}</Button>
   </div>
 </template>
 

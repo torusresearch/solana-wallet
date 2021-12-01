@@ -27,7 +27,6 @@ import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;
-
 export const RAMPNETWORK = "rampnetwork";
 
 export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=1200";
@@ -69,32 +68,32 @@ export interface ControllerModuleState {
 
 export const NAVIGATION_LIST = {
   home: {
-    name: "Home",
-    title: "Account Balance",
+    name: "navBar.home",
+    title: "walletHome.walletHome",
     route: "home",
     icon: PlusIcon,
   },
   transfer: {
-    name: "Transfer",
-    title: "Transfer Details",
+    name: "navBar.transfer",
+    title: "walletTransfer.transferDetails",
     route: "transfer",
     icon: ArrowBoldForvardIcon,
   },
   topup: {
-    name: "Top Up",
-    title: "Select a Provider",
+    name: "navBar.topUp",
+    title: "walletTopUp.selectProvider",
     route: "topup",
     icon: DatabaseIcon,
   },
   activity: {
-    name: "Activity",
-    title: "Transaction Activities",
+    name: "navBar.activity",
+    title: "walletActivity.transactionActivities",
     route: "activity",
     icon: ListIcon,
   },
   settings: {
-    name: "Settings",
-    title: "Settings",
+    name: "navBar.settings",
+    title: "walletSettings.settings",
     route: "settings",
     icon: SettingsIcon,
   },
@@ -224,3 +223,43 @@ export interface LOGIN_CONFIG {
 
 // const METHODS = {
 // }
+
+export const LOCALE_EN = "en";
+export const LOCALE_DE = "de";
+export const LOCALE_JA = "ja";
+export const LOCALE_KO = "ko";
+export const LOCALE_ZH = "zh";
+export const LOCALE_ES = "es";
+export const LOCALE_EN_LABEL = "English";
+export const LOCALE_DE_LABEL = "German (Deutsch)";
+export const LOCALE_JA_LABEL = "Japanese (日本語)";
+export const LOCALE_KO_LABEL = "Korean (한국어)";
+export const LOCALE_ZH_LABEL = "Mandarin (中文)";
+export const LOCALE_ES_LABEL = "Spanish (Español)";
+
+export const LOCALES = [
+  {
+    name: LOCALE_EN_LABEL,
+    value: LOCALE_EN,
+  },
+  {
+    name: LOCALE_DE_LABEL,
+    value: LOCALE_DE,
+  },
+  {
+    name: LOCALE_JA_LABEL,
+    value: LOCALE_JA,
+  },
+  {
+    name: LOCALE_KO_LABEL,
+    value: LOCALE_KO,
+  },
+  {
+    name: LOCALE_ZH_LABEL,
+    value: LOCALE_ZH,
+  },
+  {
+    name: LOCALE_ES_LABEL,
+    value: LOCALE_ES,
+  },
+];

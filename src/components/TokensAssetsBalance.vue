@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { SolanaToken } from "@toruslabs/solana-controllers";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import NftLogo from "@/assets/nft_token.svg";
@@ -12,6 +13,8 @@ const TOKEN_TABS = {
   NFT_TAB: "NFT_TAB",
   TOKEN_TAB: "TOKEN_TAB",
 } as const;
+
+const { t } = useI18n();
 
 export type TOKEN_TABS_TYPE = typeof TOKEN_TABS[keyof typeof TOKEN_TABS];
 const router = useRouter();
@@ -74,7 +77,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         @keydown="selectTab(TOKEN_TABS.TOKEN_TAB)"
       >
         <img class="block h-4 w-auto" :src="SolTokenLogo" alt="NFT Logo" />
-        <p class="ml-2 text-sm">Tokens</p>
+        <p class="ml-2 text-sm">{{ t("walletHome.tokens") }}</p>
       </div>
     </div>
     <div class="tab-info w-full">

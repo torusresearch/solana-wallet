@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
+import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
+
+const { t } = useI18n();
 
 const accounts = [
   {
@@ -16,7 +19,7 @@ const accounts = [
 </script>
 <template>
   <div class="pb-4">
-    <div class="text-sm font-body mb-2 text-app-text-600 dark:text-app-text-dark-500">Accounts</div>
+    <div class="text-sm font-body mb-2 text-app-text-600 dark:text-app-text-dark-500">{{ t("tkeySettings.accounts") }}</div>
     <ul class="border dark:border-app-gray-900 rounded-md divide-y dark:divide-gray-900 shadow dark:shadow-dark mb-2">
       <li v-for="account in accounts" :key="account.id" class="flex items-center py-3 px-4">
         <div class="flex items-center">
@@ -28,13 +31,13 @@ const accounts = [
           </div>
         </div>
         <div class="ml-auto flex">
-          <div v-if="account.default" class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">Default</div>
-          <Button v-else variant="text">Switch this to Default</Button>
+          <div v-if="account.default" class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("tkeySettings.default") }}</div>
+          <Button v-else variant="text">{{ t("tkeySettings.switchDefault") }}</Button>
         </div>
       </li>
     </ul>
     <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-500 px-2">
-      Note: The selected default account shall be the account displayed when you sign in on a DApp.
+      {{ `${t("tkeySettings.note")}: ${t("tkeySettings.theSelectedAccount")}` }}
     </div>
   </div>
 </template>
