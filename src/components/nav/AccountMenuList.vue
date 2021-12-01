@@ -106,7 +106,7 @@ const copySelectedAddress = () => {
     :to="`/wallet/${nav.route}`"
     class="flex cursor-pointer sm:hidden items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-"
   >
-    <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
+    <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ t(nav.name) }}</router-link
   >
 
   <!-- <div
