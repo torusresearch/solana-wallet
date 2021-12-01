@@ -1,17 +1,87 @@
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
+import ControllerModule from "@/modules/controllers";
+
+const enum AuthStates {
+  AUTHENTICATED = "auth",
+  NON_AUTHENTICATED = "un-auth",
+}
+
+export function isLoggedIn(): boolean {
+  return !!ControllerModule?.torus?.selectedAddress;
+}
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes: [
-    { path: "/", redirect: "/login" },
+    {
+      path: "/",
+      redirect: "/wallet",
+    },
+    // UNAUTHENTICATED ROUTES
     {
       name: "login",
       path: "/login",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGIN" */ "@/pages/Login.vue"),
-      meta: { title: "Login" },
+      meta: { title: "Login", auth: AuthStates.NON_AUTHENTICATED },
     },
+    // AUTHENTICATED ROUTES
+    {
+      name: "walletBase",
+      path: "/wallet",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WALLET" */ "@/pages/wallet/Base.vue"),
+      meta: { title: "Solana Wallet", auth: AuthStates.AUTHENTICATED },
+      redirect: "/wallet/home",
+      children: [
+        {
+          name: "walletHome",
+          path: "home",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
+          meta: { title: "Home", tab: "home" },
+        },
+        {
+          name: "walletTransfer",
+          path: "transfer",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TRANSFER" */ "@/pages/wallet/Transfer.vue"),
+          meta: { title: "Transfer", tab: "transfer" },
+        },
+        {
+          name: "walletTopup",
+          path: "topup",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP" */ "@/pages/wallet/TopUp.vue"),
+          meta: { title: "Top Up", tab: "topup" },
+          children: [
+            {
+              name: "rampNetwork",
+              path: "ramp-network",
+              component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
+              meta: { title: "Topup - Ramp Network" },
+            },
+            { path: "*", redirect: { name: "rampNetwork" } },
+          ],
+        },
+        {
+          name: "walletActivity",
+          path: "activity",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "ACTIVITY" */ "@/pages/wallet/Activity.vue"),
+          meta: { title: "Activity", tab: "activity" },
+        },
+        {
+          name: "walletSettings",
+          path: "settings",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "SETTINGS" */ "@/pages/wallet/Settings.vue"),
+          meta: { title: "Settings", tab: "settings" },
+        },
+      ],
+    },
+    {
+      name: "logout",
+      path: "/logout",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),
+      meta: { title: "Logout", auth: AuthStates.AUTHENTICATED },
+    },
+    // AUTH STATE INDEPENDENT ROUTES
     {
       name: "start",
       path: "/start",
@@ -54,51 +124,6 @@ const router = createRouter({
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
       meta: { title: "Frame" },
     },
-    {
-      name: "logout",
-      path: "/logout",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),
-      meta: { title: "Logout" },
-    },
-    {
-      name: "walletHome",
-      path: "/wallet/home",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
-      meta: { title: "Home" },
-    },
-    {
-      name: "walletTransfer",
-      path: "/wallet/transfer",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TRANSFER" */ "@/pages/wallet/Transfer.vue"),
-      meta: { title: "Transfer" },
-    },
-    {
-      name: "walletTopup",
-      path: "/wallet/topup",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP" */ "@/pages/wallet/topup/TopUp.vue"),
-      meta: { title: "Top Up" },
-      children: [
-        {
-          name: "rampNetwork",
-          path: "ramp-network",
-          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
-          meta: { title: "Topup - Ramp Network" },
-        },
-        { path: "*", redirect: { name: "rampNetwork" } },
-      ],
-    },
-    {
-      name: "walletActivity",
-      path: "/wallet/activity",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "ACTIVITY" */ "@/pages/wallet/Activity.vue"),
-      meta: { title: "Activity" },
-    },
-    {
-      name: "walletSettings",
-      path: "/wallet/settings",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "SETTINGS" */ "@/pages/wallet/Settings.vue"),
-      meta: { title: "Settings" },
-    },
   ],
 });
 
@@ -118,6 +143,12 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 
 router.beforeEach((to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
+  const authMeta = to.meta.auth;
+  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn()) {
+    next("/login");
+  } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn()) {
+    next("/");
+  }
   next();
 });
 

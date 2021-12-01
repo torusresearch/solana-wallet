@@ -61,9 +61,9 @@ const logout = () => {
       <header>
         <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
-            {{ tabs[tab].title }}
+            {{ tabs[tab]?.title || "" }}
           </h1>
-          <div class="flex-grow flex"><slot name="rightPanel" /></div>
+          <div class="flex-grow flex"><div id="rightPanel" class="w-full" /></div>
         </div>
       </header>
       <main>
