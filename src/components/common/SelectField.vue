@@ -1,26 +1,39 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 interface Item {
   label: string;
   value: string;
 }
 
-const props = defineProps<{
-  label?: string;
-  modelValue?: Item;
-  items: Item[];
-}>();
+const inputIsDirty = ref<boolean>(false);
+
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    placeholder?: string;
+    size?: "small" | "medium" | "large";
+    modelValue?: Item;
+    items: Item[];
+  }>(),
+  {
+    label: "",
+    placeholder: "",
+    size: "medium",
+    modelValue: undefined,
+  }
+);
 
 const emits = defineEmits(["update:modelValue"]);
 
 const value = computed({
-  get: () => {
-    return props.modelValue ? props.modelValue : props.items[0];
+  get: () => (props.modelValue ? props.modelValue : props.items[0]),
+  set: (val) => {
+    inputIsDirty.value = true;
+    emits("update:modelValue", val);
   },
-  set: (val) => emits("update:modelValue", val),
 });
 </script>
 
@@ -31,11 +44,19 @@ const value = computed({
         {{ label }}
       </div>
     </div>
-    <div class="relative" :class="{ 'mt-1': label }">
+    <div class="relative" :class="[`${label && 'mt-1'}`, `size-${size}`]">
       <Listbox v-model="value" as="div">
-        <ListboxButton class="shadow-inner dark:shadow-none dark:bg-app-gray-800 rounded-md w-full px-3 py-2" :style="{ height: '54px' }">
+        <ListboxButton class="shadow-inner dark:shadow-none dark:bg-app-gray-800 rounded-md w-full px-3 py-2" :class="[`size-${size}`]">
           <span class="flex items-center">
-            <span class="block truncate text-app-text-500 dark:text-app-text-dark-500">{{ value?.label }}</span>
+            <span
+              v-if="placeholder && !inputIsDirty"
+              class="block truncate text-app-text-500 dark:text-app-text-dark-600 dark:text-opacity-50"
+              :class="size === 'small' ? 'text-xs' : 'text-base'"
+              >{{ placeholder }}</span
+            >
+            <span v-else class="block truncate text-app-text-500 dark:text-app-text-dark-500" :class="size === 'small' ? 'text-xs' : 'text-base'">{{
+              value?.label
+            }}</span>
           </span>
           <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
             <ChevronBottomIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
@@ -67,6 +88,7 @@ const value = computed({
                 :class="[
                   active ? 'bg-app-gray-200 text-app-text-600' : 'dark:text-app-text-dark-500',
                   'cursor-pointer select-none relative py-2 px-2 dark:hover:text-app-text-600',
+                  size === 'small' ? 'text-xs' : 'text-base',
                 ]"
               >
                 <div class="flex items-center">
@@ -81,4 +103,14 @@ const value = computed({
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.size-small {
+  height: 32px;
+}
+.size-medium {
+  height: 54px;
+}
+.size-large {
+  height: 60px;
+}
+</style>
