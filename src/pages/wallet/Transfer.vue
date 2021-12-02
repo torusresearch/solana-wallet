@@ -8,6 +8,7 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
+import ComboBox from "@/components/common/ComboBox.vue";
 // import MessageModal from "@/components/common/MessageModal.vue";
 import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
 import ControllersModule from "@/modules/controllers";
@@ -51,6 +52,15 @@ onMounted(() => {
     selectedToken.value = el || tokens.value[0];
   }
 });
+
+const contacts = computed(() =>
+  ControllersModule.contacts.map((contact) => {
+    return {
+      text: `${contact.display_name} (${contact.contact_verifier_id})`,
+      value: contact.contact_verifier_id,
+    };
+  })
+);
 
 const messageModalState = reactive({
   showMessage: false,
@@ -204,7 +214,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
               <div class="col-span-3 sm:col-span-2">
-                <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
+                <ComboBox v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" :items="contacts" />
               </div>
               <div class="col-span-3 sm:col-span-1">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
