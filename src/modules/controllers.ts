@@ -367,7 +367,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async importAccount(privKey: string): Promise<void> {
-    const address = await this.torus.addAccount(privKey.padStart(64, "0"), this.torus.userInfo);
+    const address = await this.torus.addAccount(privKey, this.torus.userInfo);
     this.torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
@@ -382,6 +382,16 @@ class ControllerModule extends VuexModule {
         },
       });
       accountImportChannel.close();
+    }
+  }
+
+  @Action
+  async resolveKey({key,strategy} : {key:string, strategy: string}):Promise<string>{
+    switch (strategy){
+      case "PrivateKey": if(!key) throw new Error("Private Key Cannot Be Empty");
+                         return key;
+      case "Keystore": return key;
+      default: throw new Error("Invalid Import Strategy")
     }
   }
 

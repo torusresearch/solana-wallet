@@ -3,21 +3,23 @@
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
-import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
+import { CopyIcon, ExternalLinkIcon, PlusIcon} from "@toruslabs/vue-icons/basic";
+import { QuestionCircleIcon } from '@toruslabs/vue-icons/others';
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
+import AccountImport from './AccountImport.vue';
+
 const props = defineProps<{
   user: UserInfo;
   selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
-
 const explorerUrl = computed(() => {
   return `${ControllerModule.torus.blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(
     ControllerModule.torus.chainId
@@ -28,14 +30,23 @@ const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route 
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const formattedBalance = computed(() => ControllerModule.userBalance);
+const modalVisible = ref(false);
 
 const logout = () => {
   emits("onLogout");
 };
-
 const copySelectedAddress = () => {
   copyText(props.selectedAddress);
 };
+
+const openImportModal = () => {
+  modalVisible.value = true;
+};
+
+const closeImportModal = () => {
+  modalVisible.value = false;
+};
+
 </script>
 
 <template>
@@ -74,26 +85,14 @@ const copySelectedAddress = () => {
       </div>
     </div>
   </div>
-  <!-- <div
-    class="
-      flex
-      cursor-pointer
-      items-center
-      border-t border-b
-      sm:border-b-0
-      w-full
-      text-left
-      px-4
-      py-4
-      text-sm
-      font-bold
-      text-app-text-600
-      dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
-    "
+  <div
+    class="flex cursor-pointer items-center border-t border-b sm:border-b-0 w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
+    @click="openImportModal"
+    @keydown="openImportModal"
   >
-    <PlusIcon class="w-4 h-4 mr-2" aria-hidden="true" />
+    <PlusIcon class="w-4 h-4 mr-2" aria-hidden="false" />
     <div>Import Account</div>
-  </div> -->
+  </div>
 
   <!-- Page navigation -->
   <router-link
@@ -142,6 +141,9 @@ const copySelectedAddress = () => {
   <div class="p-4 border-t">
     <Button class="ml-auto" variant="text" @click="logout">Logout</Button>
   </div>
+  <AccountImport :is-open="modalVisible" @on-close="closeImportModal"/>
+  <div class="hidden" />
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>

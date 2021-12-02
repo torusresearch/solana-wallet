@@ -537,8 +537,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async addAccount(privKey: string, userInfo: UserInfo): Promise<string> {
-    const paddedKey = privKey.padStart(64, "0");
-    const address = this.keyringController.importAccount(paddedKey);
+    const address = this.keyringController.importAccount(privKey);
     await this.preferencesController.initPreferences({
       address,
       calledFromEmbed: false,
