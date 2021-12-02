@@ -126,3 +126,8 @@ export const getRelaySigned = async (gaslessHost: string, signedTx: string, bloc
   log.info(resJson);
   return resJson.transaction;
 };
+
+export function delay(ms: number) {
+  // eslint-disable-next-line no-promise-executor-return
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}

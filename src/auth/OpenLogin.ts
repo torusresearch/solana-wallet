@@ -10,9 +10,9 @@ class OpenLoginFactory {
   private static mutex = new Mutex();
 
   public static async getInstance(): Promise<OpenLogin> {
-    if (!OpenLoginFactory.instance) {
-      const releaseLock = await this.mutex.acquire();
-      try {
+    const releaseLock = await this.mutex.acquire();
+    try {
+      if (!OpenLoginFactory.instance) {
         const instance = new OpenLogin({
           clientId: config.openLoginClientId,
           network: config.torusNetwork,
@@ -24,12 +24,12 @@ class OpenLoginFactory {
         await instance.init();
 
         OpenLoginFactory.instance = instance;
-      } catch (error) {
-        log.error(error, "Unable to create openlogin instance");
-        throw error;
-      } finally {
-        releaseLock();
       }
+    } catch (error) {
+      log.error(error, "Unable to create openlogin instance");
+      throw error;
+    } finally {
+      releaseLock();
     }
     return OpenLoginFactory.instance;
   }
