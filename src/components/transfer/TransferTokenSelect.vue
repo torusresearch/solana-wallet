@@ -95,10 +95,6 @@ watch(selectedToken, () => {
               </div>
             </li>
           </ListboxOption>
-          <li class="option-separator mb-4">
-            <img class="block h-4 w-auto" :src="NftLogo" alt="Tokens" />
-            <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">NFTS</p>
-          </li>
         </ListboxOptions>
       </transition>
     </div>

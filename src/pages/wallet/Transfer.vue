@@ -65,8 +65,10 @@ const tokenAddressVerifier = async (value: string) => {
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
   let associatedAccount = new PublicKey(value);
   // try generate associatedAccount. if it failed, it might be token associatedAccount
+  // if succeed generate associatedAccount, it is valid main Sol Account.
   try {
     associatedAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
   }
@@ -79,9 +81,6 @@ const tokenAddressVerifier = async (value: string) => {
     if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
       return true;
     }
-  } else if (associatedAccount.toBase58() !== value) {
-    // this is new assoc account ( new assoc account generated, key in value is main sol account)
-    return true;
   }
   return false;
 };
@@ -166,7 +165,7 @@ const confirmTransfer = async () => {
       await ControllersModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken as unknown as SolAndSplToken
+        selectedToken.value as SolAndSplToken
       );
     } else {
       // SOL TRANSFER
@@ -226,7 +225,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="transferTo"
-                :is-open="isOpen"
+                :is-open="isOpen && selectedToken.isFungible"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"

@@ -280,7 +280,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
-      getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
     });
 
     this.accountTracker = new AccountTrackerController({
@@ -306,8 +305,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       provider: this.networkController._providerProxy,
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
-      getTokenInfo: (mintAddress: string) => this.tokenInfoController.state.tokenInfoMap[mintAddress],
-      getMetaplexData: this.tokenInfoController.getMetaplexData.bind(this.tokenInfoController),
       getIdentities: () => this.preferencesController.state.identities,
       onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
@@ -384,10 +381,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
           const tokenTransfer = constructTokenData(
+            this.tokenInfoController.state,
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
 
+          log.info(tokenTransfer);
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
             log.error("error while patching a new tx", err);
           });
@@ -476,8 +475,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
     const tokenMintAddress = selectedToken.mintAddress;
-    const decimals = selectedToken.balance?.decimals || 9;
-
+    const decimals = selectedToken.balance?.decimals || 0;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
     const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
@@ -508,7 +506,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       );
       transaction.add(newAccount);
     }
-
     const transferInstructions = Token.createTransferCheckedInstruction(
       TOKEN_PROGRAM_ID,
       sourceTokenAccount,

@@ -75,7 +75,22 @@ class ControllerModule extends VuexModule {
 
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
     const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
-    return txns || [];
+    return txns.map((item) => {
+      if (item.mintAddress) {
+        if (item.decimal === 0) {
+          const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
+          if (nftInfo) {
+            return { ...item, logoURI: nftInfo.offChainMetaData?.image, cryptoCurrency: nftInfo.symbol };
+          }
+        } else {
+          const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
+          if (tokenInfo) {
+            return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
+          }
+        }
+      }
+      return item;
+    });
   }
 
   get solBalance(): BigNumber {
@@ -111,7 +126,7 @@ class ControllerModule extends VuexModule {
   }
 
   get nftData(): SolanaToken[] {
-    const nfts = this.userTokens.filter((v) => v.balance?.decimals === 0);
+    const nfts = this.userTokens.filter((v) => v.balance?.decimals === 0 && v.balance.uiAmount > 0);
     return nfts.map((item) => {
       return {
         ...item,
@@ -122,7 +137,6 @@ class ControllerModule extends VuexModule {
 
   get splTokens(): SolanaToken[] {
     const tokens = this.userTokens.filter((v) => v.balance?.decimals !== 0);
-    log.info(tokens);
     return tokens.map((item) => {
       return {
         ...item,
