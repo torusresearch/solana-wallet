@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItems } from "@headlessui/vue";
-import { OpenloginUserInfo } from "@toruslabs/openlogin";
+import { UserInfo } from "@toruslabs/base-controllers";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 
 defineProps<{
-  user: OpenloginUserInfo;
+  user: UserInfo;
 }>();
 </script>
 

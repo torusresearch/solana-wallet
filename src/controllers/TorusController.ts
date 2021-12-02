@@ -473,70 +473,56 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
-    const tokenMintAddress = selectedToken.mintAddress;
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
+    const tokenMintAddress = selectedToken.mintAddress;
     const decimals = selectedToken.balance?.decimals || 9;
+
     const mintAccount = new PublicKey(tokenMintAddress);
-    const signer = new PublicKey(this.selectedAddress);
-    const sourceAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
+    const signer = new PublicKey(this.selectedAddress); // add gasless transactions
+    const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
     const receiverAccount = new PublicKey(receiver);
-    let assocAccount = new PublicKey(receiver);
+
+    let associatedTokenAccount = receiverAccount;
     try {
-      assocAccount = await Token.getAssociatedTokenAddress(
+      associatedTokenAccount = await Token.getAssociatedTokenAddress(
         ASSOCIATED_TOKEN_PROGRAM_ID,
         TOKEN_PROGRAM_ID,
         new PublicKey(tokenMintAddress),
         receiverAccount
       );
     } catch (e) {
-      log.info("error generating assoc, account passed is possible assocAccount");
+      log.info("error getting associatedTokenAccount, account passed is possibly a token account");
     }
 
-    const receiverAccountInfo = await connection.getAccountInfo(assocAccount);
+    const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
-    if (receiverAccountInfo?.owner?.toString() === TOKEN_PROGRAM_ID.toString()) {
-      const transferInsturction = Token.createTransferCheckedInstruction(
-        TOKEN_PROGRAM_ID,
-        sourceAccount,
-        mintAccount,
-        assocAccount,
-        signer,
-        [],
-        amount,
-        decimals
-      );
-      transaction.add(transferInsturction);
-    } else {
-      // Not a Token Account (associcate Account)
-      // address is a wallet pub key
-
-      const catai = await Token.createAssociatedTokenAccountInstruction(
+    if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
+      const newAccount = await Token.createAssociatedTokenAccountInstruction(
         ASSOCIATED_TOKEN_PROGRAM_ID,
         TOKEN_PROGRAM_ID,
         new PublicKey(tokenMintAddress),
-        assocAccount,
+        associatedTokenAccount,
         receiverAccount,
         new PublicKey(this.selectedAddress)
       );
-      transaction.add(catai);
-
-      const transferInsturction = Token.createTransferCheckedInstruction(
-        TOKEN_PROGRAM_ID,
-        sourceAccount,
-        mintAccount,
-        assocAccount,
-        signer,
-        [],
-        amount,
-        decimals
-      );
-      transaction.add(transferInsturction);
+      transaction.add(newAccount);
     }
 
+    const transferInstructions = Token.createTransferCheckedInstruction(
+      TOKEN_PROGRAM_ID,
+      sourceTokenAccount,
+      mintAccount,
+      associatedTokenAccount,
+      signer,
+      [],
+      amount,
+      decimals
+    );
+    transaction.add(transferInstructions);
+
     transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
-    const res = await this.transfer(transaction);
-    return res;
+    return this.transfer(transaction);
   }
 
   getGaslessHost(feePayer: string): string | undefined {

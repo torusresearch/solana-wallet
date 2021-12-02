@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { SolanaToken } from "@toruslabs/solana-controllers";
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
@@ -10,6 +11,7 @@ const enum TOKEN_TAB_TYPES {
   NFT_TAB = "NFT_TAB",
   TOKEN_TAB = "TOKEN_TAB",
 }
+const router = useRouter();
 
 const selectedTab = ref<TOKEN_TAB_TYPES>(TOKEN_TAB_TYPES.TOKEN_TAB);
 const publicKey = computed(() => ControllerModule.torus.selectedAddress);
@@ -26,6 +28,10 @@ function filteredTokens(isFungible = true) {
 onMounted(() => {
   selectTab(TOKEN_TAB_TYPES.TOKEN_TAB);
 });
+
+function transferToken(ticker = "sol") {
+  router.push(`/wallet/transfer?ticker=${ticker}`);
+}
 
 // depending on the totalItems we'd like to have dynamic column count in grid
 function getResponsiveClasses(): string {
@@ -79,7 +85,9 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
           v-for="token in ControllerModule.splTokens"
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
-          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3"
+          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 cursor-pointer"
+          @click="transferToken(token.data?.symbol)"
+          @keydown="transferToken(token.data?.symbol)"
         >
           <div
             class="
@@ -100,12 +108,15 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
                 <p class="token-name">{{ token.data?.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
-                <p class="coin-value">{{ token.balance?.uiAmountStrings }}</p>
+                <p class="coin-value">~{{ token.balance?.uiAmountStrings }}</p>
                 <p class="coin-currency">{{ token.data?.symbol }}</p></span
               >
             </div>
             <div class="flex flex-row justify-between items-center w-100 token-footer">
-              <p class="ml-3">{{ token.data?.name }}</p>
+              <p class="ml-3">
+                1 {{ token.data?.symbol }} ≈ {{ token.price?.[currency === "sol" ? "usd" : currency] || 0 }}
+                {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
+              </p>
               <p class="mr-3">
                 ~{{ getUiTokenValue(token.price?.[currency === "sol" ? "usd" : currency] || 0, token.balance?.uiAmount || 0) }}
                 {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
