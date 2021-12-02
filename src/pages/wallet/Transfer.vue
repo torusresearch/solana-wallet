@@ -4,8 +4,8 @@ import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transact
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, defineAsyncComponent, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
 // import MessageModal from "@/components/common/MessageModal.vue";
@@ -24,8 +24,13 @@ const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
+
+const transferTypes = ALLOWED_VERIFIERS;
+const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
 const transferConfirmed = ref(false);
 const router = useRouter();
+const route = useRoute();
+
 const AsyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
 });
@@ -39,8 +44,13 @@ const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
 
-const transferTypes = ALLOWED_VERIFIERS;
-const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
+onMounted(() => {
+  const { query } = route;
+  if (query.ticker) {
+    const el = tokens.value.find((x) => x.symbol === query.ticker);
+    selectedToken.value = el || tokens.value[0];
+  }
+});
 
 const messageModalState = reactive({
   showMessage: false,
@@ -192,7 +202,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
       <Card class="order-2 sm:order-1">
         <form action="#" method="POST">
           <div>
-            <AsyncTransferTokenSelect class="mb-6" @update:selected-token="updateSelectedToken($event)" />
+            <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
               <div class="col-span-3 sm:col-span-2">
                 <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />

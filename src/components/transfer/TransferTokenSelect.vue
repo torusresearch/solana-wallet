@@ -7,16 +7,28 @@ import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import { app } from "@/modules/app";
 
-import { tokens } from "./token-helper";
+import { SolAndSplToken, tokens } from "./token-helper";
 
+const props = withDefaults(
+  defineProps<{
+    selectedToken: Partial<SolAndSplToken>;
+  }>(),
+  {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    selectedToken: tokens.value[0],
+  }
+);
+
+const localToken = ref(props.selectedToken);
 const emits = defineEmits(["update:selectedToken"]);
-const selectedToken = ref(tokens.value[0]);
-watch(selectedToken, () => {
-  emits("update:selectedToken", selectedToken.value);
+
+watch(localToken, () => {
+  emits("update:selectedToken", localToken.value);
 });
 </script>
 <template>
-  <Listbox v-model="selectedToken" as="div">
+  <Listbox v-model="localToken" as="div">
     <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Select item to transfer</ListboxLabel>
     <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
