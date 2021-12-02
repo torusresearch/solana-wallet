@@ -9,7 +9,8 @@ import { useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
 // import MessageModal from "@/components/common/MessageModal.vue";
-import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
+import { tokens } from "@/components/transfer/token-helper";
+import TransferNFT from "@/components/transfer/TransferNFT.vue";
 // import TransferConfirm from "@/components/transfer/TransferConfirm.vue";
 // import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
 // import WalletBalance from "@/components/WalletBalance.vue";
@@ -17,6 +18,7 @@ import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -87,6 +89,14 @@ const tokenAddressVerifier = async (value: string) => {
   return false;
 };
 
+const nftVerifier = (value: number) => {
+  log.info(selectedToken.value.isFungible);
+  if (!selectedToken.value.isFungible) {
+    return Number.isInteger(value);
+  }
+  return true;
+};
+
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
@@ -108,7 +118,9 @@ const rules = computed(() => {
     sendAmount: {
       greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),
       lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
+      nft: helpers.withMessage("Must be Non Fungible Amount", nftVerifier),
     },
+
     // transferId: { required },
     // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
@@ -157,7 +169,7 @@ const confirmTransfer = async () => {
       await ControllersModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken?.value?.mintAddress.toString()
+        selectedToken as unknown as SolAndSplToken
       );
     } else {
       // SOL TRANSFER
@@ -218,8 +230,21 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                   :crypto-amount="sendAmount"
                   :receiver-verifier="selectedVerifier"
                   :receiver-verifier-id="transferTo"
-                  :is-open="isOpen"
+                  :is-open="isOpen && selectedToken.isFungible"
                   :token-symbol="selectedToken?.data?.symbol || 'SOL'"
+                  :token="selectedToken"
+                  :crypto-tx-fee="transactionFee"
+                  :transfer-disabled="transferDisabled"
+                  @transfer-confirm="confirmTransfer"
+                  @on-close-modal="closeModal"
+                />
+                <TransferNFT
+                  :sender-pub-key="ControllersModule.selectedAddress"
+                  :receiver-pub-key="transferTo"
+                  :crypto-amount="sendAmount"
+                  :receiver-verifier="selectedVerifier"
+                  :receiver-verifier-id="transferTo"
+                  :is-open="isOpen && !selectedToken.isFungible"
                   :token="selectedToken"
                   :crypto-tx-fee="transactionFee"
                   :transfer-disabled="transferDisabled"

@@ -7,7 +7,7 @@ import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import { app } from "@/modules/app";
 
-import { tokens } from "./token-helper";
+import { nftTokens, tokens } from "./token-helper";
 
 const emits = defineEmits(["update:selectedToken"]);
 const selectedToken = ref(tokens.value[0]);
@@ -79,6 +79,22 @@ watch(selectedToken, () => {
             <img class="block h-4 w-auto" :src="NftLogo" alt="Tokens" />
             <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">NFTS</p>
           </li>
+          <ListboxOption v-for="item in nftTokens" v-slot="{ active, selected }" :key="item.name" as="template" :value="item">
+            <li
+              :class="[
+                active ? 'bg-app-gray-200' : '',
+                'cursor-pointer select-none relative py-2 pl-9 pr-9 text-app-text-600 dark:text-app-text-dark-500  dark:hover:text-app-text-600',
+              ]"
+            >
+              <div class="flex items-center">
+                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
+                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
+                  <p>{{ item?.name }} ({{ item?.symbol }})</p>
+                  <p class="text-app-gray-500">{{ item?.symbol === "SOL" ? "" : "SPL" }}</p></span
+                >
+              </div>
+            </li>
+          </ListboxOption>
         </ListboxOptions>
       </transition>
     </div>

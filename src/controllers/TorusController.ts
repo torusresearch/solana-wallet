@@ -81,6 +81,7 @@ import {
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 import { PKG } from "../const";
 
@@ -330,7 +331,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.info("network changed");
       if (this.selectedAddress) {
         // Get latest metaplex data
-        await this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
+        // this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
+        // this.tokenInfoController.updateMetaData()
         this.preferencesController.initializeDisplayActivity();
         log.info(this.tokenInfoController.state);
       }
@@ -364,7 +366,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokensTracker.on("store", (state2) => {
       this.update({ TokensTrackerState: state2 });
-      log.info(state2.tokens[this.selectedAddress]);
+      // log.info(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateMetaData(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -469,13 +472,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async transferSpl(receiver: string, amount: number, tokenMintAddress: string): Promise<string> {
+  async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
+    const tokenMintAddress = selectedToken.mintAddress;
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
-    const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress);
-    // const tokenMap = this.tokensTracker?.state?.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] || [] : [];
-    // const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
-    const decimals = tokenInfo.decimals || 9;
+    const decimals = selectedToken.balance?.decimals || 9;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress);
     const sourceAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
