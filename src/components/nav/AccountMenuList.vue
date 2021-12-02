@@ -1,7 +1,5 @@
 <script setup lang="ts">
-/*
- eslint-disable vuejs-accessibility/anchor-has-content
-*/
+/* eslint-disable vuejs-accessibility/anchor-has-content */
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";

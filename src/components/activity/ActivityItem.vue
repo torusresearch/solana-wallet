@@ -3,8 +3,16 @@ import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import dateFormat from "dateformat";
 
-// import { ref } from "vue";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
+
+// import { FormattedTransaction, getFormattedTransactionData, TransactionDirection } from "./activity-data.service";
+
+// const props = defineProps<{
+//   activity: SolanaTransactionActivity;
+// }>();
+// const uiTransactionData: FormattedTransaction = getFormattedTransactionData(props.activity);
+// const showDetails = ref(false);
+// import { ref } from "vue";
 // import ControllersModule from "@/modules/controllers";
 defineProps<{
   activity: SolanaTransactionActivity;
@@ -53,28 +61,43 @@ const getTxStatusColor = (status: string): string => {
       </div>
     </div>
     <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
-      <div class="flex">
-        <div class="flex items-center justify-center logo-container">
-          <img class="block h-7 w-auto" :src="SolanaLogoURL" alt="Solana Logo" />
+      <div class="flex items-center">
+        <div class="logo-container">
+          <img class="block h-7 w-auto" :src="activity.logoURI || SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
-          <div v-if="activity.type === 'transfer'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
-            {{ activity.send ? "Send " : "Received " }} {{ Number(activity.totalAmountString) }} {{ activity.cryptoCurrency }}
-            <span class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.send ? "to " : "from " }}</span>
-          </div>
-          <div v-if="activity.type === 'transfer'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
-            {{ activity.send ? activity.to : activity.from }}
+          <div v-if="activity.type === 'unknown'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">Unknown</div>
+          <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
+            <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
+              {{ activity.send ? "Sent " : "Received " }} {{ Number(activity.totalAmountString) }} {{ activity.cryptoCurrency }}
+
+              <span v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{
+                activity.send ? "to " : "from "
+              }}</span>
+            </div>
+            <div v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
+              {{ activity.send ? activity.to : activity.from }}
+            </div>
           </div>
           <!-- <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div> -->
-          <div v-if="!(activity.type === 'transfer')" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">
+          <div
+            v-if="!(activity.type === 'transfer' || activity.type === 'transferChecked')"
+            class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all"
+          >
             {{ activity.signature }}
           </div>
         </div>
       </div>
     </div>
-    <div v-if="activity.type === 'transfer'" class="col-span-6 sm:col-span-3 order-2 sm:order-3 text-right sm:text-left">
-      <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">{{ Number(activity.totalAmountString) }}</div>
-      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{ activity.cryptoCurrency }}</div>
+    <div class="col-span-6 sm:col-span-3 order-2 sm:order-3 text-right sm:text-left">
+      <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
+        <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
+          {{ Number(activity.totalAmountString) }}
+        </div>
+        <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">
+          {{ activity.cryptoCurrency }}
+        </div>
+      </div>
     </div>
     <div class="col-span-6 sm:col-span-2 text-right order-4 flex items-center justify-end">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
