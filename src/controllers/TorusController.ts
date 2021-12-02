@@ -989,6 +989,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
+      const instanceState = encodeURIComponent(
+        window.btoa(
+          JSON.stringify({
+            instanceId,
+            provider: "RAMP_NETWORK",
+          })
+        )
+      );
       const parameters = {
         userAddress: params.selectedAddress || this.selectedAddress || undefined,
         userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
@@ -1002,7 +1010,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?state=${instanceState}`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
