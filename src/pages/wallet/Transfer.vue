@@ -10,10 +10,6 @@ import { useRouter } from "vue-router";
 import { Button, Card, SelectField, TextField } from "@/components/common";
 // import MessageModal from "@/components/common/MessageModal.vue";
 import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
-// import TransferConfirm from "@/components/transfer/TransferConfirm.vue";
-// import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
-// import WalletBalance from "@/components/WalletBalance.vue";
-import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
@@ -191,56 +187,54 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
 </script>
 
 <template>
-  <WalletTabs tab="transfer">
-    <div class="py-2">
-      <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        <Card class="order-2 sm:order-1">
-          <form action="#" method="POST">
-            <div>
-              <AsyncTransferTokenSelect class="mb-6" @update:selected-token="updateSelectedToken($event)" />
-              <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="col-span-3 sm:col-span-2">
-                  <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
-                </div>
-                <div class="col-span-3 sm:col-span-1">
-                  <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
-                </div>
+  <div class="py-2">
+    <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
+      <Card class="order-2 sm:order-1">
+        <form action="#" method="POST">
+          <div>
+            <AsyncTransferTokenSelect class="mb-6" @update:selected-token="updateSelectedToken($event)" />
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <div class="col-span-3 sm:col-span-2">
+                <TextField v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" />
               </div>
-
-              <div class="mb-6">
-                <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
-              </div>
-              <div class="flex">
-                <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
-                <!-- :crypto-tx-fee="state.transactionFee" -->
-                <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
-                <AsyncTransferConfirm
-                  :sender-pub-key="ControllersModule.selectedAddress"
-                  :receiver-pub-key="transferTo"
-                  :crypto-amount="sendAmount"
-                  :receiver-verifier="selectedVerifier"
-                  :receiver-verifier-id="transferTo"
-                  :is-open="isOpen"
-                  :token-symbol="selectedToken?.data?.symbol || 'SOL'"
-                  :token="selectedToken"
-                  :crypto-tx-fee="transactionFee"
-                  :transfer-disabled="transferDisabled"
-                  @transfer-confirm="confirmTransfer"
-                  @on-close-modal="closeModal"
-                />
+              <div class="col-span-3 sm:col-span-1">
+                <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>
-          </form>
-        </Card>
-        <AsyncWalletBalance class="self-start order-1 sm:order-2" />
-      </dl>
-      <AsyncMessageModal
-        :is-open="messageModalState.showMessage"
-        :title="messageModalState.messageTitle"
-        :description="messageModalState.messageDescription"
-        :status="messageModalState.messageStatus"
-        @on-close="onMessageModalClosed"
-      />
-    </div>
-  </WalletTabs>
+
+            <div class="mb-6">
+              <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
+            </div>
+            <div class="flex">
+              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
+              <!-- :crypto-tx-fee="state.transactionFee" -->
+              <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
+              <AsyncTransferConfirm
+                :sender-pub-key="ControllersModule.selectedAddress"
+                :receiver-pub-key="transferTo"
+                :crypto-amount="sendAmount"
+                :receiver-verifier="selectedVerifier"
+                :receiver-verifier-id="transferTo"
+                :is-open="isOpen"
+                :token-symbol="selectedToken?.data?.symbol || 'SOL'"
+                :token="selectedToken"
+                :crypto-tx-fee="transactionFee"
+                :transfer-disabled="transferDisabled"
+                @transfer-confirm="confirmTransfer"
+                @on-close-modal="closeModal"
+              />
+            </div>
+          </div>
+        </form>
+      </Card>
+      <AsyncWalletBalance class="self-start order-1 sm:order-2" />
+    </dl>
+    <AsyncMessageModal
+      :is-open="messageModalState.showMessage"
+      :title="messageModalState.messageTitle"
+      :description="messageModalState.messageDescription"
+      :status="messageModalState.messageStatus"
+      @on-close="onMessageModalClosed"
+    />
+  </div>
 </template>
