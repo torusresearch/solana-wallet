@@ -2,6 +2,7 @@
 import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_UNSUCCESSFUL } from "@toruslabs/base-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import dateFormat from "dateformat";
+import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 
@@ -14,7 +15,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 // const showDetails = ref(false);
 // import { ref } from "vue";
 // import ControllersModule from "@/modules/controllers";
-defineProps<{
+const props = defineProps<{
   activity: SolanaTransactionActivity;
 }>();
 
@@ -33,6 +34,10 @@ const getTxStatusColor = (status: string): string => {
   if (status === ACTIVITY_STATUS_UNSUCCESSFUL || status === ACTIVITY_STATUS_CANCELLED) return "#FEA29F";
   return "#E0E0E0";
 };
+
+const amountIsVisible = computed(() => {
+  return props.activity.type === "transfer" || props.activity.type === "transferChecked";
+});
 </script>
 <template>
   <div
@@ -53,14 +58,19 @@ const getTxStatusColor = (status: string): string => {
     @keydown="toggleDetails(activity.blockExplorerUrl)"
     @click="toggleDetails(activity.blockExplorerUrl)"
   >
-    <div class="col-span-6 order-3 sm:order-1 sm:col-span-1 sm:border-r pl-9 sm:pl-0 flex items-center justify-start">
+    <!-- date -->
+    <div class="col-span-8 order-3 pl-9 flex items-center justify-start sm:order-1 sm:col-span-2 sm:border-r sm:pl-0 xl:col-span-1">
       <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
         {{ dateFormat(new Date(activity.updatedAt || 0), "dS mmm, yyyy") }}
         <br />
         at {{ dateFormat(new Date(activity.updatedAt || 0), "H:MM:ss") }}
       </div>
     </div>
-    <div class="col-span-6 order-1 sm:order-2 pl-0 sm:pl-6">
+    <!-- logo + text -->
+    <div
+      class="col-span-8 order-1 pl-0 sm:order-2 sm:pl-6 sm:col-span-6 xl:col-span-7"
+      :class="{ 'col-span-12 sm:col-span-8 xl:col-span-9': !amountIsVisible }"
+    >
       <div class="flex items-center">
         <div class="logo-container">
           <img class="block h-7 w-auto" :src="activity.logoURI || SolanaLogoURL" alt="Solana Logo" />
@@ -89,17 +99,22 @@ const getTxStatusColor = (status: string): string => {
         </div>
       </div>
     </div>
-    <div class="col-span-6 sm:col-span-3 order-2 sm:order-3 text-right sm:text-left">
-      <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
+    <!-- Amount -->
+    <div
+      v-if="amountIsVisible"
+      class="col-span-4 order-2 text-right sm:col-span-2 sm:order-3 sm:text-left sm:flex sm:items-center sm:justify-center xl:col-span-2"
+    >
+      <div>
         <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
-          {{ Number(activity.totalAmountString) }}
+          {{ Number(10) }}
         </div>
         <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">
-          {{ activity.cryptoCurrency }}
+          {{ "USDC" }}
         </div>
       </div>
     </div>
-    <div class="col-span-6 sm:col-span-2 text-right order-4 flex items-center justify-end">
+    <!-- status -->
+    <div class="col-span-4 text-right order-4 flex items-center justify-end sm:col-span-2">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
         {{ activity.status }}
       </div>
