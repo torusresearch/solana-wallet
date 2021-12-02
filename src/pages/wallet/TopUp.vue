@@ -28,7 +28,22 @@ onMounted(() => {
         <div class="space-y-4">
           <RadioGroupOption v-for="provider in providers" :key="provider.name" v-slot="{ checked }" :value="provider" as="template">
             <div
-              class="relative grid grid-cols-2 rounded-md border bg-white dark:bg-app-gray-700 shadow dark:shadow-dark px-4 sm:px-6 py-4 cursor-pointer hover:bg-app-gray-200 focus:outline-none"
+              class="
+                relative
+                grid grid-cols-2
+                rounded-md
+                border
+                bg-white
+                dark:bg-app-gray-700
+                shadow
+                dark:shadow-dark
+                px-4
+                sm:px-6
+                py-4
+                cursor-pointer
+                hover:bg-app-gray-200
+                focus:outline-none
+              "
               :class="checked ? 'border-app-primary-500' : 'border-app-gray-200 dark:border-transparent'"
             >
               <div class="flex col-span-1 items-center">

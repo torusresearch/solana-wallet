@@ -91,7 +91,17 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
           @keydown="transferToken(token.data.symbol)"
         >
           <div
-            class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
+            class="
+              token-item
+              shadow
+              dark:shadow-dark
+              flex flex-col
+              justify-start
+              align-start
+              w-100
+              border-solid border-app-gray-200
+              dark:border-transparent
+            "
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
