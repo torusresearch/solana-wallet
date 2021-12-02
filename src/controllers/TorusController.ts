@@ -92,7 +92,7 @@ export const DEFAULT_CONFIG = {
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
-    local: "http://localhost:4422/relayer",
+    // local: "http://localhost:4422/relayer",
   },
   TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
 };
