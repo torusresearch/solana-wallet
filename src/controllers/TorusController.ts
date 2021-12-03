@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TokenInfo } from "@solana/spl-token-registry";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -457,7 +458,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress)
 
     const tokenMap = this.tokensTracker?.state.tokens?.[this.selectedAddress] || [];
-    const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
+    const decimals = (tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data as TokenInfo)?.decimals || 9;
 
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions

@@ -1,5 +1,6 @@
 import * as bors from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TokenInfo } from "@solana/spl-token-registry";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { SolanaToken, TokenTransferData } from "@toruslabs/solana-controllers";
 import BN from "bignumber.js";
@@ -348,11 +349,11 @@ export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToke
         return {
           tokenName: tokenState?.data?.symbol as string | "unknown",
           amount: decoded.data.amount as number,
-          decimals: tokenState?.data?.decimals as number,
+          decimals: (tokenState?.data as TokenInfo)?.decimals as number,
           from: new PublicKey(decoded.data.owner || "").toBase58(),
           to,
-          mintAddress: tokenState?.data.address || "",
-          logoURI: tokenState?.data?.logoURI as string,
+          mintAddress: (tokenState?.data as TokenInfo).address || "",
+          logoURI: (tokenState?.data as TokenInfo)?.logoURI as string,
           conversionRate: tokenState?.price || {},
         };
       }

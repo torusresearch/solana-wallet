@@ -1,3 +1,4 @@
+import { TokenInfo } from "@solana/spl-token-registry";
 import { SolanaToken } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 
@@ -23,7 +24,7 @@ export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
   return [
     SOLANA_TOKEN,
     ...(onlySplTokens?.value?.map((st) => {
-      return { ...st, name: st.data.name, iconURL: `${st.data.logoURI}`, symbol: st.data?.symbol };
+      return { ...st, name: st.data?.name, iconURL: `${(st.data as TokenInfo)?.logoURI}`, symbol: st.data?.symbol };
     }) || []),
   ];
 });

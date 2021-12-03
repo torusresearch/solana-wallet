@@ -18,7 +18,7 @@ const asyncTokensAssetsBalance = defineAsyncComponent({
 </script>
 
 <template>
-  <div class="py-2">
+  <div lass="py-2">
     <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <asyncWalletBalance :show-buttons="true" />
       <Card :height="'164px'">
