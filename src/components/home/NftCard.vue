@@ -3,12 +3,8 @@ import { SolanaToken } from "@toruslabs/solana-controllers";
 
 import { Button } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
+import { NFT_CARD_MODE } from "@/utils/enums";
 
-enum NFT_CARD_MODE {
-  SUMMARY = "summary",
-  LARGE = "large",
-  EXPANDED = "expanded",
-}
 const props = defineProps<{
   nftToken?: SolanaToken;
   mode: NFT_CARD_MODE;
@@ -40,7 +36,10 @@ function closeClicked() {
       v-if="mode === NFT_CARD_MODE.SUMMARY"
       class="cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 nft-container border border-app-gray-200 dark:border-transparent m-4"
     >
-      <div class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full">
+      <div
+        v-if="props.summaryData && mode === NFT_CARD_MODE.SUMMARY"
+        class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full"
+      >
         <img :src="props.summaryData.img" class="nft-face" alt="NFT LOGO" />
         <div class="flex flex-col justify-center align-center w-100 h-100">
           <p class="token-name">{{ props.summaryData.title }}</p>
@@ -50,37 +49,37 @@ function closeClicked() {
     </div>
 
     <div
-      v-if="mode === NFT_CARD_MODE.LARGE"
+      v-if="mode === NFT_CARD_MODE.LARGE && nftToken"
       class="large-card cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 border border-app-gray-200 dark:border-transparent"
     >
       <div class="nft-item flex flex-col justify-start align-start w-100">
-        <img :src="nftToken.data.uriMetaData.image" class="nft-face-large" alt="NFT LOGO" />
+        <img :src="nftToken?.metaplexData?.offChainMetaData?.image" class="nft-face-large" alt="NFT LOGO" />
         <div class="flex flex-col justify-center align-center w-100 h-100">
-          <p class="token-name">{{ nftToken.data.uriMetaData.name }}</p>
-          <p class="token-desc mt-1">{{ nftToken.data.uriMetaData.collection?.name }}</p>
+          <p class="token-name">{{ nftToken.metaplexData?.offChainMetaData?.name }}</p>
+          <p class="token-desc mt-1">{{ nftToken.metaplexData?.offChainMetaData?.collection?.name }}</p>
         </div>
       </div>
     </div>
 
     <div
-      v-if="mode === NFT_CARD_MODE.EXPANDED"
+      v-if="mode === NFT_CARD_MODE.EXPANDED && nftToken"
       class="large-card cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 border border-app-gray-200 dark:border-transparent"
     >
       <div class="nft-item flex flex-col justify-start align-start w-100">
-        <img :src="nftToken.data.uriMetaData.image" class="nft-face-large" alt="NFT LOGO" />
+        <img :src="nftToken.metaplexData?.offChainMetaData?.image" class="nft-face-large" alt="NFT LOGO" />
         <div class="flex flex-col justify-center align-center w-100 h-100">
-          <p class="token-name">{{ nftToken.data.uriMetaData.name }}</p>
-          <p class="token-desc mt-1">{{ nftToken.data.uriMetaData.collection?.name }}</p>
+          <p class="token-name">{{ nftToken.metaplexData?.offChainMetaData?.name }}</p>
+          <p class="token-desc mt-1">{{ nftToken.metaplexData?.offChainMetaData?.collection?.name }}</p>
         </div>
 
-        <div v-if="nftToken.data.uriMetaData.description" class="flex flex-col justify-center align-center w-100 h-100 mt-4">
+        <div v-if="nftToken.metaplexData?.offChainMetaData?.description" class="flex flex-col justify-center align-center w-100 h-100 mt-4">
           <p class="field-title mb-1">Description</p>
-          <p class="token-desc mt-1">{{ nftToken.data.uriMetaData.description }}</p>
+          <p class="token-desc mt-1">{{ nftToken.metaplexData?.offChainMetaData?.description }}</p>
         </div>
 
-        <div v-if="nftToken.data.uriMetaData.attributes.length" class="flex flex-col justify-center align-center w-100 h-100 mt-4">
+        <div v-if="nftToken.metaplexData?.offChainMetaData?.attributes?.length" class="flex flex-col justify-center align-center w-100 h-100 mt-4">
           <p class="field-title mb-1">Attributes</p>
-          <p v-for="attribute in nftToken.data.uriMetaData.attributes" :key="attribute.value" class="token-desc mt-2 ml-2">
+          <p v-for="attribute in nftToken.metaplexData?.offChainMetaData.attributes" :key="attribute.value" class="token-desc mt-2 ml-2">
             {{ attribute.trait_type }}: {{ attribute.value }}
           </p>
         </div>

@@ -1,6 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
 import { SolanaToken } from "@toruslabs/solana-controllers";
-import { NFTInfo } from "@toruslabs/solana-controllers/dist/types/utils/interfaces";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -136,8 +135,8 @@ export function delay(ms: number) {
 export function getClubbedNfts(nfts: SolanaToken[]): { title: string; img: string; count: number; description: string; mints: string[] }[] {
   const finalData: { [symbol: string]: { title: string; img: string; count: number; description: string; mints: string[] } } = {};
   nfts.forEach((nft) => {
-    const metaData = (nft.data as NFTInfo).uriMetaData;
-    const collectionName = (metaData as any)?.collection?.family || metaData?.symbol;
+    const metaData = nft.metaplexData?.offChainMetaData;
+    const collectionName = metaData?.collection?.family || metaData?.symbol || Date.now();
     const elem = finalData[collectionName];
     if (elem) {
       finalData[collectionName] = { ...elem, title: metaData?.symbol || "", count: elem.count + 1 };

@@ -7,6 +7,7 @@ import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import NftCard from "@/components/home/NftCard.vue";
 import ControllerModule from "@/modules/controllers";
+import { NFT_CARD_MODE } from "@/utils/enums";
 import { getClubbedNfts } from "@/utils/helpers";
 
 const router = useRouter();
@@ -57,6 +58,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
 <template>
   <div class="flex flex-col justify-start items-center w-100">
+    <!-- Tabs -->
     <div class="tab-group-container flex flex-row justify-center items-start w-full">
       <div
         class="tok-tab flex flex-row justify-center items-center"
@@ -77,35 +79,38 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         <p class="ml-2 text-sm">Tokens</p>
       </div>
     </div>
+    <!-- Tabs -->
+
+    <!-- List of token/nft Cards -->
     <div class="tab-info w-full">
       <div
         v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB && filteredTokens(true)?.length"
         class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
       >
         <div
-          v-for="token in filteredTokens(true)"
+          v-for="token in ControllerModule.splTokens"
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 cursor-pointer"
-          @click="transferToken(token.data.symbol)"
-          @keydown="transferToken(token.data.symbol)"
+          @click="transferToken(token.data?.symbol)"
+          @keydown="transferToken(token.data?.symbol)"
         >
           <div
             class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
-                <img class="block h-5 w-auto" :src="token.data.logoURI" alt="TOKEN Logo" />
-                <p class="token-name">{{ token.data.name }}</p></span
+                <img class="block h-5 w-auto" :src="token.data?.logoURI" alt="TOKEN Logo" />
+                <p class="token-name">{{ token.data?.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
-                <p class="coin-value">~{{ token.balance?.uiAmountString }}</p>
-                <p class="coin-currency">{{ token.data.symbol }}</p></span
+                <p class="coin-value">~{{ token.balance?.uiAmountStrings }}</p>
+                <p class="coin-currency">{{ token.data?.symbol }}</p></span
               >
             </div>
             <div class="flex flex-row justify-between items-center w-100 token-footer">
               <p class="ml-3">
-                1 {{ token.data.symbol }} ≈ {{ token.price?.[currency === "sol" ? "usd" : currency] || 0 }}
+                1 {{ token.data?.symbol }} ≈ {{ token.price?.[currency === "sol" ? "usd" : currency] || 0 }}
                 {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
               </p>
               <p class="mr-3">
@@ -117,14 +122,11 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         </div>
       </div>
 
-      <div
-        v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB && filteredTokens(false)?.length"
-        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1"
-      >
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1">
         <NftCard
-          v-for="token in getClubbedNfts(filteredTokens(false))"
+          v-for="token in getClubbedNfts(ControllerModule.nftData)"
           :key="token.title"
-          mode="summary"
+          :mode="NFT_CARD_MODE.SUMMARY"
           :summary-data="token"
           :class="getResponsiveClasses()"
           @card-clicked="nftClicked(token.mints)"
@@ -173,7 +175,14 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   margin: auto;
   overflow: hidden;
 }
-.token-name {
+<<<<<<< HEAD ======= .nft-item {
+  max-width: 320px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  margin: auto;
+  overflow: hidden;
+}
+>>>>>>>feat/nft_2 .token-name {
   font-weight: bold;
   font-size: 12px;
   line-height: 14px;
@@ -209,5 +218,10 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 }
 .dark .token-footer {
   background: #2d2f34;
+}
+
+.nft-face {
+  height: 180px;
+  object-fit: cover;
 }
 </style>
