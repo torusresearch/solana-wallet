@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { SolanaToken } from "@toruslabs/solana-controllers";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import NftCard from "@/components/home/NftCard.vue";
+import { nftTokens } from "@/components/transfer/token-helper";
 import ControllerModule from "@/modules/controllers";
 import { NFT_CARD_MODE } from "@/utils/enums";
 import { getClubbedNfts } from "@/utils/helpers";
@@ -17,23 +17,18 @@ const enum TOKEN_TAB_TYPES {
 }
 
 const selectedTab = ref<TOKEN_TAB_TYPES>(TOKEN_TAB_TYPES.TOKEN_TAB);
-const publicKey = computed(() => ControllerModule.torus.selectedAddress);
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
-const tokens = computed<SolanaToken[]>(() => ControllerModule.torus.tokens?.[publicKey.value]);
 
 function selectTab(tab: TOKEN_TAB_TYPES) {
   selectedTab.value = tab;
 }
 
-function filteredTokens(isFungible = true) {
-  return tokens?.value?.filter((val) => val.isFungible === isFungible) || [];
-}
 onMounted(() => {
   selectTab(TOKEN_TAB_TYPES.TOKEN_TAB);
 });
 
-function transferToken(ticker = "sol") {
-  router.push(`/wallet/transfer?ticker=${ticker}`);
+function transferToken(mint: string) {
+  router.push(`/wallet/transfer?mint=${mint}`);
 }
 function nftClicked(mints: string[]) {
   router.push(`/wallet/nfts?mints=${mints.join(",")}`);
@@ -84,16 +79,16 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
     <!-- List of token/nft Cards -->
     <div class="tab-info w-full">
       <div
-        v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB && filteredTokens(true)?.length"
+        v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB && ControllerModule.fungibleTokens?.length"
         class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
       >
         <div
-          v-for="token in ControllerModule.splTokens"
+          v-for="token in ControllerModule.fungibleTokens"
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 cursor-pointer"
-          @click="transferToken(token.data?.symbol)"
-          @keydown="transferToken(token.data?.symbol)"
+          @click="transferToken(token.mintAddress)"
+          @keydown="transferToken(token.mintAddress)"
         >
           <div
             class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
@@ -124,7 +119,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
       <div v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1">
         <NftCard
-          v-for="token in getClubbedNfts(ControllerModule.nftData)"
+          v-for="token in getClubbedNfts(nftTokens)"
           :key="token.title"
           :mode="NFT_CARD_MODE.SUMMARY"
           :summary-data="token"
@@ -175,14 +170,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   margin: auto;
   overflow: hidden;
 }
-<<<<<<< HEAD ======= .nft-item {
-  max-width: 320px;
-  box-sizing: border-box;
-  border-radius: 6px;
-  margin: auto;
-  overflow: hidden;
-}
->>>>>>>feat/nft_2 .token-name {
+.token-name {
   font-weight: bold;
   font-size: 12px;
   line-height: 14px;

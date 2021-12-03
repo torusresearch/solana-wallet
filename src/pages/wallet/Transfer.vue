@@ -8,7 +8,7 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
-import { tokens } from "@/components/transfer/token-helper";
+import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 // import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
@@ -48,8 +48,8 @@ const AsyncMessageModal = defineAsyncComponent({
 
 onMounted(() => {
   const { query } = route;
-  if (query.ticker) {
-    const el = tokens.value.find((x) => x.symbol === query.ticker);
+  if (query.mint) {
+    const el = [...tokens.value, ...nftTokens.value].find((x) => x.mintAddress === query.mint);
     selectedToken.value = el || tokens.value[0];
   }
 });

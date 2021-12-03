@@ -17,14 +17,14 @@ const SOLANA_TOKEN: Partial<SolAndSplToken> = {
 export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
   return [
     SOLANA_TOKEN,
-    ...(ControllersModule.splTokens?.map((st) => {
+    ...(ControllersModule.fungibleTokens?.map((st) => {
       return { ...st, name: st.data?.name || "", iconURL: `${st.data?.logoURI}` || "", symbol: st.data?.symbol };
     }) || []),
   ];
 });
 
 export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
-  return ControllersModule.nftData?.map((st) => {
+  return ControllersModule.nonFungibleTokens?.map((st) => {
     return {
       ...st,
       name: st.metaplexData?.name || "",
@@ -33,3 +33,7 @@ export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
     };
   });
 });
+
+export function getTokenFromMint(tokenList: Partial<SolAndSplToken>[], mint: string) {
+  return tokenList.find((el) => el.mintAddress === mint);
+}

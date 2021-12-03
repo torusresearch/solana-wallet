@@ -125,7 +125,7 @@ class ControllerModule extends VuexModule {
     return this.torus.state.TokensTrackerState.tokens ? this.torus.state.TokensTrackerState.tokens[this.selectedAddress] : [];
   }
 
-  get nftData(): SolanaToken[] {
+  get nonFungibleTokens(): SolanaToken[] {
     const nfts = this.userTokens.filter((v) => v.balance?.decimals === 0 && v.balance.uiAmount > 0);
     return nfts.map((item) => {
       return {
@@ -135,7 +135,7 @@ class ControllerModule extends VuexModule {
     });
   }
 
-  get splTokens(): SolanaToken[] {
+  get fungibleTokens(): SolanaToken[] {
     const tokens = this.userTokens.filter((v) => v.balance?.decimals !== 0);
     return tokens.map((item) => {
       return {

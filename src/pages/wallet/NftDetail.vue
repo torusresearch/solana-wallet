@@ -1,39 +1,38 @@
 <script setup lang="ts">
-// import { SolanaToken } from "@toruslabs/solana-controllers";
-import { SolanaToken } from "@toruslabs/solana-controllers";
-import { NFTInfo } from "@toruslabs/solana-controllers/dist/types/utils/interfaces";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import BreadCrumb from "@/components/common/BreadCrumb.vue";
 import NftCard from "@/components/home/NftCard.vue";
-import ControllerModule from "@/modules/controllers";
+import NftSelect from "@/components/tokens/NftSelect.vue";
+import ControllersModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 const router = useRouter();
-const publicKey = computed(() => ControllerModule.torus.selectedAddress);
-const allTokens = computed<SolanaToken[]>(() => ControllerModule.torus.tokens?.[publicKey.value]);
-const selectedMints = (router.currentRoute.value.query?.mints as string)?.split(",");
-const nfts = computed<SolanaToken[]>(() => allTokens.value.filter((tok) => selectedMints?.includes(tok.mintAddress.toString())));
-
-// eslint-disable-next-line no-console
-console.log("selectedMints", selectedMints, nfts.value);
+const selectedMints = ref((router.currentRoute.value.query?.mints as string)?.split(","));
+const nfts = computed<Partial<SolAndSplToken>[]>(() =>
+  ControllersModule.nonFungibleTokens.filter((tok) => selectedMints.value?.includes(`${tok?.mintAddress}`))
+);
 
 const isExpanded = ref({});
 
-function transferToken(ticker = "sol") {
-  router.push(`/wallet/transfer?isFungible=true&name=${ticker}`);
+function transferToken(add: string) {
+  router.push(`/wallet/transfer?mint=${add}`);
 }
-// function hello() {
-//   // eslint-disable-next-line no-console
-//   console.log("sdf");
-// }
-const metaData = (nfts.value[0]?.data as NFTInfo)?.uriMetaData;
-const breadcrumbData = [{ text: "Home" }, { text: "NFTs" }, { text: (metaData as any)?.collection?.family || metaData?.symbol || "Unknown Token" }];
+function nftSelected(mintAddress: string) {
+  router.push(`/wallet/nfts?mints=${mintAddress}`);
+  selectedMints.value = [mintAddress];
+}
+
+const breadcrumbData = computed(() => {
+  const metaData = nfts.value[0]?.metaplexData?.offChainMetaData;
+  return [{ text: "Home" }, { text: "NFTs" }, { text: metaData?.collection?.family || metaData?.symbol || "Unknown Token" }];
+});
 </script>
 <template>
   <div class="flex flex-col justify-start items-start w-full py-2 pt-5">
-    <BreadCrumb :bread-crumb-data="breadcrumbData"></BreadCrumb>
-    <!--    TODO ADD SELECT HERE-->
+    <BreadCrumb :bread-crumb-data="breadcrumbData" class="mb-4"></BreadCrumb>
+    <NftSelect :selected-mint="nfts[0].mintAddress" @update:selected-mint-address="nftSelected($event)"></NftSelect>
     <div v-if="nfts.length" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 w-full pb-4 pt-1">
       <div
         v-for="nft in nfts"
@@ -46,7 +45,7 @@ const breadcrumbData = [{ text: "Home" }, { text: "NFTs" }, { text: (metaData as
           mode="expanded"
           :nft-token="nft"
           @close-clicked="isExpanded[nft.mintAddress] = false"
-          @transfer-clicked="transferToken(nft.data.name)"
+          @transfer-clicked="transferToken(nft.mintAddress)"
         ></NftCard>
       </div>
     </div>
