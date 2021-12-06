@@ -150,13 +150,13 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
 ];
 
 export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
-  [SOL]: "Invalid SOL Address",
-  [GOOGLE]: "Invalid Email Address",
-  [REDDIT]: "Invalid Reddit username",
-  [DISCORD]: "Invalid Discord ID",
-  [TWITTER]: "Twitter username begins with '@'",
-  [GITHUB]: "Invalid GitHub username",
-  [ENS]: "Invalid ENS address",
+  [SOL]: "walletSettings.invalidSol",
+  [GOOGLE]: "walletSettings.invalidEmail",
+  [REDDIT]: "walletSettings.invalidReddit",
+  [DISCORD]: "walletSettings.invalidDiscord",
+  [TWITTER]: "walletSettings.invalidTwitter",
+  [GITHUB]: "walletSettings.invalidGithub",
+  [ENS]: "walletSettings.invalidEns",
 };
 
 export const STATUS_SUCCESS = "success";

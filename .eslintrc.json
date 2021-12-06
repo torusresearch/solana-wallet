@@ -21,8 +21,9 @@
     "@typescript-eslint/quotes": [2, "double"],
     "no-console": 2,
     "@typescript-eslint/comma-dangle": 0,
-    "@typescript-eslint/no-shadow": ["warn"],
     "mocha/no-global-tests": ["off"],
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
     "prettier/prettier": [
       2,
       {

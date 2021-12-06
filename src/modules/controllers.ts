@@ -1,4 +1,5 @@
 /* eslint-disable class-methods-use-this */
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   BasePopupChannelData,
@@ -25,11 +26,11 @@ import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
-import { useI18n } from "vue-i18n";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
+import i18nPlugin from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
@@ -78,15 +79,21 @@ class ControllerModule extends VuexModule {
     return txns || [];
   }
 
+  get solBalance(): BigNumber {
+    const lamports = new BigNumber(
+      this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || 0
+    );
+    return lamports.div(LAMPORTS_PER_SOL);
+  }
+
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
-    // log.info(this.torusState.AccountTrackerState.accounts);
-    // log.info(this.torusState.PreferencesControllerState.identities);
-    const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
-    const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
+    const value = this.solBalance.times(new BigNumber(pricePerToken));
     return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString(); // SOL should be 4 decimal places
   }
+
+  // get selectedBalance(): string {}
 
   get selectedNetworkDisplayName(): string {
     return this.torusState.NetworkControllerState.providerConfig.displayName;
@@ -127,7 +134,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
-    const { t } = useI18n();
+    const { t } = i18nPlugin.global;
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
@@ -141,7 +148,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
-    const { t } = useI18n();
+    const { t } = i18nPlugin.global;
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
@@ -152,7 +159,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
-    const { t } = useI18n();
+    const { t } = i18nPlugin.global;
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
@@ -168,7 +175,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
-    const { t } = useI18n();
+    const { t } = i18nPlugin.global;
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
@@ -179,7 +186,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setLocale(locale: string): Promise<void> {
-    const { t } = useI18n();
+    const { t } = i18nPlugin.global;
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));

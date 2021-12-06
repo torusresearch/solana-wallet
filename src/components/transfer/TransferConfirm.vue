@@ -8,10 +8,10 @@ import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
+import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
 import ControllersModule from "@/modules/controllers";
 
 const { t } = useI18n();
-const pricePerToken = computed(() => ControllersModule.torus.conversionRate);
 const currency = computed(() => ControllersModule.torus.currentCurrency);
 
 const props = withDefaults(
@@ -22,9 +22,10 @@ const props = withDefaults(
     receiverVerifier: string;
     cryptoAmount: number;
     cryptoTxFee: number;
-    token?: string;
+    tokenSymbol?: string;
     transferDisabled?: boolean;
     isOpen?: boolean;
+    token: Partial<SolAndSplToken>;
   }>(),
   {
     senderPubKey: "",
@@ -33,12 +34,24 @@ const props = withDefaults(
     receiverVerifier: "solana",
     cryptoAmount: 0,
     cryptoTxFee: 0,
-    token: "SOL",
+    tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    token: tokens.value[0],
   }
 );
 
+function isSPLToken(): boolean {
+  return !!props.token.mintAddress;
+}
+const pricePerToken = computed<number>((): number => {
+  if (isSPLToken()) {
+    return props.token?.price?.[currency.value.toLowerCase()] || 0;
+  }
+  return ControllersModule.torus.conversionRate;
+});
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
 const closeModal = () => {
@@ -50,12 +63,13 @@ const onCancel = () => {
 };
 
 const onConfirm = () => {
-  emits("transferConfirm");
   closeModal();
+  emits("transferConfirm");
 };
 
+// Amount to send
 const cryptoAmountString = computed(() => {
-  return `${props.cryptoAmount} ${props.token}`;
+  return `${props.cryptoAmount} ${props.tokenSymbol}`;
 });
 
 const fiatAmountString = computed(() => {
@@ -63,18 +77,24 @@ const fiatAmountString = computed(() => {
   return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
 });
 
-const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
-});
-const totalCryptoCostString = computed(() => {
-  const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
-  return `${totalCost.toString(10)} ${props.token}`;
-});
-
+// Total cost
 const totalFiatCostString = computed(() => {
   const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
+});
+
+const totalCryptoCostString = computed(() => {
+  if (isSPLToken()) {
+    return `${props.cryptoAmount} ${props.tokenSymbol} + ${props.cryptoTxFee} SOL`;
+  }
+  const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
+  return `${totalCost.toString(10)} ${props.tokenSymbol}`;
+});
+
+// Transaction fee
+const fiatTxFeeString = computed(() => {
+  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 </script>
 <template>
@@ -96,7 +116,21 @@ const totalFiatCostString = computed(() => {
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
+              class="
+                inline-block
+                w-full
+                max-w-sm
+                my-8
+                overflow-hidden
+                text-left
+                align-middle
+                transition-all
+                transform
+                bg-white
+                dark:bg-app-gray-700
+                shadow-xl
+                rounded-md
+              "
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>
@@ -183,7 +217,9 @@ const totalFiatCostString = computed(() => {
                   <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("walletTransfer.cancel") }}</Button>
                 </div>
                 <div>
-                  <Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">{{ t("walletTransfer.confirm") }}</Button>
+                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                    t("walletTransfer.confirm")
+                  }}</Button>
                 </div>
               </div>
             </div>

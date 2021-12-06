@@ -15,7 +15,6 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
 export const isMain = window.self === window.top;
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
-  log.info("ruleVerifierId", value);
   if (selectedTypeOfLogin === SOL) {
     try {
       new PublicKey(value);
@@ -134,3 +133,7 @@ export const getUserLanguage = (): string => {
   userLanguage = userLanguage[0] || LOCALE_EN;
   return userLanguage;
 };
+export function delay(ms: number) {
+  // eslint-disable-next-line no-promise-executor-return
+  return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}

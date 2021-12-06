@@ -43,7 +43,22 @@ function openLink() {
 <template>
   <div
     :class="{ dark: ControllersModule.isDarkMode }"
-    class="inline-block w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-start align-start"
+    class="
+      inline-block
+      w-screen
+      h-screen
+      overflow-hidden
+      text-left
+      align-middle
+      transition-all
+      transform
+      bg-white
+      dark:bg-app-gray-800
+      shadow-xl
+      flex flex-col
+      justify-start
+      align-start
+    "
   >
     <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
       <div>

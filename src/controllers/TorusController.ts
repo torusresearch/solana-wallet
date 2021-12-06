@@ -1,7 +1,8 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { Connection, LAMPORTS_PER_SOL, Message, Transaction } from "@solana/web3.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -78,6 +79,7 @@ import {
   TransactionChannelDataType,
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { constructTokenData } from "@/utils/instruction_decoder";
 
 import { PKG } from "../const";
 
@@ -90,7 +92,7 @@ export const DEFAULT_CONFIG = {
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
-    local: "http://localhost:4422/relayer",
+    // local: "http://localhost:4422/relayer",
   },
   TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
 };
@@ -230,6 +232,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.embedController?.state.isIFrameFullScreen || false;
   }
 
+  get connection(): Connection {
+    // return await getSolanaConnection(this.networkController._providerProxy);
+    return new Connection(this.networkController.getProviderConfig().rpcTarget);
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -353,9 +360,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
       this.update({ TransactionControllerState: state2 });
       Object.keys(state2.transactions).forEach((txId) => {
-        // if( [TransactionStatus])
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
-          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress).catch((err) => {
+          // Check if token transfer
+          const tokenTransfer = constructTokenData(
+            state2.transactions[txId].rawTransaction,
+            this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
+          );
+
+          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
             log.error("error while patching a new tx", err);
           });
         }
@@ -431,14 +443,67 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signedTransaction.transactionMeta.transactionHash = signature;
       signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
       this.txController.setTxStatusSubmitted(signedTransaction.transactionMeta.id);
-
-      this.preferencesController.patchNewTx(signedTransaction.transactionMeta, this.selectedAddress);
       return signature;
     } catch (error) {
       log.warn("error while submiting transaction", error);
       this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
     }
+  }
+
+  async transferSpl(receiver: string, amount: number, tokenMintAddress: string): Promise<string> {
+    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const transaction = new Transaction();
+    // const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress)
+
+    const tokenMap = this.tokensTracker?.state.tokens?.[this.selectedAddress] || [];
+    const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
+
+    const mintAccount = new PublicKey(tokenMintAddress);
+    const signer = new PublicKey(this.selectedAddress); // add gasless transactions
+    const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
+    const receiverAccount = new PublicKey(receiver);
+
+    let associatedTokenAccount = receiverAccount;
+    try {
+      associatedTokenAccount = await Token.getAssociatedTokenAddress(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        new PublicKey(tokenMintAddress),
+        receiverAccount
+      );
+    } catch (e) {
+      log.info("error getting associatedTokenAccount, account passed is possibly a token account");
+    }
+
+    const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
+
+    if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
+      const newAccount = await Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        new PublicKey(tokenMintAddress),
+        associatedTokenAccount,
+        receiverAccount,
+        new PublicKey(this.selectedAddress)
+      );
+      transaction.add(newAccount);
+    }
+
+    const transferInstructions = Token.createTransferCheckedInstruction(
+      TOKEN_PROGRAM_ID,
+      sourceTokenAccount,
+      mintAccount,
+      associatedTokenAccount,
+      signer,
+      [],
+      amount,
+      decimals
+    );
+    transaction.add(transferInstructions);
+
+    transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    return this.transfer(transaction);
   }
 
   getGaslessHost(feePayer: string): string | undefined {

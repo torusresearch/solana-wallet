@@ -468,6 +468,7 @@
     "fee-edit-speed-average": "Medium",
     "transferFailMessage": "Please try again later",
     "invalidInput": "Invalid Input",
+    "invalidAddress": "Invalid token account address",
     "incorrectQR": "Incorrect QR Code",
     "fee-edit-time-sec": "{time} seconds",
     "advancedOptions": "Advanced Options",
@@ -490,6 +491,7 @@
     "fee-edit-process-in": "Process in {time}",
     "fee-edit-base-fee-desc": "The minimum fee to process your transaction on the network. It varies based on how busy the network is. The fee is based on per gas of block",
     "amountToSend": "Amount to send",
+    "minValue": "Must be greater than 0.0001",
     "gasPriceDesc4": "is the amount per unit Gas to pay for a transaction. It is measured in ‘Gwei’.",
     "fee-edit-adv-show": "View advanced options",
     "transferApprox": "approximately {time}",
@@ -543,7 +545,8 @@
     "transferConfirm": "Transfer Confirm",
     "fee-error-maxfee-high": "Max transaction fee is higher than necessary",
     "fee-edit-adv-hide": "Hide advanced options",
-    "minute": "Mins"
+    "minute": "Mins",
+    "submitFailed": "Failed to submit transaction"
   },
   "walletTopUp": {
     "resolveErrors": "Resolve the errors",
@@ -587,6 +590,16 @@
   "walletActivity": {
     "rate": "Rate",
     "cancelled": "Cancelled",
+    "finalized": "Finalized",
+    "confirmed": "Confirmed",
+    "failed": "Failed",
+    "processed": "Processed",
+    "rejected": "Rejected",
+    "signed": "Signed",
+    "submitted": "Submitted",
+    "unapproved": "Unapproved",
+    "dropped": "Dropped",
+    "expired": "Expired",
     "cancelButtonTooltip": "Canceling this Transaction will cost",
     "viewMore": "View more",
     "receive": "Receive",
@@ -636,7 +649,8 @@
     "topup": "Topup",
     "headerFrom": "From",
     "netword": "Network",
-    "lastSixMonts": "Last 6 months"
+    "lastSixMonts": "Last 6 months",
+    "unknown": "Unknown"
   },
   "walletSettings": {
     "showPrivateKey": "Show Private Key",
@@ -672,6 +686,7 @@
     "delete": "Delete",
     "enterBlockExplorer": "Enter Block Explorer URL (optional)",
     "invalidEns": "Invalid ENS address",
+    "invalidSol": "Invalid SOL address",
     "addNewList": "Add a new List",
     "loadingNetwork": "network is loading",
     "changeNetwork": "Change of Network",
