@@ -8,11 +8,13 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
-// import MessageModal from "@/components/common/MessageModal.vue";
-import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
+import { nftTokens, tokens } from "@/components/transfer/token-helper";
+import TransferNFT from "@/components/transfer/TransferNFT.vue";
+// import WalletTabs from "@/components/WalletTabs.vue";
 import ControllersModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -46,8 +48,8 @@ const AsyncMessageModal = defineAsyncComponent({
 
 onMounted(() => {
   const { query } = route;
-  if (query.ticker) {
-    const el = tokens.value.find((x) => x.symbol === query.ticker);
+  if (query.mint) {
+    const el = [...tokens.value, ...nftTokens.value].find((x) => x.mintAddress === query.mint);
     selectedToken.value = el || tokens.value[0];
   }
 });
@@ -73,8 +75,10 @@ const tokenAddressVerifier = async (value: string) => {
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
   let associatedAccount = new PublicKey(value);
   // try generate associatedAccount. if it failed, it might be token associatedAccount
+  // if succeed generate associatedAccount, it is valid main Sol Account.
   try {
     associatedAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
   }
@@ -87,11 +91,16 @@ const tokenAddressVerifier = async (value: string) => {
     if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
       return true;
     }
-  } else if (associatedAccount.toBase58() !== value) {
-    // this is new assoc account ( new assoc account generated, key in value is main sol account)
-    return true;
   }
   return false;
+};
+
+const nftVerifier = (value: number) => {
+  log.info(selectedToken.value.isFungible);
+  if (!selectedToken.value.isFungible) {
+    return Number.isInteger(value);
+  }
+  return true;
 };
 
 const getErrorMessage = () => {
@@ -104,7 +113,6 @@ const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllersModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
-
 const rules = computed(() => {
   return {
     transferTo: {
@@ -116,7 +124,9 @@ const rules = computed(() => {
     sendAmount: {
       greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),
       lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
+      nft: helpers.withMessage("Must be Non Fungible Amount", nftVerifier),
     },
+
     // transferId: { required },
     // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
@@ -165,7 +175,7 @@ const confirmTransfer = async () => {
       await ControllersModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken?.value?.mintAddress.toString()
+        selectedToken.value as SolAndSplToken
       );
     } else {
       // SOL TRANSFER
@@ -224,7 +234,6 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="transferTo"
-                :is-open="isOpen"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"
@@ -232,6 +241,20 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                 @transfer-confirm="confirmTransfer"
                 @on-close-modal="closeModal"
               />
+              <TransferNFT
+                :sender-pub-key="ControllersModule.selectedAddress"
+                :receiver-pub-key="transferTo"
+                :crypto-amount="sendAmount"
+                :receiver-verifier="selectedVerifier"
+                :receiver-verifier-id="transferTo"
+                :is-open="isOpen && !selectedToken.isFungible"
+                :token="selectedToken"
+                :crypto-tx-fee="transactionFee"
+                :transfer-disabled="transferDisabled"
+                @transfer-confirm="confirmTransfer"
+                @on-close-modal="closeModal"
+              />
+>>>>>>> 9765050 (feat: temp)
             </div>
           </div>
         </form>

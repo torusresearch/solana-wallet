@@ -21,7 +21,7 @@ import {
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import { cloneDeep, merge, omit } from "lodash-es";
@@ -75,7 +75,22 @@ class ControllerModule extends VuexModule {
 
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
     const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
-    return txns || [];
+    return txns.map((item) => {
+      if (item.mintAddress) {
+        if (item.decimal === 0) {
+          const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
+          if (nftInfo) {
+            return { ...item, logoURI: nftInfo.offChainMetaData?.image, cryptoCurrency: nftInfo.symbol };
+          }
+        } else {
+          const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
+          if (tokenInfo) {
+            return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
+          }
+        }
+      }
+      return item;
+    });
   }
 
   get solBalance(): BigNumber {
@@ -104,6 +119,31 @@ class ControllerModule extends VuexModule {
 
   get isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
+  }
+
+  get userTokens(): SolanaToken[] {
+    return this.torus.state.TokensTrackerState.tokens ? this.torus.state.TokensTrackerState.tokens[this.selectedAddress] : [];
+  }
+
+  get nonFungibleTokens(): SolanaToken[] {
+    const nfts = this.userTokens.filter((v) => v.balance?.decimals === 0 && v.balance.uiAmount > 0);
+    return nfts.map((item) => {
+      return {
+        ...item,
+        metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress],
+      };
+    });
+  }
+
+  get fungibleTokens(): SolanaToken[] {
+    const tokens = this.userTokens.filter((v) => v.balance?.decimals !== 0);
+    return tokens.map((item) => {
+      return {
+        ...item,
+        data: this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress],
+        price: this.torusState.TokenInfoState.tokenPriceMap[item.mintAddress] || {},
+      };
+    });
   }
 
   @Mutation
