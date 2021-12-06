@@ -6,8 +6,10 @@ import { ref, watch } from "vue";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import { app } from "@/modules/app";
+import { getClubbedNfts } from "@/utils/helpers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
-import { SolAndSplToken, tokens } from "./token-helper";
+import { getTokenFromMint, nftTokens, tokens } from "./token-helper";
 
 const props = withDefaults(
   defineProps<{
@@ -35,7 +37,7 @@ watch(localToken, () => {
         <span class="flex items-center">
           <img :src="selectedToken.iconURL" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
-            {{ selectedToken.name }}
+            {{ selectedToken.name || selectedToken?.metaplexData?.offChainMetaData?.name }}
           </span>
         </span>
         <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
@@ -87,10 +89,36 @@ watch(localToken, () => {
               </div>
             </li>
           </ListboxOption>
-          <li class="option-separator mb-4">
+          <li class="option-separator">
             <img class="block h-4 w-auto" :src="NftLogo" alt="Tokens" />
             <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">NFTS</p>
           </li>
+          <template v-for="item in getClubbedNfts(nftTokens)" :key="item.title">
+            <li class="option-separator ml-2 pl-1 nft-group">
+              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">{{ item.title }} ({{ item.count }})</p>
+            </li>
+            <ListboxOption
+              v-for="mintAddress in item.mints"
+              v-slot="{ active, selected }"
+              :key="mintAddress"
+              as="template"
+              :value="getTokenFromMint(nftTokens, mintAddress)"
+            >
+              <li
+                :class="[
+                  active ? 'bg-app-gray-200' : '',
+                  'cursor-pointer select-none relative py-2 pl-9 pr-9 text-app-text-600 dark:text-app-text-dark-500  dark:hover:text-app-text-600 ml-4',
+                ]"
+              >
+                <div class="flex items-center">
+                  <img :src="getTokenFromMint(nftTokens, mintAddress)?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
+                  <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
+                    <p>{{ getTokenFromMint(nftTokens, mintAddress)?.name }} ({{ getTokenFromMint(nftTokens, mintAddress)?.symbol }})</p>
+                  </span>
+                </div>
+              </li>
+            </ListboxOption>
+          </template>
         </ListboxOptions>
       </transition>
     </div>
@@ -114,5 +142,8 @@ watch(localToken, () => {
   width: 100%;
   flex-direction: row;
   justify-content: space-between;
+}
+.nft-group {
+  margin-left: 22px;
 }
 </style>
