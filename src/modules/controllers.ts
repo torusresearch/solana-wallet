@@ -1,4 +1,5 @@
 /* eslint-disable class-methods-use-this */
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   BasePopupChannelData,
@@ -84,15 +85,21 @@ class ControllerModule extends VuexModule {
     return txns || [];
   }
 
+  get solBalance(): BigNumber {
+    const lamports = new BigNumber(
+      this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || 0
+    );
+    return lamports.div(LAMPORTS_PER_SOL);
+  }
+
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
-    // log.info(this.torusState.AccountTrackerState.accounts);
-    // log.info(this.torusState.PreferencesControllerState.identities);
-    const balance = this.torusState.AccountTrackerState.accounts[this.torusState.PreferencesControllerState.selectedAddress]?.balance || "0x0";
-    const value = new BigNumber(balance).div(new BigNumber(10 ** 9)).times(new BigNumber(pricePerToken));
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
+    const value = this.solBalance.times(new BigNumber(pricePerToken));
     return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString(); // SOL should be 4 decimal places
   }
+
+  // get selectedBalance(): string {}
 
   get selectedNetworkDisplayName(): string {
     return this.torusState.NetworkControllerState.providerConfig.displayName;
