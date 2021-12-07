@@ -127,7 +127,7 @@ class ControllerModule extends VuexModule {
 
   get nonFungibleTokens(): SolanaToken[] {
     const nfts = this.userTokens.filter((v) => {
-      if (v.balance?.decimals === 0 && v.balance.uiAmount > 0) return false;
+      if (!(v.balance?.decimals === 0 && v.balance.uiAmount > 0)) return false;
       // fetching in progress, return false unless it got metadata
       if (this.torusState.TokenInfoState.fetchingMetaInfo && !this.torusState.TokenInfoState.metaplexMetaMap[v.mintAddress]) {
         return false;
