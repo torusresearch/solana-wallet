@@ -3,8 +3,7 @@
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
-import { CopyIcon, ExternalLinkIcon, PlusIcon} from "@toruslabs/vue-icons/basic";
-import { QuestionCircleIcon } from '@toruslabs/vue-icons/others';
+import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import { computed, ref } from "vue";
 
@@ -13,7 +12,7 @@ import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
-import AccountImport from './AccountImport.vue';
+import AccountImport from "./AccountImport.vue";
 
 const props = defineProps<{
   user: UserInfo;
@@ -49,10 +48,9 @@ const closeImportModal = () => {
 
 const setSelected = async (address: string) => {
   await ControllersModule.setSelectedAccount(address);
-}
+};
 
 const currentAccount = computed(() => ControllersModule.selectedAddress);
-
 </script>
 
 <template>
@@ -61,7 +59,14 @@ const currentAccount = computed(() => ControllersModule.selectedAddress);
     <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
   </div>
   <div class="px-3 pb-3">
-    <div v-for="wallet in ControllersModule.torusState.KeyringControllerState.wallets" :key="wallet.address" class="hover:shadow dark:hover:shadow-dark2 rounded-md py-2 px-3 cursor-pointer" :class="{'shadow dark:shadow-dark2': currentAccount === wallet.address}" @click="()=>setSelected(wallet.address)">
+    <div
+      v-for="wallet in ControllersModule.torusState.KeyringControllerState.wallets"
+      :key="wallet.address"
+      class="hover:shadow dark:hover:shadow-dark2 rounded-md py-2 px-3 cursor-pointer"
+      :class="{ 'shadow dark:shadow-dark2': currentAccount === wallet.address }"
+      @click="() => setSelected(wallet.address)"
+      @keydown="() => setSelected(wallet.address)"
+    >
       <div class="flex">
         <div class="flex items-center">
           <WalletIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
@@ -77,7 +82,7 @@ const currentAccount = computed(() => ControllersModule.selectedAddress);
         </div>
         <div class="ml-auto flex space-x-1">
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-            <CopyIcon class="w-4 h-4" @click="()=>copySelectedAddress(wallet.address)" />
+            <CopyIcon class="w-4 h-4" @click="() => copySelectedAddress(wallet.address)" />
           </div>
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
             <QrcodeIcon class="w-4 h-4" />
@@ -89,11 +94,24 @@ const currentAccount = computed(() => ControllersModule.selectedAddress);
           </div>
         </div>
       </div>
-   
     </div>
   </div>
   <div
-    class="flex cursor-pointer items-center border-t border-b sm:border-b-0 w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
+    class="
+      flex
+      cursor-pointer
+      items-center
+      border-t border-b
+      sm:border-b-0
+      w-full
+      text-left
+      px-4
+      py-4
+      text-sm
+      font-bold
+      text-app-text-600
+      dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
+    "
     @click="openImportModal"
     @keydown="openImportModal"
   >
@@ -148,9 +166,8 @@ const currentAccount = computed(() => ControllersModule.selectedAddress);
   <div class="p-4 border-t">
     <Button class="ml-auto" variant="text" @click="logout">Logout</Button>
   </div>
-  <AccountImport :is-open="modalVisible" @on-close="closeImportModal"/>
+  <AccountImport :is-open="modalVisible" @on-close="closeImportModal" />
   <div class="hidden" />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

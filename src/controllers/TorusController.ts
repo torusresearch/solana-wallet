@@ -1044,7 +1044,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationWindowManager: this.communicationManager,
       });
       const { privKey, userInfo } = result;
-      const paddedKey = privKey.padStart(64,"0");
+      const paddedKey = privKey.padStart(64, "0");
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);
