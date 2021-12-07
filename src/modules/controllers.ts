@@ -126,11 +126,19 @@ class ControllerModule extends VuexModule {
   }
 
   get nonFungibleTokens(): SolanaToken[] {
-    const nfts = this.userTokens.filter((v) => v.balance?.decimals === 0 && v.balance.uiAmount > 0);
+    const nfts = this.userTokens.filter((v) => {
+      if (v.balance?.decimals === 0 && v.balance.uiAmount > 0) return false;
+      // fetching in progress, return false unless it got metadata
+      if (this.torusState.TokenInfoState.fetchingMetaInfo && !this.torusState.TokenInfoState.metaplexMetaMap[v.mintAddress]) {
+        return false;
+      }
+      return true;
+    });
     return nfts.map((item) => {
       return {
         ...item,
-        metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress],
+        // put a default nft data if the metaplex data is still undefined (fetchind is done / error)
+        metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress] || this.torus.config.TokensInfoConfig.defaultUnknownNFT, // {} Default unknown metadata
       };
     });
   }

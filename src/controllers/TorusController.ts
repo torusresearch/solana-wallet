@@ -62,6 +62,7 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import { TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { BigNumber } from "bignumber.js";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -97,6 +98,16 @@ export const DEFAULT_CONFIG = {
     // local: "http://localhost:4422/relayer",
   },
   TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
+  // default default Unknown NFT ( name is default with mint_address)
+  TokensInfoConfig: {
+    supportedCurrencies: config.supportedCurrencies,
+    defaultUnknownNFT: {
+      name: "unknown NFT",
+      offChainMetaData: {
+        image: "/favicon.ico",
+      },
+    },
+  } as TokensInfoConfig,
 };
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
@@ -134,7 +145,15 @@ export const DEFAULT_STATE = {
     },
   },
   TokensTrackerState: { tokens: undefined, splTokens: {} },
-  TokenInfoState: { tokenInfoMap: {}, tokenTickerMap: {}, metaplexMetaMap: {}, tokenPriceMap: {} },
+  TokenInfoState: {
+    tokenInfoMap: {},
+    tokenTickerMap: {},
+    metaplexMetaMap: {},
+    tokenPriceMap: {},
+    fetchingTokenInfo: true,
+    fetchingMetaInfo: true,
+    fetchingPriceInfo: true,
+  },
   RelayMap: {},
   RelayKeyHostMap: {},
 };
@@ -256,6 +275,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.initializeCommunicationProvider();
 
     this.tokenInfoController = new TokenInfoController({
+      config: this.config.TokensInfoConfig,
       provider: this.networkController._providerProxy,
     });
     this.currencyController = new CurrencyController({
