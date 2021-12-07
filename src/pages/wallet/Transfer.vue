@@ -84,7 +84,6 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   const accountInfo = await ControllersModule.torus.connection.getParsedAccountInfo(associatedAccount);
-  log.info(accountInfo);
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
@@ -96,7 +95,6 @@ const tokenAddressVerifier = async (value: string) => {
 };
 
 const nftVerifier = (value: number) => {
-  log.info(selectedToken.value.isFungible);
   if (!selectedToken.value.isFungible) {
     return Number.isInteger(value);
   }
@@ -185,8 +183,7 @@ const confirmTransfer = async () => {
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
-      const res = await ControllersModule.torus.transfer(tx);
-      log.info(res);
+      await ControllersModule.torus.transfer(tx);
     }
     // resetForm();
     transferConfirmed.value = true;

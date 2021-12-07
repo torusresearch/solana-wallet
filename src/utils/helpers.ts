@@ -1,5 +1,4 @@
 import { PublicKey } from "@solana/web3.js";
-import { SolanaToken } from "@toruslabs/solana-controllers";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -7,6 +6,7 @@ import config from "@/config";
 import { addToast } from "@/modules/app";
 
 import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { ClubbedNfts, SolAndSplToken } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -132,11 +132,8 @@ export function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 }
 
-export function getClubbedNfts(
-  nfts: SolanaToken[]
-): { title: string; img: string; count: number; description: string; mints: string[]; collectionName: string }[] {
-  const finalData: { [symbol: string]: { title: string; img: string; count: number; description: string; mints: string[]; collectionName: string } } =
-    {};
+export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
+  const finalData: { [collectionName: string]: ClubbedNfts } = {};
   nfts.forEach((nft) => {
     const metaData = nft.metaplexData?.offChainMetaData;
     const collectionName = metaData?.collection?.family || metaData?.symbol || `${Date.now()}`;
@@ -153,7 +150,13 @@ export function getClubbedNfts(
         collectionName,
       };
     }
-    finalData[collectionName].mints.push(nft.mintAddress.toString());
+    finalData[collectionName].mints.push(`${nft?.mintAddress?.toString()}`);
   });
   return Object.values(finalData);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setFallbackImg(target: any, src: string) {
+  // eslint-disable-next-line no-param-reassign
+  (target as { src: string }).src = src;
 }

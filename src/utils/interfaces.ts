@@ -5,3 +5,12 @@ export interface SolAndSplToken extends SolanaToken {
   iconURL: string;
   symbol: string;
 }
+
+export interface ClubbedNfts {
+  title: string;
+  img: string;
+  count: number;
+  description: string;
+  mints: string[];
+  collectionName: string;
+}

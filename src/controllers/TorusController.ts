@@ -69,6 +69,7 @@ import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
 
+import FallbackNft from "@/assets/nft.png";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
@@ -104,7 +105,7 @@ export const DEFAULT_CONFIG = {
     defaultUnknownNFT: {
       name: "unknown NFT",
       offChainMetaData: {
-        image: "/favicon.ico",
+        image: FallbackNft,
       },
     },
   } as TokensInfoConfig,
@@ -150,9 +151,9 @@ export const DEFAULT_STATE = {
     tokenTickerMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
-    fetchingTokenInfo: true,
-    fetchingMetaInfo: true,
-    fetchingPriceInfo: true,
+    fetchedTokenInfo: { loading: false, loaded: false },
+    fetchedMetaInfo: { loading: false, loaded: false },
+    fetchedPriceInfo: { loading: false, loaded: false },
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -345,13 +346,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", async () => {
-      log.info("network changed");
       if (this.selectedAddress) {
-        // Get latest metaplex data
-        // this.tokenInfoController.initializeMetaPlexInfo(this.selectedAddress);
-        // this.tokenInfoController.updateMetaData()
         this.preferencesController.initializeDisplayActivity();
-        log.info(this.tokenInfoController.state);
       }
 
       this.engine?.emit("notification", {
@@ -383,7 +379,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokensTracker.on("store", (state2) => {
       this.update({ TokensTrackerState: state2 });
-      // log.info(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateMetaData(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
@@ -405,7 +400,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
-          log.info(tokenTransfer);
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
             log.error("error while patching a new tx", err);
           });
@@ -509,7 +503,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         receiverAccount
       );
     } catch (e) {
-      log.info("error getting associatedTokenAccount, account passed is possibly a token account");
+      log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
     }
 
     const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
@@ -897,7 +891,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
       log.info(req);
-      // debugger;
 
       const popupPayload: TransactionChannelDataType = {
         type: req.method,

@@ -66,7 +66,7 @@ module.exports = {
       boxShadow: {
         DEFAULT: "0px 14px 28px rgba(46, 91, 255, 0.06)",
         inner: "inset 0px 4px 28px rgba(46, 91, 255, 0.06)",
-        dark: "0 14px 28px rgba(0,0,0,0.16)",
+        dark: "0px 14px 28px rgba(92, 108, 127, 0.06);",
         dark2: "5px 5px 10px #212121, -5px -5px 10px rgb(55 56 60 / 25%)",
       },
       screens: {

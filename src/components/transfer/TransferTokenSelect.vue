@@ -3,10 +3,12 @@ import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } f
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { ref, watch } from "vue";
 
+import FallbackNft from "@/assets/nft.png";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
+import solicon from "@/assets/solana-mascot.svg";
 import { app } from "@/modules/app";
-import { getClubbedNfts } from "@/utils/helpers";
+import { getClubbedNfts, setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 import { getTokenFromMint, nftTokens, tokens } from "./token-helper";
@@ -35,7 +37,12 @@ watch(localToken, () => {
     <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
-          <img :src="selectedToken.iconURL" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
+          <img
+            :src="selectedToken.iconURL"
+            alt="selected token"
+            class="flex-shrink-0 h-6 w-6 rounded-full"
+            @error="setFallbackImg($event.target, solicon)"
+          />
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedToken.name || selectedToken?.metaplexData?.offChainMetaData?.name }}
           </span>
@@ -81,7 +88,7 @@ watch(localToken, () => {
               ]"
             >
               <div class="flex items-center">
-                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
+                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" @error="setFallbackImg($event.target, solicon)" />
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
                   <p>{{ item?.name }} ({{ item?.symbol }})</p>
                   <p class="text-app-gray-500">{{ item?.symbol === "SOL" ? "" : "SPL" }}</p></span
@@ -111,7 +118,12 @@ watch(localToken, () => {
                 ]"
               >
                 <div class="flex items-center">
-                  <img :src="getTokenFromMint(nftTokens, mintAddress)?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
+                  <img
+                    :src="getTokenFromMint(nftTokens, mintAddress)?.iconURL"
+                    class="flex-shrink-0 h-6 w-6 rounded-full"
+                    alt="iconURI"
+                    @error="setFallbackImg($event.target, FallbackNft)"
+                  />
                   <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
                     <p>{{ getTokenFromMint(nftTokens, mintAddress)?.name }} ({{ getTokenFromMint(nftTokens, mintAddress)?.symbol }})</p>
                   </span>

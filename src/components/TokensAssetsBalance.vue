@@ -18,6 +18,10 @@ const enum TOKEN_TAB_TYPES {
 
 const selectedTab = ref<TOKEN_TAB_TYPES>(TOKEN_TAB_TYPES.TOKEN_TAB);
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
+const nonFungibleTokens = computed(() => ControllerModule.nonFungibleTokens);
+const fungibleTokens = computed(() => ControllerModule.fungibleTokens);
+const didFetchNfts = computed(() => ControllerModule.didFetchNFTs);
+const didFetchTokens = computed(() => ControllerModule.didFetchFungibleTokenData);
 
 function selectTab(tab: TOKEN_TAB_TYPES) {
   selectedTab.value = tab;
@@ -78,12 +82,16 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
     <!-- List of token/nft Cards -->
     <div class="tab-info w-full">
-      <div
-        v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB && ControllerModule.fungibleTokens?.length"
-        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3"
-      >
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3">
+        <p v-if="!didFetchTokens" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
+          Please wait while we fetch your tokens...
+        </p>
+        <p v-if="didFetchTokens && !fungibleTokens.length" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
+          No Tokens found.
+        </p>
         <div
-          v-for="token in ControllerModule.fungibleTokens"
+          v-for="token in fungibleTokens"
+          v-else
           :key="token.tokenAddress.toString()"
           :class="getResponsiveClasses()"
           class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 cursor-pointer"
@@ -128,9 +136,16 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
       </div>
 
       <div v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1">
+        <p v-if="!didFetchNfts" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
+          Please wait while we fetch your NFTs...
+        </p>
+        <p v-if="didFetchNfts && !nonFungibleTokens.length" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
+          No NFTs found.
+        </p>
         <NftCard
           v-for="token in getClubbedNfts(nftTokens)"
-          :key="token.title"
+          v-else
+          :key="token.collectionName"
           :mode="NFT_CARD_MODE.SUMMARY"
           :summary-data="token"
           :class="getResponsiveClasses()"

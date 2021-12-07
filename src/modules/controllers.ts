@@ -126,32 +126,48 @@ class ControllerModule extends VuexModule {
   }
 
   get nonFungibleTokens(): SolanaToken[] {
-    const nfts = this.userTokens.filter((v) => {
-      if (!(v.balance?.decimals === 0 && v.balance.uiAmount > 0)) return false;
-      // fetching in progress, return false unless it got metadata
-      if (this.torusState.TokenInfoState.fetchingMetaInfo && !this.torusState.TokenInfoState.metaplexMetaMap[v.mintAddress]) {
-        return false;
-      }
-      return true;
-    });
-    return nfts.map((item) => {
-      return {
-        ...item,
-        // put a default nft data if the metaplex data is still undefined (fetchind is done / error)
-        metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress] || this.torus.config.TokensInfoConfig.defaultUnknownNFT, // {} Default unknown metadata
-      };
-    });
+    const nfts =
+      this.userTokens.filter((v) => {
+        if (!(v.balance?.decimals === 0) || !(v.balance.uiAmount > 0)) return false;
+        // fetching in progress, return false unless it got metadata
+        if (this.torusState.TokenInfoState.fetchedMetaInfo.loading && !this.torusState.TokenInfoState.metaplexMetaMap[v.mintAddress]) {
+          return false;
+        }
+        return true;
+      }) || [];
+    return nfts
+      .map((item) => {
+        return {
+          ...item,
+          // put a default nft data if the metaplex data is still undefined (fetchind is done / error)
+          metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress] || this.torus.config.TokensInfoConfig.defaultUnknownNFT, // {} Default unknown metadata
+        };
+      })
+      .sort((a, b) => a.tokenAddress.localeCompare(b.tokenAddress));
+  }
+
+  get didFetchNFTs(): boolean {
+    return this.torusState.TokenInfoState.fetchedMetaInfo.loaded;
+  }
+
+  get didFetchFungibleTokenData(): boolean {
+    return this.torusState.TokenInfoState.fetchedPriceInfo.loaded && this.torusState.TokenInfoState.fetchedTokenInfo.loaded;
   }
 
   get fungibleTokens(): SolanaToken[] {
     const tokens = this.userTokens.filter((v) => v.balance?.decimals !== 0);
-    return tokens.map((item) => {
-      return {
-        ...item,
-        data: this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress],
-        price: this.torusState.TokenInfoState.tokenPriceMap[item.mintAddress] || {},
-      };
-    });
+    // only show recognized tokens
+    return tokens
+      .filter(
+        (item) => this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress] && this.torusState.TokenInfoState.tokenPriceMap[item.mintAddress]
+      )
+      .map((item) => {
+        return {
+          ...item,
+          data: this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress],
+          price: this.torusState.TokenInfoState.tokenPriceMap[item.mintAddress] || {},
+        };
+      });
   }
 
   @Mutation
