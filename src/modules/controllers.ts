@@ -367,7 +367,8 @@ class ControllerModule extends VuexModule {
 
   @Action
   async importAccount(privKey: string): Promise<void> {
-    const address = await this.torus.addAccount(privKey, this.torus.userInfo);
+    const paddedKey = privKey.padStart(64,"0");
+    const address = await this.torus.addAccount(paddedKey, this.torus.userInfo);
     this.torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
@@ -378,7 +379,7 @@ class ControllerModule extends VuexModule {
       accountImportChannel.postMessage({
         data: {
           type: BROADCAST_CHANNELS_MSGS.ACCOUNT_IMPORTED,
-          privKey,
+          privKey: paddedKey,
         },
       });
       accountImportChannel.close();

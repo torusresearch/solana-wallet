@@ -35,8 +35,8 @@ const modalVisible = ref(false);
 const logout = () => {
   emits("onLogout");
 };
-const copySelectedAddress = () => {
-  copyText(props.selectedAddress);
+const copySelectedAddress = (address: string) => {
+  copyText(address);
 };
 
 const openImportModal = () => {
@@ -47,6 +47,12 @@ const closeImportModal = () => {
   modalVisible.value = false;
 };
 
+const setSelected = async (address: string) => {
+  await ControllersModule.setSelectedAccount(address);
+}
+
+const currentAccount = computed(() => ControllersModule.selectedAddress);
+
 </script>
 
 <template>
@@ -55,7 +61,7 @@ const closeImportModal = () => {
     <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
   </div>
   <div class="px-3 pb-3">
-    <div class="shadow dark:shadow-dark2 rounded-md py-2 px-3">
+    <div v-for="wallet in ControllersModule.torusState.KeyringControllerState.wallets" :key="wallet.address" class="hover:shadow dark:hover:shadow-dark2 rounded-md py-2 px-3 cursor-pointer" :class="{'shadow dark:shadow-dark2': currentAccount === wallet.address}" @click="()=>setSelected(wallet.address)">
       <div class="flex">
         <div class="flex items-center">
           <WalletIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
@@ -67,11 +73,11 @@ const closeImportModal = () => {
       </div>
       <div class="flex">
         <div class="font-body text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
-          {{ selectedAddress }}
+          {{ wallet.address }}
         </div>
         <div class="ml-auto flex space-x-1">
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-            <CopyIcon class="w-4 h-4" @click="copySelectedAddress" />
+            <CopyIcon class="w-4 h-4" @click="()=>copySelectedAddress(wallet.address)" />
           </div>
           <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
             <QrcodeIcon class="w-4 h-4" />
@@ -83,6 +89,7 @@ const closeImportModal = () => {
           </div>
         </div>
       </div>
+   
     </div>
   </div>
   <div

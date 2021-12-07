@@ -27,7 +27,7 @@ defineExpose({keystoreUpload});
 
 const importTypes: IImportType[] = [
   { label: "Private Key", value: "PrivateKey" },
-  { label: "Keystore", value: "Keystore" },
+  // { label: "Keystore", value: "Keystore" },
 ];
 
 const importState = reactive<{
@@ -69,6 +69,7 @@ const importAccount = async () => {
     try{
       resolvedKey = await ControllersModule.resolveKey({key:importState.privateKey, strategy:importState.importType.value});
       await ControllersModule.importAccount(resolvedKey);
+      closeModal();
     } catch(e) {
       console.log(e);
     }
