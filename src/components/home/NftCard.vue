@@ -28,7 +28,12 @@ function closeClicked() {
 </script>
 
 <template>
-  <div class="font-body" :class="mode !== NFT_CARD_MODE.SUMMARY ? `flex items-center justify-start` : ``" @click="cardClicked" @keydown="cardClicked">
+  <div
+    class="font-body"
+    :class="mode !== NFT_CARD_MODE.SUMMARY ? `flex items-center justify-start` : `container-card`"
+    @click="cardClicked"
+    @keydown="cardClicked"
+  >
     <div
       v-if="props.summaryData && mode === NFT_CARD_MODE.SUMMARY"
       class="
@@ -170,5 +175,9 @@ function closeClicked() {
 .summary-card {
   width: 260px;
   overflow-x: hidden;
+}
+
+.container-card {
+  width: 290px;
 }
 </style>

@@ -30,6 +30,7 @@ const transferDisabled = ref(true);
 const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
 const transferConfirmed = ref(false);
+const showAmountField = ref(true);
 const router = useRouter();
 const route = useRoute();
 
@@ -51,6 +52,8 @@ onMounted(() => {
   if (query.mint) {
     const el = [...tokens.value, ...nftTokens.value].find((x) => x.mintAddress === query.mint);
     selectedToken.value = el || tokens.value[0];
+
+    showAmountField.value = !!selectedToken.value.isFungible;
   }
 });
 
@@ -124,9 +127,6 @@ const rules = computed(() => {
       lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
       nft: helpers.withMessage("Must be Non Fungible Amount", nftVerifier),
     },
-
-    // transferId: { required },
-    // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
 });
 
@@ -156,6 +156,8 @@ const closeModal = () => {
 
 const openModal = async () => {
   $v.value.$touch();
+  // eslint-disable-next-line no-console
+  console.log("sdf", !$v.value.$invalid);
   if (!$v.value.$invalid) isOpen.value = true;
 
   const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
@@ -197,7 +199,18 @@ const confirmTransfer = async () => {
 };
 
 function updateSelectedToken($event: Partial<SolAndSplToken>) {
-  sendAmount.value = 0;
+  if ($event.isFungible === false) {
+    // new token selected is NFT
+    showAmountField.value = false;
+    sendAmount.value = 1;
+  } else {
+    // new token selected is SPL
+    showAmountField.value = true;
+    if (!selectedToken.value.isFungible) {
+      // last selected token was NFT
+      sendAmount.value = 0;
+    }
+  }
   selectedToken.value = $event;
 }
 </script>
@@ -218,7 +231,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
               </div>
             </div>
 
-            <div class="mb-6">
+            <div v-if="showAmountField" class="mb-6">
               <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
             </div>
             <div class="flex">
@@ -233,6 +246,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                 :receiver-verifier-id="transferTo"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                 :token="selectedToken"
+                :is-open="isOpen && selectedToken.isFungible"
                 :crypto-tx-fee="transactionFee"
                 :transfer-disabled="transferDisabled"
                 @transfer-confirm="confirmTransfer"

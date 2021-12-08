@@ -7,8 +7,9 @@ import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
-import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
+import { tokens } from "@/components/transfer/token-helper";
 import ControllersModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 const currency = computed(() => ControllersModule.torus.currentCurrency);
 
