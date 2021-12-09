@@ -526,7 +526,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       associatedTokenAccount,
       signer,
       [],
-      amount,
+      amount * 10 ** (decimals || 0),
       decimals
     );
     transaction.add(transferInstructions);
