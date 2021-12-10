@@ -69,7 +69,6 @@ import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
 
-import FallbackNft from "@/assets/nft.png";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
@@ -102,12 +101,6 @@ export const DEFAULT_CONFIG = {
   // default default Unknown NFT ( name is default with mint_address)
   TokensInfoConfig: {
     supportedCurrencies: config.supportedCurrencies,
-    defaultUnknownNFT: {
-      name: "unknown NFT",
-      offChainMetaData: {
-        image: FallbackNft,
-      },
-    },
   } as TokensInfoConfig,
 };
 export const DEFAULT_STATE = {
@@ -148,12 +141,8 @@ export const DEFAULT_STATE = {
   TokensTrackerState: { tokens: undefined },
   TokenInfoState: {
     tokenInfoMap: {},
-    tokenTickerMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
-    fetchedTokenInfo: { loading: false, loaded: false },
-    fetchedMetaInfo: { loading: false, loaded: false },
-    fetchedPriceInfo: { loading: false, loaded: false },
   },
   RelayMap: {},
   RelayKeyHostMap: {},

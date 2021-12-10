@@ -18,6 +18,7 @@ import NetworkDisplay from "../common/NetworkDisplay.vue";
 const props = withDefaults(
   defineProps<{
     senderPubKey: string;
+    s;
     receiverPubKey: string;
     receiverVerifierId: string;
     receiverVerifier: string;
