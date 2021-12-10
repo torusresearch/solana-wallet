@@ -379,7 +379,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokensTracker.on("store", (state2) => {
       this.update({ TokensTrackerState: state2 });
-      this.tokenInfoController.updateMetaData(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -526,7 +526,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       associatedTokenAccount,
       signer,
       [],
-      amount,
+      amount * 10 ** (decimals || 0),
       decimals
     );
     transaction.add(transferInstructions);

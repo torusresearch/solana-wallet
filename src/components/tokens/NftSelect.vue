@@ -12,9 +12,7 @@ const props = withDefaults(
     selectedMint: string;
   }>(),
   {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    selectedMint: nftTokens.value[0] || "",
+    selectedMint: nftTokens.value[0].mintAddress || "",
   }
 );
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, props.selectedMint));

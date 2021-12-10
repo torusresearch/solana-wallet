@@ -156,8 +156,6 @@ const closeModal = () => {
 
 const openModal = async () => {
   $v.value.$touch();
-  // eslint-disable-next-line no-console
-  console.log("sdf", !$v.value.$invalid);
   if (!$v.value.$invalid) isOpen.value = true;
 
   const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();

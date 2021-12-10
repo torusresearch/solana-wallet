@@ -5,7 +5,6 @@ import { useRouter } from "vue-router";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import NftCard from "@/components/home/NftCard.vue";
-import { nftTokens } from "@/components/transfer/token-helper";
 import ControllerModule from "@/modules/controllers";
 import { NFT_CARD_MODE } from "@/utils/enums";
 import { getClubbedNfts } from "@/utils/helpers";
@@ -20,8 +19,6 @@ const selectedTab = ref<TOKEN_TAB_TYPES>(TOKEN_TAB_TYPES.TOKEN_TAB);
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 const nonFungibleTokens = computed(() => ControllerModule.nonFungibleTokens);
 const fungibleTokens = computed(() => ControllerModule.fungibleTokens);
-const didFetchNfts = computed(() => ControllerModule.didFetchNFTs);
-const didFetchTokens = computed(() => ControllerModule.didFetchFungibleTokenData);
 
 function selectTab(tab: TOKEN_TAB_TYPES) {
   selectedTab.value = tab;
@@ -36,18 +33,6 @@ function transferToken(mint: string) {
 }
 function nftClicked(mints: string[]) {
   router.push(`/wallet/nfts?mints=${mints.join(",")}`);
-}
-
-// depending on the totalItems we'd like to have dynamic column count in grid
-function getResponsiveClasses(): string {
-  // if (totalItems === 1) { // for now showing in 4 grids whatsoever
-  //   return "w-full";
-  // } else if (totalItems === 2) {
-  //   return "w-full sm:w-1/2 gt-sm:w-1/2";
-  // } else if (totalItems === 3) {
-  //   return "w-full sm:w-1/2 md:w-1/3 xl:w-1/3  lg:w-1/3";
-  // }
-  return "w-full sm:w-1/2 md:w-1/3 xl:w-1/4  lg:w-1/4";
 }
 
 function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLength = 5): number {
@@ -83,18 +68,24 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
     <!-- List of token/nft Cards -->
     <div class="tab-info w-full">
       <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3">
-        <p v-if="!didFetchTokens" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
-          Please wait while we fetch your tokens...
-        </p>
-        <p v-if="didFetchTokens && !fungibleTokens.length" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
-          No Tokens found.
-        </p>
         <div
           v-for="token in fungibleTokens"
-          v-else
           :key="token.tokenAddress.toString()"
-          :class="getResponsiveClasses()"
-          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 cursor-pointer"
+          class="
+            my-3
+            px-3
+            overflow-hidden
+            sm:my-3 sm:px-3
+            md:my-3 md:px-3
+            lg:my-3 lg:px-3
+            xl:my-3 xl:px-3
+            w-full
+            sm:w-1/2
+            md:w-1/3
+            xl:w-1/4
+            lg:w-1/4
+            cursor-pointer
+          "
           @click="transferToken(token.mintAddress)"
           @keydown="transferToken(token.mintAddress)"
         >
@@ -135,20 +126,45 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         </div>
       </div>
 
-      <div v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1">
-        <p v-if="!didFetchNfts" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
-          Please wait while we fetch your NFTs...
-        </p>
-        <p v-if="didFetchNfts && !nonFungibleTokens.length" class="mt-12 text-center w-full text-app-text-600 dark:text-app-text-dark-500">
-          No NFTs found.
-        </p>
+      <div
+        v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB"
+        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1"
+        :class="!nonFungibleTokens?.length ? `w-full justify-center` : ``"
+      >
+        <div
+          v-if="!nonFungibleTokens?.length"
+          class="
+            no-nft
+            my-3
+            px-3
+            shadow
+            dark:shadow-dark
+            sm:my-3 sm:px-3
+            md:my-3 md:px-3
+            lg:my-3 lg:px-3
+            xl:my-3 xl:px-3
+            nft-container
+            border border-app-gray-200
+            dark:border-transparent
+            m-4
+            bg-white
+            dark:bg-app-gray-700
+            rounded-md
+            flex flex-col
+            items-center
+            justify-center
+          "
+        >
+          <p class="text-app-text-500 dark:text-app-text-dark-500 text-sm font-bold mb-2">Get you first NFT!</p>
+          <a href="https://www.holaplex.com/" target="_blank" class="text-app-text-accent text-xs">Check out Holaplex here</a>
+        </div>
         <NftCard
-          v-for="token in getClubbedNfts(nftTokens)"
+          v-for="token in getClubbedNfts(nonFungibleTokens)"
           v-else
           :key="token.collectionName"
           :mode="NFT_CARD_MODE.SUMMARY"
           :summary-data="token"
-          :class="getResponsiveClasses()"
+          class="w-full sm:w-1/2 md:w-1/3 xl:w-1/4 lg:w-1/4"
           @card-clicked="nftClicked(token.mints)"
         >
         </NftCard>
@@ -236,5 +252,11 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 .nft-face {
   height: 180px;
   object-fit: cover;
+}
+
+.no-nft {
+  width: 260px;
+  height: 80px;
+  overflow-x: hidden;
 }
 </style>
