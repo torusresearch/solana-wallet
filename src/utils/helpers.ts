@@ -136,7 +136,7 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
   const finalData: { [collectionName: string]: ClubbedNfts } = {};
   nfts.forEach((nft) => {
     const metaData = nft.metaplexData?.offChainMetaData;
-    const collectionName = metaData?.collection?.family || metaData?.symbol || `${Date.now()}`;
+    const collectionName = metaData?.collection?.family || metaData?.symbol || "unknown token";
     const elem = finalData[collectionName];
     if (elem) {
       finalData[collectionName] = { ...elem, title: metaData?.symbol || "", count: elem.count + 1 };
