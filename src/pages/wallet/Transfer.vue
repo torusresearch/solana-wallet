@@ -54,6 +54,7 @@ onMounted(() => {
     selectedToken.value = el || tokens.value[0];
 
     showAmountField.value = !!selectedToken.value.isFungible;
+    sendAmount.value = 1;
   }
 });
 

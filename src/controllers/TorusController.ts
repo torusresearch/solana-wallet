@@ -145,7 +145,7 @@ export const DEFAULT_STATE = {
       icon: "",
     },
   },
-  TokensTrackerState: { tokens: undefined, splTokens: {} },
+  TokensTrackerState: { tokens: undefined },
   TokenInfoState: {
     tokenInfoMap: {},
     tokenTickerMap: {},

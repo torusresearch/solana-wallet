@@ -137,7 +137,12 @@ const explorerUrl = computed(() => {
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
                     <p class="property-name text-app-text-600 dark:text-app-text-dark-white">View NFT</p>
-                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.name }}</p>
+                    <a
+                      class="property-value text-app-text-500 dark:text-app-text-dark-500"
+                      :href="`https://solscan.io/token/${props.token.mintAddress}`"
+                      target="_blank"
+                      >{{ props.token.metaplexData?.name }}</a
+                    >
                   </div>
                 </div>
               </div>
