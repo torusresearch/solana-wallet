@@ -11,6 +11,7 @@ const props = withDefaults(
     modelValue?: string | number;
     errors?: Array<ErrorObject>;
     type?: string;
+    disabled?: boolean;
   }>(),
   {
     size: "medium",
@@ -20,6 +21,7 @@ const props = withDefaults(
     modelValue: "",
     errors: () => [],
     type: "text",
+    disabled: false,
   }
 );
 
@@ -49,6 +51,7 @@ const value = computed({
         :type="type"
         :placeholder="placeholder"
         aria-label="text field"
+        :disabled="disabled"
       />
     </div>
     <div v-if="errors?.length" class="flex mt-1 px-1">

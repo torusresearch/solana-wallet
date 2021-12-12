@@ -28,11 +28,12 @@ import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
+import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -46,7 +47,7 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -118,7 +119,7 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
   }
 
   @Action
@@ -273,11 +274,25 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  logout(): void {
+  async logout(): Promise<Promise<Promise<Promise<void>>>> {
+    if (isMain && this.selectedAddress) {
+      try {
+        const openLoginInstance = await OpenLoginFactory.getInstance();
+        if (openLoginInstance.state.support3PC) {
+          // eslint-disable-next-line no-underscore-dangle
+          openLoginInstance._syncState(await openLoginInstance._getData());
+          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+        }
+      } catch (error) {
+        log.warn(error, "unable to logout with openlogin");
+        window.location.href = "/";
+      }
+    }
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus.init({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
     this.torus.setOrigin(origin);
+
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(
@@ -363,7 +378,7 @@ const module = getModule(ControllerModule);
 
 installStorePlugin({
   key: CONTROLLER_MODULE_KEY,
-  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
+  storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
     storage?.setItem(key, JSON.stringify(requiredState));

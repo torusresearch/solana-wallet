@@ -384,7 +384,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   updateRelayMap = async (): Promise<void> => {
     const relayMap: { [keyof: string]: string } = {};
     const relayKeyHost: { [keyof: string]: string } = {};
-
     const promises = Object.keys(this.config.RelayHost).map(async (value) => {
       try {
         const res = await fetch(`${this.config.RelayHost[value]}/public_key`);
@@ -958,7 +957,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.handleTopUp(params, windowId);
   }
 
-  async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
+  async handleTopUp(params: PaymentParams, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
 
@@ -975,7 +974,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success${redirectFlow ? "&useRedirectFlow=true" : ""}`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
@@ -986,22 +985,27 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
 
       log.info(windowId);
-      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
 
-      const topUpPopUpWindow = new PopupWithBcHandler({
-        state: {
-          url: finalUrl,
-          windowId,
-        },
-        config: {
-          dappStorageKey: config.dappStorageKey || undefined,
-          communicationEngine: this.communicationEngine,
-          communicationWindowManager: this.communicationManager,
-          target: "_blank",
-        },
-        instanceId: channelName,
-      });
-      await topUpPopUpWindow.handle();
+      if (!redirectFlow) {
+        const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
+
+        const topUpPopUpWindow = new PopupWithBcHandler({
+          state: {
+            url: finalUrl,
+            windowId,
+          },
+          config: {
+            dappStorageKey: config.dappStorageKey || undefined,
+            communicationEngine: this.communicationEngine,
+            communicationWindowManager: this.communicationManager,
+            target: "_blank",
+          },
+          instanceId: channelName,
+        });
+        await topUpPopUpWindow.handle();
+      } else {
+        window.location.href = finalUrl.toString();
+      }
       return true;
       // debugger;
     } catch (err) {
@@ -1040,6 +1044,50 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   getWindowId = (): string => Math.random().toString(36).slice(2);
 
+  getProviderState = (req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) => {
+    res.result = {
+      currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      isLoggedIn: !!this.selectedAddress,
+    };
+    end();
+  };
+
+  topup = (req: JRPCRequest<TopupInput>) => {
+    return this.embedhandleTopUp(req);
+  };
+
+  getWalletInstanceId = () => {
+    return "";
+  };
+
+  getUserInfo = (req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) => {
+    res.result = normalizeJson<UserInfo>(this.userInfo);
+    end();
+  };
+
+  signMessage = async (
+    req: JRPCRequest<{
+      data: Uint8Array;
+      display: string;
+      message?: string;
+    }> & {
+      origin?: string | undefined;
+      windowId?: string | undefined;
+    },
+    isRedirectFlow = false
+  ) => {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+    let approve: boolean;
+    if (!isRedirectFlow) approve = await this.handleSignMessagePopup(req);
+    else approve = true;
+    if (approve) {
+      // const msg = Buffer.from(req.params?.message || "", "hex");
+      const data = req.params?.data as Uint8Array;
+      return this.keyringController.signMessage(data, this.selectedAddress);
+    }
+    throw new Error("User Rejected");
+  };
+
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
@@ -1063,25 +1111,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // account-requiring RPC methods from completing successfully
       // only show address if account is unlocked
       getAccounts: async () => (this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : []),
-      signMessage: async (
-        req: JRPCRequest<{
-          data: Uint8Array;
-          display: string;
-          message?: string;
-        }> & {
-          origin?: string | undefined;
-          windowId?: string | undefined;
-        }
-      ) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
-        const approve = await this.handleSignMessagePopup(req);
-        if (approve) {
-          // const msg = Buffer.from(req.params?.message || "", "hex");
-          const data = req.params?.data as Uint8Array;
-          return this.keyringController.signMessage(data, this.selectedAddress);
-        }
-        throw new Error("User Rejected");
-      },
+      signMessage: this.signMessage.bind(this),
       signTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
         const message = req.params?.message;
@@ -1167,24 +1197,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
       logout: this.logout.bind(this),
-      getUserInfo: (req, res, _, end) => {
-        res.result = normalizeJson<UserInfo>(this.userInfo);
-        end();
-      },
-      getWalletInstanceId: () => {
-        return "";
-      },
-      topup: async (req) => {
-        return this.embedhandleTopUp(req);
-      },
+      getUserInfo: this.getUserInfo.bind(this),
+      getWalletInstanceId: this.getWalletInstanceId.bind(this),
+      topup: this.topup.bind(this),
       handleWindowRpc: this.communicationManager.handleWindowRpc,
-      getProviderState: (req, res, _, end) => {
-        res.result = {
-          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-          isLoggedIn: !!this.selectedAddress,
-        };
-        end();
-      },
+      getProviderState: this.getProviderState.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }

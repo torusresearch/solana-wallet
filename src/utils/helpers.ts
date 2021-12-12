@@ -5,7 +5,7 @@ import log from "loglevel";
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
-import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, REDIRECT_FLOW_CONFIG, SOL, STORAGE_TYPE, TWITTER } from "./enums";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -130,3 +130,48 @@ export function delay(ms: number) {
   // eslint-disable-next-line no-promise-executor-return
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 }
+
+// returns params object
+export const groupParamsByKey = (params: URLSearchParams) =>
+  [...params.entries()].reduce((acc: { [key: string]: any }, tuple) => { //eslint-disable-line
+    // getting the key and value from each tuple
+    const [key, val] = tuple;
+    if (Object.prototype.hasOwnProperty.call(acc, key)) {
+      // if the current key is already an array, we'll add the value to it
+      if (Array.isArray(acc[key])) {
+        // eslint-disable-next-line
+      acc[key] = [...acc[key], val]
+      } else {
+        // if it's not an array, but contains a value, we'll convert it into an array
+        // and add the current value to it
+        acc[key] = [acc[key], val];
+      }
+    } else {
+      // plain assignment if no special case is present
+      acc[key] = val;
+    }
+
+    return acc;
+  }, {});
+
+export const getB64DecodedParams = (defaultParams?: unknown) => {
+  let params;
+  params = new URLSearchParams(window.location.hash.slice(1)).get("params");
+  if (params) params = JSON.parse(Buffer.from(params, "base64").toString());
+  else params = defaultParams || {};
+  return params;
+};
+
+export const checkRedirectFlow = (): boolean => {
+  return new URLSearchParams(window.location.search).get("useRedirectFlow") === "true";
+};
+
+export const checkRedirect = (): string | null => {
+  const redirectTo = new URLSearchParams(window.location.search).get("redirectTo");
+  return redirectTo;
+};
+
+export const getRedirectConfig = (method: string | undefined): { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } => {
+  const { redirectPath = "/", requiresLogin = true, shouldRedirect = false } = method ? REDIRECT_FLOW_CONFIG[method] : {};
+  return { redirectPath, requiresLogin, shouldRedirect };
+};

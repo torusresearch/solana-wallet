@@ -3,17 +3,26 @@ import { BROADCAST_CHANNELS, broadcastChannelOptions, RedirectHandler } from "@t
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted } from "vue";
 
+import { checkRedirectFlow } from "../utils/helpers";
+
+const isRedirectFlow = checkRedirectFlow();
+
 const checkTopupSuccess = async () => {
   const queryParameters = new URLSearchParams(window.location.search);
   const instanceId = queryParameters.get("instanceId");
   const topupResult = queryParameters.get("topup");
-  if (topupResult === "success") {
+  if (topupResult === "success" && !isRedirectFlow) {
     const bc = new BroadcastChannel(`${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`, broadcastChannelOptions);
     await bc.postMessage({ data: "topup success" });
     bc.close();
   }
+  if (isRedirectFlow && topupResult) {
+    // send topupResult to deeplink and close
+    setTimeout(window.close, 0);
+  }
 };
 onMounted(async () => {
+  // using normal broadcast messages flow
   checkTopupSuccess();
   const redirectHandler = new RedirectHandler();
   await redirectHandler.handle();

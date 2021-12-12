@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Redirect Flow</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+</head>
+
+<script>
+    const generateTransaction = async () => {
+        const target_network = {
+            blockExplorerUrl: "https://explorer.solana.com",
+            chainId: "0x1",
+            displayName: "Solana Mainnet",
+            logo: "solana.svg",
+            rpcTarget: solanaWeb3.clusterApiUrl("mainnet-beta"),
+            ticker: "SOL",
+            tickerName: "Solana Token",
+        };
+        const conn = new solanaWeb3.Connection(target_network.rpcTarget)
+        const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+        const TransactionInstruction = solanaWeb3.SystemProgram.transfer({
+            fromPubkey: new solanaWeb3.PublicKey("C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"),
+            toPubkey: new solanaWeb3.PublicKey("32Qy5pNBpQVdPDu458PoEtMC85nm5HEsCe4eAtUH2xfF"),
+            lamports: 0.000000001 * 1000000000,
+        });
+        let transaction = new solanaWeb3.Transaction({ recentBlockhash: blockhash, feePayer: new solanaWeb3.PublicKey("C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW")}).add(TransactionInstruction);
+        return transaction.serializeMessage().toString("hex");
+    }
+    generateTransaction();
+    const openurl = async (method) => {
+        const baseurl="http://localhost:8080/redirectflow";
+        let url=baseurl;
+        let params = {};
+        switch(method){
+            case "set_provider":  params ={
+                blockExplorerUrl: "https://explorer.solana.com",
+                chainId: "0x1",
+                displayName: "Solana Mainnet",
+                logo: "solana.svg",
+                rpcTarget: solanaWeb3.clusterApiUrl("mainnet-beta"),
+                ticker: "SOL",
+                tickerName: "Solana Token",
+            };break;
+            case "iframe_status": params = {
+                isFullScreen: false,
+                rid: "",
+            };break;
+            case "topup": params = {
+                params: {
+                    selectedAddress: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                },
+                provider: "rampnetwork",
+            };break;
+            case "send_transaction": params = {
+                message: await generateTransaction(),
+            }
+            break;
+            case "sign_transaction": params = {
+                message: await generateTransaction(),
+            };
+            break;
+            case "sign_message": 
+            let enc = new TextEncoder();
+            params = {
+                data: enc.encode("Example Message")
+            }
+            break;
+            default:;
+        }
+        let queryParams = new URLSearchParams();
+        queryParams.set("method", method);
+        let encodedParams = btoa(JSON.stringify(params));
+        let useParams = true;
+        if(typeof params === "object" && Object.keys(params).length===0)
+            useParams=false;
+        if(Array.isArray(params) && params.length === 0)
+            useParams=false;
+        url=url+"?"+queryParams.toString()+(useParams ? "#params="+encodedParams : "");
+        Object.assign(document.createElement('a'),{
+            target: '_blank',
+            href: url,
+        }).click();
+    }
+</script>
+
+<style>
+.flexwrapper {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid black;
+}
+h1 {
+    width: 100%;
+    text-align: center;
+}
+
+</style>
+<body>
+    <div class="flexwrapper">
+        <h1>Auth Routes</h1>
+        <button onclick="openurl('login')">Login</button>
+        <button onclick="openurl('logout')">Logout</button>
+    </div>
+    <div class="flexwrapper">
+        <h1>Same as CommunicationProvider stuff in embed</h1>
+        <button onclick="openurl('user_info')">Get user info</button>
+        <button onclick="openurl('set_provider')">Change Provider</button>
+        <button onclick="openurl('get_provider_state')">Get Provider State</button>
+        <button onclick="openurl('wallet_get_provider_state')">Get Wallet Provider State</button>
+        <button onclick="openurl('topup')">Top Up</button>
+    </div>
+    <div class="flexwrapper">
+        <h1>Wallet Routes</h1>
+        <button onclick="openurl('send_transaction')">Send Transaction</button>
+        <button onclick="openurl('get_gasless_public_key and send_transaction')" disabled>Send Gasless Transaction</button>
+        <button onclick="openurl('sign_transaction')">Sign Transaction</button>
+        <button onclick="openurl('get_gasless_public_key and sign_transaction*n')" disabled>Sign All Transactions</button>
+        <button onclick="openurl('sign_message')">Sign Message</button>
+        <button onclick="openurl('get_gasless_public_key')">Get Gasless PubKey</button>
+    </div>
+    <div class="flexwrapper">
+        <h1>Are these allowed?</h1>
+        <button onclick="openurl('getAccounts')">Get Accounts</button>
+        <button onclick="openurl('solana_requestAccounts')">Solana Request Accounts</button>
+    </div>
+</body>
+</html>

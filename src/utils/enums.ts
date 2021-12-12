@@ -222,5 +222,88 @@ export interface LOGIN_CONFIG {
   buttonDescription: string;
 }
 
+export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } } = {
+  logout: {
+    redirectPath: "/logout",
+    requiresLogin: false,
+    shouldRedirect: true,
+  },
+  login: {
+    redirectPath: "/login",
+    requiresLogin: false,
+    shouldRedirect: true,
+  },
+  wallet_instance_id: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+  set_provider: {
+    redirectPath: "/providerchange",
+    requiresLogin: true,
+    shouldRedirect: true,
+  },
+  topup: {
+    redirectPath: "/",
+    requiresLogin: false,
+    shouldRedirect: false,
+  },
+  get_provider_state: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+  wallet_get_provider_state: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+  send_transaction: {
+    redirectPath: "/confirm?method=send_transaction",
+    requiresLogin: true,
+    shouldRedirect: true,
+  },
+  sign_transaction: {
+    redirectPath: "/confirm?method=sign_transaction",
+    requiresLogin: true,
+    shouldRedirect: true,
+  },
+  sign_all_transaction: {
+    redirectPath: "/confirm?method=sign_all_transaction",
+    requiresLogin: true,
+    shouldRedirect: true,
+  },
+  sign_message: {
+    redirectPath: "/confirm_message",
+    requiresLogin: true,
+    shouldRedirect: true,
+  },
+  connect: {
+    redirectPath: "/",
+    requiresLogin: false,
+    shouldRedirect: false,
+  },
+  user_info: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+  get_gasless_public_key: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+  getAccounts: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+  solana_requestAccounts: {
+    redirectPath: "/",
+    requiresLogin: true,
+    shouldRedirect: false,
+  },
+};
+
 // const METHODS = {
 // }

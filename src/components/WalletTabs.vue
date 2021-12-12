@@ -17,8 +17,8 @@ defineProps<{
 const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
-const logout = () => {
-  ControllerModule.logout();
+const logout = async () => {
+  await ControllerModule.logout();
 };
 </script>
 
