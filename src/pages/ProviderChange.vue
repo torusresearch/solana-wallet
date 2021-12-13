@@ -17,7 +17,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
-import { checkRedirectFlow, getB64DecodedParams } from "../utils/helpers";
+import { checkRedirectFlow, closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const params = getB64DecodedParams({
@@ -70,7 +70,7 @@ const approveProviderChange = async (): Promise<void> => {
   } else {
     ControllersModule.torus.setNetwork(params as unknown as ProviderConfig);
     // redirect with result true to deeplink and close
-    setTimeout(window.close, 0);
+    closeWindowTimeout();
   }
 };
 const denyProviderChange = async () => {
@@ -80,7 +80,7 @@ const denyProviderChange = async () => {
     bc.close();
   } else {
     // redirect with result false to deeplink and close
-    setTimeout(window.close, 0);
+    closeWindowTimeout();
   }
 };
 </script>

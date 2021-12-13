@@ -172,6 +172,12 @@ export const checkRedirect = (): string | null => {
 };
 
 export const getRedirectConfig = (method: string | undefined): { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } => {
-  const { redirectPath = "/", requiresLogin = true, shouldRedirect = false } = method ? REDIRECT_FLOW_CONFIG[method] : {};
+  const { redirectPath = "/", requiresLogin = true, shouldRedirect = true } = method ? REDIRECT_FLOW_CONFIG[method] : {};
   return { redirectPath, requiresLogin, shouldRedirect };
+};
+
+export const closeWindowTimeout = (): void => {
+  // eslint-disable-next-line
+  debugger;
+  closeWindowTimeout();
 };

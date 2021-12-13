@@ -13,7 +13,7 @@ import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
 import ControllerModule from "../modules/controllers";
-import { checkRedirectFlow, getB64DecodedParams } from "../utils/helpers";
+import { checkRedirectFlow, closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const isRedirectFlow = checkRedirectFlow();
@@ -57,20 +57,8 @@ onMounted(async () => {
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
-    } else {
-      txData = {
-        type: method as string,
-        message: params?.message || "",
-        signer: ControllerModule.torus.selectedAddress,
-        origin: window.origin,
-        balance: ControllerModule.torus.userSOLBalance,
-        selectedCurrency: ControllerModule.torus.state.CurrencyControllerState.currentCurrency,
-        currencyRate: ControllerModule.torus.state.CurrencyControllerState.conversionRate?.toString(),
-        jwtToken: ControllerModule.torus.getAccountPreferences(ControllerModule.torus.selectedAddress)?.jwtToken || "",
-        network: ControllerModule.torus.state.NetworkControllerState.providerConfig.displayName,
-        networkDetails: JSON.parse(JSON.stringify(ControllerModule.torus.state.NetworkControllerState.providerConfig)),
-      };
-    }
+    } else if (method) txData = await ControllerModule.torus.getTransactionData(method as string, params);
+    else throw new Error("method not supplied");
     const networkConfig = txData.networkDetails;
     const msg = Message.from(Buffer.from(txData.message || "", "hex"));
     tx.value = Transaction.populate(msg);
@@ -128,12 +116,12 @@ const approveTxn = async (): Promise<void> => {
       res = await ControllerModule.torus.transfer(tx.value, params);
       log.info(res);
       // send res to deeplink and close window
-      // setTimeout(window.close,0);
+      closeWindowTimeout();
     } else if (method === "sign_transaction") {
       res = ControllerModule.torus.signTransaction(tx.value);
       log.info(res);
       // send res to deeplink and close window
-      // setTimeout(window.close,0);
+      closeWindowTimeout();
     }
   }
 };
@@ -144,7 +132,7 @@ const rejectTxn = async () => {
     bc.close();
   } else {
     // send res to deeplink and  close window
-    setTimeout(window.close, 0);
+    closeWindowTimeout();
   }
 };
 </script>

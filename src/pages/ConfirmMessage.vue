@@ -8,7 +8,7 @@ import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
 import ControllerModule from "../modules/controllers";
-import { checkRedirectFlow, getB64DecodedParams } from "../utils/helpers";
+import { checkRedirectFlow, closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const isRedirectFlow = checkRedirectFlow();
@@ -31,21 +31,8 @@ onMounted(async () => {
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       channel_msg = await bcHandler.getMessageFromChannel<SignMessageChannelDataType>();
-    } else
-      channel_msg = {
-        type: "sign_message",
-        data: Buffer.from(params?.data || []).toString("hex"),
-        display: params?.display,
-        message: Buffer.from(params?.data || []).toString(),
-        signer: ControllerModule.torus.selectedAddress,
-        origin: window.location.origin,
-        balance: ControllerModule.torus.userSOLBalance,
-        selectedCurrency: ControllerModule.torus.state.CurrencyControllerState.currentCurrency,
-        currencyRate: ControllerModule.torus.state.CurrencyControllerState.conversionRate?.toString(),
-        jwtToken: ControllerModule.torus.getAccountPreferences(ControllerModule.torus.selectedAddress)?.jwtToken || "",
-        network: ControllerModule.torus.state.NetworkControllerState.providerConfig.displayName,
-        networkDetails: JSON.parse(JSON.stringify(ControllerModule.torus.state.NetworkControllerState.providerConfig)),
-      };
+    } else if (params.data) channel_msg = ControllerModule.torus.getMessageData("sign_message", params);
+    else throw new Error("Incorrect Params");
     msg_data.data = Buffer.from(channel_msg.data || "", "hex");
     msg_data.message = channel_msg.message || "";
     msg_data.origin = channel_msg.origin;
@@ -64,7 +51,7 @@ const approveTxn = async (): Promise<void> => {
   } else {
     const res = await ControllerModule.torus.signMessage({ params, method: "sign_message" }, true);
     log.info(res);
-    // setTimeout(window.close,0);
+    closeWindowTimeout();
   }
 };
 const rejectTxn = async () => {

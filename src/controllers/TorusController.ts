@@ -404,6 +404,38 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
+  getTransactionData(method: string, params: { message: string }) {
+    return {
+      type: method,
+      message: params?.message || "",
+      signer: this.selectedAddress,
+      origin: window.origin,
+      balance: this.userSOLBalance,
+      selectedCurrency: this.currencyController.state.currentCurrency,
+      currencyRate: this.currencyController.state.conversionRate?.toString(),
+      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+      network: this.networkController.state.providerConfig.displayName,
+      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+    };
+  }
+
+  getMessageData(method: string, params: { data: Uint8Array; display?: string }): SignMessageChannelDataType {
+    return {
+      type: method,
+      data: Buffer.from(params?.data || []).toString("hex"),
+      display: params?.display,
+      message: Buffer.from(params?.data || []).toString(),
+      signer: this.selectedAddress,
+      origin: window.location.origin,
+      balance: this.userSOLBalance,
+      selectedCurrency: this.currencyController.state.currentCurrency,
+      currencyRate: this.currencyController.state.conversionRate?.toString(),
+      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+      network: this.networkController.state.providerConfig.displayName,
+      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+    };
+  }
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
@@ -901,6 +933,46 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(error);
       this.txController.setTxStatusRejected(txId);
     }
+  }
+
+  // eslint-disable-next-line
+  async handleRedirectFlow(method: string, params: { [keyof: string]: any }) {
+    let res;
+    switch (method) {
+      case "topup":
+        await this.handleTopUp(params.params, undefined, true);
+        break;
+      case "wallet_instance_id":
+        res = this.getWalletInstanceId(); // send response to deeplink , then close window
+        break;
+      case "get_provider_state":
+        res = {
+          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          isLoggedIn: !!this.selectedAddress,
+        };
+        break;
+      case "wallet_get_provider_state":
+        res = {
+          accounts: this.keyringController.state.wallets.map((e) => e.publicKey),
+          chainId: this.networkController.state.chainId,
+          isUnlocked: !!this.selectedAddress,
+        };
+        break;
+      case "user_info":
+        res = normalizeJson<UserInfo>(this.userInfo); // send response to deeplink, then close window
+        break;
+      case "get_gasless_public_key":
+        res = this.state.RelayMap.torus;
+        break;
+      case "getAccounts":
+        res = this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
+        break;
+      case "solana_requestAccounts":
+        res = this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
+        break;
+      default:
+    }
+    return res;
   }
 
   async handleSignMessagePopup(

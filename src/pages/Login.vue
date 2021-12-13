@@ -16,7 +16,7 @@ import { addToast, app } from "@/modules/app";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
-import { checkRedirect, checkRedirectFlow } from "../utils/helpers";
+import { checkRedirect, checkRedirectFlow, closeWindowTimeout } from "../utils/helpers";
 
 const router = useRouter();
 const userEmail = ref("");
@@ -47,13 +47,13 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     if (redirect) router.push(`${redirect}${redirect.includes("?") ? "&" : "?"}useRedirectFlow=true${window.location.hash}`);
     else if (isRedirectFlow) {
       // send response to deeplink and close
-      setTimeout(window.close, 0);
+      closeWindowTimeout();
     } else if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
   } catch (error) {
     log.error(error);
     if (isRedirectFlow) {
       // send response to deeplink and close
-      setTimeout(window.close, 0);
+      closeWindowTimeout();
     }
     addToast({
       message: "Something went wrong, please try again.",

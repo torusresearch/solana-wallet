@@ -3,7 +3,7 @@ import { BROADCAST_CHANNELS, broadcastChannelOptions, RedirectHandler } from "@t
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted } from "vue";
 
-import { checkRedirectFlow } from "../utils/helpers";
+import { checkRedirectFlow, closeWindowTimeout } from "../utils/helpers";
 
 const isRedirectFlow = checkRedirectFlow();
 
@@ -18,7 +18,7 @@ const checkTopupSuccess = async () => {
   }
   if (isRedirectFlow && topupResult) {
     // send topupResult to deeplink and close
-    setTimeout(window.close, 0);
+    closeWindowTimeout();
   }
 };
 onMounted(async () => {

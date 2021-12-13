@@ -133,6 +133,11 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  async handleRedirectFlow({ method, params }: { method: string; params: { [keyof: string]: unknown } }) {
+    return this.torus.handleRedirectFlow(method, params);
+  }
+
+  @Action
   public async setCrashReport(status: boolean): Promise<void> {
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
