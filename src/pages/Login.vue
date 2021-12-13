@@ -47,7 +47,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (redirect) router.push(`${redirect}${window.location.hash}`);
+    if (redirect) router.push(`${redirect}&useRedirectFlow=true&resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
       // send response to deeplink and close
       redirectToResult(method, { success: true }, resolveRoute);
