@@ -17,7 +17,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
-import { checkRedirectFlow, closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
+import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const params = getB64DecodedParams({
@@ -31,6 +31,9 @@ const params = getB64DecodedParams({
 });
 
 const isRedirectFlow = checkRedirectFlow();
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 interface FinalTxData {
   origin: string;
@@ -70,7 +73,7 @@ const approveProviderChange = async (): Promise<void> => {
   } else {
     ControllersModule.torus.setNetwork(params as unknown as ProviderConfig);
     // redirect with result true to deeplink and close
-    closeWindowTimeout();
+    redirectToResult(method, { success: true }, resolveRoute);
   }
 };
 const denyProviderChange = async () => {
@@ -80,7 +83,7 @@ const denyProviderChange = async () => {
     bc.close();
   } else {
     // redirect with result false to deeplink and close
-    closeWindowTimeout();
+    redirectToResult(method, { success: false }, resolveRoute);
   }
 };
 </script>
@@ -97,25 +100,35 @@ const denyProviderChange = async () => {
       <div class="p-5">
         <div>
           <div class="text-lg mb-5 text-app-text-500 dark:text-app-text-500 font-semibold text-center">
-            Allow <strong class="text-white">{{ finalProviderData.origin }}</strong> change your network
+            Allow
+            <strong class="text-white">{{ finalProviderData.origin }}</strong>
+            change your network
           </div>
           <!-- <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
           </div> -->
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Current Network:</div>
-            <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3">
+              <TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" />
+            </div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested New Network:</div>
-            <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3">
+              <TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" />
+            </div>
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">Cancel</Button></div>
-        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">Confirm</Button></div>
+        <div>
+          <Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">Cancel</Button>
+        </div>
+        <div>
+          <Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">Confirm</Button>
+        </div>
       </div>
     </div>
   </div>

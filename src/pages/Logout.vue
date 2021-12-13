@@ -2,16 +2,17 @@
 import { onMounted } from "vue";
 
 import ControllersModule from "../modules/controllers";
-import { checkRedirectFlow, closeWindowTimeout } from "../utils/helpers";
+import { checkRedirectFlow, redirectToResult } from "../utils/helpers";
 
 const isRedirectFlow = checkRedirectFlow();
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 onMounted(async () => {
   await ControllersModule.logout();
-  const logoutBC = new BroadcastChannel("LOGOUT_WINDOWS_ALL");
-  logoutBC.postMessage("");
   if (isRedirectFlow) {
     // send logout to deeplink and close
-    closeWindowTimeout();
+    redirectToResult(method, { success: true }, resolveRoute);
   }
 });
 </script>

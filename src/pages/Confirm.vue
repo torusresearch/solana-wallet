@@ -13,12 +13,14 @@ import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
 import ControllerModule from "../modules/controllers";
-import { checkRedirectFlow, closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
+import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const isRedirectFlow = checkRedirectFlow();
 const params = getB64DecodedParams();
-const method = new URLSearchParams(window.location.search).get("method");
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -114,14 +116,10 @@ const approveTxn = async (): Promise<void> => {
     let res: string | Transaction;
     if (method === "send_transaction") {
       res = await ControllerModule.torus.transfer(tx.value, params);
-      log.info(res);
-      // send res to deeplink and close window
-      closeWindowTimeout();
+      redirectToResult(method, res, resolveRoute);
     } else if (method === "sign_transaction") {
       res = ControllerModule.torus.signTransaction(tx.value);
-      log.info(res);
-      // send res to deeplink and close window
-      closeWindowTimeout();
+      redirectToResult(method, res, resolveRoute);
     }
   }
 };
@@ -132,7 +130,7 @@ const rejectTxn = async () => {
     bc.close();
   } else {
     // send res to deeplink and  close window
-    closeWindowTimeout();
+    redirectToResult(method, { success: false }, resolveRoute);
   }
 };
 </script>

@@ -259,17 +259,17 @@ export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; re
     shouldRedirect: false,
   },
   send_transaction: {
-    redirectPath: "/confirm?method=send_transaction",
+    redirectPath: "/confirm",
     requiresLogin: true,
     shouldRedirect: true,
   },
   sign_transaction: {
-    redirectPath: "/confirm?method=sign_transaction",
+    redirectPath: "/confirm",
     requiresLogin: true,
     shouldRedirect: true,
   },
   sign_all_transaction: {
-    redirectPath: "/confirm?method=sign_all_transaction",
+    redirectPath: "/confirm",
     requiresLogin: true,
     shouldRedirect: true,
   },

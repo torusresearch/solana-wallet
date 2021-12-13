@@ -16,7 +16,7 @@ import { addToast, app } from "@/modules/app";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
-import { checkRedirect, checkRedirectFlow, closeWindowTimeout } from "../utils/helpers";
+import { checkRedirect, checkRedirectFlow, redirectToResult } from "../utils/helpers";
 
 const router = useRouter();
 const userEmail = ref("");
@@ -30,6 +30,9 @@ const rules = computed(() => {
 
 const redirect = checkRedirect();
 const isRedirectFlow = checkRedirectFlow();
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 const $v = useVuelidate(rules, { userEmail });
 
@@ -44,16 +47,16 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (redirect) router.push(`${redirect}${redirect.includes("?") ? "&" : "?"}useRedirectFlow=true${window.location.hash}`);
+    if (redirect) router.push(`${redirect}${window.location.hash}`);
     else if (isRedirectFlow) {
       // send response to deeplink and close
-      closeWindowTimeout();
+      redirectToResult(method, { success: true }, resolveRoute);
     } else if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
   } catch (error) {
     log.error(error);
     if (isRedirectFlow) {
       // send response to deeplink and close
-      closeWindowTimeout();
+      redirectToResult(method, { success: false }, resolveRoute);
     }
     addToast({
       message: "Something went wrong, please try again.",

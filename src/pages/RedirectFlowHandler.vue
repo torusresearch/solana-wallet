@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import log from "loglevel";
 import { onMounted } from "vue";
 
 import BoxLoader from "@/components/common/BoxLoader.vue";
 
 import ControllersModule from "../modules/controllers";
-import { closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
+import { getB64DecodedParams, redirectToResult } from "../utils/helpers";
 
 onMounted(async () => {
   const params = getB64DecodedParams();
-  const method = new URLSearchParams(window.location.search).get("method");
+  const queryParams = new URLSearchParams(window.location.search);
+  const method = queryParams.get("method");
+  const resolveRoute = queryParams.get("resolveRoute");
   let res: unknown;
   if (method) res = await ControllersModule.handleRedirectFlow({ method, params });
-  log.info(method, res);
-  if (method !== "topup") closeWindowTimeout();
+  if (method !== "topup") redirectToResult(method, res, resolveRoute);
 });
 </script>
 

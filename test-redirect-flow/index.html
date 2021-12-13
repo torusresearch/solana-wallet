@@ -78,7 +78,8 @@
             useParams=false;
         if(Array.isArray(params) && params.length === 0)
             useParams=false;
-        url=url+"?"+queryParams.toString()+(useParams ? "#params="+encodedParams : "");
+        const resolveRoute = window.location.href.replace("index.html","logger.html");
+        url=`${url}?${queryParams.toString()}&resolveRoute=${resolveRoute}${(useParams ? "#params="+encodedParams : "")}`;
         Object.assign(document.createElement('a'),{
             target: '_blank',
             href: url,

@@ -8,10 +8,6 @@ import { isMain } from "./utils/helpers";
 
 onMounted(() => {
   if (isMain) ControllersModule.init({ origin: window.location.origin });
-  const logoutBC = new BroadcastChannel("LOGOUT_WINDOWS_ALL");
-  logoutBC.addEventListener("message", () => {
-    ControllersModule.logout();
-  });
 });
 </script>
 

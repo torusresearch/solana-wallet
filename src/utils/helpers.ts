@@ -171,13 +171,17 @@ export const checkRedirect = (): string | null => {
   return redirectTo;
 };
 
-export const getRedirectConfig = (method: string | undefined): { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } => {
+export const getRedirectConfig = (method: string | null | undefined): { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } => {
   const { redirectPath = "/", requiresLogin = true, shouldRedirect = true } = method ? REDIRECT_FLOW_CONFIG[method] : {};
   return { redirectPath, requiresLogin, shouldRedirect };
 };
 
-export const closeWindowTimeout = (): void => {
-  // eslint-disable-next-line
-  debugger;
-  closeWindowTimeout();
+export const timeoutWindowClose = (): void => {
+  setTimeout(window.close, 0);
+};
+// eslint-disable-next-line
+export const redirectToResult = (method: string | null | undefined, result: any, resolveRoute: string | null): void => {
+  const res = Buffer.from(JSON.stringify(result)).toString("base64");
+  if (!resolveRoute) return timeoutWindowClose();
+  window.location.href = `${resolveRoute}?method=${method || "NA"}#result=${res}`;
 };

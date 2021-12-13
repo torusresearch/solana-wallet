@@ -8,12 +8,15 @@ import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
 import ControllerModule from "../modules/controllers";
-import { checkRedirectFlow, closeWindowTimeout, getB64DecodedParams } from "../utils/helpers";
+import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const isRedirectFlow = checkRedirectFlow();
 const params = getB64DecodedParams();
 if (Object.keys(params).length) params.data = Uint8Array.from(Object.values(params.data));
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 interface MsgData {
   origin: string;
@@ -50,8 +53,7 @@ const approveTxn = async (): Promise<void> => {
     bc.close();
   } else {
     const res = await ControllerModule.torus.signMessage({ params, method: "sign_message" }, true);
-    log.info(res);
-    closeWindowTimeout();
+    redirectToResult(method, res, resolveRoute);
   }
 };
 const rejectTxn = async () => {
@@ -60,8 +62,7 @@ const rejectTxn = async () => {
     await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
     bc.close();
   } else {
-    // send res to deeplink and close
-    setTimeout(window.close, 0);
+    redirectToResult(method, { success: false }, resolveRoute);
   }
 };
 </script>

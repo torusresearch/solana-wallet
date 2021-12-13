@@ -120,13 +120,16 @@ const router = createRouter({
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
       meta: { title: "redirecting" },
       beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
-        const { method } = to.query;
+        const { method, resolveRoute } = to.query;
         const useRedirectFlow = "useRedirectFlow=true";
         const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method as string | undefined);
-        // if trying to access authenticated path without login
         if (shouldRedirect) {
-          if (!ControllerModule.selectedAddress && requiresLogin) return next(`/login?${useRedirectFlow}&redirectTo=${redirectPath}${to.hash}`);
-          return next(`${redirectPath}${redirectPath.includes("?") ? "&" : "?"}${useRedirectFlow}${to.hash}`);
+          // if trying to access authenticated path without login
+          if (!ControllerModule.selectedAddress && requiresLogin)
+            return next(
+              `/login?${useRedirectFlow}&redirectTo=${redirectPath}?method=${method}&resolveRoute=${resolveRoute}&${useRedirectFlow}${to.hash}`
+            );
+          return next(`${redirectPath}?method=${method}&resolveRoute=${resolveRoute}&${useRedirectFlow}${to.hash}`);
         }
         return next();
       },
