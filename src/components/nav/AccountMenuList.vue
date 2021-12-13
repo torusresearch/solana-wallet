@@ -19,8 +19,9 @@ const props = defineProps<{
 const emits = defineEmits(["onLogout"]);
 
 const explorerUrl = computed(() => {
-  const { blockExplorerUrl, chainId } = ControllersModule.torusState.NetworkControllerState.providerConfig;
-  return `${blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(chainId)}`;
+  return `${ControllersModule.torus.blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(
+    ControllersModule.torus.chainId
+  )}`;
 });
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
