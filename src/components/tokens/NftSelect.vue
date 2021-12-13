@@ -12,7 +12,7 @@ const props = withDefaults(
     selectedMint: string;
   }>(),
   {
-    selectedMint: nftTokens.value[0].mintAddress || "",
+    selectedMint: "",
   }
 );
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, props.selectedMint));
@@ -27,7 +27,7 @@ watch(localMintAddress, () => {
   <Listbox v-model="localMintAddress" as="div" class="nft-select-container">
     <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-700 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
-        <span class="flex items-center">
+        <span v-if="selectedNft?.metaplexData?.offChainMetaData" class="flex items-center">
           <img :src="selectedNft?.metaplexData?.offChainMetaData?.image" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedNft?.metaplexData?.offChainMetaData?.name }}

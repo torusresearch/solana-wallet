@@ -251,6 +251,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return new Connection(this.networkController.getProviderConfig().rpcTarget);
   }
 
+  get blockExplorerUrl(): string {
+    return this.networkController.getProviderConfig().blockExplorerUrl;
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -515,7 +519,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       associatedTokenAccount,
       signer,
       [],
-      amount * 10 ** (decimals || 0),
+      amount,
       decimals
     );
     transaction.add(transferInstructions);

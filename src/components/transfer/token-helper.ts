@@ -25,9 +25,9 @@ export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
   return ControllersModule.nonFungibleTokens?.map((st) => {
     return {
       ...st,
-      name: st.metaplexData?.name || "",
+      name: st.metaplexData?.offChainMetaData?.name || "",
       iconURL: `${st.metaplexData?.offChainMetaData?.image}` || "",
-      symbol: st.metaplexData?.symbol,
+      symbol: st.metaplexData?.offChainMetaData?.symbol,
     };
   });
 });

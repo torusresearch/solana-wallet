@@ -64,8 +64,9 @@ const fiatTxFeeString = computed(() => {
 });
 
 const explorerUrl = computed(() => {
-  const { blockExplorerUrl, chainId } = ControllersModule.torusState.NetworkControllerState.providerConfig;
-  return `${blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(chainId)}`;
+  return `${ControllersModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(
+    ControllersModule.torus.chainId
+  )}`;
 });
 </script>
 <template>

@@ -31,7 +31,7 @@ const breadcrumbData = computed(() => {
 <template>
   <div class="flex flex-col justify-start items-start w-full py-2 pt-5">
     <BreadCrumb :bread-crumb-data="breadcrumbData" class="mb-4"></BreadCrumb>
-    <NftSelect :selected-mint="nfts[0].mintAddress" @update:selected-mint-address="nftSelected($event)"></NftSelect>
+    <NftSelect :selected-mint="nfts?.[0]?.mintAddress" @update:selected-mint-address="nftSelected($event)"></NftSelect>
     <div v-if="nfts.length" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 w-full pb-4 pt-1">
       <div v-for="nft in nfts" :key="nft.mintAddress" class="flex flex-row justify-start items-start flex-wrap nft-container">
         <NftCard

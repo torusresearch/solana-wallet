@@ -126,36 +126,34 @@ class ControllerModule extends VuexModule {
   }
 
   get nonFungibleTokens(): SolanaToken[] {
-    const nfts =
-      this.userTokens.filter((v) => {
-        if (!(v.balance?.decimals === 0) || !(v.balance.uiAmount > 0) || !this.torusState.TokenInfoState.metaplexMetaMap[v.mintAddress]?.uri)
-          return false;
-        return true;
-      }) || [];
-    return nfts
-      .map((item) => {
-        return {
-          ...item,
-          metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress],
-        };
-      })
-      .sort((a, b) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return this.userTokens
+      .reduce((acc: SolanaToken[], current: SolanaToken) => {
+        if (
+          !(current.balance?.decimals === 0) ||
+          !(current.balance.uiAmount > 0) ||
+          !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
+        ) {
+          return acc;
+        }
+        return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+      }, [])
+      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
   }
 
   get fungibleTokens(): SolanaToken[] {
-    const tokens = this.userTokens.filter((v) => v.balance?.decimals !== 0);
-    // only show recognized tokens
-    return tokens
-      .filter(
-        (item) => this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress] && this.torusState.TokenInfoState.tokenPriceMap[item.mintAddress]
-      )
-      .map((item) => {
-        return {
-          ...item,
-          data: this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress],
-          price: this.torusState.TokenInfoState.tokenPriceMap[item.mintAddress] || {},
-        };
-      });
+    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
+      if (current.balance?.decimals !== 0) {
+        return [
+          ...acc,
+          {
+            ...current,
+            data: this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress],
+            price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+          },
+        ];
+      }
+      return acc;
+    }, []);
   }
 
   @Mutation
