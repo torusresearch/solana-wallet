@@ -28,7 +28,9 @@ watch(localMintAddress, () => {
     <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-700 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span v-if="selectedNft?.metaplexData?.offChainMetaData" class="flex items-center">
-          <img :src="selectedNft?.metaplexData?.offChainMetaData?.image" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
+          <div class="flex-shrink-0 h-6 w-6 rounded-full img-loader-container">
+            <img :src="selectedNft?.metaplexData?.offChainMetaData?.image" alt="selected token" class="flex-shrink-0 h-6 w-6 rounded-full" />
+          </div>
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedNft?.metaplexData?.offChainMetaData?.name }}
           </span>
@@ -72,7 +74,9 @@ watch(localMintAddress, () => {
                 ]"
               >
                 <div class="flex items-center">
-                  <img :src="getTokenFromMint(nftTokens, mintAddress)?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
+                  <div class="flex-shrink-0 h-6 w-6 rounded-full img-loader-container">
+                    <img :src="getTokenFromMint(nftTokens, mintAddress)?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" />
+                  </div>
                   <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
                     <p>{{ getTokenFromMint(nftTokens, mintAddress)?.name }}</p>
                   </span>

@@ -121,12 +121,14 @@ const explorerUrl = computed(() => {
                 </span>
               </div>
               <div class="flex flex-row justify-start items-center py-6">
-                <img
-                  :src="token.metaplexData?.offChainMetaData?.image"
-                  alt="TOKEN IMAGE"
-                  class="img_preview"
-                  @error="setFallbackImg($event.target, FallbackNft)"
-                />
+                <div class="img_preview img-loader-container">
+                  <img
+                    :src="token.metaplexData?.offChainMetaData?.image"
+                    alt="TOKEN IMAGE"
+                    class="img_preview"
+                    @error="setFallbackImg($event.target, FallbackNft)"
+                  />
+                </div>
                 <div class="flex flex-col justify-center items-start h-full w-full ml-6">
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
                     <p class="property-name text-app-text-600 dark:text-app-text-dark-white">Name</p>
@@ -190,8 +192,9 @@ const explorerUrl = computed(() => {
   min-width: 160px;
 }
 .img_preview {
-  width: 160px;
+  max-width: 160px;
   height: 160px;
+  min-width: 160px;
   border-radius: 6px;
   object-fit: cover;
 }

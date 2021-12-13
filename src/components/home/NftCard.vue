@@ -57,7 +57,9 @@ function closeClicked() {
       "
     >
       <div class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full">
-        <img :src="props.summaryData.img" class="nft-face" alt="NFT LOGO" @error="setFallbackImg($event.target, FallbackNft)" />
+        <div class="nft-face img-loader-container">
+          <img :src="props.summaryData.img" class="nft-face" alt="NFT LOGO" @error="setFallbackImg($event.target, FallbackNft)" />
+        </div>
         <div class="flex flex-col justify-center align-center w-100 h-100">
           <p class="token-name">{{ props.summaryData.collectionName }}</p>
           <p class="token-desc summary">{{ `${props.summaryData.count || 1} Assets` }}</p>
@@ -86,12 +88,14 @@ function closeClicked() {
       "
     >
       <div class="nft-item flex flex-col justify-start align-start w-100">
-        <img
-          :src="nftToken?.metaplexData?.offChainMetaData?.image"
-          class="nft-face-large"
-          alt="NFT LOGO"
-          @error="setFallbackImg($event.target, FallbackNft)"
-        />
+        <div class="nft-face-large" style="background-color: rgb(156, 156, 156)">
+          <img
+            :src="nftToken?.metaplexData?.offChainMetaData?.image"
+            class="nft-face-large"
+            alt="NFT LOGO"
+            @error="setFallbackImg($event.target, FallbackNft)"
+          />
+        </div>
         <div class="flex flex-col justify-center align-center w-100 h-100">
           <p class="token-name">{{ nftToken.metaplexData?.offChainMetaData?.name }}</p>
           <p class="token-family mt-1 text-app-text-600 dark:text-app-text-dark-500">
@@ -123,9 +127,18 @@ function closeClicked() {
 <style scoped>
 .nft-face {
   height: 40px;
+  width: 40px;
   object-fit: cover;
   border-radius: 6px;
   margin-right: 16px;
+}
+.nft-face-container {
+  height: 40px;
+  width: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-right: 16px;
+  background: rgb(156, 156, 156);
 }
 .nft-container {
   height: 80px;
@@ -161,6 +174,13 @@ function closeClicked() {
   width: 153px;
   height: 160px;
   object-fit: cover;
+  border-radius: 6px;
+  margin: 0 auto 16px auto;
+}
+
+.nft-face-large-container {
+  width: 153px;
+  height: 160px;
   border-radius: 6px;
   margin: 0 auto 16px auto;
 }
