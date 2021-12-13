@@ -3,15 +3,18 @@ import { broadcastChannelOptions, PopupData } from "@toruslabs/base-controllers"
 import { safeatob } from "@toruslabs/openlogin-utils";
 import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { BoxLoader } from "@/components/common";
 
+// import router from "@/router";
 import OpenLoginFactory from "../auth/OpenLogin";
 import type { OpenLoginPopupResponse } from "../utils/enums";
 
 async function endLogin() {
   try {
+    const router = useRouter();
+
     const { hash } = useRoute();
     const hashParams = new URLSearchParams(hash.slice(1));
     const error = hashParams.get("error");
@@ -25,7 +28,8 @@ async function endLogin() {
     const { privKey } = openLoginState;
 
     if (!privKey) {
-      throw new Error("Login unsuccessful");
+      // throw new Error("Login unsuccessful");
+      router.push("/");
     }
     const userInfo = await openLoginInstance.getUserInfo();
     const openLoginStore = openLoginState.store.getStore();
