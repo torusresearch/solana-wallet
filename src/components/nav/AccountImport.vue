@@ -48,6 +48,7 @@ const importState = reactive<{
 const emits = defineEmits(["onClose"]);
 
 const closeModal = () => {
+  importState.privateKey = "";
   emits("onClose");
 };
 

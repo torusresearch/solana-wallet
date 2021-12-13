@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <Menu as="div" class="ml-3 relative z-10">
     <div>
-      <MenuButton class="max-w-xs flex items-center text-sm focus:outline-none">
+      <MenuButton class="max-w-xs flex items-center text-sm outline-focus" tabindex="0">
         <span class="sr-only">Open user menu</span>
         <div class="flex items-center">
           <span class="font-body text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user?.name }}</span>
@@ -49,4 +49,9 @@ defineProps<{
   </Menu>
 </template>
 
-<style scoped></style>
+<style scoped>
+.outline-focused:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+</style>
