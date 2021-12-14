@@ -1,18 +1,19 @@
 <script setup lang="ts">
 /* eslint-disable vuejs-accessibility/anchor-has-content */
 import { QrcodeIcon } from "@heroicons/vue/solid";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
+import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
 
 import { Button } from "@/components/common";
+import { AccountImport } from "@/components/nav";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
-
-import AccountImport from "./AccountImport.vue";
 
 const props = defineProps<{
   user: UserInfo;
@@ -28,7 +29,6 @@ const explorerUrl = computed(() => {
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
-const formattedBalance = computed(() => ControllerModule.userBalance);
 const modalVisible = ref(false);
 
 const logout = () => {
@@ -51,6 +51,14 @@ const setSelected = async (address: string) => {
 };
 
 const currentAccount = computed(() => ControllerModule.selectedAddress);
+
+const getWalletBalance = (address: string): string => {
+  const solBal = new BigNumber(ControllerModule.torusState.AccountTrackerState.accounts[address]?.balance || 0).div(LAMPORTS_PER_SOL);
+  const pricePerToken = ControllerModule.torusState.CurrencyControllerState.conversionRate;
+  const selectedCurrency = ControllerModule.torusState.CurrencyControllerState.currentCurrency;
+  const value = solBal.times(new BigNumber(pricePerToken));
+  return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString();
+};
 </script>
 
 <template>
@@ -77,7 +85,9 @@ const currentAccount = computed(() => ControllerModule.selectedAddress);
               {{ index ? `Imported Account ${index}` : user.email }}
             </div>
           </div>
-          <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ formattedBalance }} {{ currency }}</div>
+          <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">
+            {{ getWalletBalance(wallet.address) }} {{ currency }}
+          </div>
         </div>
         <div class="flex">
           <div class="font-body text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
