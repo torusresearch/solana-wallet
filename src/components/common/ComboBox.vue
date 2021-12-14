@@ -47,13 +47,13 @@ const onBlur = () => {
   <div class="combo-container flex flex-col">
     <div v-show="filteredItems.length > 0 && isListOpen" class="absolute inset-0 z-0" @click="isListOpen = false" @keydown="isListOpen = false"></div>
 
-    <div class="text-sm mb-1 font-body text-app-text-600 dark:text-app-text-dark-500">Sending to</div>
+    <div class="text-sm mb-1 font-body text-app-text-600 dark:text-app-text-dark-500">Send to</div>
     <input v-model="value" type="text" class="combo-input-field" aria-label="Select field" @focus="isListOpen = true" @blur="onBlur" />
 
     <div v-if="errors?.length" class="flex mt-1 px-1">
       <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
     </div>
-    <div v-show="filteredItems.length > 0 && isListOpen" class="z-20">
+    <div v-show="filteredItems.length > 0 && isListOpen" class="z-10">
       <ul class="w-full absolute bg-white dark:bg-app-gray-700 rounded-md shadow dark:shadow-dark overflow-hidden">
         <li
           v-for="(filteredItem, idx) in filteredItems"
@@ -71,7 +71,7 @@ const onBlur = () => {
 
 <style scoped>
 .combo-input-field {
-  @apply z-20 dark:bg-app-gray-800 shadow-inner dark:shadow-none bg-white rounded-md border-0 text-app-text-500 dark:text-app-text-dark-500;
+  @apply z-10 dark:bg-app-gray-800 shadow-inner dark:shadow-none bg-white rounded-md border-0 text-app-text-500 dark:text-app-text-dark-500;
   height: 54px;
 }
 </style>
