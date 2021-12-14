@@ -78,8 +78,8 @@
             useParams=false;
         if(Array.isArray(params) && params.length === 0)
             useParams=false;
-        const resolveRoute = window.location.href.replace("index.html","logger.html");
-        url=`${url}?${queryParams.toString()}&resolveRoute=${resolveRoute}${(useParams ? "#params="+encodedParams : "")}`;
+        const resolvePath = window.location.origin + window.location.pathname;
+        url=`${url}?${queryParams.toString()}&resolveRoute=${resolvePath}${(useParams ? "#params="+encodedParams : "")}`;
         Object.assign(document.createElement('a'),{
             target: '_blank',
             href: url,
@@ -88,50 +88,94 @@
 </script>
 
 <style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 .flexwrapper {
-    width: 100%;
+    flex: 1;
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
     justify-content: center;
     align-items: center;
-    margin-top: 3rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid black;
+    border: 2px solid black;
+}
+.flexwrapper * {
+    margin: 0.5rem;
 }
 h1 {
     width: 100%;
     text-align: center;
 }
-
+.controlsContainer {
+    min-height: 50vh;
+    display: flex;
+    padding: 1rem;
+}
+.container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: space-between;
+    padding: 2rem 2rem 4rem 2rem;
+}
+#console {
+    border: 2px solid black;
+    min-height: 80px;
+    max-height: 240px;
+    width: 80%;
+    overflow-y: scroll;
+}
 </style>
 <body>
-    <div class="flexwrapper">
-        <h1>Auth Routes</h1>
-        <button onclick="openurl('login')">Login</button>
-        <button onclick="openurl('logout')">Logout</button>
+    <div class="container">
+        <div class="controlsContainer">
+            <div class="flexwrapper">
+                <h1>Auth Routes</h1>
+                <button onclick="openurl('login')">Login</button>
+                <button onclick="openurl('logout')">Logout</button>
+            </div>
+            <div class="flexwrapper">
+                <h1>Same as CommunicationProvider stuff in embed</h1>
+                <button onclick="openurl('user_info')">Get user info</button>
+                <button onclick="openurl('set_provider')">Change Provider</button>
+                <button onclick="openurl('get_provider_state')">Get Provider State</button>
+                <button onclick="openurl('wallet_get_provider_state')">Get Wallet Provider State</button>
+                <button onclick="openurl('topup')">Top Up</button>
+            </div>
+            <div class="flexwrapper">
+                <h1>Wallet Routes</h1>
+                <button onclick="openurl('send_transaction')">Send Transaction</button>
+                <button onclick="openurl('get_gasless_public_key and send_transaction')" disabled>Send Gasless Transaction</button>
+                <button onclick="openurl('sign_transaction')">Sign Transaction</button>
+                <button onclick="openurl('get_gasless_public_key and sign_transaction*n')" disabled>Sign All Transactions</button>
+                <button onclick="openurl('sign_message')">Sign Message</button>
+                <button onclick="openurl('get_gasless_public_key')">Get Gasless PubKey</button>
+            </div>
+            <div class="flexwrapper">
+                <h1>Are these allowed?</h1>
+                <button onclick="openurl('getAccounts')">Get Accounts</button>
+                <button onclick="openurl('solana_requestAccounts')">Solana Request Accounts</button>
+            </div>
+        </div>
+        <div id="console" contenteditable="true">
+        </div>
     </div>
-    <div class="flexwrapper">
-        <h1>Same as CommunicationProvider stuff in embed</h1>
-        <button onclick="openurl('user_info')">Get user info</button>
-        <button onclick="openurl('set_provider')">Change Provider</button>
-        <button onclick="openurl('get_provider_state')">Get Provider State</button>
-        <button onclick="openurl('wallet_get_provider_state')">Get Wallet Provider State</button>
-        <button onclick="openurl('topup')">Top Up</button>
-    </div>
-    <div class="flexwrapper">
-        <h1>Wallet Routes</h1>
-        <button onclick="openurl('send_transaction')">Send Transaction</button>
-        <button onclick="openurl('get_gasless_public_key and send_transaction')" disabled>Send Gasless Transaction</button>
-        <button onclick="openurl('sign_transaction')">Sign Transaction</button>
-        <button onclick="openurl('get_gasless_public_key and sign_transaction*n')" disabled>Sign All Transactions</button>
-        <button onclick="openurl('sign_message')">Sign Message</button>
-        <button onclick="openurl('get_gasless_public_key')">Get Gasless PubKey</button>
-    </div>
-    <div class="flexwrapper">
-        <h1>Are these allowed?</h1>
-        <button onclick="openurl('getAccounts')">Get Accounts</button>
-        <button onclick="openurl('solana_requestAccounts')">Solana Request Accounts</button>
-    </div>
+
+
+    <script>
+        window.addEventListener("load", () => {
+            const method = new URLSearchParams(window.location.search).get("method");
+            let result = new URLSearchParams(window.location.hash.slice(1)).get("result");
+            result = result && atob(result);
+            const console = document.querySelector("#console");
+            if(result)
+                console.textContent = result;
+        })
+    </script>
 </body>
 </html>

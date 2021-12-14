@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BroadcastChannel } from "broadcast-channel";
 import { onMounted } from "vue";
 
 import ControllersModule from "../modules/controllers";
@@ -9,6 +10,8 @@ const queryParams = new URLSearchParams(window.location.search);
 const method = queryParams.get("method");
 const resolveRoute = queryParams.get("resolveRoute");
 onMounted(async () => {
+  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
+  bc.postMessage("logout");
   await ControllersModule.logout();
   if (isRedirectFlow) {
     // send logout to deeplink and close

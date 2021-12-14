@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BroadcastChannel } from "broadcast-channel";
 import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
@@ -18,6 +19,8 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
+  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
+  bc.postMessage("logout");
   await ControllerModule.logout();
 };
 </script>
