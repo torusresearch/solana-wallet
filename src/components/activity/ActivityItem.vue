@@ -69,7 +69,7 @@ const amountIsVisible = computed(() => {
     <!-- logo + text -->
     <div
       class="col-span-8 order-1 pl-0 sm:order-2 sm:pl-6 sm:col-span-6 xl:col-span-7"
-      :class="{ 'col-span-12 sm:col-span-8 xl:col-span-9': !amountIsVisible }"
+      :class="{ 'col-span-12 sm:col-span-6 xl:col-span-7': !amountIsVisible }"
     >
       <div class="flex items-center">
         <div class="logo-container">
@@ -79,7 +79,9 @@ const amountIsVisible = computed(() => {
           <div v-if="activity.type === 'unknown'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">Unknown</div>
           <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
             <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
-              {{ activity.send ? "Sent " : "Received " }} {{ Number(activity.totalAmountString) }} {{ activity.cryptoCurrency }}
+              {{ activity.send ? "Sent " : "Received " }}
+              {{ Number(activity.totalAmountString) }}
+              {{ activity.cryptoCurrency }}
 
               <span v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{
                 activity.send ? "to " : "from "
@@ -106,15 +108,15 @@ const amountIsVisible = computed(() => {
     >
       <div>
         <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
-          {{ Number(10) }}
+          {{ Number(activity.totalAmountString) }}
         </div>
         <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">
-          {{ "USDC" }}
+          {{ activity.cryptoCurrency }}
         </div>
       </div>
     </div>
     <!-- status -->
-    <div class="col-span-4 text-right order-4 flex items-center justify-end sm:col-span-2">
+    <div class="col-span-4 text-right order-4 flex items-center justify-end sm:col-span-2" :class="{ 'sm:col-span-4': !amountIsVisible }">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
         {{ activity.status }}
       </div>
