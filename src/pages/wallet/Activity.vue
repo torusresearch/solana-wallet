@@ -108,11 +108,13 @@ const filteredTransaction = computed(() => {
 </script>
 
 <template>
-  <div class="hidden sm:flex ml-auto w-2/4">
-    <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
-    <SelectField v-model="period" :items="periods" />
-  </div>
   <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
     <ActivityItem :activity="tx" />
   </div>
+  <Teleport to="#rightPanel">
+    <div class="hidden sm:flex ml-auto w-2/4">
+      <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
+      <SelectField v-model="period" :items="periods" />
+    </div>
+  </Teleport>
 </template>
