@@ -6,12 +6,12 @@ import { useRouter } from "vue-router";
 import BreadCrumb from "@/components/common/BreadCrumb.vue";
 import NftCard from "@/components/home/NftCard.vue";
 import NftSelect from "@/components/tokens/NftSelect.vue";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { NFT_CARD_MODE } from "@/utils/enums";
 
 const router = useRouter();
 const selectedMints = ref((router.currentRoute.value.query?.mints as string)?.split(","));
-const nfts = computed<SolanaToken[]>(() => ControllersModule.nonFungibleTokens.filter((tok) => selectedMints.value?.includes(`${tok?.mintAddress}`)));
+const nfts = computed<SolanaToken[]>(() => ControllerModule.nonFungibleTokens.filter((tok) => selectedMints.value?.includes(`${tok?.mintAddress}`)));
 
 const isExpanded = ref<{ [mintAddress: string]: boolean }>({});
 

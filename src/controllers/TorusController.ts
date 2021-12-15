@@ -62,7 +62,6 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
-import { TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { BigNumber } from "bignumber.js";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -98,10 +97,9 @@ export const DEFAULT_CONFIG = {
     // local: "http://localhost:4422/relayer",
   },
   TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
-  // default default Unknown NFT ( name is default with mint_address)
   TokensInfoConfig: {
     supportedCurrencies: config.supportedCurrencies,
-  } as TokensInfoConfig,
+  },
 };
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
@@ -320,7 +318,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
       getIdentities: () => this.preferencesController.state.identities,
-      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
@@ -332,7 +329,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.preferencesController.updateDisplayActivities();
-        this.tokensTracker.fetchSolTokensDetail();
+        this.tokensTracker.updateSolanaTokens();
         this.accountTracker.refresh();
       }
     });
@@ -370,17 +367,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ AccountTrackerState: state2 });
     });
 
+    this.tokenInfoController.on("store", (state2) => {
+      this.update({ TokenInfoState: state2 });
+    });
+
+    // TODO: why do we have to maintain
+    this.keyringController.on("store", (state2) => {
+      this.update({ KeyringControllerState: state2 });
+    });
+
     this.tokensTracker.on("store", (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
-    });
-
-    this.tokenInfoController.on("store", (state2) => {
-      this.update({ TokenInfoState: state2 });
-    });
-    this.keyringController.on("store", (state2) => {
-      this.update({ KeyringControllerState: state2 });
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {

@@ -9,7 +9,7 @@ import { computed } from "vue";
 
 import FallbackNft from "@/assets/nft.png";
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -40,9 +40,9 @@ const props = withDefaults(
     isOpen: false,
   }
 );
-const currency = computed(() => ControllersModule.torus.currentCurrency);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
 const pricePerToken = computed<number>((): number => {
-  return ControllersModule.torus.conversionRate;
+  return ControllerModule.torus.conversionRate;
 });
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
@@ -64,14 +64,12 @@ const fiatTxFeeString = computed(() => {
 });
 
 const explorerUrl = computed(() => {
-  return `${ControllersModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(
-    ControllersModule.torus.chainId
-  )}`;
+  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
 });
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -123,7 +121,7 @@ const explorerUrl = computed(() => {
               <div class="flex flex-row justify-start items-center py-6">
                 <div class="img_preview img-loader-container">
                   <img
-                    :src="token.metaplexData?.offChainMetaData?.image"
+                    :src="props.token.metaplexData?.offChainMetaData?.image"
                     alt="TOKEN IMAGE"
                     class="img_preview"
                     @error="setFallbackImg($event.target, FallbackNft)"

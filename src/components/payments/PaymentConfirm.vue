@@ -6,13 +6,13 @@ import { computed, ref } from "vue";
 import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
-const pricePerToken = computed(() => ControllersModule.torus.conversionRate); // will change this to accept other tokens as well
-const currency = computed(() => ControllersModule.torus.currentCurrency);
+const pricePerToken = computed(() => ControllerModule.torus.conversionRate); // will change this to accept other tokens as well
+const currency = computed(() => ControllerModule.torus.currentCurrency);
 
 const props = withDefaults(
   defineProps<{
@@ -78,7 +78,7 @@ const totalFiatCostString = computed(() => {
 </script>
 <template>
   <div
-    :class="{ dark: ControllersModule.isDarkMode }"
+    :class="{ dark: ControllerModule.isDarkMode }"
     class="
       inline-block
       w-screen

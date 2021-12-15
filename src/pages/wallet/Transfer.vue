@@ -11,7 +11,7 @@ import { Button, Card, SelectField, TextField } from "@/components/common";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 // import WalletTabs from "@/components/WalletTabs.vue";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
@@ -87,7 +87,7 @@ const tokenAddressVerifier = async (value: string) => {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
   }
 
-  const accountInfo = await ControllersModule.torus.connection.getParsedAccountInfo(associatedAccount);
+  const accountInfo = await ControllerModule.torus.connection.getParsedAccountInfo(associatedAccount);
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
@@ -112,7 +112,7 @@ const getErrorMessage = () => {
 };
 
 const getTokenBalance = () => {
-  if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllersModule.solBalance);
+  if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
 const rules = computed(() => {
@@ -159,7 +159,7 @@ const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
 
-  const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
+  const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
@@ -171,7 +171,7 @@ const confirmTransfer = async () => {
   try {
     if (selectedToken?.value?.mintAddress) {
       // SPL TRANSFER
-      await ControllersModule.torus.transferSpl(
+      await ControllerModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken.value as SolAndSplToken
@@ -179,12 +179,12 @@ const confirmTransfer = async () => {
     } else {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
-        fromPubkey: new PublicKey(ControllersModule.selectedAddress),
+        fromPubkey: new PublicKey(ControllerModule.selectedAddress),
         toPubkey: new PublicKey(transferTo.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
-      await ControllersModule.torus.transfer(tx);
+      await ControllerModule.torus.transfer(tx);
     }
     // resetForm();
     transferConfirmed.value = true;
@@ -238,7 +238,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
               <!-- :crypto-tx-fee="state.transactionFee" -->
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
-                :sender-pub-key="ControllersModule.selectedAddress"
+                :sender-pub-key="ControllerModule.selectedAddress"
                 :receiver-pub-key="transferTo"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
@@ -252,7 +252,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
                 @on-close-modal="closeModal"
               />
               <TransferNFT
-                :sender-pub-key="ControllersModule.selectedAddress"
+                :sender-pub-key="ControllerModule.selectedAddress"
                 :receiver-pub-key="transferTo"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"

@@ -104,11 +104,11 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
-                <img class="block h-5 w-auto" :src="token.data?.logoURI" alt="TOKEN Logo" />
+                <img class="block h-5 mr-2 w-auto token-image" :src="token.data?.logoURI" alt="TOKEN Logo" />
                 <p class="token-name">{{ token.data?.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
-                <p class="coin-value">~{{ token.balance?.uiAmountString }}</p>
+                <p class="coin-value">~{{ token.balance?.uiAmountStrings }}</p>
                 <p class="coin-currency">{{ token.data?.symbol }}</p></span
               >
             </div>
@@ -229,6 +229,14 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   text-align: right;
   letter-spacing: 0.0857143px;
   color: #0f1222;
+}
+
+.token-image {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 14px;
+  margin-top: 4px;
 }
 .token-header {
   box-sizing: border-box;

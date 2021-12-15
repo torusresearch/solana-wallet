@@ -142,12 +142,13 @@ class ControllerModule extends VuexModule {
 
   get fungibleTokens(): SolanaToken[] {
     return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
-      if (current.balance?.decimals !== 0) {
+      const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+      if (current.balance?.decimals !== 0 && data) {
         return [
           ...acc,
           {
             ...current,
-            data: this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress],
+            data,
             price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
           },
         ];
