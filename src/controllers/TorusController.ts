@@ -371,7 +371,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ TokenInfoState: state2 });
     });
 
-    // TODO: why do we have to maintain
     this.keyringController.on("store", (state2) => {
       this.update({ KeyringControllerState: state2 });
     });

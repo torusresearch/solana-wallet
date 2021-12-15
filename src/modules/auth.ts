@@ -11,7 +11,6 @@ export function requireLoggedIn(): void {
 
   const currentAddress = computed(() => ControllerModule.torus.selectedAddress);
 
-  // TODO: check if prefsController fucks up
   watch(currentAddress, (newAddr, oldAddr) => {
     if (newAddr !== oldAddr && !newAddr) {
       // This means user logged out

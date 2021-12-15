@@ -30,7 +30,6 @@ const onLogin = (provider: string, userEmail: string) => {
   emits("onLogin", provider, userEmail);
 };
 
-// TODO: integrate
 const loginButtonsArray: LOGIN_CONFIG[] = Object.values(config.loginConfig);
 
 const activeButton = ref<string>(LOGIN_PROVIDER.GOOGLE);
