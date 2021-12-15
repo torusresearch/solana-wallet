@@ -7,10 +7,11 @@ import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
-import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
-import ControllersModule from "@/modules/controllers";
+import { tokens } from "@/components/transfer/token-helper";
+import ControllerModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
-const currency = computed(() => ControllersModule.torus.currentCurrency);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
 
 const props = withDefaults(
   defineProps<{
@@ -48,7 +49,7 @@ const pricePerToken = computed<number>((): number => {
   if (isSPLToken()) {
     return props.token?.price?.[currency.value.toLowerCase()] || 0;
   }
-  return ControllersModule.torus.conversionRate;
+  return ControllerModule.torus.conversionRate;
 });
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
@@ -97,7 +98,7 @@ const fiatTxFeeString = computed(() => {
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />

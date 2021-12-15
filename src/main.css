@@ -53,6 +53,23 @@
     border: 1px solid #F3F3F4;
     border-radius: 6px;
   }
+
+  .t-btn-outline {
+    @apply bg-transparent
+    active:bg-app-secondary2
+    disabled:bg-app-gray-300
+    disabled:text-app-gray-500
+    border
+    border-solid
+    border-app-primary-500
+    rounded-md
+    px-8
+    font-body
+    text-app-primary-500
+    ease-linear
+    transition-all
+    duration-150;
+  }
   .dark .t-btn-tertiary{
     box-shadow: -5px -5px 10px #37383C, 5px 5px 10px #242529;
   }
@@ -66,4 +83,6 @@
     transition-all
     duration-150;
   }
+  .img-loader-container {
+    background-color: rgb(156, 156, 156)  }
 }

@@ -10,9 +10,16 @@ import { NAVIGATION_LIST } from "@/utils/enums";
 
 requireLoggedIn();
 
-defineProps<{
-  tab: keyof typeof NAVIGATION_LIST;
-}>();
+const props = withDefaults(
+  defineProps<{
+    tab: keyof typeof NAVIGATION_LIST;
+    showHeader: boolean;
+  }>(),
+  {
+    tab: "home",
+    showHeader: true,
+  }
+);
 
 const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
@@ -58,7 +65,7 @@ const logout = () => {
     </nav>
 
     <div class="py-6">
-      <header>
+      <header v-if="props.showHeader">
         <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ tabs[tab]?.title || "" }}

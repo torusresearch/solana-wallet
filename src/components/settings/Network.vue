@@ -2,7 +2,7 @@
 import { computed } from "vue";
 
 import { SelectField } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 import { WALLET_SUPPORTED_NETWORKS } from "../../utils/const";
 
@@ -14,9 +14,9 @@ const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   };
 });
 const selectedNetwork = computed({
-  get: () => networks.find((it) => it.value === ControllersModule.torus.chainId),
+  get: () => networks.find((it) => it.value === ControllerModule.torus.chainId),
   set: (value) => {
-    if (value) ControllersModule.setNetwork(value.value);
+    if (value) ControllerModule.setNetwork(value.value);
   },
 });
 </script>

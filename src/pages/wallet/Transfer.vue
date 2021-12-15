@@ -9,11 +9,12 @@ import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
 import ComboBox from "@/components/common/ComboBox.vue";
-// import MessageModal from "@/components/common/MessageModal.vue";
-import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
-import ControllersModule from "@/modules/controllers";
+import { nftTokens, tokens } from "@/components/transfer/token-helper";
+import TransferNFT from "@/components/transfer/TransferNFT.vue";
+import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -29,6 +30,7 @@ const transferDisabled = ref(true);
 const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
 const transferConfirmed = ref(false);
+const showAmountField = ref(true);
 const router = useRouter();
 const route = useRoute();
 
@@ -47,14 +49,17 @@ const AsyncMessageModal = defineAsyncComponent({
 
 onMounted(() => {
   const { query } = route;
-  if (query.ticker) {
-    const el = tokens.value.find((x) => x.symbol === query.ticker);
+  if (query.mint) {
+    const el = [...tokens.value, ...nftTokens.value].find((x) => x.mintAddress === query.mint);
     selectedToken.value = el || tokens.value[0];
+
+    showAmountField.value = !!selectedToken.value.isFungible;
+    sendAmount.value = 1;
   }
 });
 
 const contacts = computed(() =>
-  ControllersModule.contacts.map((contact) => {
+  ControllerModule.contacts.map((contact) => {
     return {
       text: `${contact.display_name} (${contact.contact_verifier_id})`,
       value: contact.contact_verifier_id,
@@ -83,25 +88,30 @@ const tokenAddressVerifier = async (value: string) => {
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
   let associatedAccount = new PublicKey(value);
   // try generate associatedAccount. if it failed, it might be token associatedAccount
+  // if succeed generate associatedAccount, it is valid main Sol Account.
   try {
     associatedAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
   }
 
-  const accountInfo = await ControllersModule.torus.connection.getParsedAccountInfo(associatedAccount);
-  log.info(accountInfo);
+  const accountInfo = await ControllerModule.torus.connection.getParsedAccountInfo(associatedAccount);
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
     if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
       return true;
     }
-  } else if (associatedAccount.toBase58() !== value) {
-    // this is new assoc account ( new assoc account generated, key in value is main sol account)
-    return true;
   }
   return false;
+};
+
+const nftVerifier = (value: number) => {
+  if (!selectedToken.value.isFungible) {
+    return Number.isInteger(value);
+  }
+  return true;
 };
 
 const getErrorMessage = () => {
@@ -111,10 +121,9 @@ const getErrorMessage = () => {
 };
 
 const getTokenBalance = () => {
-  if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllersModule.solBalance);
+  if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
-
 const rules = computed(() => {
   return {
     transferTo: {
@@ -126,9 +135,8 @@ const rules = computed(() => {
     sendAmount: {
       greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),
       lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
+      nft: helpers.withMessage("Must be Non Fungible Amount", nftVerifier),
     },
-    // transferId: { required },
-    // transactionFee: { greaterThanZero: helpers.withMessage("Must be greater than zero", minValue(1)) },
   };
 });
 
@@ -160,7 +168,7 @@ const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) isOpen.value = true;
 
-  const { b_hash, fee } = await ControllersModule.torus.calculateTxFee();
+  const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
@@ -172,21 +180,20 @@ const confirmTransfer = async () => {
   try {
     if (selectedToken?.value?.mintAddress) {
       // SPL TRANSFER
-      await ControllersModule.torus.transferSpl(
+      await ControllerModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken?.value?.mintAddress.toString()
+        selectedToken.value as SolAndSplToken
       );
     } else {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
-        fromPubkey: new PublicKey(ControllersModule.selectedAddress),
+        fromPubkey: new PublicKey(ControllerModule.selectedAddress),
         toPubkey: new PublicKey(transferTo.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
-      const res = await ControllersModule.torus.transfer(tx);
-      log.info(res);
+      await ControllerModule.torus.transfer(tx);
     }
     // resetForm();
     transferConfirmed.value = true;
@@ -200,7 +207,18 @@ const confirmTransfer = async () => {
 };
 
 function updateSelectedToken($event: Partial<SolAndSplToken>) {
-  sendAmount.value = 0;
+  if ($event.isFungible === false) {
+    // new token selected is NFT
+    showAmountField.value = false;
+    sendAmount.value = 1;
+  } else {
+    // new token selected is SPL
+    showAmountField.value = true;
+    if (!selectedToken.value.isFungible) {
+      // last selected token was NFT
+      sendAmount.value = 0;
+    }
+  }
   selectedToken.value = $event;
 }
 </script>
@@ -221,7 +239,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
               </div>
             </div>
 
-            <div class="mb-6">
+            <div v-if="showAmountField" class="mb-6">
               <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
             </div>
             <div class="flex">
@@ -229,13 +247,26 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
               <!-- :crypto-tx-fee="state.transactionFee" -->
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
-                :sender-pub-key="ControllersModule.selectedAddress"
+                :sender-pub-key="ControllerModule.selectedAddress"
                 :receiver-pub-key="transferTo"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="transferTo"
-                :is-open="isOpen"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
+                :token="selectedToken"
+                :is-open="isOpen && selectedToken.isFungible"
+                :crypto-tx-fee="transactionFee"
+                :transfer-disabled="transferDisabled"
+                @transfer-confirm="confirmTransfer"
+                @on-close-modal="closeModal"
+              />
+              <TransferNFT
+                :sender-pub-key="ControllerModule.selectedAddress"
+                :receiver-pub-key="transferTo"
+                :crypto-amount="sendAmount"
+                :receiver-verifier="selectedVerifier"
+                :receiver-verifier-id="transferTo"
+                :is-open="isOpen && !selectedToken.isFungible"
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"
                 :transfer-disabled="transferDisabled"
