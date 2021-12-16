@@ -135,9 +135,9 @@ const rules = computed(() => {
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
-      greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),
-      lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
-      nft: helpers.withMessage("Must be Non Fungible Amount", nftVerifier),
+      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(0.0001)),
+      lessThanBalance: helpers.withMessage(t("walletTransfer.insufficientBalance"), maxValue(getTokenBalance())),
+      nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
   };
 });

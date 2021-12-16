@@ -109,7 +109,9 @@ const explorerUrl = computed(() => {
               "
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
-                <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</p>
+                <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
+                  {{ t("walletTransfer.confirmTransaction") }}
+                </p>
               </DialogTitle>
               <div class="flex flex-col justify-start items-start py-4 border-b border-gray-700">
                 <NetworkDisplay></NetworkDisplay>
@@ -133,15 +135,15 @@ const explorerUrl = computed(() => {
                 </div>
                 <div class="flex flex-col justify-center items-start h-full w-full ml-6">
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">Name</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftName") }}</p>
                     <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.name }}</p>
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto py-5 w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">Symbol</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftSymbol") }}</p>
                     <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.symbol }}</p>
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">View NFT</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.viewNFT") }}</p>
                     <a
                       class="property-value text-app-text-500 dark:text-app-text-dark-500"
                       :href="`https://solscan.io/token/${props.token.mintAddress}`"
@@ -165,19 +167,25 @@ const explorerUrl = computed(() => {
                   pt-2
                 "
               >
-                <p class="flex-auto">Transaction Fee</p>
+                <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
                 <p>{{ props.cryptoTxFee }} SOL</p>
               </div>
               <div class="flex flex-row items- justify-start w-full mt-8">
-                <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">Total Cost</p>
+                <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
                   <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ props.cryptoTxFee }} SOL</p>
                   <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
                 </div>
               </div>
               <div class="flex flex-row justify-around items-center m-6">
-                <p class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="onCancel" @keydown="onCancel">Cancel</p>
-                <div><Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">Confirm</Button></div>
+                <p class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="onCancel" @keydown="onCancel">
+                  {{ t("walletTransfer.cancel") }}
+                </p>
+                <div>
+                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                    t("walletTransfer.confirm")
+                  }}</Button>
+                </div>
               </div>
             </div>
           </TransitionChild>
