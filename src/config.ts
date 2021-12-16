@@ -4,7 +4,7 @@ import log, { LogLevelDesc } from "loglevel";
 
 import { LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY } from "./utils/enums";
 
-const { VUE_APP_TORUS_NETWORK, NODE_ENV } = process.env;
+const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE } = process.env;
 
 const baseUrl = window.location.origin;
 
@@ -22,6 +22,9 @@ switch (NODE_ENV) {
     logLevel = "debug";
     break;
   case "production":
+    if (VUE_APP_MODE === "testing") logLevel = "debug";
+    else logLevel = "error";
+    break;
   default:
     logLevel = "error";
     break;
