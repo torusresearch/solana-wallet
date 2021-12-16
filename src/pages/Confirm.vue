@@ -7,6 +7,7 @@ import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
+import PermissionsDenied from "@/components/permissionDenied/PermissionsDenied.vue";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 // import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
@@ -43,6 +44,8 @@ const finalTxData = reactive<FinalTxData>({
 
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
+const userIsSigner = ref(true);
+
 onMounted(async () => {
   try {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
@@ -57,15 +60,27 @@ onMounted(async () => {
     const isGasless = tx.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
 
+    userIsSigner.value =
+      tx.instructions.filter((inst) => {
+        return inst.keys.filter((k) => {
+          return k.pubkey.toBase58() === txData.signer && k.isSigner;
+        }).length;
+      }).length > 0;
+
+    log.info(userIsSigner);
+
     decodedInst.value = tx.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
     origin.value = txData.origin;
-
+    log.info(txData.signer);
     try {
+      if (tx.instructions.length === 0) return;
       if (tx.instructions.length > 1) return;
       if (!tx.instructions[0].programId.equals(SystemProgram.programId)) return;
       if (SystemInstruction.decodeInstructionType(tx.instructions[0]) !== "Transfer") return;
+
+      // check for feepayer, from in transfer instruction
       const decoded = tx.instructions.map((inst) => {
         const decoded_inst = SystemInstruction.decodeTransfer(inst);
         return decoded_inst;
@@ -73,6 +88,7 @@ onMounted(async () => {
 
       const from = decoded[0].fromPubkey;
       const to = decoded[0].toPubkey;
+      if (txData.signer !== from.toBase58()) return;
 
       const txAmount = decoded[0].lamports;
 
@@ -108,8 +124,9 @@ const rejectTxn = async () => {
 </script>
 
 <template>
+  <PermissionsDenied v-if="!userIsSigner" :origin="origin" @on-close-modal="rejectTxn()" />
   <PaymentConfirm
-    v-if="finalTxData.totalSolAmount"
+    v-else-if="finalTxData.totalSolAmount"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
