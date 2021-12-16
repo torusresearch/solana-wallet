@@ -58,6 +58,7 @@ import {
   NetworkController,
   PreferencesController,
   SolanaToken,
+  TokenInfoController,
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
@@ -80,6 +81,7 @@ import {
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 import { PKG } from "../const";
 
@@ -95,6 +97,9 @@ export const DEFAULT_CONFIG = {
     // local: "http://localhost:4422/relayer",
   },
   TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
+  TokensInfoConfig: {
+    supportedCurrencies: config.supportedCurrencies,
+  },
 };
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
@@ -132,12 +137,19 @@ export const DEFAULT_STATE = {
     },
   },
   TokensTrackerState: { tokens: undefined },
+  TokenInfoState: {
+    tokenInfoMap: {},
+    metaplexMetaMap: {},
+    tokenPriceMap: {},
+  },
   RelayMap: {},
   RelayKeyHostMap: {},
 };
 
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
+
+  private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
 
@@ -237,6 +249,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return new Connection(this.networkController.getProviderConfig().rpcTarget);
   }
 
+  get blockExplorerUrl(): string {
+    return this.networkController.getProviderConfig().blockExplorerUrl;
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -250,6 +266,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
     this.initializeCommunicationProvider();
 
+    this.tokenInfoController = new TokenInfoController({
+      config: this.config.TokensInfoConfig,
+      provider: this.networkController._providerProxy,
+    });
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -298,7 +318,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
       getIdentities: () => this.preferencesController.state.identities,
-      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
@@ -310,14 +329,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.preferencesController.updateDisplayActivities();
-        this.tokensTracker.fetchSolTokens();
+        this.tokensTracker.updateSolanaTokens();
         this.accountTracker.refresh();
       }
     });
 
     // ensure accountTracker updates balances after network change
-    this.networkController.on("networkDidChange", () => {
-      log.info("network changed");
+    this.networkController.on("networkDidChange", async () => {
       if (this.selectedAddress) {
         this.preferencesController.initializeDisplayActivity();
       }
@@ -349,12 +367,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ AccountTrackerState: state2 });
     });
 
-    this.tokensTracker.on("store", (state2) => {
-      this.update({ TokensTrackerState: state2 });
+    this.tokenInfoController.on("store", (state2) => {
+      this.update({ TokenInfoState: state2 });
     });
 
     this.keyringController.on("store", (state2) => {
       this.update({ KeyringControllerState: state2 });
+    });
+
+    this.tokensTracker.on("store", (state2) => {
+      this.update({ TokensTrackerState: state2 });
+      this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -363,10 +387,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
           const tokenTransfer = constructTokenData(
+            this.tokenInfoController.state,
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
-
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
             log.error("error while patching a new tx", err);
           });
@@ -451,14 +475,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async transferSpl(receiver: string, amount: number, tokenMintAddress: string): Promise<string> {
+  async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
-    // const tokenInfo = this.tokenInfoController.getTokenInfo(tokenMintAddress)
-
-    const tokenMap = this.tokensTracker?.state.tokens?.[this.selectedAddress] || [];
-    const decimals = tokenMap.find((v) => new PublicKey(v.mintAddress).toBase58() === tokenMintAddress)?.data.decimals || 9;
-
+    const tokenMintAddress = selectedToken.mintAddress;
+    const decimals = selectedToken.balance?.decimals || 0;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
     const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
@@ -473,7 +494,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         receiverAccount
       );
     } catch (e) {
-      log.info("error getting associatedTokenAccount, account passed is possibly a token account");
+      log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
     }
 
     const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
@@ -489,7 +510,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       );
       transaction.add(newAccount);
     }
-
     const transferInstructions = Token.createTransferCheckedInstruction(
       TOKEN_PROGRAM_ID,
       sourceTokenAccount,
@@ -862,7 +882,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
       log.info(req);
-      // debugger;
 
       const popupPayload: TransactionChannelDataType = {
         type: req.method,
@@ -961,7 +980,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
-
       const parameters = {
         userAddress: params.selectedAddress || this.selectedAddress || undefined,
         userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,

@@ -19,6 +19,7 @@ import {
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
@@ -45,6 +46,7 @@ export interface TorusControllerState extends BaseState {
   TransactionControllerState: TransactionState<Transaction>;
   EmbedControllerState: BaseEmbedControllerState;
   TokensTrackerState: TokensTrackerState;
+  TokenInfoState: TokenInfoState;
   RelayMap: { [relay: string]: string };
   RelayKeyHostMap: { [Pubkey: string]: string };
 }
@@ -57,6 +59,7 @@ export interface TorusControllerConfig extends BaseConfig {
   KeyringControllerConfig: BaseConfig;
   TransactionControllerConfig: TransactionConfig;
   TokensTrackerConfig: TokensTrackerConfig;
+  TokensInfoConfig: TokensInfoConfig;
   RelayHost: { [relay: string]: string };
 }
 
@@ -221,6 +224,11 @@ export interface LOGIN_CONFIG {
   buttonDescription: string;
 }
 
+export enum NFT_CARD_MODE {
+  SUMMARY = "summary",
+  LARGE = "large",
+  EXPANDED = "expanded",
+}
 // const METHODS = {
 // }
 

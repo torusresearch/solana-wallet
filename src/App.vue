@@ -3,16 +3,16 @@ import { onMounted } from "vue";
 
 import { Toast } from "@/components/common";
 
-import ControllersModule from "./modules/controllers";
+import ControllerModule from "./modules/controllers";
 import { isMain } from "./utils/helpers";
 
 onMounted(() => {
-  if (isMain) ControllersModule.init({ origin: window.location.origin });
+  if (isMain) ControllerModule.init({ origin: window.location.origin });
 });
 </script>
 
 <template>
-  <div :class="{ dark: ControllersModule.isDarkMode }">
+  <div :class="{ dark: ControllerModule.isDarkMode }">
     <router-view />
     <Toast />
   </div>

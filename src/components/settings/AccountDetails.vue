@@ -6,13 +6,13 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
 
 const { t } = useI18n();
 const isOpen = ref(false);
 const isKeyShown = ref(false);
-const key = computed(() => ControllersModule.torus.privateKey);
+const key = computed(() => ControllerModule.torus.privateKey);
 
 const closeModal = () => {
   isOpen.value = false;
@@ -44,7 +44,7 @@ function copyPrivKey() {
     <div class="font-body">{{ t("walletSettings.accountDetails") }}</div>
   </div>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />

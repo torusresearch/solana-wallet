@@ -8,7 +8,7 @@ import { useI18n } from "vue-i18n";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { LOGIN_CONFIG } from "@/utils/enums";
 
 withDefaults(
@@ -33,7 +33,6 @@ const onLogin = (provider: string, userEmail: string) => {
   emits("onLogin", provider, userEmail);
 };
 
-// TODO: integrate
 const loginButtonsArray: LOGIN_CONFIG[] = Object.values(config.loginConfig);
 
 const activeButton = ref<string>(LOGIN_PROVIDER.GOOGLE);
@@ -44,7 +43,7 @@ const setActiveButton = (provider: string) => {
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode || true }" as="div">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode || true }" as="div">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 flex justify-center items-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />

@@ -1,7 +1,7 @@
 import * as bors from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { SolanaToken, TokenTransferData } from "@toruslabs/solana-controllers";
+import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
 import BN from "bignumber.js";
 // import log from "loglevel";
 export type DecodedDataType = {
@@ -320,7 +320,11 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
   return decodeUnknownInstruction(instruction);
 };
 
-export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToken[] = []): TokenTransferData | undefined => {
+export const constructTokenData = (
+  infoState: TokenInfoController["state"],
+  rawTransaction?: string,
+  tokenMap: SolanaToken[] = []
+): TokenTransferData | undefined => {
   if (!tokenMap || !rawTransaction) return undefined;
 
   // reconstruct Transaction as transaction object function is not accessible
@@ -342,18 +346,25 @@ export const constructTokenData = (rawTransaction?: string, tokenMap: SolanaToke
 
         // if tokenState (info) not found, assume unknown transaction
         if (!tokenState) return undefined;
-        // const mintAddress = new PublicKey(tokenState.mintAddress).toBase58();
-        // const token = getTokenData(mintAddress);
         // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
+        const symbol = tokenState.isFungible
+          ? infoState.tokenInfoMap[tokenState.mintAddress].symbol
+          : infoState.metaplexMetaMap[tokenState.mintAddress].symbol;
+
+        const logoURI = tokenState.isFungible
+          ? infoState.tokenInfoMap[tokenState.mintAddress].logoURI
+          : infoState.metaplexMetaMap[tokenState.mintAddress].offChainMetaData?.image;
+
+        const price = infoState.tokenPriceMap[tokenState.mintAddress];
         return {
-          tokenName: tokenState?.data?.symbol as string | "unknown",
+          tokenName: symbol as string | "unknown",
           amount: decoded.data.amount as number,
-          decimals: tokenState?.data?.decimals as number,
+          decimals: tokenState.balance?.decimals as number,
           from: new PublicKey(decoded.data.owner || "").toBase58(),
           to,
-          mintAddress: tokenState?.data.address || "",
-          logoURI: tokenState?.data?.logoURI as string,
-          conversionRate: tokenState?.price || {},
+          mintAddress: tokenState.mintAddress || "",
+          logoURI: logoURI || "",
+          conversionRate: price || {},
         };
       }
     }

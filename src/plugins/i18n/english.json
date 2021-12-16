@@ -210,7 +210,7 @@
   "dappLogin": {
     "version": "Version {version}",
     "termsLearnMore": "Learn more",
-    "termsAuth02": "Apple, GitHub, LinkedIn, Twitter, LINE, Passwordless.",
+    "termsAuth02": "Apple, Email, GitHub, Kakao, LINE, LinkedIn, Twitter, WeChat.",
     "termsConditions": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "continueWithBiometrics": "Continue with biometrics",
@@ -315,6 +315,8 @@
     "lessInfo": "Less Info",
     "topupTransactionTitle": "Well Done",
     "getFirstCollectible": "Get your first Collectible from OpenSea",
+    "getFirstNFT": "Get your first NFT!",
+    "holaplex": "Check out Holaplex here",
     "obSetupTitle": "Let us get you set up",
     "privacySecurity": "Privacy and Security",
     "close": "Close",

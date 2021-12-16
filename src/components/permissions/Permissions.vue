@@ -5,7 +5,7 @@ import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
 
 const { t } = useI18n();
@@ -42,7 +42,7 @@ function openLink() {
 </script>
 <template>
   <div
-    :class="{ dark: ControllersModule.isDarkMode }"
+    :class="{ dark: ControllerModule.isDarkMode }"
     class="
       inline-block
       w-screen

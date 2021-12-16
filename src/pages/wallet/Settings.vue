@@ -8,18 +8,18 @@ import { useI18n } from "vue-i18n";
 
 import { Panel } from "@/components/common";
 import { AccountDetails, AddressBook, CrashReporting, Display, Network } from "@/components/settings";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
-const contacts = computed(() => ControllersModule.contacts);
+const contacts = computed(() => ControllerModule.contacts);
 
 const { t } = useI18n();
 
 const saveContact = async (contactPayload: ContactPayload): Promise<void> => {
-  await ControllersModule.addContact(contactPayload);
+  await ControllerModule.addContact(contactPayload);
 };
 
 const deleteContact = async (contactId: number): Promise<void> => {
-  await ControllersModule.deleteContact(contactId);
+  await ControllerModule.deleteContact(contactId);
 };
 </script>
 

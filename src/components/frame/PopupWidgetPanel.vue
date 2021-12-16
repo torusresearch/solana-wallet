@@ -13,14 +13,14 @@ import { useI18n } from "vue-i18n";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
-const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
-const selectedPublicKey = computed(() => ControllersModule.selectedAddress);
-const formattedBalance = computed(() => ControllersModule.userBalance);
-const currentFiatCurrency = computed(() => ControllersModule.torus.currentCurrency);
-const userInfo = computed(() => ControllersModule.torus.userInfo);
+const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
+const selectedPublicKey = computed(() => ControllerModule.selectedAddress);
+const formattedBalance = computed(() => ControllerModule.userBalance);
+const currentFiatCurrency = computed(() => ControllerModule.torus.currentCurrency);
+const userInfo = computed(() => ControllerModule.torus.userInfo);
 
 withDefaults(
   defineProps<{
@@ -43,7 +43,7 @@ const showWallet = (path: string) => {
 
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closePanel">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closePanel">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />

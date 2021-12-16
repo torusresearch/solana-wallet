@@ -10,7 +10,7 @@ import { useI18n } from "vue-i18n";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
 
@@ -57,7 +57,7 @@ const denyProviderChange = async () => {
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
         <div>
-          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+          <img class="h-7 mx-auto w-auto mb-1" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">
           {{ `${t("dappTransfer.confirm")} ${t("dappTransfer.permission")}` }}

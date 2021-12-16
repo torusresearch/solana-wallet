@@ -198,7 +198,7 @@ const onEmailLogin = () => {
         v-model.lazy="userEmail"
         :size="isEmbed ? 'large' : 'medium'"
         variant="dark-bg"
-        placeholder="Enter your email"
+        :placeholder="t('login.enterYourEmail')"
         :errors="$v.userEmail.$errors"
       />
       <Button

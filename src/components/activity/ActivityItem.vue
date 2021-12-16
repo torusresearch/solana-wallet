@@ -14,12 +14,12 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 // const uiTransactionData: FormattedTransaction = getFormattedTransactionData(props.activity);
 // const showDetails = ref(false);
 // import { ref } from "vue";
-// import ControllersModule from "@/modules/controllers";
+// import ControllerModule from "@/modules/controllers";
 defineProps<{
   activity: SolanaTransactionActivity;
 }>();
 
-// const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
+// const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
 // const showDetails = ref(false);
 
 const { t } = useI18n();

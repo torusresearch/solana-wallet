@@ -35,7 +35,7 @@ const showWallet = (path: string) => {
 </script>
 
 <template>
-  <div class="torus-widget" :class="[buttonPosition]">
+  <div v-if="isLoggedIn" class="torus-widget" :class="[buttonPosition]">
     <PopupWidgetPanel
       :last-transaction="lastTransaction"
       :is-open="isLoggedIn && isIframeFullScreen"

@@ -3,10 +3,10 @@ import { Switch } from "@headlessui/vue";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
-const enabled = computed(() => ControllersModule.crashReport);
+const enabled = computed(() => ControllerModule.crashReport);
 </script>
 <template>
   <div class="pb-4">
@@ -18,7 +18,7 @@ const enabled = computed(() => ControllersModule.crashReport);
         :model="enabled"
         :class="enabled ? 'bg-app-primary-500' : 'bg-app-primary-400'"
         class="relative inline-flex items-center h-6 rounded-full w-11 mr-2"
-        @update:model-value="(v) => ControllersModule.setCrashReport(!ControllersModule.crashReport)"
+        @update:model-value="(v) => ControllerModule.setCrashReport(!ControllerModule.crashReport)"
       >
         <span class="sr-only">{{ t("walletSettings.enableNotifications") }}</span>
         <span :class="enabled ? 'translate-x-6' : 'translate-x-1'" class="inline-block w-4 h-4 transform bg-white rounded-full" />

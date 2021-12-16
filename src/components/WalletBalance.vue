@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
 
@@ -13,13 +13,13 @@ defineProps<{
 }>();
 
 const router = useRouter();
-const currency = computed(() => ControllersModule.torus.currentCurrency);
-const token = computed(() => ControllersModule.torus.nativeCurrency);
-const conversionRate = computed(() => ControllersModule.torus.conversionRate);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
+const token = computed(() => ControllerModule.torus.nativeCurrency);
+const conversionRate = computed(() => ControllerModule.torus.conversionRate);
 
-const formattedBalance = computed(() => ControllersModule.userBalance);
+const formattedBalance = computed(() => ControllerModule.userBalance);
 const updateCurrency = (newCurrency: string) => {
-  ControllersModule.setCurrency(newCurrency);
+  ControllerModule.setCurrency(newCurrency);
 };
 </script>
 <template>

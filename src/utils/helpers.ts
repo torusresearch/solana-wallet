@@ -6,6 +6,7 @@ import config from "@/config";
 import { addToast } from "@/modules/app";
 
 import { DISCORD, GITHUB, GOOGLE, LOCALE_EN, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { ClubbedNfts, SolAndSplToken } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -136,4 +137,33 @@ export const getUserLanguage = (): string => {
 export function delay(ms: number) {
   // eslint-disable-next-line no-promise-executor-return
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}
+
+export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
+  const finalData: { [collectionName: string]: ClubbedNfts } = {};
+  nfts.forEach((nft) => {
+    const metaData = nft.metaplexData?.offChainMetaData;
+    const collectionName = metaData?.collection?.family || metaData?.symbol || "unknown token";
+    const elem = finalData[collectionName];
+    if (elem) {
+      finalData[collectionName] = { ...elem, title: metaData?.symbol || "", count: elem.count + 1 };
+    } else {
+      finalData[collectionName] = {
+        title: metaData?.name || "",
+        count: 1,
+        description: metaData?.description || "",
+        img: metaData?.image || "",
+        mints: [],
+        collectionName,
+      };
+    }
+    finalData[collectionName].mints.push(`${nft?.mintAddress?.toString()}`);
+  });
+  return Object.values(finalData);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setFallbackImg(target: any, src: string) {
+  // eslint-disable-next-line no-param-reassign
+  (target as { src: string }).src = src;
 }

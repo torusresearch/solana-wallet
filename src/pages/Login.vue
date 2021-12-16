@@ -108,7 +108,13 @@ const onEmailLogin = () => {
           </div>
           <div class="mt-3 w-full">
             <form @submit.prevent="onEmailLogin">
-              <TextField v-model.lazy="userEmail" variant="dark-bg" class="mb-3" placeholder="Enter your email" :errors="$v.userEmail.$errors" />
+              <TextField
+                v-model.lazy="userEmail"
+                variant="dark-bg"
+                class="mb-3"
+                :placeholder="t('login.enterYourEmail')"
+                :errors="$v.userEmail.$errors"
+              />
               <Button variant="tertiary" :block="true" type="submit">{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}</Button>
             </form>
           </div>
@@ -118,7 +124,7 @@ const onEmailLogin = () => {
               {{ t("login.dataPrivacy") }}
             </div>
             <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
-              {{ `${t("dappLogin.termsAuth0")} ${t("dappLogin.termsAuth2")}` }}
+              {{ `${t("dappLogin.termsAuth01")} ${t("dappLogin.termsAuth02")}` }}
             </div>
           </div>
 

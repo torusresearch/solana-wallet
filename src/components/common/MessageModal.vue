@@ -3,7 +3,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, XCircleIcon, XIcon } from "@heroicons/vue/solid";
 
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { STATUS_ERROR, STATUS_INFO, STATUS_SUCCESS, STATUS_TYPE, STATUS_WARNING } from "@/utils/enums";
 
 withDefaults(
@@ -27,7 +27,7 @@ const closeModal = () => {
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />

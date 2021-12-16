@@ -9,7 +9,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
@@ -21,14 +21,15 @@ const props = defineProps<{
 const emits = defineEmits(["onLogout"]);
 
 const explorerUrl = computed(() => {
-  const { blockExplorerUrl, chainId } = ControllersModule.torusState.NetworkControllerState.providerConfig;
-  return `${blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(chainId)}`;
+  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(
+    ControllerModule.torus.chainId
+  )}`;
 });
 
 const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
 
-const currency = computed(() => ControllersModule.torus.currentCurrency);
-const formattedBalance = computed(() => ControllersModule.userBalance);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
+const formattedBalance = computed(() => ControllerModule.userBalance);
 
 const logout = () => {
   emits("onLogout");

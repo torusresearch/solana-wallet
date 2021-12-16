@@ -8,7 +8,6 @@ import { onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
-// import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
