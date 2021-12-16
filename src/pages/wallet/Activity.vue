@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 
 import ActivityItem from "@/components/activity/ActivityItem.vue";
 import { SelectField } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const ACTIVITY_ACTION_ALL = "walletActivity.allTransactions";
 const ACTIVITY_ACTION_SEND = "walletActivity.send";
@@ -67,7 +67,7 @@ const sixMonthAgoDate = computed(() => {
   const minDate = new Date();
   return minDate.setMonth(minDate.getMonth() - 6);
 });
-const allTransactions = computed(() => ControllersModule.selectedNetworkTransactions);
+const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
 
 const filteredTransaction = computed(() => {
   const selectedAction = actionType.value.value === ACTIVITY_ACTION_ALL ? "" : actionType.value.value;
@@ -108,13 +108,11 @@ const filteredTransaction = computed(() => {
 </script>
 
 <template>
+  <div class="hidden sm:flex ml-auto w-2/4">
+    <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
+    <SelectField v-model="period" :items="periods" />
+  </div>
   <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
     <ActivityItem :activity="tx" />
   </div>
-  <Teleport to="#rightPanel">
-    <div class="hidden sm:flex ml-auto w-2/4">
-      <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
-      <SelectField v-model="period" :items="periods" />
-    </div>
-  </Teleport>
 </template>

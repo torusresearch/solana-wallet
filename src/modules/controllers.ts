@@ -21,7 +21,7 @@ import {
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import { cloneDeep, merge, omit } from "lodash-es";
@@ -75,7 +75,22 @@ class ControllerModule extends VuexModule {
 
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
     const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
-    return txns || [];
+    return txns.map((item) => {
+      if (item.mintAddress) {
+        if (item.decimal === 0) {
+          const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
+          if (nftInfo) {
+            return { ...item, logoURI: nftInfo.offChainMetaData?.image, cryptoCurrency: nftInfo.symbol };
+          }
+        } else {
+          const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
+          if (tokenInfo) {
+            return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
+          }
+        }
+      }
+      return item;
+    });
   }
 
   get solBalance(): BigNumber {
@@ -104,6 +119,42 @@ class ControllerModule extends VuexModule {
 
   get isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
+  }
+
+  get userTokens(): SolanaToken[] {
+    return this.torus.state.TokensTrackerState.tokens ? this.torus.state.TokensTrackerState.tokens[this.selectedAddress] : [];
+  }
+
+  get nonFungibleTokens(): SolanaToken[] {
+    return this.userTokens
+      .reduce((acc: SolanaToken[], current: SolanaToken) => {
+        if (
+          !(current.balance?.decimals === 0) ||
+          !(current.balance.uiAmount > 0) ||
+          !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
+        ) {
+          return acc;
+        }
+        return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+      }, [])
+      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+  }
+
+  get fungibleTokens(): SolanaToken[] {
+    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
+      const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+      if (current.balance?.decimals !== 0 && data) {
+        return [
+          ...acc,
+          {
+            ...current,
+            data,
+            price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+          },
+        ];
+      }
+      return acc;
+    }, []);
   }
 
   @Mutation

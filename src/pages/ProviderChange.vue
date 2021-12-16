@@ -9,7 +9,7 @@ import { onMounted, reactive } from "vue";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
@@ -54,7 +54,7 @@ const denyProviderChange = async () => {
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
         <div>
-          <img class="h-7 mx-auto w-auto mb-1" :src="ControllersModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+          <img class="h-7 mx-auto w-auto mb-1" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">Confirm Permissions</div>
       </div>

@@ -6,21 +6,9 @@ import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 
-// import { FormattedTransaction, getFormattedTransactionData, TransactionDirection } from "./activity-data.service";
-
-// const props = defineProps<{
-//   activity: SolanaTransactionActivity;
-// }>();
-// const uiTransactionData: FormattedTransaction = getFormattedTransactionData(props.activity);
-// const showDetails = ref(false);
-// import { ref } from "vue";
-// import ControllersModule from "@/modules/controllers";
 const props = defineProps<{
   activity: SolanaTransactionActivity;
 }>();
-
-// const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
-// const showDetails = ref(false);
 
 const openExplorerLink = (link: string) => {
   window.open(link, "_blank");

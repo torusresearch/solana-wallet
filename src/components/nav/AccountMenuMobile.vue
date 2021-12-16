@@ -21,7 +21,7 @@ const toggleNav = () => {
   ></div>
   <div
     :class="{ 'translate-x-full': !showNav }"
-    class="fixed bg-white dark:bg-app-gray-700 w-80 right-0 inset-y-0 z-10 transform transition duration-200 ease-in-out"
+    class="fixed bg-white dark:bg-app-gray-700 w-80 right-0 inset-y-0 z-20 transform transition duration-200 ease-in-out"
   >
     <slot />
   </div>
