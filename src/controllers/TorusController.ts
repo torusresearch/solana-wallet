@@ -268,7 +268,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController = new TokenInfoController({
       config: this.config.TokensInfoConfig,
-      provider: this.networkController._providerProxy,
+      getConnection: this.networkController.getConnection.bind(this),
     });
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
@@ -286,38 +286,35 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController = new PreferencesController({
       state: this.state.PreferencesControllerState,
       config: this.config.PreferencesControllerConfig,
-      provider: this.networkController._providerProxy,
       signAuthMessage: this.keyringController.signAuthMessage.bind(this.keyringController),
       getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      getConnection: this.networkController.getConnection.bind(this),
     });
 
     this.accountTracker = new AccountTrackerController({
-      provider: this.networkController._providerProxy,
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
-      // blockTracker: this.networkController._blockTrackerProxy,
       getIdentities: () => this.preferencesController.state.identities,
-      onPreferencesStateChange: (listener) => this.preferencesController.on("store", listener),
-      // onNetworkChange: (listener) => this.networkController.on("store", listener),
+      getConnection: this.networkController.getConnection.bind(this),
     });
 
     this.txController = new TransactionController({
       config: this.config.TransactionControllerConfig,
       state: this.state.TransactionControllerState,
       blockTracker: this.networkController._blockTrackerProxy,
-      provider: this.networkController._providerProxy,
       getCurrentChainId: this.networkController.getNetworkIdentifier.bind(this.networkController),
+      getConnection: this.networkController.getConnection.bind(this),
       signTransaction: this.keyringController.signTransaction.bind(this.keyringController),
     });
 
     this.tokensTracker = new TokensTrackerController({
-      provider: this.networkController._providerProxy,
       state: this.state.TokensTrackerState,
       config: this.config.TokensTrackerConfig,
       getIdentities: () => this.preferencesController.state.identities,
+      getConnection: this.networkController.getConnection.bind(this),
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
@@ -328,9 +325,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.networkController._blockTrackerProxy.on("latest", () => {
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
-        this.preferencesController.updateDisplayActivities();
-        this.tokensTracker.updateSolanaTokens();
         this.accountTracker.refresh();
+        this.tokensTracker.updateSolanaTokens();
+        this.preferencesController.updateDisplayActivities();
       }
     });
 
@@ -346,6 +343,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
           chainId: this.networkController.state.chainId,
         },
       });
+    });
+
+    this.preferencesController.on("store", (_state2) => {
+      this.accountTracker.syncAccounts();
     });
 
     this.networkController.lookupNetwork();
