@@ -21,18 +21,19 @@ import {
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
+import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -46,7 +47,7 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -121,42 +122,6 @@ class ControllerModule extends VuexModule {
     return this.selectedAccountPreferences.theme === "dark";
   }
 
-  get userTokens(): SolanaToken[] {
-    return this.torus.state.TokensTrackerState.tokens ? this.torus.state.TokensTrackerState.tokens[this.selectedAddress] : [];
-  }
-
-  get nonFungibleTokens(): SolanaToken[] {
-    return this.userTokens
-      .reduce((acc: SolanaToken[], current: SolanaToken) => {
-        if (
-          !(current.balance?.decimals === 0) ||
-          !(current.balance.uiAmount > 0) ||
-          !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
-        ) {
-          return acc;
-        }
-        return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
-      }, [])
-      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
-  }
-
-  get fungibleTokens(): SolanaToken[] {
-    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
-      const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-      if (current.balance?.decimals !== 0 && data) {
-        return [
-          ...acc,
-          {
-            ...current,
-            data,
-            price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
-          },
-        ];
-      }
-      return acc;
-    }, []);
-  }
-
   @Mutation
   public setInstanceId(instanceId: string) {
     this.instanceId = instanceId;
@@ -169,7 +134,7 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
   }
 
   @Action
@@ -180,6 +145,11 @@ class ControllerModule extends VuexModule {
   @Action
   handleSuccess(message: string): void {
     addToast({ type: "success", message: message || "" });
+  }
+
+  @Action
+  async handleRedirectFlow({ method, params }: { method: string; params: { [keyof: string]: unknown } }) {
+    return this.torus.handleRedirectFlow(method, params);
   }
 
   @Action
@@ -324,11 +294,25 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  logout(): void {
+  async logout(): Promise<Promise<Promise<Promise<void>>>> {
+    if (isMain && this.selectedAddress) {
+      try {
+        const openLoginInstance = await OpenLoginFactory.getInstance();
+        if (openLoginInstance.state.support3PC) {
+          // eslint-disable-next-line no-underscore-dangle
+          openLoginInstance._syncState(await openLoginInstance._getData());
+          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+        }
+      } catch (error) {
+        log.warn(error, "unable to logout with openlogin");
+        window.location.href = "/";
+      }
+    }
     this.updateTorusState(cloneDeep(DEFAULT_STATE));
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus.init({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
     this.torus.setOrigin(origin);
+
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(
@@ -414,7 +398,7 @@ const module = getModule(ControllerModule);
 
 installStorePlugin({
   key: CONTROLLER_MODULE_KEY,
-  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
+  storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
     storage?.setItem(key, JSON.stringify(requiredState));

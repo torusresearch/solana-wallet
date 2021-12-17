@@ -15,14 +15,14 @@ const SOLANA_TOKEN: Partial<SolAndSplToken> = {
 export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
   return [
     SOLANA_TOKEN,
-    ...(ControllerModule.fungibleTokens?.map((st) => {
+    ...(ControllerModule.torus.fungibleTokens?.map((st) => {
       return { ...st, name: st.data?.name || "", iconURL: `${st.data?.logoURI}` || "", symbol: st.data?.symbol };
     }) || []),
   ];
 });
 
 export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
-  return ControllerModule.nonFungibleTokens?.map((st) => {
+  return ControllerModule.torus.nonFungibleTokens?.map((st) => {
     return {
       ...st,
       name: st.metaplexData?.offChainMetaData?.name || "",

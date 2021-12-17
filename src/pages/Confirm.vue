@@ -12,7 +12,15 @@ import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
+import ControllerModule from "../modules/controllers";
+import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
+
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+const isRedirectFlow = checkRedirectFlow();
+const params = getB64DecodedParams();
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -41,32 +49,36 @@ const finalTxData = reactive<FinalTxData>({
   isGasless: false,
 });
 
+const tx = ref<Transaction>();
+
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 onMounted(async () => {
   try {
-    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
-    const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
+    let txData: TransactionChannelDataType;
+    if (!isRedirectFlow) {
+      const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
+      txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
+    } else if (method) txData = await ControllerModule.torus.getTransactionData(method as string, params);
+    else throw new Error("method not supplied");
     const networkConfig = txData.networkDetails;
-
     const msg = Message.from(Buffer.from(txData.message || "", "hex"));
-    const tx = Transaction.populate(msg);
+    tx.value = Transaction.populate(msg);
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
 
-    const isGasless = tx.feePayer?.toBase58() !== txData.signer;
+    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
 
-    decodedInst.value = tx.instructions.map((inst) => {
+    decodedInst.value = tx.value.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
     origin.value = txData.origin;
-
     try {
-      if (tx.instructions.length > 1) return;
-      if (!tx.instructions[0].programId.equals(SystemProgram.programId)) return;
-      if (SystemInstruction.decodeInstructionType(tx.instructions[0]) !== "Transfer") return;
-      const decoded = tx.instructions.map((inst) => {
+      if (tx.value.instructions.length > 1) return;
+      if (!tx.value.instructions[0].programId.equals(SystemProgram.programId)) return;
+      if (SystemInstruction.decodeInstructionType(tx.value.instructions[0]) !== "Transfer") return;
+      const decoded = tx.value.instructions.map((inst) => {
         const decoded_inst = SystemInstruction.decodeTransfer(inst);
         return decoded_inst;
       });
@@ -94,16 +106,32 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({
-    data: { type: POPUP_RESULT, approve: true },
-  });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({
+      data: { type: POPUP_RESULT, approve: true },
+    });
+    bc.close();
+  } else if (tx.value) {
+    let res: string | Transaction;
+    if (method === "send_transaction") {
+      res = await ControllerModule.torus.transfer(tx.value, params);
+      redirectToResult(method, res, resolveRoute);
+    } else if (method === "sign_transaction") {
+      res = ControllerModule.torus.signTransaction(tx.value);
+      redirectToResult(method, res, resolveRoute);
+    }
+  }
 };
 const rejectTxn = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+    bc.close();
+  } else {
+    // send res to deeplink and  close window
+    redirectToResult(method, { success: false }, resolveRoute);
+  }
 };
 </script>
 

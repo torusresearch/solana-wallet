@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT, PopupWhitelabelData } from "@toruslabs/base-controllers";
+import {
+  BROADCAST_CHANNELS,
+  BroadcastChannelHandler,
+  broadcastChannelOptions,
+  POPUP_RESULT,
+  PopupWhitelabelData,
+  ProviderConfig,
+} from "@toruslabs/base-controllers";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
-// import log from "loglevel";
 import { onMounted, reactive } from "vue";
 
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
@@ -11,7 +17,23 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 
+import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
+
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+const params = getB64DecodedParams({
+  blockExplorerUrl: "?cluster=mainnet",
+  chainId: "0x1",
+  displayName: "Solana Mainnet",
+  logo: "solana.svg",
+  rpcTarget: "https://api.mainnet-beta.solana.com",
+  ticker: "SOL",
+  tickerName: "Solana Token",
+});
+
+const isRedirectFlow = checkRedirectFlow();
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 interface FinalTxData {
   origin: string;
@@ -27,25 +49,42 @@ const finalProviderData = reactive<FinalTxData>({
     theme: "light",
   },
 });
+
 onMounted(async () => {
-  const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
-  const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
-  finalProviderData.origin = providerData.origin;
-  finalProviderData.toNetwork = providerData.newNetwork.displayName;
-  finalProviderData.fromNetwork = providerData.currentNetwork;
-  finalProviderData.whitelabelData = providerData.whitelabelData;
+  if (!isRedirectFlow) {
+    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
+    const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
+    finalProviderData.origin = providerData.origin;
+    finalProviderData.toNetwork = providerData.newNetwork.displayName;
+    finalProviderData.fromNetwork = providerData.currentNetwork;
+    finalProviderData.whitelabelData = providerData.whitelabelData;
+  } else {
+    finalProviderData.toNetwork = params.displayName;
+    finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+  }
 });
 const approveProviderChange = async (): Promise<void> => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({
-    data: { type: POPUP_RESULT, approve: true },
-  });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({
+      data: { type: POPUP_RESULT, approve: true },
+    });
+    bc.close();
+  } else {
+    ControllerModule.torus.setNetwork(params as unknown as ProviderConfig);
+    // redirect with result true to deeplink and close
+    redirectToResult(method, { success: true }, resolveRoute);
+  }
 };
 const denyProviderChange = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+    bc.close();
+  } else {
+    // redirect with result false to deeplink and close
+    redirectToResult(method, { success: false }, resolveRoute);
+  }
 };
 </script>
 
@@ -61,25 +100,35 @@ const denyProviderChange = async () => {
       <div class="p-5">
         <div>
           <div class="text-lg mb-5 text-app-text-500 dark:text-app-text-500 font-semibold text-center">
-            Allow <strong class="text-white">{{ finalProviderData.origin }}</strong> change your network
+            Allow
+            <strong class="text-white">{{ finalProviderData.origin }}</strong>
+            change your network
           </div>
           <!-- <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
           </div> -->
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Current Network:</div>
-            <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3">
+              <TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" />
+            </div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested New Network:</div>
-            <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3">
+              <TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" />
+            </div>
           </div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 m-6">
-        <div><Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">Cancel</Button></div>
-        <div><Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">Confirm</Button></div>
+        <div>
+          <Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">Cancel</Button>
+        </div>
+        <div>
+          <Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">Confirm</Button>
+        </div>
       </div>
     </div>
   </div>

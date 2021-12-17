@@ -11,7 +11,9 @@ import { NFT_CARD_MODE } from "@/utils/enums";
 
 const router = useRouter();
 const selectedMints = ref((router.currentRoute.value.query?.mints as string)?.split(","));
-const nfts = computed<SolanaToken[]>(() => ControllerModule.nonFungibleTokens.filter((tok) => selectedMints.value?.includes(`${tok?.mintAddress}`)));
+const nfts = computed<SolanaToken[]>(() =>
+  ControllerModule.torus.nonFungibleTokens.filter((tok: SolanaToken) => selectedMints.value?.includes(`${tok?.mintAddress}`))
+);
 
 const isExpanded = ref<{ [mintAddress: string]: boolean }>({});
 

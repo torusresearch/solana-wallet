@@ -183,7 +183,8 @@ const confirmTransfer = async () => {
       await ControllerModule.torus.transferSpl(
         transferTo.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken.value as SolAndSplToken
+        selectedToken.value.mintAddress.toString(),
+        selectedToken?.value?.data?.decimals
       );
     } else {
       // SOL TRANSFER

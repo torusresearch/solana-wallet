@@ -3,6 +3,8 @@ import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordNam
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 
+import { checkRedirectFlow, getRedirectConfig } from "./utils/helpers";
+
 const enum AuthStates {
   AUTHENTICATED = "auth",
   NON_AUTHENTICATED = "un-auth",
@@ -107,6 +109,12 @@ const router = createRouter({
       meta: { title: "Confirm" },
     },
     {
+      name: "confirm-nft",
+      path: "/confirm-nft",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/ConfirmNft.vue"),
+      meta: { title: "Confirm Nft" },
+    },
+    {
       name: "confirm_message",
       path: "/confirm_message",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/ConfirmMessage.vue"),
@@ -117,6 +125,26 @@ const router = createRouter({
       path: "/redirect",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectHandler.vue"),
       meta: { title: "redirecting" },
+    },
+    {
+      name: "redirectflow",
+      path: "/redirectflow",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
+      meta: { title: "redirecting" },
+      beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+        const { method, resolveRoute } = to.query;
+        const useRedirectFlow = "useRedirectFlow=true";
+        const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method as string | undefined);
+        if (shouldRedirect) {
+          // if trying to access authenticated path without login
+          if (!ControllerModule.selectedAddress && requiresLogin)
+            return next(
+              `/login?${useRedirectFlow}&redirectTo=${redirectPath}?method=${method}&resolveRoute=${resolveRoute}&${useRedirectFlow}${to.hash}`
+            );
+          return next(`${redirectPath}?method=${method}&resolveRoute=${resolveRoute}&${useRedirectFlow}${to.hash}`);
+        }
+        return next();
+      },
     },
     {
       name: "providerchange",
@@ -150,12 +178,12 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 router.beforeEach((to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn()) {
+  const isRedirectFlow = checkRedirectFlow();
+  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) {
     next("/login");
-  } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn()) {
+  } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) {
     next("/");
-  }
-  next();
+  } else next();
 });
 
 export default router;

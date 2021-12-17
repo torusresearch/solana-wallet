@@ -79,9 +79,8 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { delay, getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
-import { SolAndSplToken } from "@/utils/interfaces";
 
 import { PKG } from "../const";
 
@@ -253,6 +252,42 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.networkController.getProviderConfig().blockExplorerUrl;
   }
 
+  get userTokens(): SolanaToken[] {
+    return this.state.TokensTrackerState.tokens ? this.state.TokensTrackerState.tokens[this.selectedAddress] : [];
+  }
+
+  get nonFungibleTokens(): SolanaToken[] {
+    return this.userTokens
+      .reduce((acc: SolanaToken[], current: SolanaToken) => {
+        if (
+          !(current.balance?.decimals === 0) ||
+          !(current.balance.uiAmount > 0) ||
+          !this.state.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
+        ) {
+          return acc;
+        }
+        return [...acc, { ...current, metaplexData: this.state.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+      }, [])
+      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+  }
+
+  get fungibleTokens(): SolanaToken[] {
+    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
+      const data = this.state.TokenInfoState.tokenInfoMap[current.mintAddress];
+      if (current.balance?.decimals !== 0 && data) {
+        return [
+          ...acc,
+          {
+            ...current,
+            data,
+            price: this.state.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+          },
+        ];
+      }
+      return acc;
+    }, []);
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -408,7 +443,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   updateRelayMap = async (): Promise<void> => {
     const relayMap: { [keyof: string]: string } = {};
     const relayKeyHost: { [keyof: string]: string } = {};
-
     const promises = Object.keys(this.config.RelayHost).map(async (value) => {
       try {
         const res = await fetch(`${this.config.RelayHost[value]}/public_key`);
@@ -428,6 +462,38 @@ export default class TorusController extends BaseController<TorusControllerConfi
       RelayKeyHostMap: relayKeyHost,
     });
   };
+
+  getTransactionData(method: string, params: { message: string }) {
+    return {
+      type: method,
+      message: params?.message || "",
+      signer: this.selectedAddress,
+      origin: window.origin,
+      balance: this.userSOLBalance,
+      selectedCurrency: this.currencyController.state.currentCurrency,
+      currencyRate: this.currencyController.state.conversionRate?.toString(),
+      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+      network: this.networkController.state.providerConfig.displayName,
+      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+    };
+  }
+
+  getMessageData(method: string, params: { data: Uint8Array; display?: string }): SignMessageChannelDataType {
+    return {
+      type: method,
+      data: Buffer.from(params?.data || []).toString("hex"),
+      display: params?.display,
+      message: Buffer.from(params?.data || []).toString(),
+      signer: this.selectedAddress,
+      origin: window.location.origin,
+      balance: this.userSOLBalance,
+      selectedCurrency: this.currencyController.state.currentCurrency,
+      currencyRate: this.currencyController.state.conversionRate?.toString(),
+      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+      network: this.networkController.state.providerConfig.displayName,
+      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+    };
+  }
 
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
@@ -475,11 +541,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
+  async transferSpl(receiver: string, amount: number, mintAddress: string, decimals = 0): Promise<string> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
-    const tokenMintAddress = selectedToken.mintAddress;
-    const decimals = selectedToken.balance?.decimals || 0;
+    const tokenMintAddress = mintAddress;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
     const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
@@ -923,6 +988,50 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
+  // eslint-disable-next-line
+  async handleRedirectFlow(method: string, params: { [keyof: string]: any }) {
+    let res;
+    switch (method) {
+      case "topup":
+        await this.handleTopUp(params.params, undefined, true);
+        break;
+      case "wallet_instance_id":
+        res = this.getWalletInstanceId(); // send response to deeplink , then close window
+        break;
+      case "get_provider_state":
+        res = {
+          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          isLoggedIn: !!this.selectedAddress,
+        };
+        break;
+      case "wallet_get_provider_state":
+        res = {
+          accounts: this.keyringController.state.wallets.map((e) => e.publicKey),
+          chainId: this.networkController.state.chainId,
+          isUnlocked: !!this.selectedAddress,
+        };
+        break;
+      case "user_info":
+        res = normalizeJson<UserInfo>(this.userInfo); // send response to deeplink, then close window
+        break;
+      case "get_gasless_public_key":
+        res = this.state.RelayMap.torus;
+        break;
+      case "getAccounts":
+        res = this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
+        break;
+      case "solana_requestAccounts":
+        res = this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
+        break;
+      case "nft_list":
+        await delay(10000);
+        res = this.nonFungibleTokens || [];
+        break;
+      default:
+    }
+    return res;
+  }
+
   async handleSignMessagePopup(
     req: JRPCRequest<{ data: Uint8Array; display?: string; message?: string }> & { origin?: string; windowId?: string }
   ): Promise<boolean> {
@@ -977,7 +1086,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.handleTopUp(params, windowId);
   }
 
-  async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
+  async handleTopUp(params: PaymentParams, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
       const parameters = {
@@ -993,7 +1102,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success${redirectFlow ? "&useRedirectFlow=true" : ""}`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
@@ -1004,22 +1113,27 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
 
       log.info(windowId);
-      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
 
-      const topUpPopUpWindow = new PopupWithBcHandler({
-        state: {
-          url: finalUrl,
-          windowId,
-        },
-        config: {
-          dappStorageKey: config.dappStorageKey || undefined,
-          communicationEngine: this.communicationEngine,
-          communicationWindowManager: this.communicationManager,
-          target: "_blank",
-        },
-        instanceId: channelName,
-      });
-      await topUpPopUpWindow.handle();
+      if (!redirectFlow) {
+        const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
+
+        const topUpPopUpWindow = new PopupWithBcHandler({
+          state: {
+            url: finalUrl,
+            windowId,
+          },
+          config: {
+            dappStorageKey: config.dappStorageKey || undefined,
+            communicationEngine: this.communicationEngine,
+            communicationWindowManager: this.communicationManager,
+            target: "_blank",
+          },
+          instanceId: channelName,
+        });
+        await topUpPopUpWindow.handle();
+      } else {
+        window.location.href = finalUrl.toString();
+      }
       return true;
       // debugger;
     } catch (err) {
@@ -1058,6 +1172,50 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   getWindowId = (): string => Math.random().toString(36).slice(2);
 
+  getProviderState = (req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) => {
+    res.result = {
+      currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      isLoggedIn: !!this.selectedAddress,
+    };
+    end();
+  };
+
+  topup = (req: JRPCRequest<TopupInput>) => {
+    return this.embedhandleTopUp(req);
+  };
+
+  getWalletInstanceId = () => {
+    return "";
+  };
+
+  getUserInfo = (req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) => {
+    res.result = normalizeJson<UserInfo>(this.userInfo);
+    end();
+  };
+
+  signMessage = async (
+    req: JRPCRequest<{
+      data: Uint8Array;
+      display: string;
+      message?: string;
+    }> & {
+      origin?: string | undefined;
+      windowId?: string | undefined;
+    },
+    isRedirectFlow = false
+  ) => {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+    let approve: boolean;
+    if (!isRedirectFlow) approve = await this.handleSignMessagePopup(req);
+    else approve = true;
+    if (approve) {
+      // const msg = Buffer.from(req.params?.message || "", "hex");
+      const data = req.params?.data as Uint8Array;
+      return this.keyringController.signMessage(data, this.selectedAddress);
+    }
+    throw new Error("User Rejected");
+  };
+
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
@@ -1081,25 +1239,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // account-requiring RPC methods from completing successfully
       // only show address if account is unlocked
       getAccounts: async () => (this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : []),
-      signMessage: async (
-        req: JRPCRequest<{
-          data: Uint8Array;
-          display: string;
-          message?: string;
-        }> & {
-          origin?: string | undefined;
-          windowId?: string | undefined;
-        }
-      ) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
-        const approve = await this.handleSignMessagePopup(req);
-        if (approve) {
-          // const msg = Buffer.from(req.params?.message || "", "hex");
-          const data = req.params?.data as Uint8Array;
-          return this.keyringController.signMessage(data, this.selectedAddress);
-        }
-        throw new Error("User Rejected");
-      },
+      signMessage: this.signMessage.bind(this),
       signTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
         const message = req.params?.message;
@@ -1185,24 +1325,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
       logout: this.logout.bind(this),
-      getUserInfo: (req, res, _, end) => {
-        res.result = normalizeJson<UserInfo>(this.userInfo);
-        end();
-      },
-      getWalletInstanceId: () => {
-        return "";
-      },
-      topup: async (req) => {
-        return this.embedhandleTopUp(req);
-      },
+      getUserInfo: this.getUserInfo.bind(this),
+      getWalletInstanceId: this.getWalletInstanceId.bind(this),
+      topup: this.topup.bind(this),
       handleWindowRpc: this.communicationManager.handleWindowRpc,
-      getProviderState: (req, res, _, end) => {
-        res.result = {
-          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-          isLoggedIn: !!this.selectedAddress,
-        };
-        end();
-      },
+      getProviderState: this.getProviderState.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }
