@@ -42,25 +42,7 @@ watch(localMintAddress, () => {
 
       <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
         <ListboxOptions
-          class="
-            absolute
-            z-10
-            mt-1
-            w-full
-            bg-white
-            dark:bg-app-gray-800
-            shadow-lg
-            max-h-56
-            rounded-md
-            py-1
-            text-base
-            ring-1 ring-app-gray-400
-            dark:ring-transparent
-            overflow-auto
-            outline-none
-            focus:outline-none
-            sm:text-sm
-          "
+          class="absolute z-10 mt-1 w-full bg-white dark:bg-app-gray-800 shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
         >
           <template v-for="item in getClubbedNfts(nftTokens)" :key="item.title">
             <li class="option-separator ml-2 pl-1 nft-group">
