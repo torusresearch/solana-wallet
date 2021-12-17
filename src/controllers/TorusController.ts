@@ -10,6 +10,8 @@ import {
   BaseEmbedControllerState,
   BillboardEvent,
   BROADCAST_CHANNELS,
+  BROADCAST_CHANNELS_MSGS,
+  broadcastChannelOptions,
   COMMUNICATION_NOTIFICATIONS,
   CommunicationWindowManager,
   ContactPayload,
@@ -21,7 +23,9 @@ import {
   FEATURES_PROVIDER_CHANGE_WINDOW,
   getPopupFeatures,
   ICommunicationProviderHandlers,
+  NetworkChangeChannelData,
   PaymentParams,
+  PopupData,
   PopupHandler,
   PopupWithBcHandler,
   PROVIDER_NOTIFICATIONS,
@@ -63,6 +67,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
+import { BroadcastChannel } from "broadcast-channel";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
@@ -79,7 +84,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { getFallbackProviderConfig, getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -89,8 +94,15 @@ const TARGET_NETWORK = "mainnet";
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
-  NetworkControllerConfig: { providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK] },
-  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin", commonApiHost: config.commonApiHost },
+  NetworkControllerConfig: {
+    providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
+  },
+  PreferencesControllerConfig: {
+    pollInterval: 180_000,
+    api: config.api,
+    signInPrefix: "Solana Signin",
+    commonApiHost: config.commonApiHost,
+  },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
@@ -261,9 +273,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.initialize();
     this.configure(_config, true, true);
     this.update(_state, true);
-    this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
+    this.networkController = new NetworkController({
+      config: this.config.NetworkControllerConfig,
+      state: this.state.NetworkControllerState,
+    });
     this.initializeProvider();
-    this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
+    this.embedController = new BaseEmbedController({
+      config: {},
+      state: this.state.EmbedControllerState,
+    });
     this.initializeCommunicationProvider();
 
     this.tokenInfoController = new TokenInfoController({
@@ -434,9 +452,24 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
-    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
-    const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
-    const fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+    let conn = this.connection;
+    let b_hash: string;
+    let fee: number | undefined;
+
+    try {
+      b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
+      fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+    } catch (error) {
+      // get fallback(or original if already using fallback)
+      const fallbackProviderConfig = getFallbackProviderConfig(this.networkController.state.providerConfig);
+      // if fallback exists use it
+      if (fallbackProviderConfig.rpcTarget !== this.networkController.getProviderConfig().rpcTarget) {
+        this.setNetwork(fallbackProviderConfig);
+        conn = this.connection;
+        b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
+        fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+      } else throw error;
+    }
     return { b_hash, fee };
   }
 
@@ -449,7 +482,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
-    const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    let conn = this.connection;
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     await signedTransaction.result;
     try {
@@ -461,8 +494,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
       }
 
       // submit onchain
-      const signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
-
+      let signature;
+      try {
+        signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+      } catch (error) {
+        // if mainnet failed, set network to serum and try
+        const fallbackProviderConfig = getFallbackProviderConfig(this.networkController.state.providerConfig);
+        // if fallback exists
+        if (fallbackProviderConfig.rpcTarget !== this.networkController.getProviderConfig().rpcTarget) {
+          this.setNetwork(fallbackProviderConfig);
+          conn = this.connection;
+          signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+        } else throw error;
+      }
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
       signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
@@ -476,7 +520,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
-    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    let conn = this.connection;
     const transaction = new Transaction();
     const tokenMintAddress = selectedToken.mintAddress;
     const decimals = selectedToken.balance?.decimals || 0;
@@ -484,46 +528,68 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
     const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
     const receiverAccount = new PublicKey(receiver);
-
-    let associatedTokenAccount = receiverAccount;
     try {
-      associatedTokenAccount = await Token.getAssociatedTokenAddress(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
-        new PublicKey(tokenMintAddress),
-        receiverAccount
-      );
-    } catch (e) {
-      log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
-    }
+      let associatedTokenAccount = receiverAccount;
+      try {
+        associatedTokenAccount = await Token.getAssociatedTokenAddress(
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+          TOKEN_PROGRAM_ID,
+          new PublicKey(tokenMintAddress),
+          receiverAccount
+        );
+      } catch (e) {
+        log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
+        throw e;
+      }
 
-    const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
-
-    if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-      const newAccount = await Token.createAssociatedTokenAccountInstruction(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
+      let receiverAccountInfo;
+      try {
+        receiverAccountInfo = await conn.getAccountInfo(associatedTokenAccount);
+      } catch (error) {
+        const fallbackProviderConfig = getFallbackProviderConfig(this.networkController.state.providerConfig);
+        if (fallbackProviderConfig.rpcTarget !== this.networkController.getProviderConfig().rpcTarget) {
+          conn = this.connection;
+          this.setNetwork(fallbackProviderConfig);
+          receiverAccountInfo = await conn.getAccountInfo(associatedTokenAccount);
+        } else throw error;
+      }
+      if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
+        const newAccount = await Token.createAssociatedTokenAccountInstruction(
+          ASSOCIATED_TOKEN_PROGRAM_ID,
+          TOKEN_PROGRAM_ID,
+          new PublicKey(tokenMintAddress),
+          associatedTokenAccount,
+          receiverAccount,
+          new PublicKey(this.selectedAddress)
+        );
+        transaction.add(newAccount);
+      }
+      const transferInstructions = Token.createTransferCheckedInstruction(
         TOKEN_PROGRAM_ID,
-        new PublicKey(tokenMintAddress),
+        sourceTokenAccount,
+        mintAccount,
         associatedTokenAccount,
-        receiverAccount,
-        new PublicKey(this.selectedAddress)
+        signer,
+        [],
+        amount,
+        decimals
       );
-      transaction.add(newAccount);
+      transaction.add(transferInstructions);
+      try {
+        transaction.recentBlockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+      } catch (error) {
+        const fallbackProviderConfig = getFallbackProviderConfig(this.networkController.state.providerConfig);
+        if (fallbackProviderConfig.rpcTarget !== this.networkController.getProviderConfig().rpcTarget) {
+          conn = this.connection;
+          this.setNetwork(fallbackProviderConfig);
+          transaction.recentBlockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+        } else throw error;
+      }
+      return this.transfer(transaction);
+    } catch (error) {
+      log.warn("error while submiting transaction", error);
+      throw error;
     }
-    const transferInstructions = Token.createTransferCheckedInstruction(
-      TOKEN_PROGRAM_ID,
-      sourceTokenAccount,
-      mintAccount,
-      associatedTokenAccount,
-      signer,
-      [],
-      amount,
-      decimals
-    );
-    transaction.add(transferInstructions);
-
-    transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
-    return this.transfer(transaction);
   }
 
   getGaslessHost(feePayer: string): string | undefined {
@@ -563,6 +629,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   setNetwork(providerConfig: ProviderConfig): void {
+    this.updatePopupsNetwork(providerConfig);
     this.networkController.setProviderConfig(providerConfig);
   }
 
@@ -597,7 +664,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
     await this.currencyController.updateConversionRate();
-    return this.preferencesController.setSelectedCurrency({ selectedCurrency: currency });
+    return this.preferencesController.setSelectedCurrency({
+      selectedCurrency: currency,
+    });
   }
 
   async setLocale(locale: string): Promise<boolean> {
@@ -621,6 +690,23 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.handleLogout();
     res.result = true;
     end();
+  }
+
+  updatePopupsNetwork(providerConfig: ProviderConfig): void {
+    const instanceId = new URLSearchParams(window.location.search).get("instanceId");
+    if (instanceId) {
+      const networkChangeChannel = new BroadcastChannel<PopupData<NetworkChangeChannelData>>(
+        `${BROADCAST_CHANNELS.WALLET_NETWORK_CHANGE_CHANNEL}_${instanceId}`,
+        broadcastChannelOptions
+      );
+      networkChangeChannel.postMessage({
+        data: {
+          type: BROADCAST_CHANNELS_MSGS.NETWORK_CHANGE,
+          network: providerConfig,
+        },
+      });
+      networkChangeChannel.close();
+    }
   }
 
   public handleLogout(): void {
@@ -702,7 +788,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         this.communicationEngine?.emit("notification", {
           method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+          params: {
+            currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          },
         });
       }
     });
@@ -796,7 +884,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // break violently
     const senderUrl = new URL(sender);
 
-    const engine = this.setupCommunicationProviderEngine({ origin: senderUrl.origin });
+    const engine = this.setupCommunicationProviderEngine({
+      origin: senderUrl.origin,
+    });
     this.communicationEngine = engine;
     // setup connection
     const engineStream = createEngineStream({ engine });
@@ -845,7 +935,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async changeProvider<T>(req: JRPCRequest<T>): Promise<boolean> {
-    const { windowId } = req.params as unknown as ProviderConfig & { windowId: string };
+    const { windowId } = req.params as unknown as ProviderConfig & {
+      windowId: string;
+    };
     const channelName = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${windowId}`;
     const finalUrl = new URL(`${config.baseRoute}providerchange?integrity=true&instanceId=${windowId}`);
     const providerChangeWindow = new PopupWithBcHandler({
@@ -924,7 +1016,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async handleSignMessagePopup(
-    req: JRPCRequest<{ data: Uint8Array; display?: string; message?: string }> & { origin?: string; windowId?: string }
+    req: JRPCRequest<{
+      data: Uint8Array;
+      display?: string;
+      message?: string;
+    }> & { origin?: string; windowId?: string }
   ): Promise<boolean> {
     try {
       const { windowId } = req;
@@ -1072,7 +1168,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         this.communicationEngine?.emit("notification", {
           method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+          params: {
+            currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          },
         });
         return accounts;
       },
@@ -1158,10 +1256,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
         } else {
           // To login with the requested provider
           // On Embed, we have a window waiting... we need to tell it to login
-          this.embedController.update({ loginInProgress: true, oauthModalVisibility: false });
-          this.triggerLogin({ loginProvider: requestedLoginProvider as LOGIN_PROVIDER_TYPE, login_hint });
+          this.embedController.update({
+            loginInProgress: true,
+            oauthModalVisibility: false,
+          });
+          this.triggerLogin({
+            loginProvider: requestedLoginProvider as LOGIN_PROVIDER_TYPE,
+            login_hint,
+          });
           this.once("LOGIN_RESPONSE", (error: string, address: string) => {
-            this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
+            this.embedController.update({
+              loginInProgress: false,
+              oauthModalVisibility: false,
+            });
             if (error) reject(new Error(error));
             else resolve([address]);
           });
@@ -1169,10 +1276,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else if (this.selectedAddress) resolve([this.selectedAddress]);
       else {
         // We show the modal to login
-        this.embedController.update({ loginInProgress: true, oauthModalVisibility: true });
+        this.embedController.update({
+          loginInProgress: true,
+          oauthModalVisibility: true,
+        });
         this.once("LOGIN_RESPONSE", (error: string, address: string) => {
           log.info("enter update embeded");
-          this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
+          this.embedController.update({
+            loginInProgress: false,
+            oauthModalVisibility: false,
+          });
           if (error) reject(new Error(error));
           else resolve([address]);
         });

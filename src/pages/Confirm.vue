@@ -10,6 +10,7 @@ import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 // import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
+import { getFallbackProviderConfig } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
@@ -51,8 +52,20 @@ onMounted(async () => {
 
     const msg = Message.from(Buffer.from(txData.message || "", "hex"));
     const tx = Transaction.populate(msg);
-    const conn = new Connection(networkConfig.rpcTarget);
-    const block = await conn.getRecentBlockhash("finalized");
+    let conn = new Connection(networkConfig.rpcTarget);
+    let block;
+    try {
+      block = await conn.getRecentBlockhash("finalized");
+    } catch (e) {
+      const fallbackProviderConfig = getFallbackProviderConfig(networkConfig);
+      if (fallbackProviderConfig.rpcTarget !== networkConfig.rpcTarget) {
+        conn = new Connection(fallbackProviderConfig.rpcTarget);
+        block = await conn.getRecentBlockhash("finalized");
+      } else {
+        log.error("Could not connect to rpc target");
+        return;
+      }
+    }
 
     const isGasless = tx.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;

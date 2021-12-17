@@ -1,10 +1,13 @@
 import { PublicKey } from "@solana/web3.js";
+import { ProviderConfig } from "@toruslabs/base-controllers";
+import { CHAIN_ID_NETWORK_MAP } from "@toruslabs/solana-controllers";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
+import { FALLBACK_NETWORKS, WALLET_SUPPORTED_NETWORKS } from "./const";
 import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
 import { ClubbedNfts, SolAndSplToken } from "./interfaces";
 
@@ -159,4 +162,18 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
 export function setFallbackImg(target: any, src: string) {
   // eslint-disable-next-line no-param-reassign
   (target as { src: string }).src = src;
+}
+
+export function getFallbackProviderConfig(provider: ProviderConfig): ProviderConfig {
+  let chain: keyof typeof WALLET_SUPPORTED_NETWORKS;
+  if (provider.chainId !== "loading") chain = CHAIN_ID_NETWORK_MAP[provider.chainId as keyof typeof CHAIN_ID_NETWORK_MAP];
+  else return provider;
+
+  // shouldn't ever happen but just incase
+  if (!chain) return provider;
+
+  // if already using fallback return to original
+  if (provider.rpcTarget === FALLBACK_NETWORKS[chain].rpcTarget) return WALLET_SUPPORTED_NETWORKS[chain];
+  // return fallback if present
+  return FALLBACK_NETWORKS[chain] || provider;
 }
