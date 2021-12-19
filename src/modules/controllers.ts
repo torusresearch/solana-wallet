@@ -129,35 +129,39 @@ class ControllerModule extends VuexModule {
   }
 
   get nonFungibleTokens(): SolanaToken[] {
-    return this.userTokens
-      .reduce((acc: SolanaToken[], current: SolanaToken) => {
-        if (
-          !(current.balance?.decimals === 0) ||
-          !(current.balance.uiAmount > 0) ||
-          !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
-        ) {
-          return acc;
-        }
-        return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
-      }, [])
-      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    if (this.userTokens)
+      return this.userTokens
+        .reduce((acc: SolanaToken[], current: SolanaToken) => {
+          if (
+            !(current.balance?.decimals === 0) ||
+            !(current.balance.uiAmount > 0) ||
+            !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
+          ) {
+            return acc;
+          }
+          return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return [];
   }
 
   get fungibleTokens(): SolanaToken[] {
-    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
-      const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-      if (current.balance?.decimals !== 0 && data) {
-        return [
-          ...acc,
-          {
-            ...current,
-            data,
-            price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
-          },
-        ];
-      }
-      return acc;
-    }, []);
+    if (this.userTokens)
+      return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
+        const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+        if (current.balance?.decimals !== 0 && data) {
+          return [
+            ...acc,
+            {
+              ...current,
+              data,
+              price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+            },
+          ];
+        }
+        return acc;
+      }, []);
+    return [];
   }
 
   @Mutation

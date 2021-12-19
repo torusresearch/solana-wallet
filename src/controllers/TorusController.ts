@@ -550,7 +550,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
         pKey = privKey;
       }
     }
-    log.info(pKey, pKey.length);
     return this.addAccount(pKey, userInfo);
   }
 

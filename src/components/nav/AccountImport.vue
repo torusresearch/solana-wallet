@@ -2,7 +2,7 @@
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, reactive, withDefaults } from "vue";
+import { computed, reactive, ref, withDefaults } from "vue";
 
 import { Button, SelectField, TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
@@ -31,6 +31,8 @@ const importState = reactive<{
   privateKey: "",
 });
 
+const keyError = ref<boolean>(false);
+
 const emits = defineEmits(["onClose"]);
 
 const closeModal = () => {
@@ -38,10 +40,19 @@ const closeModal = () => {
   emits("onClose");
 };
 
+const resetKeyError = () => {
+  keyError.value = false;
+};
+
+const keyIsValid = () => {
+  return !keyError.value;
+};
+
 const rules = {
   privateKey: {
     required: helpers.withMessage("Required", required),
   },
+  validKey: helpers.withMessage("Invalid Private Key", keyIsValid),
 };
 const $v = useVuelidate(rules, importState, { $autoDirty: true });
 
@@ -50,16 +61,24 @@ const disableBTN = computed(() => {
   return false;
 });
 
+const disableWhileFetching = ref<boolean>(false);
+
 const importAccount = async () => {
+  if (!$v.value.$validate()) return;
   let resolvedKey: string;
   try {
+    disableWhileFetching.value = true;
     resolvedKey = await ControllersModule.resolveKey({
       key: importState.privateKey,
       strategy: importState.importType.value,
     });
     await ControllersModule.importAccount(resolvedKey);
+    disableWhileFetching.value = false;
     closeModal();
   } catch (e) {
+    disableWhileFetching.value = false;
+    keyError.value = true;
+    $v.value.$touch();
     log.error(e);
   }
 };
@@ -83,11 +102,18 @@ const importAccount = async () => {
         placeholder="Private Key"
         class="mt-6"
         tabindex="0"
-        :errors="$v.privateKey.$errors"
+        :errors="$v.$errors"
+        @input="resetKeyError"
+        @keydown.enter="
+          (e) => {
+            importAccount();
+            e.stopImmediatePropagation();
+          }
+        "
       ></TextField>
       <div class="w-full flex flex-row justify-end mt-6">
         <Button size="small" variant="tertiary" class="mr-2" tabindex="0" @click="closeModal" @keydown="closeModal">Back</Button>
-        <Button size="small" variant="primary" tabindex="0" :disabled="disableBTN" @click="importAccount">Import</Button>
+        <Button size="small" variant="primary" tabindex="0" :disabled="disableBTN || disableWhileFetching" @click="importAccount">Import</Button>
       </div>
     </div>
   </div>

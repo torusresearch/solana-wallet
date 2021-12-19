@@ -95,13 +95,13 @@ const getWalletBalance = (address: string): string => {
           </div>
           <div class="ml-auto flex space-x-1">
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-              <CopyIcon class="w-4 h-4" @click="() => copySelectedAddress(wallet.address)" />
+              <CopyIcon class="w-4 h-4" @click.stop="() => copySelectedAddress(wallet.address)" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
               <QrcodeIcon class="w-4 h-4" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-              <a :href="explorerUrl" target="_blank" rel="noreferrer noopener">
+              <a :href="explorerUrl" target="_blank" rel="noreferrer noopener" @click="(e) => e.stopImmediatePropagation()">
                 <ExternalLinkIcon class="w-4 h-4" />
               </a>
             </div>

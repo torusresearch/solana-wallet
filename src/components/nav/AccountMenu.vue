@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-  <Menu as="div" class="ml-3 relative z-10">
+  <Menu as="div" class="ml-3 relative z-50">
     <div>
       <MenuButton class="max-w-xs flex items-center text-sm outline-focus" tabindex="0">
         <span class="sr-only">Open user menu</span>
