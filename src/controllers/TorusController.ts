@@ -1024,7 +1024,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         res = this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
         break;
       case "nft_list":
-        await delay(10000);
+        await delay(15000);
         res = this.nonFungibleTokens || [];
         break;
       default:

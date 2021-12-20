@@ -2,7 +2,7 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { computed, onMounted, ref } from "vue";
 
-import { nftTokens } from "@/components/transfer/token-helper";
+import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -11,11 +11,7 @@ import { delay, getB64DecodedParams, redirectToResult } from "../utils/helpers";
 
 const params = getB64DecodedParams();
 const transactionFee = ref(0);
-// for POC selecting first available NFT, else would consume params.mint_Add
-const selectedNft = computed(() => nftTokens.value?.[0]);
-
-// eslint-disable-next-line no-console
-console.log("params", params);
+const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));
 
 const queryParams = new URLSearchParams(window.location.search);
 const method = queryParams.get("method");
