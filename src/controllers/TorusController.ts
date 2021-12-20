@@ -327,10 +327,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.networkController._blockTrackerProxy.on("latest", () => {
       if (this.preferencesController.state.selectedAddress) {
-        // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
-        this.preferencesController.updateDisplayActivities();
-        this.tokensTracker.updateSolanaTokens();
         this.accountTracker.refresh();
+        this.tokensTracker.updateSolanaTokens();
+        this.preferencesController.updateDisplayActivities();
       }
     });
 
