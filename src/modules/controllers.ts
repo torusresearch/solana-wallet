@@ -401,7 +401,11 @@ installStorePlugin({
   storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
-    storage?.setItem(key, JSON.stringify(requiredState));
+    const data = requiredState;
+    (data.controllerModule as any).torusState.TokenInfoState.tokenInfoMap = {};
+    log.info(requiredState, key, JSON.stringify(data).length, state, JSON.stringify(storage));
+    // debugger;
+    storage?.setItem(key, JSON.stringify(data));
   },
   restoreState: (key: string, storage?: Storage) => {
     const value = storage?.getItem(key);
