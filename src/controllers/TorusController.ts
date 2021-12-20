@@ -366,8 +366,42 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
     });
 
-    this.networkController.lookupNetwork();
-
+    // listeners for when rpc endpoint fails
+    this.networkController.on("networkUnavailable", async () => {
+      const fallbackConfig = await this.getWorkingConfig(this.networkController.getProviderConfig());
+      if (this.networkController.state.providerConfig.rpcTarget !== fallbackConfig.rpcTarget) {
+        log.warn("changing Config");
+        this.setNetwork(fallbackConfig);
+      }
+    });
+    this.accountTracker.on("networkUnavailable", async () => {
+      const fallbackConfig = await this.getWorkingConfig(this.networkController.getProviderConfig());
+      if (this.networkController.state.providerConfig.rpcTarget !== fallbackConfig.rpcTarget) {
+        log.warn("changing Config");
+        this.setNetwork(fallbackConfig);
+      }
+    });
+    this.preferencesController.on("networkUnavailable", async () => {
+      const fallbackConfig = await this.getWorkingConfig(this.networkController.getProviderConfig());
+      if (this.networkController.state.providerConfig.rpcTarget !== fallbackConfig.rpcTarget) {
+        log.warn("changing Config");
+        this.setNetwork(fallbackConfig);
+      }
+    });
+    this.txController.on("networkUnavailable", async () => {
+      const fallbackConfig = await this.getWorkingConfig(this.networkController.getProviderConfig());
+      if (this.networkController.state.providerConfig.rpcTarget !== fallbackConfig.rpcTarget) {
+        log.warn("changing Config");
+        this.setNetwork(fallbackConfig);
+      }
+    });
+    this.networkController._blockTrackerProxy.on("networkUnavailable", async () => {
+      const fallbackConfig = await this.getWorkingConfig(this.networkController.getProviderConfig());
+      if (this.networkController.state.providerConfig.rpcTarget !== fallbackConfig.rpcTarget) {
+        log.warn("changing Config");
+        this.setNetwork(fallbackConfig);
+      }
+    });
     // Listen to controller changes
     this.preferencesController.on("store", (state2) => {
       this.update({ PreferencesControllerState: state2 });
@@ -611,6 +645,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
       userInfo,
     });
     return address;
+  }
+
+  async getWorkingConfig(providerConfig: ProviderConfig): Promise<ProviderConfig> {
+    try {
+      const conn = new Connection(providerConfig.rpcTarget);
+      // send request to any rpc endpoint to check if it is working
+      await conn.getRecentBlockhash();
+      return providerConfig;
+    } catch (e) {
+      return getFallbackProviderConfig(providerConfig);
+    }
   }
 
   setSelectedAccount(address: string): void {

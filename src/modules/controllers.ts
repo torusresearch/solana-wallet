@@ -344,10 +344,11 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  setNetwork(chainId: string): void {
+  async setNetwork(chainId: string): Promise<void> {
     const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
-    this.torus.setNetwork(providerConfig);
+    const provider = await this.torus.getWorkingConfig(providerConfig);
+    this.torus.setNetwork(provider);
   }
 
   @Action
