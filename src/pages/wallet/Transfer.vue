@@ -231,10 +231,9 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
 }
 
 // reset transfer token to solana if tokens no longer has current token
-watch(tokens, () => {
-  if (!tokens.value.some((token) => token.mintAddress === selectedToken.value.mintAddress)) {
-    [selectedToken.value] = tokens.value;
-    updateSelectedToken(selectedToken.value);
+watch([tokens, nftTokens], () => {
+  if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
+    updateSelectedToken(tokens.value[0]);
   }
 });
 </script>
