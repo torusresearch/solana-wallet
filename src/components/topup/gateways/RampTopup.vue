@@ -65,7 +65,7 @@ async function getQuote(rampSymbol: string): Promise<{ feeRate: number; rate: { 
   };
 }
 
-async function evaluateTransactionQuote() {
+function evaluateTransactionQuote() {
   const rate = rampQuoteData?.rate[selectedCurrency.value.value] || 0; // per unit price of token in fiat currency
   const feeRate = (rampQuoteData?.feeRate || 0) / 100; // per unit price of transaction fees for 1 token in fiat currency
   cryptoCurrencyRate.value = Number(rate.toFixed(4));
