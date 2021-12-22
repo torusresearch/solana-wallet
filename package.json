@@ -7,12 +7,12 @@
   },
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "npm run locale && vue-cli-service build",
     "lint": "vue-cli-service lint",
     "prepare": "husky install",
     "test": "playwright test --config=playwright.config.ts --workers=1",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
-    "locale": "node ./scripts/importLocales.js"
+    "locale": "node ./src/scripts/importLocales.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
