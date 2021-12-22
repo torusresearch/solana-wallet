@@ -3,12 +3,18 @@ import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import dateFormat from "dateformat";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 
 const props = defineProps<{
   activity: SolanaTransactionActivity;
 }>();
+
+// const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
+// const showDetails = ref(false);
+
+const { t } = useI18n();
 
 const openExplorerLink = (link: string) => {
   window.open(link, "_blank");
@@ -64,16 +70,17 @@ const amountIsVisible = computed(() => {
           <img class="block h-7 w-auto" :src="activity.logoURI || SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
-          <div v-if="activity.type === 'unknown'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">Unknown</div>
+          <div v-if="activity.type === 'unknown'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
+            {{ t("walletActivity.unknown") }}
+          </div>
           <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
             <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
-              {{ activity.send ? "Sent " : "Received " }}
-              {{ Number(activity.totalAmountString) }}
+              {{ activity.send ? t("walletActivity.sent") : t("walletActivity.received") }} {{ " " }} {{ Number(activity.totalAmountString) }}
               {{ activity.cryptoCurrency }}
 
-              <span v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">{{
-                activity.send ? "to " : "from "
-              }}</span>
+              <span v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600"
+                >{{ activity.send ? t("walletActivity.to") : t("walletActivity.from") }} {{ " " }}</span
+              >
             </div>
             <div v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
               {{ activity.send ? activity.to : activity.from }}
@@ -106,7 +113,7 @@ const amountIsVisible = computed(() => {
     <!-- status -->
     <div class="col-span-4 text-right order-4 flex items-center justify-end sm:col-span-2" :class="{ 'sm:col-span-4': !amountIsVisible }">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
-        {{ activity.status }}
+        {{ t(`walletActivity.${activity.status}`) }}
       </div>
     </div>
   </div>

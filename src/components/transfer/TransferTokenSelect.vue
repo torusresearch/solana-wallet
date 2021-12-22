@@ -2,6 +2,7 @@
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
 import NftLogo from "@/assets/nft_token.svg";
@@ -23,7 +24,7 @@ const props = withDefaults(
     selectedToken: tokens.value[0],
   }
 );
-
+const { t } = useI18n();
 const localToken = ref(props.selectedToken);
 const emits = defineEmits(["update:selectedToken"]);
 
@@ -33,7 +34,7 @@ watch(localToken, () => {
 </script>
 <template>
   <Listbox v-model="localToken" as="div">
-    <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Select item to transfer</ListboxLabel>
+    <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
     <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
@@ -77,7 +78,7 @@ watch(localToken, () => {
           <ListboxOption :key="'tokenstring'" as="template" :value="null" :disabled="true">
             <li class="option-separator">
               <img class="block h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
-              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">TOKENS</p>
+              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">{{ t("walletTransfer.tokens") }}</p>
             </li>
           </ListboxOption>
           <ListboxOption v-for="item in tokens" v-slot="{ active, selected }" :key="item.name" as="template" :value="item">

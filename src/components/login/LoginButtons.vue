@@ -18,6 +18,7 @@ import {
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import { computed, ref, RenderFunction } from "vue";
+import { useI18n } from "vue-i18n";
 
 import {
   ActiveAppleIcon,
@@ -37,6 +38,7 @@ import { LOGIN_CONFIG } from "@/utils/enums";
 
 import { TextField } from "../common";
 
+const { t } = useI18n();
 const iconList: Record<string, { default: RenderFunction; active: string }> = {
   google: {
     default: GoogleIcon,
@@ -150,7 +152,7 @@ const onEmailLogin = () => {
         </div>
         <img v-else-if="activeButton === LOGIN_PROVIDER.GOOGLE" class="w-6 h-6" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
         <component :is="iconList[LOGIN_PROVIDER.GOOGLE].default" v-else class="w-6 h-6 mr-1 text-app-text-400" />
-        <span :class="isEmbed ? 'text-white font-bold' : 'text-app-text-400'">Continue with Google</span></Button
+        <span :class="isEmbed ? 'text-white font-bold' : 'text-app-text-400'">{{ t("dappLogin.continue", { verifier: "Google" }) }}</span></Button
       >
     </div>
     <div v-for="loginButton in mainButtons" :key="loginButton.loginProvider" class="col-span-1">
@@ -186,7 +188,7 @@ const onEmailLogin = () => {
         :class="
           isEmbed ? 'px-2 text-white text-opacity-80 or-text' : 'px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600'
         "
-        >or</span
+        >{{ t("login.or") }}</span
       >
     </div>
   </div>
@@ -196,7 +198,7 @@ const onEmailLogin = () => {
         v-model.lazy="userEmail"
         :size="isEmbed ? 'large' : 'medium'"
         variant="dark-bg"
-        placeholder="Enter your email"
+        :placeholder="t('login.enterYourEmail')"
         :errors="$v.userEmail.$errors"
       />
       <Button
@@ -205,7 +207,7 @@ const onEmailLogin = () => {
         :class="isEmbed ? 'mt-4 font-bold continue text-base' : 'mt-3'"
         :block="true"
         type="submit"
-        >Continue with Email</Button
+        >{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}</Button
       >
     </form>
   </div>

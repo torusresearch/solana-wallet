@@ -29,6 +29,7 @@ import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-dec
 
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
+import i18nPlugin from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
@@ -45,7 +46,10 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+  public torus = new TorusController({
+    _config: DEFAULT_CONFIG,
+    _state: DEFAULT_STATE,
+  });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -125,35 +129,41 @@ class ControllerModule extends VuexModule {
   }
 
   get nonFungibleTokens(): SolanaToken[] {
-    return this.userTokens
-      .reduce((acc: SolanaToken[], current: SolanaToken) => {
-        if (
-          !(current.balance?.decimals === 0) ||
-          !(current.balance.uiAmount > 0) ||
-          !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
-        ) {
-          return acc;
-        }
-        return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
-      }, [])
-      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    if (this.userTokens)
+      return this.userTokens
+        .reduce((acc: SolanaToken[], current: SolanaToken) => {
+          if (
+            !(current.balance?.decimals === 0) ||
+            !(current.balance.uiAmount > 0) ||
+            !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
+          ) {
+            return acc;
+          }
+          return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return [];
   }
 
   get fungibleTokens(): SolanaToken[] {
-    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
-      const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-      if (current.balance?.decimals !== 0 && data) {
-        return [
-          ...acc,
-          {
-            ...current,
-            data,
-            price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
-          },
-        ];
-      }
-      return acc;
-    }, []);
+    if (this.userTokens)
+      return this.userTokens
+        .reduce((acc: SolanaToken[], current: SolanaToken) => {
+          const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
+            return [
+              ...acc,
+              {
+                ...current,
+                data,
+                price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+              },
+            ];
+          }
+          return acc;
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return [];
   }
 
   @Mutation
@@ -168,7 +178,10 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus = new TorusController({
+      _config: DEFAULT_CONFIG,
+      _state: DEFAULT_STATE,
+    });
   }
 
   @Action
@@ -183,34 +196,37 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
+    const { t } = i18nPlugin.global;
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
         localStorage.setItem("torus-enable-crash-reporter", String(status));
       }
-      this.handleSuccess(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
     }
   }
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
+    const { t } = i18nPlugin.global;
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.ADD_CONTACT_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.ADD_CONTACT_FAILED));
     }
   }
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
+    const { t } = i18nPlugin.global;
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.DELETE_CONTACT_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.DELETE_CONTACT_FAILED));
     }
   }
 
@@ -221,21 +237,23 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
+    const { t } = i18nPlugin.global;
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.SET_CURRENCY_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.SET_CURRENCY_FAILED));
     }
   }
 
   @Action
   public async setLocale(locale: string): Promise<void> {
+    const { t } = i18nPlugin.global;
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
-      this.handleSuccess(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS);
+      this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));
     } else {
-      this.handleError(NAVBAR_MESSAGES.error.SET_LOCALE_FAILED);
+      this.handleError(t(NAVBAR_MESSAGES.error.SET_LOCALE_FAILED));
     }
   }
 
@@ -259,7 +277,10 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: merge(this.torusState, state) });
+    this.torus.init({
+      _config: DEFAULT_CONFIG,
+      _state: merge(this.torusState, state),
+    });
     this.torus.setOrigin(origin);
     this.torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
@@ -280,11 +301,12 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
+
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
         instanceId: this.instanceId,
         handleLogout: this.handleLogoutChannelMsg.bind(this),
-        handleAccountImport: this.importAccount.bind(this),
+        handleAccountImport: this.importExternalAccount.bind(this),
         handleNetworkChange: (providerConfig: ProviderConfig) => this.setNetwork(providerConfig.chainId),
         handleSelectedAddressChange: this.setSelectedAccount.bind(this),
       });
@@ -352,8 +374,9 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async importAccount(privKey: string): Promise<void> {
-    const address = await this.torus.addAccount(privKey.padStart(64, "0"), this.torus.userInfo);
+  async importExternalAccount(privKey: string): Promise<void> {
+    const paddedKey = privKey.padStart(64, "0");
+    const address = await this.torus.importExternalAccount(paddedKey, this.torus.userInfo);
     this.torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
@@ -364,10 +387,21 @@ class ControllerModule extends VuexModule {
       accountImportChannel.postMessage({
         data: {
           type: BROADCAST_CHANNELS_MSGS.ACCOUNT_IMPORTED,
-          privKey,
+          privKey: paddedKey,
         },
       });
       accountImportChannel.close();
+    }
+  }
+
+  @Action
+  async resolveKey({ key, strategy }: { key: string; strategy: string }): Promise<string> {
+    switch (strategy) {
+      case "PrivateKey":
+        if (!key) throw new Error("Private Key Cannot Be Empty");
+        return key;
+      default:
+        throw new Error("Invalid Import Strategy");
     }
   }
 
@@ -412,7 +446,10 @@ installStorePlugin({
       const parsedValue = JSON.parse(value || "{}");
       return {
         [CONTROLLER_MODULE_KEY]: {
-          torus: new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE }),
+          torus: new TorusController({
+            _config: DEFAULT_CONFIG,
+            _state: DEFAULT_STATE,
+          }),
           ...(parsedValue[CONTROLLER_MODULE_KEY] || {}),
         },
       };

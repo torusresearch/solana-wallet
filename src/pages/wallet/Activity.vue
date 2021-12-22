@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import ActivityItem from "@/components/activity/ActivityItem.vue";
 import { SelectField } from "@/components/common";
@@ -15,41 +16,43 @@ const ACTIVITY_PERIOD_WEEK_ONE = "walletActivity.lastOneWeek";
 const ACTIVITY_PERIOD_MONTH_ONE = "walletActivity.lastOneMonth";
 const ACTIVITY_PERIOD_MONTH_SIX = "walletActivity.lastSixMonts";
 
+const { t } = useI18n();
+
 const actionTypes = [
   {
     value: ACTIVITY_ACTION_ALL,
-    label: "All Transactions",
+    label: t(ACTIVITY_ACTION_ALL),
   },
   {
     value: ACTIVITY_ACTION_SEND,
-    label: "Send",
+    label: t(ACTIVITY_ACTION_SEND),
   },
   {
     value: ACTIVITY_ACTION_RECEIVE,
-    label: "Receive",
+    label: t(ACTIVITY_ACTION_RECEIVE),
   },
   {
     value: ACTIVITY_ACTION_TOPUP,
-    label: "Topup",
+    label: t(ACTIVITY_ACTION_TOPUP),
   },
 ];
 
 const periods = [
   {
     value: ACTIVITY_PERIOD_ALL,
-    label: "All",
+    label: t(ACTIVITY_PERIOD_ALL),
   },
   {
     value: ACTIVITY_PERIOD_WEEK_ONE,
-    label: "Last 1 week",
+    label: t(ACTIVITY_PERIOD_WEEK_ONE),
   },
   {
     value: ACTIVITY_PERIOD_MONTH_ONE,
-    label: "Last 1 month",
+    label: t(ACTIVITY_PERIOD_MONTH_ONE),
   },
   {
     value: ACTIVITY_PERIOD_MONTH_SIX,
-    label: "Last 6 months",
+    label: t(ACTIVITY_PERIOD_MONTH_SIX),
   },
 ];
 const actionType = ref(actionTypes[0]);
@@ -108,11 +111,13 @@ const filteredTransaction = computed(() => {
 </script>
 
 <template>
-  <div class="hidden sm:flex ml-auto w-2/4">
-    <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
-    <SelectField v-model="period" :items="periods" />
-  </div>
   <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
     <ActivityItem :activity="tx" />
   </div>
+  <Teleport to="#rightPanel">
+    <div class="hidden sm:flex ml-auto w-2/4">
+      <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
+      <SelectField v-model="period" :items="periods" />
+    </div>
+  </Teleport>
 </template>
