@@ -147,20 +147,22 @@ class ControllerModule extends VuexModule {
 
   get fungibleTokens(): SolanaToken[] {
     if (this.userTokens)
-      return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
-        const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-        if (current.balance?.decimals !== 0 && data) {
-          return [
-            ...acc,
-            {
-              ...current,
-              data,
-              price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
-            },
-          ];
-        }
-        return acc;
-      }, []);
+      return this.userTokens
+        .reduce((acc: SolanaToken[], current: SolanaToken) => {
+          const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
+            return [
+              ...acc,
+              {
+                ...current,
+                data,
+                price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+              },
+            ];
+          }
+          return acc;
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
     return [];
   }
 
@@ -294,11 +296,12 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
+
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
         instanceId: this.instanceId,
         handleLogout: this.handleLogoutChannelMsg.bind(this),
-        handleAccountImport: this.importAccount.bind(this),
+        handleAccountImport: this.importExternalAccount.bind(this),
         handleNetworkChange: (providerConfig: ProviderConfig) => this.setNetwork(providerConfig.chainId),
         handleSelectedAddressChange: this.setSelectedAccount.bind(this),
       });
@@ -379,9 +382,9 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async importAccount(privKey: string): Promise<void> {
+  async importExternalAccount(privKey: string): Promise<void> {
     const paddedKey = privKey.padStart(64, "0");
-    const address = await this.torus.importAccount(paddedKey, this.torus.userInfo);
+    const address = await this.torus.importExternalAccount(paddedKey, this.torus.userInfo);
     this.torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {

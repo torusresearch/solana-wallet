@@ -537,7 +537,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     throw new Error("Invalid Relay");
   }
 
-  importAccount(privKey: string, userInfo: UserInfo): Promise<string> {
+  importExternalAccount(privKey: string, userInfo: UserInfo): Promise<string> {
     let pKey: string;
     try {
       pKey = Buffer.from(new Uint8Array(JSON.parse(privKey)))

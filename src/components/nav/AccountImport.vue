@@ -7,6 +7,11 @@ import { computed, reactive, ref, withDefaults } from "vue";
 import { Button, SelectField, TextField } from "@/components/common";
 import ControllersModule from "@/modules/controllers";
 
+interface IImportType {
+  label: string;
+  value: string;
+}
+
 const props = withDefaults(
   defineProps<{
     isOpen?: boolean;
@@ -15,11 +20,6 @@ const props = withDefaults(
     isOpen: false,
   }
 );
-
-interface IImportType {
-  label: string;
-  value: string;
-}
 
 const importTypes: IImportType[] = [{ label: "Private Key", value: "PrivateKey" }];
 
@@ -32,6 +32,7 @@ const importState = reactive<{
 });
 
 const keyError = ref<boolean>(false);
+const disableWhileFetching = ref<boolean>(false);
 
 const emits = defineEmits(["onClose"]);
 
@@ -61,9 +62,7 @@ const disableBTN = computed(() => {
   return false;
 });
 
-const disableWhileFetching = ref<boolean>(false);
-
-const importAccount = async () => {
+const importExternalAccount = async () => {
   if (!$v.value.$validate()) return;
   let resolvedKey: string;
   try {
@@ -72,7 +71,7 @@ const importAccount = async () => {
       key: importState.privateKey,
       strategy: importState.importType.value,
     });
-    await ControllersModule.importAccount(resolvedKey);
+    await ControllersModule.importExternalAccount(resolvedKey);
     disableWhileFetching.value = false;
     closeModal();
   } catch (e) {
@@ -106,14 +105,16 @@ const importAccount = async () => {
         @input="resetKeyError"
         @keydown.enter="
           (e) => {
-            importAccount();
+            importExternalAccount();
             e.stopImmediatePropagation();
           }
         "
       ></TextField>
       <div class="w-full flex flex-row justify-end mt-6">
         <Button size="small" variant="tertiary" class="mr-2" tabindex="0" @click="closeModal" @keydown="closeModal">Back</Button>
-        <Button size="small" variant="primary" tabindex="0" :disabled="disableBTN || disableWhileFetching" @click="importAccount">Import</Button>
+        <Button size="small" variant="primary" tabindex="0" :disabled="disableBTN || disableWhileFetching" @click="importExternalAccount"
+          >Import</Button
+        >
       </div>
     </div>
   </div>
