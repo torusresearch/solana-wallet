@@ -4,7 +4,7 @@ import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transact
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
@@ -142,7 +142,12 @@ const rules = computed(() => {
   };
 });
 
-const $v = useVuelidate(rules, { transferTo, transferId, sendAmount, transactionFee });
+const $v = useVuelidate(rules, {
+  transferTo,
+  transferId,
+  sendAmount,
+  transactionFee,
+});
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -223,6 +228,13 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   }
   selectedToken.value = $event;
 }
+
+// reset transfer token to solana if tokens no longer has current token
+watch([tokens, nftTokens], () => {
+  if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
+    updateSelectedToken(tokens.value[0]);
+  }
+});
 </script>
 
 <template>

@@ -63,6 +63,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
+import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
@@ -536,9 +537,24 @@ export default class TorusController extends BaseController<TorusControllerConfi
     throw new Error("Invalid Relay");
   }
 
+  importExternalAccount(privKey: string, userInfo: UserInfo): Promise<string> {
+    let pKey: string;
+    try {
+      pKey = Buffer.from(new Uint8Array(JSON.parse(privKey)))
+        .toString("hex")
+        .slice(0, 64);
+    } catch (e1) {
+      try {
+        pKey = base58.decode(privKey).toString("hex").slice(0, 64);
+      } catch (e2) {
+        pKey = privKey;
+      }
+    }
+    return this.addAccount(pKey, userInfo);
+  }
+
   async addAccount(privKey: string, userInfo: UserInfo): Promise<string> {
-    const paddedKey = privKey.padStart(64, "0");
-    const address = this.keyringController.importAccount(paddedKey);
+    const address = this.keyringController.importAccount(privKey);
     await this.preferencesController.initPreferences({
       address,
       calledFromEmbed: false,
@@ -1045,7 +1061,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationWindowManager: this.communicationManager,
       });
       const { privKey, userInfo } = result;
-      const address = await this.addAccount(privKey, userInfo);
+      log.info(privKey);
+      const paddedKey = privKey.padStart(64, "0");
+      const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);
       return result;

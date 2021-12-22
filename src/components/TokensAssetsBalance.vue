@@ -110,7 +110,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
                 <p class="token-name">{{ token.data?.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
-                <p class="coin-value">~{{ token.balance?.uiAmountStrings }}</p>
+                <p class="coin-value">~ {{ token.balance?.uiAmountString }}</p>
                 <p class="coin-currency">{{ token.data?.symbol }}</p></span
               >
             </div>

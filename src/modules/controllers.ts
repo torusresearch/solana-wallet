@@ -47,7 +47,10 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+  public torus = new TorusController({
+    _config: DEFAULT_CONFIG,
+    _state: DEFAULT_STATE,
+  });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -127,35 +130,41 @@ class ControllerModule extends VuexModule {
   }
 
   get nonFungibleTokens(): SolanaToken[] {
-    return this.userTokens
-      .reduce((acc: SolanaToken[], current: SolanaToken) => {
-        if (
-          !(current.balance?.decimals === 0) ||
-          !(current.balance.uiAmount > 0) ||
-          !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
-        ) {
-          return acc;
-        }
-        return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
-      }, [])
-      .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    if (this.userTokens)
+      return this.userTokens
+        .reduce((acc: SolanaToken[], current: SolanaToken) => {
+          if (
+            !(current.balance?.decimals === 0) ||
+            !(current.balance.uiAmount > 0) ||
+            !this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress]?.uri
+          ) {
+            return acc;
+          }
+          return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return [];
   }
 
   get fungibleTokens(): SolanaToken[] {
-    return this.userTokens.reduce((acc: SolanaToken[], current: SolanaToken) => {
-      const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-      if (current.balance?.decimals !== 0 && data) {
-        return [
-          ...acc,
-          {
-            ...current,
-            data,
-            price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
-          },
-        ];
-      }
-      return acc;
-    }, []);
+    if (this.userTokens)
+      return this.userTokens
+        .reduce((acc: SolanaToken[], current: SolanaToken) => {
+          const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
+            return [
+              ...acc,
+              {
+                ...current,
+                data,
+                price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+              },
+            ];
+          }
+          return acc;
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return [];
   }
 
   @Mutation
@@ -170,7 +179,10 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus = new TorusController({
+      _config: DEFAULT_CONFIG,
+      _state: DEFAULT_STATE,
+    });
   }
 
   @Action
@@ -266,7 +278,10 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: merge(this.torusState, state) });
+    this.torus.init({
+      _config: DEFAULT_CONFIG,
+      _state: merge(this.torusState, state),
+    });
     this.torus.setOrigin(origin);
     this.torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
@@ -287,11 +302,12 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
+
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
         instanceId: this.instanceId,
         handleLogout: this.handleLogoutChannelMsg.bind(this),
-        handleAccountImport: this.importAccount.bind(this),
+        handleAccountImport: this.importExternalAccount.bind(this),
         handleNetworkChange: (providerConfig: ProviderConfig) => this.setNetwork(providerConfig.chainId),
         handleSelectedAddressChange: this.setSelectedAccount.bind(this),
       });
@@ -372,8 +388,9 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async importAccount(privKey: string): Promise<void> {
-    const address = await this.torus.addAccount(privKey.padStart(64, "0"), this.torus.userInfo);
+  async importExternalAccount(privKey: string): Promise<void> {
+    const paddedKey = privKey.padStart(64, "0");
+    const address = await this.torus.importExternalAccount(paddedKey, this.torus.userInfo);
     this.torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
@@ -384,10 +401,21 @@ class ControllerModule extends VuexModule {
       accountImportChannel.postMessage({
         data: {
           type: BROADCAST_CHANNELS_MSGS.ACCOUNT_IMPORTED,
-          privKey,
+          privKey: paddedKey,
         },
       });
       accountImportChannel.close();
+    }
+  }
+
+  @Action
+  async resolveKey({ key, strategy }: { key: string; strategy: string }): Promise<string> {
+    switch (strategy) {
+      case "PrivateKey":
+        if (!key) throw new Error("Private Key Cannot Be Empty");
+        return key;
+      default:
+        throw new Error("Invalid Import Strategy");
     }
   }
 
@@ -432,7 +460,10 @@ installStorePlugin({
       const parsedValue = JSON.parse(value || "{}");
       return {
         [CONTROLLER_MODULE_KEY]: {
-          torus: new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE }),
+          torus: new TorusController({
+            _config: DEFAULT_CONFIG,
+            _state: DEFAULT_STATE,
+          }),
           ...(parsedValue[CONTROLLER_MODULE_KEY] || {}),
         },
       };

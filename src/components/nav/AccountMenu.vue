@@ -11,9 +11,9 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <Menu as="div" class="ml-3 relative z-10">
+  <Menu as="div" class="ml-3 relative z-50">
     <div>
-      <MenuButton class="max-w-xs flex items-center text-sm focus:outline-none">
+      <MenuButton class="max-w-xs flex items-center text-sm outline-focus" tabindex="0">
         <span class="sr-only">{{ t("navBar.userMenu") }}</span>
         <div class="flex items-center">
           <span class="font-body text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user?.name }}</span>
@@ -51,4 +51,9 @@ const { t } = useI18n();
   </Menu>
 </template>
 
-<style scoped></style>
+<style scoped>
+.outline-focused:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+</style>
