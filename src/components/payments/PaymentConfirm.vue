@@ -2,6 +2,7 @@
 import { significantDigits } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
@@ -11,6 +12,7 @@ import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
+const { t } = useI18n();
 const pricePerToken = computed(() => ControllerModule.torus.conversionRate); // will change this to accept other tokens as well
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 
@@ -80,7 +82,6 @@ const totalFiatCostString = computed(() => {
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
     class="
-      inline-block
       w-screen
       h-screen
       overflow-hidden
@@ -100,24 +101,28 @@ const totalFiatCostString = computed(() => {
       <div>
         <img class="h-7 mx-auto w-auto mb-1 logo" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
       </div>
-      <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">Payment Confirmation</div>
+      <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+        {{ t("walletActivity.paymentConfirmation") }}
+      </div>
     </div>
     <div class="mt-4 px-6 items-center">
       <div class="flex flex-col justify-start items-start">
         <NetworkDisplay />
-        <p class="rec_pub_key text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">Pay to : {{ props.receiverPubKey }}</p>
+        <p class="rec_pub_key text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">
+          {{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.receiverPubKey }}
+        </p>
       </div>
     </div>
     <hr class="m-5" />
     <div class="mt-4 px-6 items-center scrollbar">
       <div class="flex flex-col justify-start items-start">
         <span class="flex flex-row justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>You Pay</p>
+          <p>{{ t("walletTopup.youSend") }}</p>
           <p>{{ props.cryptoAmount }} {{ props.token }}</p>
         </span>
 
         <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>Transaction Fee <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+          <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
           <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
         </span>
 
@@ -133,15 +138,19 @@ const totalFiatCostString = computed(() => {
     </div>
     <hr class="m-5" />
     <div class="flex px-6">
-      <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">Total Cost</div>
+      <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
       <div class="ml-auto text-right">
         <div class="font-body text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
         <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
       </div>
     </div>
     <div class="grid grid-cols-2 gap-3 m-6">
-      <div><Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">Cancel</Button></div>
-      <div><Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">Confirm</Button></div>
+      <div>
+        <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+      </div>
+      <div>
+        <Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.confirm") }}</Button>
+      </div>
     </div>
   </div>
 </template>

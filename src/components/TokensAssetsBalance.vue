@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import NftLogo from "@/assets/nft_token.svg";
@@ -10,6 +11,7 @@ import { NFT_CARD_MODE } from "@/utils/enums";
 import { getClubbedNfts } from "@/utils/helpers";
 
 const router = useRouter();
+const { t } = useI18n();
 const enum TOKEN_TAB_TYPES {
   NFT_TAB = "NFT_TAB",
   TOKEN_TAB = "TOKEN_TAB",
@@ -60,7 +62,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         @keydown="selectTab(TOKEN_TAB_TYPES.TOKEN_TAB)"
       >
         <img class="block h-4 w-auto" :src="SolTokenLogo" alt="NFT Logo" />
-        <p class="ml-2 text-sm">Tokens</p>
+        <p class="ml-2 text-sm">{{ t("walletHome.tokens") }}</p>
       </div>
     </div>
     <!-- Tabs -->
@@ -155,8 +157,8 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
             justify-center
           "
         >
-          <p class="text-app-text-500 dark:text-app-text-dark-500 text-sm font-bold mb-2">Get you first NFT!</p>
-          <a href="https://www.holaplex.com/" target="_blank" class="text-app-text-accent text-xs">Check out Holaplex here</a>
+          <p class="text-app-text-500 dark:text-app-text-dark-500 text-sm font-bold mb-2">{{ t("walletHome.getFirstNFT") }}</p>
+          <a href="https://www.holaplex.com/" target="_blank" class="text-app-text-accent text-xs">{{ t("walletHome.holaplex") }}</a>
         </div>
         <NftCard
           v-for="token in getClubbedNfts(nonFungibleTokens)"

@@ -1,6 +1,7 @@
 export { default as BoxLoader } from "./BoxLoader.vue";
 export { default as Button } from "./Button.vue";
 export { default as Card } from "./Card.vue";
+export { default as ComboBox } from "./ComboBox.vue";
 export { default as CurrencySelector } from "./CurrencySelector.vue";
 export { default as MessageModal } from "./MessageModal.vue";
 export { default as NetworkDisplay } from "./NetworkDisplay.vue";

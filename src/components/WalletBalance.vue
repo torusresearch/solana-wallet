@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+
+const { t } = useI18n();
 
 defineProps<{
   showButtons?: boolean;
@@ -22,7 +25,7 @@ const updateCurrency = (newCurrency: string) => {
 <template>
   <Card :height="showButtons ? '164px' : undefined">
     <div class="flex">
-      <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">Total Value</div>
+      <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletHome.totalValue") }}</div>
       <div class="ml-auto"><NetworkDisplay /></div>
     </div>
     <div class="flex">
@@ -41,10 +44,10 @@ const updateCurrency = (newCurrency: string) => {
     <template v-if="showButtons" #footer>
       <div class="grid grid-cols-2 gap-3 mt-3">
         <div>
-          <Button :block="true" variant="tertiary" @click="router.push('/wallet/topup')">Top up</Button>
+          <Button :block="true" variant="tertiary" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
         </div>
         <div>
-          <Button :block="true" variant="tertiary" @click="router.push('/wallet/transfer')">Transfer</Button>
+          <Button :block="true" variant="tertiary" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
         </div>
       </div>
     </template>

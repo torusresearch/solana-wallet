@@ -2,17 +2,19 @@
 import { Menu, MenuButton, MenuItems } from "@headlessui/vue";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
+import { useI18n } from "vue-i18n";
 
 defineProps<{
   user: UserInfo;
 }>();
+const { t } = useI18n();
 </script>
 
 <template>
   <Menu as="div" class="ml-3 relative z-50">
     <div>
       <MenuButton class="max-w-xs flex items-center text-sm outline-focus" tabindex="0">
-        <span class="sr-only">Open user menu</span>
+        <span class="sr-only">{{ t("navBar.userMenu") }}</span>
         <div class="flex items-center">
           <span class="font-body text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user?.name }}</span>
           <ChevronBottomIcon class="text-app-text-600 dark:text-app-text-dark-500 w-4" />

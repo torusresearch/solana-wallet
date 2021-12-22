@@ -8,6 +8,7 @@ import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
 import { AccountImport } from "@/components/nav";
@@ -15,6 +16,7 @@ import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
+const { t } = useI18n();
 const props = defineProps<{
   user: UserInfo;
   selectedAddress: string;
@@ -65,7 +67,7 @@ const getWalletBalance = (address: string): string => {
   <div>
     <div class="flex items-center p-4">
       <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
-      <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s Account</div>
+      <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
     </div>
     <div class="px-3 pb-3">
       <div
@@ -150,10 +152,10 @@ const getWalletBalance = (address: string): string => {
         text-sm
         font-bold
         text-app-text-600
-        dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-
+        dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
       "
     >
-      <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ nav.name }}</router-link
+      <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ t(nav.name) }}</router-link
     >
 
     <!-- <div
@@ -177,7 +179,7 @@ const getWalletBalance = (address: string): string => {
     <div>Info and Support</div>
   </div> -->
     <div class="p-4 border-t">
-      <Button class="ml-auto" variant="text" @click="logout">Logout</Button>
+      <Button class="ml-auto" variant="text" @click="logout">{{ t("accountMenu.logOut") }}</Button>
     </div>
     <AccountImport :is-open="modalVisible" @on-close="closeImportModal" />
   </div>

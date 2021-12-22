@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
+import { useI18n } from "vue-i18n";
 
 import SolanaMascot from "@/assets/solana-mascot.svg";
 import { Button, Card } from "@/components/common";
@@ -15,6 +16,8 @@ const asyncTokensAssetsBalance = defineAsyncComponent({
   delay: 500,
   suspensible: false,
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -34,7 +37,7 @@ const asyncTokensAssetsBalance = defineAsyncComponent({
         <template #footer>
           <div class="flex sm:grid grid-cols-2 gap-3 mt-3">
             <div class="w-full sm:w-auto">
-              <Button :block="true" variant="tertiary">More information</Button>
+              <Button :block="true" variant="tertiary">{{ t("walletHome.moreInformation") }}</Button>
             </div>
           </div>
         </template>

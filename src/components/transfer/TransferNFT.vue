@@ -6,6 +6,7 @@ import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import BigNumber from "bignumber.js";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
 import { Button } from "@/components/common";
@@ -40,6 +41,9 @@ const props = withDefaults(
     isOpen: false,
   }
 );
+
+const { t } = useI18n();
+
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const pricePerToken = computed<number>((): number => {
   return ControllerModule.torus.conversionRate;
@@ -105,13 +109,15 @@ const explorerUrl = computed(() => {
               "
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
-                <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</p>
+                <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
+                  {{ t("walletTransfer.confirmTransaction") }}
+                </p>
               </DialogTitle>
               <div class="flex flex-col justify-start items-start py-4 border-b border-gray-700">
                 <NetworkDisplay></NetworkDisplay>
                 <span class="flex flex-row justify-start items-center w-full mt-4">
                   <p class="text-sm font-bold text-app-text-500 dark:text-app-text-dark-500 mr-1">
-                    Send to: {{ addressSlicer(props.receiverPubKey) }}
+                    {{ t("walletActivity.sendTo") }}: {{ addressSlicer(props.receiverPubKey) }}
                   </p>
                   <a :href="explorerUrl" target="_blank" rel="noreferrer noopener" class="h-4"
                     ><ExternalLinkIcon class="w-4 h-4 text-app-text-500" />
@@ -129,15 +135,15 @@ const explorerUrl = computed(() => {
                 </div>
                 <div class="flex flex-col justify-center items-start h-full w-full ml-6">
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">Name</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftName") }}</p>
                     <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.name }}</p>
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto py-5 w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">Symbol</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftSymbol") }}</p>
                     <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.symbol }}</p>
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">View NFT</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.viewNFT") }}</p>
                     <a
                       class="property-value text-app-text-500 dark:text-app-text-dark-500"
                       :href="`https://solscan.io/token/${props.token.mintAddress}`"
@@ -161,19 +167,25 @@ const explorerUrl = computed(() => {
                   pt-2
                 "
               >
-                <p class="flex-auto">Transaction Fee</p>
+                <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
                 <p>{{ props.cryptoTxFee }} SOL</p>
               </div>
               <div class="flex flex-row items- justify-start w-full mt-8">
-                <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">Total Cost</p>
+                <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
                   <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ props.cryptoTxFee }} SOL</p>
                   <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
                 </div>
               </div>
               <div class="flex flex-row justify-around items-center m-6">
-                <p class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="onCancel" @keydown="onCancel">Cancel</p>
-                <div><Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">Confirm</Button></div>
+                <p class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="onCancel" @keydown="onCancel">
+                  {{ t("walletTransfer.cancel") }}
+                </p>
+                <div>
+                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                    t("walletTransfer.confirm")
+                  }}</Button>
+                </div>
               </div>
             </div>
           </TransitionChild>
