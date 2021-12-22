@@ -60,7 +60,7 @@ function closeClicked() {
         <div class="nft-face img-loader-container">
           <img :src="props.summaryData.img" class="nft-face" alt="NFT LOGO" @error="setFallbackImg($event.target, FallbackNft)" />
         </div>
-        <div class="flex flex-col justify-center align-center w-100 h-100">
+        <div class="flex flex-col justify-center align-center w-100 h-100 flex-1">
           <p class="token-name">{{ props.summaryData.collectionName }}</p>
           <p class="token-desc summary">{{ `${props.summaryData.count || 1} Assets` }}</p>
         </div>
@@ -141,7 +141,7 @@ function closeClicked() {
   background: rgb(156, 156, 156);
 }
 .nft-container {
-  height: 80px;
+  min-height: 80px;
   padding: 20px;
 }
 
@@ -151,6 +151,7 @@ function closeClicked() {
   font-size: 16px;
   line-height: 19px;
   color: #2f3136;
+  word-break: break-word;
 }
 
 .token-desc,
@@ -194,7 +195,7 @@ function closeClicked() {
 }
 .summary-card {
   width: 260px;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .container-card {

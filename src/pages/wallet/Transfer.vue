@@ -4,7 +4,7 @@ import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transact
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, SelectField, TextField } from "@/components/common";
@@ -140,7 +140,12 @@ const rules = computed(() => {
   };
 });
 
-const $v = useVuelidate(rules, { transferTo, transferId, sendAmount, transactionFee });
+const $v = useVuelidate(rules, {
+  transferTo,
+  transferId,
+  sendAmount,
+  transactionFee,
+});
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -197,7 +202,10 @@ const confirmTransfer = async () => {
     }
     // resetForm();
     transferConfirmed.value = true;
-    showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+    showMessageModal({
+      messageTitle: "Your transfer is being processed.",
+      messageStatus: STATUS_INFO,
+    });
   } catch (error) {
     showMessageModal({
       messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
@@ -221,6 +229,13 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   }
   selectedToken.value = $event;
 }
+
+// reset transfer token to solana if tokens no longer has current token
+watch([tokens, nftTokens], () => {
+  if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
+    updateSelectedToken(tokens.value[0]);
+  }
+});
 </script>
 
 <template>
