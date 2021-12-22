@@ -28,13 +28,13 @@ const isLoadingQuote = ref(false);
 type QuoteAsset = {
   symbol: string;
   price: { [currency: string]: number };
-  maxFeePercent: { [currency: string]: number };
   decimals: number;
 };
 type QuoteApiResponse = {
   assets: QuoteAsset[];
+  maxFeePercent: number;
 };
-let rampQuoteData: { feeRate: { [currency: string]: number }; rate: { [currency: string]: number }; decimals: number } | undefined;
+let rampQuoteData: { feeRate: number; rate: { [currency: string]: number }; decimals: number } | undefined;
 const rules = {
   amount: {
     required: helpers.withMessage("Required", required),
@@ -45,9 +45,7 @@ const rules = {
 
 const $v = useVuelidate(rules, { amount });
 
-async function getQuote(
-  rampSymbol: string
-): Promise<{ feeRate: { [currency: string]: number }; rate: { [currency: string]: number }; decimals: number }> {
+async function getQuote(rampSymbol: string): Promise<{ feeRate: number; rate: { [currency: string]: number }; decimals: number }> {
   let response: Promise<QuoteApiResponse>;
   try {
     const options = {
@@ -61,13 +59,18 @@ async function getQuote(
     log.error(error);
     throw error;
   }
-  const asset = (await response).assets.find((item) => item.symbol === rampSymbol) as QuoteAsset; // the ramp asset object
-  return { feeRate: asset.maxFeePercent, rate: asset.price, decimals: asset.decimals };
+  const asset = await response;
+  const selected_asset = asset.assets.find((item) => item.symbol === rampSymbol) as QuoteAsset; // the ramp asset object
+  return {
+    feeRate: asset.maxFeePercent,
+    rate: selected_asset.price,
+    decimals: selected_asset.decimals,
+  };
 }
 
 function evaluateTransactionQuote() {
   const rate = rampQuoteData?.rate[selectedCurrency.value.value] || 0; // per unit price of token in fiat currency
-  const feeRate = (rampQuoteData?.feeRate[selectedCurrency.value.value] || 0) / 100; // per unit price of transaction fees for 1 token in fiat currency
+  const feeRate = (rampQuoteData?.feeRate || 0) / 100; // per unit price of transaction fees for 1 token in fiat currency
   cryptoCurrencyRate.value = Number(rate.toFixed(4));
   receivingCryptoAmount.value = Number((rate && !$v.value.$invalid ? amount.value / (1 + feeRate) / rate : 0).toFixed(4)); // Final Crypto amount
 }
