@@ -3,11 +3,12 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { XIcon } from "@heroicons/vue/solid";
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { LOGIN_CONFIG } from "@/utils/enums";
 
 withDefaults(
@@ -21,6 +22,8 @@ withDefaults(
   }
 );
 
+const { t } = useI18n();
+
 const emits = defineEmits(["onClose", "onLogin"]);
 
 const closeModal = () => {
@@ -30,7 +33,6 @@ const onLogin = (provider: string, userEmail: string) => {
   emits("onLogin", provider, userEmail);
 };
 
-// TODO: integrate
 const loginButtonsArray: LOGIN_CONFIG[] = Object.values(config.loginConfig);
 
 const activeButton = ref<string>(LOGIN_PROVIDER.GOOGLE);
@@ -41,7 +43,7 @@ const setActiveButton = (provider: string) => {
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode || true }" as="div">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode || true }" as="div">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 flex justify-center items-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -56,7 +58,7 @@ const setActiveButton = (provider: string) => {
           >
             <div class="login-container">
               <DialogTitle as="div" class="py-0 px-4 relative focus-within:outline-none bg-transparent w-full" tabindex="0">
-                <h1 class="font-bold text-white login-title mt-14 text-center">Setup your digital wallet</h1>
+                <h1 class="font-bold text-white login-title mt-14 text-center">{{ t("login.setupWallet") }}</h1>
                 <div
                   class="w-8 h-8 absolute top-4 right-4 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
                   @click="closeModal"
@@ -66,7 +68,7 @@ const setActiveButton = (provider: string) => {
                 </div>
               </DialogTitle>
               <p class="text-white text-opacity-80 font-normal text-xl mt-4 text-center px-7">
-                Powered by Torus — Use it now, and on any app that accepts Torus.
+                {{ t("login.poweredBy") }}
               </p>
               <div class="mt-14 w-full px-4">
                 <LoginButtons
@@ -78,16 +80,16 @@ const setActiveButton = (provider: string) => {
                 />
               </div>
               <div class="flex justify-center items-center mt-9">
-                <span class="text-white text-opacity-70 mr-2 text-xs font-normal">Powered by</span>
+                <span class="text-white text-opacity-70 mr-2 text-xs font-normal">{{ t("dappLogin.poweredBy") }}</span>
                 <img :src="TorusLogoLightURL" alt="Torus Logo" class="h-4 w-auto opacity-70" />
               </div>
               <div
                 v-if="otherWallets === 'true'"
                 class="mt-auto pt-4 pb-6 px-2 w-full border-t-2 border-solid border-white border-opacity-10 text-center"
               >
-                <span class="cursor-pointer text-base text-white font-normal hover:text-opacity-80" tabindex="0"
-                  >Want to try a different wallet?</span
-                >
+                <span class="cursor-pointer text-base text-white font-normal hover:text-opacity-80" tabindex="0">{{
+                  t("login.differentWallet")
+                }}</span>
               </div>
             </div>
           </TransitionChild>

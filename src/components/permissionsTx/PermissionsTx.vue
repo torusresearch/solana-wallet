@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
 import InstructionDisplay from "../payments/InstructionDisplay.vue";
 
+const { t } = useI18n();
 const props = withDefaults(
   defineProps<{
     logoUrl?: string;
@@ -44,7 +46,7 @@ function openLink() {
 </script>
 <template>
   <div
-    :class="{ dark: ControllersModule.isDarkMode }"
+    :class="{ dark: ControllerModule.isDarkMode }"
     class="
       inline-block
       w-screen
@@ -66,12 +68,14 @@ function openLink() {
       <div>
         <img class="h-7 mx-auto w-auto mb-1 mr-5" :src="props.logoUrl" alt="Dapp Logo" />
       </div>
-      <p class="text-left font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">Confirm Permissions</p>
+      <p class="text-left font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+        {{ `${t("dappProvider.confirm")} ${t("dappProvider.permission")}` }}
+      </p>
     </div>
     <div class="mt-4 px-6 items-center px-4 scrollbar">
       <div class="flex flex-col justify-start items-start mt-6">
         <NetworkDisplay />
-        <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">Requested from:</p>
+        <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
 
         <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
           <a :href="props.origin" target="_blank" class="text-sm font-body text-app-text-accent dark:text-app-text-accent">{{
@@ -85,7 +89,7 @@ function openLink() {
         <div class="w-full flex flex-row justify-start items-center">
           <img :src="SubtractURL" alt="Message Info" class="mr-2" />
           <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
-            {{ decodedInst.length }} Transaction Instruction(s) to approve
+            {{ decodedInst.length }} {{ t("walletActivity.transactionInstructions") }}
           </p>
         </div>
         <p
@@ -93,7 +97,7 @@ function openLink() {
           @click="() => (expand_inst = !expand_inst)"
           @keydown="() => (expand_inst = !expand_inst)"
         >
-          {{ expand_inst ? "Hide details" : "View more details" }}
+          {{ expand_inst ? t("dappPermission.hideDetails") : t("dappPermission.viewMoreDetails") }}
         </p>
         <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
       </div>
@@ -101,8 +105,12 @@ function openLink() {
     <div class="spacer"></div>
     <hr class="mx-6" />
     <div class="grid grid-cols-2 gap-3 m-6 px-4 rounded-md my-8">
-      <div><Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">Cancel</Button></div>
-      <div><Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">Approve</Button></div>
+      <div>
+        <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+      </div>
+      <div>
+        <Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
+      </div>
     </div>
   </div>
 </template>

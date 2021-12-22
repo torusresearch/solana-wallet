@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes, computed } from "vue";
 const props = withDefaults(
   defineProps<{
     size?: "small" | "medium" | "large";
-    variant?: "primary" | "secondary" | "tertiary" | "text";
+    variant?: "primary" | "secondary" | "tertiary" | "text" | "outline";
     block?: boolean;
     type?: ButtonHTMLAttributes["type"];
     loading?: boolean;

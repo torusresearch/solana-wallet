@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import ActivityItem from "@/components/activity/ActivityItem.vue";
 import { SelectField } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
 const ACTIVITY_ACTION_ALL = "walletActivity.allTransactions";
 const ACTIVITY_ACTION_SEND = "walletActivity.send";
@@ -15,41 +16,43 @@ const ACTIVITY_PERIOD_WEEK_ONE = "walletActivity.lastOneWeek";
 const ACTIVITY_PERIOD_MONTH_ONE = "walletActivity.lastOneMonth";
 const ACTIVITY_PERIOD_MONTH_SIX = "walletActivity.lastSixMonts";
 
+const { t } = useI18n();
+
 const actionTypes = [
   {
     value: ACTIVITY_ACTION_ALL,
-    label: "All Transactions",
+    label: t(ACTIVITY_ACTION_ALL),
   },
   {
     value: ACTIVITY_ACTION_SEND,
-    label: "Send",
+    label: t(ACTIVITY_ACTION_SEND),
   },
   {
     value: ACTIVITY_ACTION_RECEIVE,
-    label: "Receive",
+    label: t(ACTIVITY_ACTION_RECEIVE),
   },
   {
     value: ACTIVITY_ACTION_TOPUP,
-    label: "Topup",
+    label: t(ACTIVITY_ACTION_TOPUP),
   },
 ];
 
 const periods = [
   {
     value: ACTIVITY_PERIOD_ALL,
-    label: "All",
+    label: t(ACTIVITY_PERIOD_ALL),
   },
   {
     value: ACTIVITY_PERIOD_WEEK_ONE,
-    label: "Last 1 week",
+    label: t(ACTIVITY_PERIOD_WEEK_ONE),
   },
   {
     value: ACTIVITY_PERIOD_MONTH_ONE,
-    label: "Last 1 month",
+    label: t(ACTIVITY_PERIOD_MONTH_ONE),
   },
   {
     value: ACTIVITY_PERIOD_MONTH_SIX,
-    label: "Last 6 months",
+    label: t(ACTIVITY_PERIOD_MONTH_SIX),
   },
 ];
 const actionType = ref(actionTypes[0]);
@@ -67,7 +70,7 @@ const sixMonthAgoDate = computed(() => {
   const minDate = new Date();
   return minDate.setMonth(minDate.getMonth() - 6);
 });
-const allTransactions = computed(() => ControllersModule.selectedNetworkTransactions);
+const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
 
 const filteredTransaction = computed(() => {
   const selectedAction = actionType.value.value === ACTIVITY_ACTION_ALL ? "" : actionType.value.value;

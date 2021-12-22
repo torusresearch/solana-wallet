@@ -4,6 +4,7 @@ import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import Landing from "@/assets/auth/landing.svg";
@@ -17,6 +18,7 @@ import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
 
+const { t } = useI18n();
 const router = useRouter();
 const userEmail = ref("");
 const isLoading = ref(false);
@@ -43,7 +45,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
   } catch (error) {
     log.error(error);
     addToast({
-      message: "Something went wrong, please try again.",
+      message: t("login.loginError"),
       type: "error",
     });
   } finally {
@@ -66,16 +68,18 @@ const onEmailLogin = () => {
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
           <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
           <div class="flex items-center border-b w-56 pb-4 mb-9">
-            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">build on</div>
+            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">{{ t("dappLogin.buildOn") }}</div>
             <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </div>
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4" :style="{ maxWidth: '360px' }">
-            Your blockchain wallet in one-click
+            {{ t("login.title") }}
           </div>
           <div class="grid grid-cols-3 gap-2 w-full">
             <div class="col-span-3">
               <Button variant="tertiary" :block="true" @click="onLogin('google')"
-                ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />Continue with Google</Button
+                ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />{{
+                  t("dappLogin.continue", { verifier: "Google" })
+                }}</Button
               >
             </div>
             <div class="col-span-1">
@@ -104,17 +108,23 @@ const onEmailLogin = () => {
           </div>
           <div class="mt-3 w-full">
             <form @submit.prevent="onEmailLogin">
-              <TextField v-model.lazy="userEmail" variant="dark-bg" class="mb-3" placeholder="Enter your email" :errors="$v.userEmail.$errors" />
-              <Button variant="tertiary" :block="true" type="submit">Continue with Email</Button>
+              <TextField
+                v-model.lazy="userEmail"
+                variant="dark-bg"
+                class="mb-3"
+                :placeholder="t('login.enterYourEmail')"
+                :errors="$v.userEmail.$errors"
+              />
+              <Button variant="tertiary" :block="true" type="submit">{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}</Button>
             </form>
           </div>
           <div class="mt-8 mb-2 w-full">
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">Note:</div>
+            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">{{ t("dappLogin.note") }}</div>
             <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
-              Torus does not store any data related to your social logins.
+              {{ t("login.dataPrivacy") }}
             </div>
             <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
-              The following sign-ins involve a third party authenticator: Apple, Email, GitHub, Kakao, LINE, LinkedIn, Twitter, WeChat.
+              {{ `${t("dappLogin.termsAuth01")} ${t("dappLogin.termsAuth02")}` }}
             </div>
           </div>
 
@@ -123,11 +133,13 @@ const onEmailLogin = () => {
           </div>
 
           <div class="space-x-3">
-            <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank"
-              >Terms of Service</a
-            >
-            <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">Privacy Policy</a>
-            <a class="font-body text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">Contact us</a>
+            <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">{{
+              t("dappLogin.termsConditions")
+            }}</a>
+            <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">{{
+              t("dappLogin.privacyPolicy")
+            }}</a>
+            <a class="font-body text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">{{ t("dappLogin.contactUs") }}</a>
           </div>
         </div>
       </div>
@@ -136,8 +148,8 @@ const onEmailLogin = () => {
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <img :src="Landing" alt="" />
-          <div class="font-header text-xl mb-2">Send and receive digital currencies easily.</div>
-          <div class="font-body text-base">Transacting on blockchain has never been easier. <br />An email is all you need to get started.</div>
+          <div class="font-header text-xl mb-2">{{ t("dappLogin.sendReceive") }}</div>
+          <div class="font-body text-base">{{ t("dappLogin.transactEasy") }} <br />{{ t("login.slide1Subtitle2") }}</div>
         </div>
       </div>
     </div>

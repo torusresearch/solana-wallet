@@ -9,16 +9,18 @@ import { GoogleIcon } from "@toruslabs/vue-icons/auth";
 import { PlusIcon } from "@toruslabs/vue-icons/basic";
 import { CreditcardFaceIcon } from "@toruslabs/vue-icons/finance";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 
-const selectedNetworkDisplayName = computed(() => ControllersModule.selectedNetworkDisplayName);
-const selectedPublicKey = computed(() => ControllersModule.selectedAddress);
-const formattedBalance = computed(() => ControllersModule.userBalance);
-const currentFiatCurrency = computed(() => ControllersModule.torus.currentCurrency);
-const userInfo = computed(() => ControllersModule.torus.userInfo);
+const { t } = useI18n();
+const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
+const selectedPublicKey = computed(() => ControllerModule.selectedAddress);
+const formattedBalance = computed(() => ControllerModule.userBalance);
+const currentFiatCurrency = computed(() => ControllerModule.torus.currentCurrency);
+const userInfo = computed(() => ControllerModule.torus.userInfo);
 
 withDefaults(
   defineProps<{
@@ -41,7 +43,7 @@ const showWallet = (path: string) => {
 
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closePanel">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closePanel">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -75,7 +77,7 @@ const showWallet = (path: string) => {
                 </div>
                 <div class="flex mt-5 -mb-2 text-app-text-500 dark:text-app-text-dark-500">
                   <div>
-                    <div class="text-xs">TOTAL VALUE</div>
+                    <div class="text-xs">{{ t("dappPopup.totalValue") }}</div>
                     <div class="text-base font-semibold">{{ formattedBalance }} {{ currentFiatCurrency?.toUpperCase() }}</div>
                   </div>
                   <div class="ml-auto flex">
@@ -98,8 +100,10 @@ const showWallet = (path: string) => {
                 </div>
                 <div class="mt-5">
                   <div class="flex border-b pb-1">
-                    <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">LATEST ACTIVITY</div>
-                    <div class="ml-auto"><Button variant="text" @click="() => showWallet('wallet/home')">Open Wallet</Button></div>
+                    <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("dappPopup.recentActivity") }}</div>
+                    <div class="ml-auto">
+                      <Button variant="text" @click="() => showWallet('wallet/home')">{{ t("dappPopup.openWallet") }}</Button>
+                    </div>
                   </div>
                   <div v-if="lastTransaction" class="flex w-full items-center mt-2">
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
@@ -107,7 +111,7 @@ const showWallet = (path: string) => {
                     </div>
                     <div class="flex flex-grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
                       <div>
-                        <div>Last Signature</div>
+                        <div>{{ t("dappPopup.lastSign") }}</div>
                         <div>{{ addressSlicer(lastTransaction.signature) }}</div>
                       </div>
                     </div>

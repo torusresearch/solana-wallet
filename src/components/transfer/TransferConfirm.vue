@@ -4,13 +4,16 @@ import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { BigNumber } from "bignumber.js";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
-import { SolAndSplToken, tokens } from "@/components/transfer/token-helper";
-import ControllersModule from "@/modules/controllers";
+import { tokens } from "@/components/transfer/token-helper";
+import ControllerModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
-const currency = computed(() => ControllersModule.torus.currentCurrency);
+const { t } = useI18n();
+const currency = computed(() => ControllerModule.torus.currentCurrency);
 
 const props = withDefaults(
   defineProps<{
@@ -48,7 +51,7 @@ const pricePerToken = computed<number>((): number => {
   if (isSPLToken()) {
     return props.token?.price?.[currency.value.toLowerCase()] || 0;
   }
-  return ControllersModule.torus.conversionRate;
+  return ControllerModule.torus.conversionRate;
 });
 const emits = defineEmits(["transferConfirm", "onCloseModal"]);
 
@@ -97,7 +100,7 @@ const fiatTxFeeString = computed(() => {
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -134,7 +137,9 @@ const fiatTxFeeString = computed(() => {
                 <div>
                   <img class="h-7 mx-auto w-auto mb-1" :src="SolanaLogoURL" alt="Solana Logo" />
                 </div>
-                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</div>
+                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
+                  {{ t("walletTransfer.confirmTransaction") }}
+                </div>
               </DialogTitle>
               <div class="mt-5 px-6 items-center">
                 <div class="flex items-center">
@@ -166,7 +171,7 @@ const fiatTxFeeString = computed(() => {
                     </div>
                   </div>
                   <div class="flex-grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
-                    <WiFiIcon class="w-3 h-3 mr-1" /> Solana Network
+                    <WiFiIcon class="w-3 h-3 mr-1" /> {{ `Solana ${t("walletActivity.network")}` }}
                   </div>
                   <div class="flex-none w-20 text-center">
                     <div
@@ -182,23 +187,25 @@ const fiatTxFeeString = computed(() => {
                 </div>
                 <hr class="mt-3 mb-5" />
                 <div class="flex mb-5">
-                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">Amount to send</div>
+                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
                   <div class="ml-auto text-right">
                     <div class="font-body text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
                     <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
                   </div>
                 </div>
                 <div class="flex">
-                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">Max Transaction Fee</div>
+                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
                   <div class="ml-auto text-right">
                     <div class="font-body text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ fiatTxFeeString }}</div>
-                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">(In &lt; 30 seconds)</div>
+                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">
+                      (In &lt; {{ t("walletTransfer.fee-edit-time-sec", { time: "30" }) }})
+                    </div>
                   </div>
                 </div>
                 <hr class="my-5" />
 
                 <div class="flex">
-                  <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">Total Cost</div>
+                  <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
                   <div class="ml-auto text-right">
                     <div class="font-body text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
                     <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
@@ -207,8 +214,14 @@ const fiatTxFeeString = computed(() => {
               </div>
 
               <div class="grid grid-cols-2 gap-3 m-6">
-                <div><Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">Cancel</Button></div>
-                <div><Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">Confirm</Button></div>
+                <div>
+                  <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("walletTransfer.cancel") }}</Button>
+                </div>
+                <div>
+                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                    t("walletTransfer.confirm")
+                  }}</Button>
+                </div>
               </div>
             </div>
           </TransitionChild>

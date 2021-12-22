@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { useI18n } from "vue-i18n";
 
 import LoginUrl from "@/assets/login.png";
 import SolanaLogoLight from "@/assets/solana-light.svg";
@@ -14,6 +15,7 @@ defineProps<{
   buttonPosition: string;
   lastTransaction: SolanaTransactionActivity;
 }>();
+const { t } = useI18n();
 const emits = defineEmits(["closePanel", "togglePanel", "showLoginModal", "showWallet"]);
 const closePanel = () => {
   emits("closePanel");
@@ -33,7 +35,7 @@ const showWallet = (path: string) => {
 </script>
 
 <template>
-  <div class="torus-widget" :class="[buttonPosition]">
+  <div v-if="isLoggedIn" class="torus-widget" :class="[buttonPosition]">
     <PopupWidgetPanel
       :last-transaction="lastTransaction"
       :is-open="isLoggedIn && isIframeFullScreen"
@@ -48,7 +50,7 @@ const showWallet = (path: string) => {
     </button>
     <button v-else class="torus-widget__button torus-widget__button--toggle" @click="onLogin">
       <img class="torus-widget__button-img" :src="LoginUrl" alt="Login icon" />
-      <span class="torus-widget__button-text">Login</span>
+      <span class="torus-widget__button-text">{{ t("emailLogin.loginNoSpace") }}</span>
     </button>
   </div>
 </template>

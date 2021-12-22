@@ -2,6 +2,9 @@
 import { BROADCAST_CHANNELS, broadcastChannelOptions, RedirectHandler } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const checkTopupSuccess = async () => {
   const queryParameters = new URLSearchParams(window.location.search);
@@ -9,7 +12,7 @@ const checkTopupSuccess = async () => {
   const topupResult = queryParameters.get("topup");
   if (topupResult === "success") {
     const bc = new BroadcastChannel(`${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`, broadcastChannelOptions);
-    await bc.postMessage({ data: "topup success" });
+    await bc.postMessage({ data: `${t("walletProvider.topup")} ${t("walletActivity.successful")}` });
     bc.close();
   }
 };

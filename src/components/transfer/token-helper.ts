@@ -1,29 +1,37 @@
-import { SolanaToken } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 
 import solicon from "@/assets/solana-mascot.svg";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
-const SOLANA_TOKEN = {
+const SOLANA_TOKEN: Partial<SolAndSplToken> = {
   name: "Solana",
   iconURL: solicon,
   symbol: "SOL",
+  isFungible: true,
 };
-
-export interface SolAndSplToken extends SolanaToken {
-  name: string;
-  iconURL: string;
-  symbol: string;
-}
-
-const onlySplTokens = computed<SolanaToken[] | undefined>(() => ControllersModule.torus.tokens?.[ControllersModule.torus.selectedAddress]);
 
 // concat SOL + SPL tokens
 export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
   return [
     SOLANA_TOKEN,
-    ...(onlySplTokens?.value?.map((st) => {
-      return { ...st, name: st.data.name, iconURL: `${st.data.logoURI}`, symbol: st.data?.symbol };
+    ...(ControllerModule.fungibleTokens?.map((st) => {
+      return { ...st, name: st.data?.name || "", iconURL: `${st.data?.logoURI}` || "", symbol: st.data?.symbol };
     }) || []),
   ];
 });
+
+export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
+  return ControllerModule.nonFungibleTokens?.map((st) => {
+    return {
+      ...st,
+      name: st.metaplexData?.offChainMetaData?.name || "",
+      iconURL: `${st.metaplexData?.offChainMetaData?.image}` || "",
+      symbol: st.metaplexData?.offChainMetaData?.symbol,
+    };
+  });
+});
+
+export function getTokenFromMint(tokenList: Partial<SolAndSplToken>[], mint: string) {
+  return tokenList.find((el) => el.mintAddress === mint);
+}
