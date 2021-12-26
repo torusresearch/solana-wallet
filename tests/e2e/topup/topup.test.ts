@@ -2,15 +2,13 @@
 import test, { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
-import { ensureTextualElementExists, getInnerText, wait } from "../../utils";
+import { ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
 
 test("Popup Page Should render", async ({ context }) => {
   const page = await login(context);
 
   // // see navigation works correctly
-  await page.click("text=Top Up");
-  await wait(2000);
-  expect(page.url().includes("/wallet/topup")).toBeTruthy();
+  await switchTab(page, "topup");
 
   // ENSURE UI IS INTACT
   await ensureTextualElementExists(page, "Select a Provider");
@@ -29,6 +27,6 @@ test("Popup Page Should render", async ({ context }) => {
   expect(usdToSol200).toBeGreaterThan(0);
 
   // ensure that on clicking save, it is refirected to Ramp Payment page having torus logo
-  await Promise.all([page.waitForEvent("popup"), page.click("text=Save")]);
+  await Promise.all([page.click("button:has-text('Top up')"), page.waitForEvent("popup")]);
   await expect((await page.$$("img[alt=Ramp]")).length).toEqual(1);
 });

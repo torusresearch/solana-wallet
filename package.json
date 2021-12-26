@@ -10,7 +10,7 @@
     "build": "npm run locale && vue-cli-service build",
     "lint": "vue-cli-service lint",
     "prepare": "husky install",
-    "test": "playwright test --config=playwright.config.ts --workers=1",
+    "test": "playwright test --config=playwright.config.ts --workers=1 --headed",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js"
   },
@@ -63,7 +63,7 @@
     "vuex-module-decorators": "^1.0.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.16.3",
+    "@playwright/test": "^1.17.1",
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^15.0.0",
     "@commitlint/is-ignored": "^15.0.0",

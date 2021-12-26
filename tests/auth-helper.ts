@@ -7,11 +7,15 @@ import nacl from "tweetnacl";
 
 import { getBackendDomain, getDomain } from "./utils";
 
-const PUB_ADDRESS = "Bxfp7RZLPLEiJhSMiHb3JrLrNdop94gWY5NGhG9KepL9";
-const SECRET_KEY = "rJ2u984seEczhz7bRva9jn7E3RqaqzJpkh81Lmmnj6oAFMDfZqu2KGXLHo9MgmW6rFfPYsoDXtJsGbZojQhefcm";
+export const PUB_ADDRESS = "Bxfp7RZLPLEiJhSMiHb3JrLrNdop94gWY5NGhG9KepL9";
+export const SECRET_KEY = "rJ2u984seEczhz7bRva9jn7E3RqaqzJpkh81Lmmnj6oAFMDfZqu2KGXLHo9MgmW6rFfPYsoDXtJsGbZojQhefcm";
 
 async function getJWT(): Promise<{ success: boolean; token: string }> {
-  const { message } = (await axios.post(`${getBackendDomain()}/auth/message`, { public_address: PUB_ADDRESS })).data;
+  const { message } = (
+    await axios.post(`${getBackendDomain()}/auth/message`, {
+      public_address: PUB_ADDRESS,
+    })
+  ).data;
 
   // SIGN THE MESSAGE USING PRIVATE KEY
   const kp = Keypair.fromSecretKey(base58.decode(SECRET_KEY));
@@ -58,6 +62,8 @@ export async function login(context: BrowserContext): Promise<Page> {
                   typeOfLogin: "google",
                 },
                 currentNetworkTxsList: [],
+                contacts: [],
+                locale: "en",
               },
             },
             selectedAddress: "${PUB_ADDRESS}",

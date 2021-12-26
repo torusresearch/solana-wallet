@@ -1,7 +1,20 @@
+import { ProviderConfig } from "@toruslabs/base-controllers";
 import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 
 export const WALLET_SUPPORTED_NETWORKS = {
   ...SUPPORTED_NETWORKS,
+  mainnet: {
+    ...SUPPORTED_NETWORKS.mainnet,
+    rpcTarget: "https://solana-mainnet.phantom.tech",
+  } as ProviderConfig,
+  testnet: {
+    ...SUPPORTED_NETWORKS.testnet,
+    rpcTarget: "https://ancient-delicate-dew.solana-testnet.quiknode.pro/c5ce24a6976f9dc836ca8a49e577224844fbc3e7/",
+  } as ProviderConfig,
+  devnet: {
+    ...SUPPORTED_NETWORKS.devnet,
+    rpcTarget: "https://lingering-weathered-bush.solana-devnet.quiknode.pro/39071fb16fc915dcbc5eb31f211b8ca588219ff3/",
+  } as ProviderConfig,
 };
 
 // testnet: {
