@@ -2,16 +2,13 @@
 import test, { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
-import { ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
+import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
 
 test("Popup Page Should render", async ({ context }) => {
   const page = await login(context);
 
   // // see navigation works correctly
   await switchTab(page, "topup");
-
-  // ENSURE UI IS INTACT
-  await ensureTextualElementExists(page, "Select a Provider");
 
   // RAMP TOPUP SHOULD WORK AS EXPECTED
   // set amount to be transfered as 100 US Dollars, expect a positive value for expected SOL
@@ -29,4 +26,31 @@ test("Popup Page Should render", async ({ context }) => {
   // ensure that on clicking save, it is refirected to Ramp Payment page having torus logo
   await Promise.all([page.click("button:has-text('Top up')"), page.waitForEvent("popup")]);
   await expect((await page.$$("img[alt=Ramp]")).length).toEqual(1);
+});
+
+test("Language change should work", async ({ context }) => {
+  const page = await login(context);
+  await switchTab(page, "topup");
+
+  await changeLanguage(page, "german");
+  await wait(400);
+  await ensureTextualElementExists(page, "Wählen Sie einen Anbieter");
+
+  await changeLanguage(page, "japanese");
+  await wait(400);
+  await ensureTextualElementExists(page, "プロバイダーを選択");
+
+  await changeLanguage(page, "korean");
+  await wait(400);
+  await ensureTextualElementExists(page, "공급자를 선택하십시오");
+
+  await changeLanguage(page, "mandarin");
+  await wait(400);
+  await ensureTextualElementExists(page, "选择供应商");
+
+  await changeLanguage(page, "spanish");
+  await wait(400);
+  await ensureTextualElementExists(page, "Selecciona un Proveedor");
+
+  await changeLanguage(page, "english");
 });

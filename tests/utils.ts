@@ -23,7 +23,7 @@ export function wait(millSeconds = 1000) {
 
 // the element should exactly match the textual content
 export async function ensureTextualElementExists(page: Page, text: string) {
-  expect(await page.locator(`text=${text}`)?.first().innerText()).toEqual(text);
+  expect(await page.locator(`text=${text}`)?.allInnerTexts()).toContain(text);
 }
 
 export async function getInnerText(page: Page, selector: string): Promise<string | undefined> {
@@ -94,6 +94,20 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
   // confirm controller state change
   const controllerModule = await getControllerState(page);
   expect(
-    controllerModule.torusState.PreferencesControllerState.identities[controllerModule.torusState.PreferencesControllerState.selectedAddress].locale
+    controllerModule?.torusState?.PreferencesControllerState?.identities[controllerModule?.torusState?.PreferencesControllerState?.selectedAddress]
+      ?.locale
   ).toStrictEqual(languages[language]);
+}
+
+export async function importAccount(page: Page, privKey: string) {
+  const controllerModule = await getControllerState(page);
+  const username =
+    controllerModule?.torusState?.PreferencesControllerState?.identities[controllerModule?.torusState?.PreferencesControllerState?.selectedAddress]
+      ?.userInfo?.name;
+  await page.click(`nav >> text=${username}`);
+  await wait(400);
+  await page.click("nav >> text=Import Account");
+  await page.fill("input[placeholder='Private Key']", privKey);
+  await page.click("button >> text=Import");
+  await wait(2000);
 }
