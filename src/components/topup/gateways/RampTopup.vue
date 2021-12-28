@@ -129,7 +129,7 @@ onMounted(() => {
             <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("walletTopUp.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
-              {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCryptocurrency.value}` }}
+              {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }}
             </p>
           </div>
           <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1">
@@ -146,7 +146,7 @@ onMounted(() => {
           </div>
         </div>
         <div v-if="isLoadingQuote" class="flex flex-row items-start justify-end">
-          <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">{{ t("walletTopup.waitFetch") }}</p>
+          <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">{{ t("walletTopUp.waitFetch") }}</p>
           <RoundLoader class="loader"></RoundLoader>
         </div>
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">
