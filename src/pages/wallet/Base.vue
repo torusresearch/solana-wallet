@@ -20,7 +20,7 @@ onMounted(() => {
   setTimeout(() => {
     showRouterChild.value = true;
   });
-  Sentry.setUser({ email: ControllerModule.torus?.userInfo?.email || "email unknown" });
+  Sentry.setUser({ email: ControllerModule.torus?.userInfo?.email || ControllerModule.torus.selectedAddress });
 });
 </script>
 <template>
