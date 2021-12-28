@@ -346,10 +346,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
     });
 
-    this.preferencesController.on("store", (_state2) => {
-      this.accountTracker.syncAccounts();
-    });
-
     this.networkController.lookupNetwork();
 
     // Listen to controller changes
@@ -567,6 +563,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
     this.preferencesController.sync(address);
+    this.accountTracker.syncAccounts();
+    this.accountTracker.refresh();
+    this.tokensTracker.updateSolanaTokens();
     this.preferencesController.initializeDisplayActivity();
   }
 
