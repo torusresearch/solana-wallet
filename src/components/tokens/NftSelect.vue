@@ -4,7 +4,6 @@ import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { computed, ref, watch } from "vue";
 
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
-import { app } from "@/modules/app";
 import { getClubbedNfts } from "@/utils/helpers";
 
 const props = withDefaults(
@@ -25,7 +24,7 @@ watch(localMintAddress, () => {
 </script>
 <template>
   <Listbox v-model="localMintAddress" as="div" class="nft-select-container">
-    <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
+    <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-700 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span v-if="selectedNft?.metaplexData?.offChainMetaData" class="flex items-center">
           <div class="flex-shrink-0 h-6 w-6 rounded-full img-loader-container">
