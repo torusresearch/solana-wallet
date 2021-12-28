@@ -1,12 +1,7 @@
-import { ProviderConfig } from "@toruslabs/base-controllers";
 import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 
 export const WALLET_SUPPORTED_NETWORKS = {
   ...SUPPORTED_NETWORKS,
-  mainnet: {
-    ...SUPPORTED_NETWORKS.mainnet,
-    rpcTarget: "https://solana-mainnet.phantom.tech",
-  } as ProviderConfig,
 };
 
 // testnet: {
