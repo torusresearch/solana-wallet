@@ -77,9 +77,13 @@ test.describe("Home Page", async () => {
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
     const ControllerModule = await getControllerState(page);
-    const tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
+    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
       isFungible: boolean;
+      balance: {
+        uiAmount: number;
+      };
     }[];
+    tokens = tokens.filter((token) => token.balance.uiAmount);
     const NFT = tokens.filter((token) => !token.isFungible);
     const SPL = tokens.filter((token) => token.isFungible);
     if (NFT.length) {
@@ -104,9 +108,13 @@ test.describe("Home Page", async () => {
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
     const ControllerModule = await getControllerState(page);
-    const tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
+    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
       isFungible: boolean;
+      balance: {
+        uiAmount: number;
+      };
     }[];
+    tokens = tokens.filter((token) => token.balance.uiAmount);
     const NFT = tokens.filter((token) => !token.isFungible);
     if (NFT.length) {
       const tokenTabs = page.locator(".tok-tab");
@@ -114,7 +122,6 @@ test.describe("Home Page", async () => {
       await page.click("div.nft-item");
       await wait(1000);
       expect(/.*\/wallet\/nfts\?mints=.*$/.test(page.url())).toBeTruthy();
-      await page.waitForEvent("load");
       await page.click(".nft-item");
       await page.click(".nft-item button");
       await wait(1000);
@@ -128,9 +135,13 @@ test.describe("Home Page", async () => {
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
     const ControllerModule = await getControllerState(page);
-    const tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
+    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
       isFungible: boolean;
+      balance: {
+        uiAmount: number;
+      };
     }[];
+    tokens = tokens.filter((token) => token.balance.uiAmount);
     const SPL = tokens.filter((token) => token.isFungible);
     if (SPL.length) {
       const tokenTabs = page.locator(".tok-tab");
@@ -238,9 +249,13 @@ test.describe("Home Page with Imported Account", async () => {
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
     const ControllerModule = await getControllerState(page);
-    const tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
+    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
       isFungible: boolean;
+      balance: {
+        uiAmount: number;
+      };
     }[];
+    tokens = tokens.filter((token) => token.balance.uiAmount);
     const NFT = tokens.filter((token) => !token.isFungible);
     const SPL = tokens.filter((token) => token.isFungible);
     if (NFT.length) {
@@ -265,9 +280,13 @@ test.describe("Home Page with Imported Account", async () => {
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
     const ControllerModule = await getControllerState(page);
-    const tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
+    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
       isFungible: boolean;
+      balance: {
+        uiAmount: number;
+      };
     }[];
+    tokens = tokens.filter((token) => token.balance.uiAmount);
     const NFT = tokens.filter((token) => !token.isFungible);
     if (NFT.length) {
       const tokenTabs = page.locator(".tok-tab");
@@ -275,7 +294,6 @@ test.describe("Home Page with Imported Account", async () => {
       await page.click("div.nft-item");
       await wait(1000);
       expect(/.*\/wallet\/nfts\?mints=.*$/.test(page.url())).toBeTruthy();
-      await page.waitForEvent("load");
       await page.click(".nft-item");
       await page.click(".nft-item button");
       await wait(1000);
@@ -289,9 +307,13 @@ test.describe("Home Page with Imported Account", async () => {
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
     const ControllerModule = await getControllerState(page);
-    const tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
+    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
       isFungible: boolean;
+      balance: {
+        uiAmount: number;
+      };
     }[];
+    tokens = tokens.filter((token) => token.balance.uiAmount);
     const SPL = tokens.filter((token) => token.isFungible);
     if (SPL.length) {
       const tokenTabs = page.locator(".tok-tab");

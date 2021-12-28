@@ -69,6 +69,7 @@ test.describe("Transfer page", async () => {
       { polling: 500 }
     );
 
+    await wait(1000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load");
 
@@ -103,7 +104,7 @@ test.describe("Transfer page", async () => {
       },
       { polling: 500 }
     );
-
+    await wait(1000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load");
     await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
@@ -134,7 +135,7 @@ test.describe("Transfer page", async () => {
       },
       { polling: 500 }
     );
-
+    await wait(1000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load");
     await page2.waitForSelector(".badge.bg-success-soft >> text=+1");
@@ -239,7 +240,7 @@ test.describe("Transfer page using imported account", async () => {
       transferAmount,
       { polling: 500 }
     );
-
+    await wait(1000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load");
 
@@ -274,7 +275,7 @@ test.describe("Transfer page using imported account", async () => {
       },
       { polling: 500 }
     );
-
+    await wait(1000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load");
     await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
@@ -305,7 +306,7 @@ test.describe("Transfer page using imported account", async () => {
       },
       { polling: 500 }
     );
-
+    await wait(1000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load");
     await page2.waitForSelector(".badge.bg-success-soft >> text=+1");
