@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 withDefaults(
   defineProps<{
     thirdPartyAuthenticatorList: string;
@@ -9,16 +11,17 @@ withDefaults(
     isEmbed: false,
   }
 );
+const { t } = useI18n();
 </script>
 
 <template>
   <div class="mt-8 mb-2 w-full" :class="{ 'sm:w-10/12': !isEmbed }">
-    <div v-if="!isEmbed" class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">Note:</div>
+    <div v-if="!isEmbed" class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">{{ t("dappLogin.note") }}</div>
     <div v-if="!isEmbed" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
-      Torus does not store any data related to your social logins.
+      {{ t("login.dataPrivacy") }}
     </div>
     <div v-if="thirdPartyAuthenticatorList" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
-      The following sign-ins involve a third party authenticator: {{ thirdPartyAuthenticatorList }}.
+      {{ t("dappLogin.termsAuth01") }} {{ thirdPartyAuthenticatorList }}.
     </div>
   </div>
 
@@ -27,9 +30,13 @@ withDefaults(
   </div>
 
   <div class="space-x-3">
-    <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">Terms of Service</a>
-    <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">Privacy Policy</a>
-    <a class="font-body text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">Contact us</a>
+    <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">{{
+      t("dappLogin.termsConditions")
+    }}</a>
+    <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">{{
+      t("dappLogin.privacyPolicy")
+    }}</a>
+    <a class="font-body text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">{{ t("dappLogin.contactUs") }}</a>
   </div>
 </template>
 

@@ -5,11 +5,13 @@ import { GithubIcon } from "@toruslabs/vue-icons/symbols";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import { computed, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button, SelectField, TextField } from "@/components/common";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/helpers";
 
+const { t } = useI18n();
 const searchFilter = ref("");
 const typeFilter = ref<TransferType>();
 
@@ -116,10 +118,12 @@ const onDelete = (contactId: number) => {
 <template>
   <div class="py-4">
     <div class="grid grid-cols-3 items-center mb-4">
-      <div class="col-span-3 sm:col-span-1 font-body text-sm text-app-text-600 dark:text-app-text-dark-500">List of Contacts</div>
+      <div class="col-span-3 sm:col-span-1 font-body text-sm text-app-text-600 dark:text-app-text-dark-500">
+        {{ t("walletSettings.listContacts") }}
+      </div>
       <div class="col-span-3 sm:col-span-2 flex gap-2">
-        <TextField v-model="searchFilter" size="small" placeholder="Search by name" />
-        <SelectField v-model="typeFilter" size="small" placeholder="Filter by type" :items="filterTypes" />
+        <TextField v-model="searchFilter" size="small" :placeholder="t('walletSettings.searchByName')" />
+        <SelectField v-model="typeFilter" size="small" :placeholder="t('walletSettings.filterByType')" :items="filterTypes" />
       </div>
     </div>
     <ul class="border dark:border-gray-900 rounded-md divide-y dark:divide-gray-900 shadow dark:shadow-dark mb-4">
@@ -138,21 +142,21 @@ const onDelete = (contactId: number) => {
         </div>
       </li>
     </ul>
-    <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">Add new Contact</div>
+    <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("walletSettings.addNewContact") }}</div>
     <form @submit.prevent="onSave">
       <div class="mb-4 grid grid-cols-3 gap-2">
         <div class="col-span-3 sm:col-span-2">
-          <TextField v-model.lazy="newContactState.name" :errors="$v.name.$errors" placeholder="Enter Contact Name" />
+          <TextField v-model.lazy="newContactState.name" :errors="$v.name.$errors" :placeholder="t('walletSettings.enterContact')" />
         </div>
         <div class="col-span-3 sm:col-span-1">
           <SelectField v-model="newContactState.transferType" :items="transferTypes" />
         </div>
       </div>
       <div class="mb-4">
-        <TextField v-model.lazy="newContactState.address" :errors="$v.address.$errors" placeholder="Enter SOL Address" />
+        <TextField v-model.lazy="newContactState.address" :errors="$v.address.$errors" :placeholder="t('walletSettings.enterSOL')" />
       </div>
       <div>
-        <Button class="ml-auto" variant="tertiary" type="submit">Add Contact</Button>
+        <Button class="ml-auto" variant="tertiary" type="submit">{{ t("walletSettings.addContact") }}</Button>
       </div>
     </form>
   </div>

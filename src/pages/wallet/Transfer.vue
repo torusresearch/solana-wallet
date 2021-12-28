@@ -4,17 +4,19 @@ import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transact
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
-import { Button, Card, SelectField, TextField } from "@/components/common";
-import ComboBox from "@/components/common/ComboBox.vue";
+import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
+
+const { t } = useI18n();
 
 // const ensError = ref("");
 const isOpen = ref(false);
@@ -117,7 +119,7 @@ const nftVerifier = (value: number) => {
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
-  return ALLOWED_VERIFIERS_ERRORS[selectedType];
+  return t(ALLOWED_VERIFIERS_ERRORS[selectedType]);
 };
 
 const getTokenBalance = () => {
@@ -129,18 +131,23 @@ const rules = computed(() => {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
       // ensRule: helpers.withMessage(ensError.value, ensRule),
-      required: helpers.withMessage("Required", required),
-      tokenAddress: helpers.withMessage("Invalid token account address", helpers.withAsync(tokenAddressVerifier)),
+      required: helpers.withMessage(t("walletTransfer.required"), required),
+      tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
-      greaterThanZero: helpers.withMessage("Must be greater than 0.0001", minValue(0.0001)),
-      lessThanBalance: helpers.withMessage("Must less than your balances", maxValue(getTokenBalance())),
-      nft: helpers.withMessage("Must be Non Fungible Amount", nftVerifier),
+      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(0.0001)),
+      lessThanBalance: helpers.withMessage(t("walletTransfer.insufficientBalance"), maxValue(getTokenBalance())),
+      nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
   };
 });
 
-const $v = useVuelidate(rules, { transferTo, transferId, sendAmount, transactionFee });
+const $v = useVuelidate(rules, {
+  transferTo,
+  transferId,
+  sendAmount,
+  transactionFee,
+});
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -197,10 +204,10 @@ const confirmTransfer = async () => {
     }
     // resetForm();
     transferConfirmed.value = true;
-    showMessageModal({ messageTitle: "Your transfer is being processed.", messageStatus: STATUS_INFO });
+    showMessageModal({ messageTitle: t("walletTransfer.transferSuccessTitle"), messageStatus: STATUS_INFO });
   } catch (error) {
     showMessageModal({
-      messageTitle: `Fail to submit transaction: ${(error as Error)?.message || "Something went wrong"}`,
+      messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
       messageStatus: STATUS_ERROR,
     });
   }
@@ -221,6 +228,13 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   }
   selectedToken.value = $event;
 }
+
+// reset transfer token to solana if tokens no longer has current token
+watch([tokens, nftTokens], () => {
+  if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
+    updateSelectedToken(tokens.value[0]);
+  }
+});
 </script>
 
 <template>
@@ -232,7 +246,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
               <div class="col-span-3 sm:col-span-2">
-                <ComboBox v-model="transferTo" label="Send to" :errors="$v.transferTo.$errors" :items="contacts" />
+                <ComboBox v-model="transferTo" :label="t('walletActivity.sendTo')" :errors="$v.transferTo.$errors" :items="contacts" />
               </div>
               <div class="col-span-3 sm:col-span-1">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
@@ -240,10 +254,12 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
             </div>
 
             <div v-if="showAmountField" class="mb-6">
-              <TextField v-model="sendAmount" label="Amount" :errors="$v.sendAmount.$errors" type="number" />
+              <TextField v-model="sendAmount" :label="t('dappTransfer.amount')" :errors="$v.sendAmount.$errors" type="number" />
             </div>
             <div class="flex">
-              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"><span class="text-base">Transfer</span></Button>
+              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"
+                >{{ t("dappTransfer.transfer") }}<span class="text-base"></span
+              ></Button>
               <!-- :crypto-tx-fee="state.transactionFee" -->
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm

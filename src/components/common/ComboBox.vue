@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ErrorObject } from "@vuelidate/core";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 type ItemType = { text: string; value: string };
 
@@ -31,6 +32,9 @@ const filteredItems = computed(() => {
     return item.text.toLowerCase().indexOf(value.value.toLowerCase()) >= 0;
   });
 });
+
+const { t } = useI18n();
+
 const setSelectedItem = (item: ItemType) => {
   value.value = item.value;
   isListOpen.value = false;
@@ -47,7 +51,7 @@ const onBlur = () => {
   <div class="combo-container flex flex-col">
     <div v-show="filteredItems.length > 0 && isListOpen" class="absolute inset-0 z-0" @click="isListOpen = false" @keydown="isListOpen = false"></div>
 
-    <div class="text-sm mb-1 font-body text-app-text-600 dark:text-app-text-dark-500">Send to</div>
+    <div class="text-sm mb-1 font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("walletActivity.sendTo") }}</div>
     <input v-model="value" type="text" class="combo-input-field" aria-label="Select field" @focus="isListOpen = true" @blur="onBlur" />
 
     <div v-if="errors?.length" class="flex mt-1 px-1">
