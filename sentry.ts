@@ -16,7 +16,7 @@ export function installSentry(Vue: App) {
   Sentry.init({
     Vue,
     dsn: process.env.VUE_APP_SENTRY_DSN,
-    environment: process.env.NODE_ENV,
+    environment: process.env.VUE_APP_MODE,
     release: `solana-wallet@${process.env.VUE_APP_SOLANA_BUILD_VERSION}`,
     autoSessionTracking: true,
     integrations: [new Integrations.Breadcrumbs({ console: false })],
