@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -48,8 +48,9 @@ onMounted(async () => {
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     const networkConfig = txData.networkDetails;
 
-    const msg = Message.from(Buffer.from(txData.message || "", "hex"));
-    const tx = Transaction.populate(msg);
+    // const msg = Message.from(Buffer.from(txData.message || "", "hex"));
+    // const tx = Transaction.populate(msg);
+    const tx = Transaction.from(Buffer.from(txData.message, "hex"));
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
 
