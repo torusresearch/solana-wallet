@@ -36,25 +36,7 @@ function closeClicked() {
   >
     <div
       v-if="props.summaryData && mode === NFT_CARD_MODE.SUMMARY"
-      class="
-        cursor-pointer
-        my-3
-        px-3
-        shadow
-        dark:shadow-dark
-        sm:my-3 sm:px-3
-        md:my-3 md:px-3
-        lg:my-3 lg:px-3
-        xl:my-3 xl:px-3
-        nft-container
-        border border-app-gray-200
-        dark:border-transparent
-        m-4
-        bg-white
-        dark:bg-app-gray-700
-        rounded-md
-        summary-card
-      "
+      class="cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 nft-container border border-app-gray-200 dark:border-transparent m-4 bg-white dark:bg-app-gray-700 rounded-md summary-card"
     >
       <div class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full">
         <div class="nft-face img-loader-container">
@@ -69,23 +51,7 @@ function closeClicked() {
 
     <div
       v-if="mode !== NFT_CARD_MODE.SUMMARY && nftToken"
-      class="
-        large-card
-        cursor-pointer
-        my-3
-        px-3
-        shadow
-        dark:shadow-dark
-        sm:my-3 sm:px-3
-        md:my-3 md:px-3
-        lg:my-3 lg:px-3
-        xl:my-3 xl:px-3
-        border border-app-gray-200
-        dark:border-transparent
-        bg-white
-        dark:bg-app-gray-700
-        rounded-md
-      "
+      class="large-card cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
     >
       <div class="nft-item flex flex-col justify-start align-start w-100">
         <div class="nft-face-large" style="background-color: rgb(156, 156, 156)">

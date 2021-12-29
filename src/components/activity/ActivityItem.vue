@@ -35,20 +35,7 @@ const amountIsVisible = computed(() => {
 </script>
 <template>
   <div
-    class="
-      w-full
-      bg-white
-      dark:bg-app-gray-700
-      border border-app-gray-400
-      dark:border-transparent
-      shadow
-      dark:shadow-dark
-      rounded-md
-      p-4
-      grid grid-cols-12
-      gap-2
-      cursor-pointer
-    "
+    class="w-full bg-white dark:bg-app-gray-700 border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark rounded-md p-4 grid grid-cols-12 gap-2 cursor-pointer"
     @keydown="toggleDetails(activity.blockExplorerUrl)"
     @click="toggleDetails(activity.blockExplorerUrl)"
   >

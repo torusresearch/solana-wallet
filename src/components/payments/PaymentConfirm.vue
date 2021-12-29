@@ -81,21 +81,7 @@ const totalFiatCostString = computed(() => {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="
-      w-screen
-      h-screen
-      overflow-hidden
-      text-left
-      align-middle
-      transition-all
-      transform
-      bg-white
-      dark:bg-app-gray-700
-      shadow-xl
-      flex flex-col
-      justify-between
-      align-start
-    "
+    class="w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between align-start"
   >
     <div class="shadow dark:shadow-dark text-center py-6 flex flex-row justify-center items-center" tabindex="0">
       <div>

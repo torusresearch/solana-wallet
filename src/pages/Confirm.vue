@@ -48,8 +48,6 @@ onMounted(async () => {
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     const networkConfig = txData.networkDetails;
 
-    // const msg = Message.from(Buffer.from(txData.message || "", "hex"));
-    // const tx = Transaction.populate(msg);
     const tx = Transaction.from(Buffer.from(txData.message, "hex"));
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
