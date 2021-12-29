@@ -341,7 +341,7 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async logout(): Promise<Promise<Promise<Promise<void>>>> {
+  async logout(): Promise<void> {
     if (isMain && this.selectedAddress) {
       try {
         const openLoginInstance = await OpenLoginFactory.getInstance();
@@ -355,7 +355,6 @@ class ControllerModule extends VuexModule {
         window.location.href = "/";
       }
     }
-    this.updateTorusState(cloneDeep(DEFAULT_STATE));
     const { origin } = this.torus;
     this.torus.init({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
     this.torus.setOrigin(origin);
