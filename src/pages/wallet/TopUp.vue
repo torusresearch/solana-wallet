@@ -26,7 +26,7 @@ onMounted(() => {
   <div class="py-2">
     <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <RadioGroup v-model="selectedProvider">
-        <RadioGroupLabel class="sr-only">{{ t("walletTopup.serverSize") }}</RadioGroupLabel>
+        <RadioGroupLabel class="sr-only">{{ t("walletTopUp.serverSize") }}</RadioGroupLabel>
         <div class="space-y-4">
           <RadioGroupOption v-for="provider in providers" :key="provider.name" v-slot="{ checked }" :value="provider" as="template">
             <div
