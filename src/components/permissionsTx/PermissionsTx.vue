@@ -47,22 +47,7 @@ function openLink() {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="
-      inline-block
-      w-screen
-      h-screen
-      overflow-hidden
-      text-left
-      align-middle
-      transition-all
-      transform
-      bg-white
-      dark:bg-app-gray-800
-      shadow-xl
-      flex flex-col
-      justify-start
-      align-start
-    "
+    class="inline-block w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-start align-start"
   >
     <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
       <div>
@@ -89,7 +74,7 @@ function openLink() {
         <div class="w-full flex flex-row justify-start items-center">
           <img :src="SubtractURL" alt="Message Info" class="mr-2" />
           <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
-            {{ decodedInst.length }} {{ t("walletActivity.transactionInstructions") }}
+            {{ decodedInst.length }} {{ t("walletSettings.transactionInstructions") }}
           </p>
         </div>
         <p

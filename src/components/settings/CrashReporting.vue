@@ -16,14 +16,19 @@ const enabled = computed(() => ControllerModule.crashReport);
     <div class="flex items-center">
       <Switch
         :model="enabled"
-        :class="enabled ? 'bg-app-primary-500' : 'bg-app-primary-400'"
+        :class="enabled ? 'bg-app-primary-500' : 'bg-app-gray-600'"
         class="relative inline-flex items-center h-6 rounded-full w-11 mr-2"
         @update:model-value="(v) => ControllerModule.setCrashReport(!ControllerModule.crashReport)"
       >
         <span class="sr-only">{{ t("walletSettings.enableNotifications") }}</span>
-        <span :class="enabled ? 'translate-x-6' : 'translate-x-1'" class="inline-block w-4 h-4 transform bg-white rounded-full" />
+        <span
+          :class="enabled ? 'translate-x-6' : 'translate-x-1'"
+          class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
+        />
       </Switch>
-      <div class="font-body text-app-text-500 dark:text-app-text-dark-500 text-sm">{{ t("walletSettings.crashReportIsEnabled") }}</div>
+      <div class="font-body text-app-text-500 dark:text-app-text-dark-500 text-sm">
+        {{ enabled ? t("walletSettings.crashReportIsEnabled") : t("walletSettings.crashReportIsDisabled") }}
+      </div>
     </div>
   </div>
 </template>

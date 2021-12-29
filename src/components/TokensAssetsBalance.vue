@@ -73,36 +73,12 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         <div
           v-for="token in fungibleTokens"
           :key="token.tokenAddress.toString()"
-          class="
-            my-3
-            px-3
-            overflow-hidden
-            sm:my-3 sm:px-3
-            md:my-3 md:px-3
-            lg:my-3 lg:px-3
-            xl:my-3 xl:px-3
-            w-full
-            sm:w-1/2
-            md:w-1/3
-            xl:w-1/4
-            lg:w-1/4
-            cursor-pointer
-          "
+          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 w-full sm:w-1/2 md:w-1/3 xl:w-1/4 lg:w-1/4 cursor-pointer"
           @click="transferToken(token.mintAddress)"
           @keydown="transferToken(token.mintAddress)"
         >
           <div
-            class="
-              token-item
-              shadow
-              dark:shadow-dark
-              flex flex-col
-              justify-start
-              align-start
-              w-100
-              border-solid border-app-gray-200
-              dark:border-transparent
-            "
+            class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
@@ -135,27 +111,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
       >
         <div
           v-if="!nonFungibleTokens?.length"
-          class="
-            no-nft
-            my-3
-            px-3
-            shadow
-            dark:shadow-dark
-            sm:my-3 sm:px-3
-            md:my-3 md:px-3
-            lg:my-3 lg:px-3
-            xl:my-3 xl:px-3
-            nft-container
-            border border-app-gray-200
-            dark:border-transparent
-            m-4
-            bg-white
-            dark:bg-app-gray-700
-            rounded-md
-            flex flex-col
-            items-center
-            justify-center
-          "
+          class="no-nft my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 nft-container border border-app-gray-200 dark:border-transparent m-4 bg-white dark:bg-app-gray-700 rounded-md flex flex-col items-center justify-center"
         >
           <p class="text-app-text-500 dark:text-app-text-dark-500 text-sm font-bold mb-2">{{ t("walletHome.getFirstNFT") }}</p>
           <a href="https://www.holaplex.com/" target="_blank" class="text-app-text-accent text-xs">{{ t("walletHome.holaplex") }}</a>
