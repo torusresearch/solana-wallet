@@ -116,9 +116,7 @@ const fiatTxFeeString = computed(() => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div
-              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
-            >
+            <div class="transfer-confirm-container">
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>
                   <img class="h-7 mx-auto w-auto mb-1" :src="SolanaLogoURL" alt="Solana Logo" />
@@ -217,6 +215,21 @@ const fiatTxFeeString = computed(() => {
   </TransitionRoot>
 </template>
 <style scoped>
+.transfer-confirm-container {
+  @apply inline-block
+  w-full
+  max-w-sm
+  my-8
+  overflow-hidden
+  text-left
+  align-middle
+  transition-all
+  transform
+bg-white
+dark:bg-app-gray-700
+  shadow-xl
+  rounded-md;
+}
 .line_connect {
   transform: translateY(-7px);
 }

@@ -43,11 +43,11 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 </script>
 
 <template>
-  <div class="flex flex-col justify-start items-center w-100">
+  <div class="flex flex-col justify-start items-center">
     <!-- Tabs -->
-    <div class="tab-group-container flex flex-row justify-center items-start w-full">
+    <div class="tab-group-container">
       <div
-        class="tok-tab flex flex-row justify-center items-center"
+        class="tok-tab"
         :class="[selectedTab === TOKEN_TAB_TYPES.NFT_TAB ? 'tab-active' : '']"
         @click="selectTab(TOKEN_TAB_TYPES.NFT_TAB)"
         @keydown="selectTab(TOKEN_TAB_TYPES.NFT_TAB)"
@@ -56,7 +56,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         <p class="ml-2 text-sm">NFTs</p>
       </div>
       <div
-        class="tok-tab flex flex-row justify-center items-center"
+        class="tok-tab"
         :class="[selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB ? 'tab-active' : '']"
         @click="selectTab(TOKEN_TAB_TYPES.TOKEN_TAB)"
         @keydown="selectTab(TOKEN_TAB_TYPES.TOKEN_TAB)"
@@ -69,20 +69,18 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
     <!-- List of token/nft Cards -->
     <div class="tab-info w-full">
-      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3">
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="tab-token">
         <div
           v-for="token in fungibleTokens"
           :key="token.tokenAddress.toString()"
-          class="my-3 px-3 overflow-hidden sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 w-full sm:w-1/2 md:w-1/3 xl:w-1/4 lg:w-1/4 cursor-pointer"
+          class="token-items-container"
           @click="transferToken(token.mintAddress)"
           @keydown="transferToken(token.mintAddress)"
         >
-          <div
-            class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
-          >
-            <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
+          <div class="token-item">
+            <div class="token-header">
               <span class="flex flex-row justify-start items-center ml-3">
-                <img class="block h-5 mr-2 w-auto token-image" :src="token.data?.logoURI" alt="TOKEN Logo" />
+                <img class="token-image" :src="token.data?.logoURI" alt="TOKEN Logo" />
                 <p class="token-name">{{ token.data?.name }}</p></span
               >
               <span class="flex flex-row justify-start items-center mr-3">
@@ -90,7 +88,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
                 <p class="coin-currency">{{ token.data?.symbol }}</p></span
               >
             </div>
-            <div class="flex flex-row justify-between items-center w-100 token-footer">
+            <div class="token-footer">
               <p class="ml-3">
                 1 {{ token.data?.symbol }} ≈ {{ token.price?.[currency === "sol" ? "usd" : currency] || 0 }}
                 {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
@@ -104,15 +102,8 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
         </div>
       </div>
 
-      <div
-        v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB"
-        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1"
-        :class="!nonFungibleTokens?.length ? `w-full justify-center` : ``"
-      >
-        <div
-          v-if="!nonFungibleTokens?.length"
-          class="no-nft my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 nft-container border border-app-gray-200 dark:border-transparent m-4 bg-white dark:bg-app-gray-700 rounded-md flex flex-col items-center justify-center"
-        >
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB" class="tab-nft" :class="!nonFungibleTokens?.length ? `w-full justify-center` : ``">
+        <div v-if="!nonFungibleTokens?.length" class="get-nft-container">
           <p class="text-app-text-500 dark:text-app-text-dark-500 text-sm font-bold mb-2">{{ t("walletHome.getFirstNFT") }}</p>
           <a href="https://www.holaplex.com/" target="_blank" class="text-app-text-accent text-xs">{{ t("walletHome.holaplex") }}</a>
         </div>
@@ -132,9 +123,80 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 </template>
 
 <style scoped>
+.tab-nft {
+  @apply flex
+  flex-wrap
+  -mx-3
+  overflow-hidden
+  sm:-mx-3
+  md:-mx-3
+  lg:-mx-3
+  xl:-mx-3
+  pb-4
+  pt-1;
+}
+.tab-token {
+  @apply flex
+  flex-wrap
+  -mx-3
+  overflow-hidden
+  sm:-mx-3
+  md:-mx-3
+  lg:-mx-3
+  xl:-mx-3;
+}
+.token-items-container {
+  @apply my-3
+  px-3
+  overflow-hidden
+  sm:my-3
+  sm:px-3
+  md:my-3
+  md:px-3
+  lg:my-3
+  lg:px-3
+  xl:my-3
+  xl:px-3
+  w-full
+  sm:w-1/2
+  md:w-1/3
+  xl:w-1/4
+  lg:w-1/4
+  cursor-pointer;
+}
+.get-nft-container {
+  @apply no-nft
+  my-3
+  px-3
+  shadow
+  dark:shadow-dark
+  sm:my-3
+  sm:px-3
+  md:my-3
+  md:px-3
+  lg:my-3
+  lg:px-3
+  xl:my-3
+  xl:px-3
+  border
+  border-app-gray-200
+  dark:border-transparent
+  m-4
+  bg-white
+  dark:bg-app-gray-700
+  rounded-md
+  flex
+  flex-col
+  items-center
+  justify-center;
+}
 .tab-group-container {
   border-radius: 6px;
   overflow: hidden;
+  @apply flex
+  flex-row
+  justify-center
+  items-start w-full;
 }
 
 .tok-tab {
@@ -145,6 +207,10 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   color: #a2a5b5;
   cursor: pointer;
   flex: 1 1 auto;
+  @apply flex
+  flex-row
+  justify-center
+  items-center;
 }
 .dark .tok-tab {
   background: #2f3136;
@@ -168,6 +234,14 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   border-radius: 6px;
   margin: auto;
   overflow: hidden;
+  @apply shadow
+  dark:shadow-dark
+  flex
+  flex-col
+  justify-start
+  border-solid
+  border-app-gray-200
+  dark:border-transparent;
 }
 .token-name {
   font-weight: bold;
@@ -195,10 +269,19 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   font-size: 12px;
   line-height: 14px;
   margin-top: 4px;
+  @apply block
+  h-5
+  mr-2
+  w-auto;
 }
 .token-header {
   box-sizing: border-box;
   flex: 1 1 auto;
+  @apply flex
+  flex-row
+  justify-between
+  items-center
+  shadow dark:shadow-dark;
 }
 .dark .token-header {
   background: #2f3136;
@@ -210,6 +293,10 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   letter-spacing: 0.0857143px;
   color: #b3c0ce;
   flex: 1 1 auto;
+  @apply flex
+  flex-row
+  justify-between
+  items-center;
 }
 .dark .token-footer {
   background: #2d2f34;

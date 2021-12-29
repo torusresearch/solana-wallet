@@ -25,11 +25,7 @@ function copyPrivKey() {
 }
 </script>
 <template>
-  <div
-    class="flex p-3 items-center cursor-pointer rounded rounded:md hover:bg-app-gray-200 dark:hover:bg-app-gray-400 dark:hover:text-app-text-500 text-app-text-600 dark:text-app-text-dark-500"
-    @click="openModal"
-    @keydown="openModal"
-  >
+  <div class="account-details-modal" @click="openModal" @keydown="openModal">
     <KeyIcon class="w-5 h-5 mr-5" />
     <div class="font-body">{{ t("walletSettings.accountDetails") }}</div>
   </div>
@@ -50,9 +46,7 @@ function copyPrivKey() {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div
-              class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-2xl"
-            >
+            <div class="account-details-content-container">
               <DialogTitle
                 as="h3"
                 class="text-lg font-bold leading-6 text-app-text-500 dark:text-app-text-dark-400 focus-within:outline-none"
@@ -91,6 +85,34 @@ function copyPrivKey() {
 </template>
 
 <style scoped>
+.account-details-content-container {
+  @apply inline-block
+  w-full
+  max-w-2xl
+  p-6
+  my-8
+  overflow-hidden
+  text-left
+  align-middle
+  transition-all
+  transform
+bg-white
+dark:bg-app-gray-700
+  shadow-xl
+  rounded-2xl;
+}
+.account-details-modal {
+  @apply flex
+  p-3
+  items-center
+  cursor-pointer
+  rounded
+  hover:bg-app-gray-200
+  dark:hover:bg-app-gray-400
+  dark:hover:text-app-text-500
+  text-app-text-600
+  dark:text-app-text-dark-500;
+}
 .priv-key {
   width: calc(100% - 101px);
   overflow: hidden;

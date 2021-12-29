@@ -30,9 +30,7 @@ const value = computed({
           <ChevronBottomIcon class="ml-1 h-3 w-3 text-gray-400" aria-hidden="true" />
         </ListboxButton>
         <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-          <ListboxOptions
-            class="absolute z-10 mt-1 w-full bg-white dark:bg-app-gray-700 shadow-lg dark:shadow-dark max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
-          >
+          <ListboxOptions class="currency-selector">
             <ListboxOption v-for="item in currencies" :key="item" v-slot="{ active, selected }" as="template" :value="item">
               <li
                 :class="[
@@ -54,4 +52,26 @@ const value = computed({
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.currency-selector {
+  @apply absolute
+  z-10
+  mt-1
+  w-full
+  bg-white
+  dark:bg-app-gray-700
+  shadow-lg
+  dark:shadow-dark
+  max-h-56
+  rounded-md
+  py-1
+  text-base
+  ring-1
+  ring-app-gray-400
+  dark:ring-transparent
+  overflow-auto
+  outline-none
+  focus:outline-none
+  sm:text-sm;
+}
+</style>

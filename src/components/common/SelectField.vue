@@ -63,9 +63,7 @@ const value = computed({
           </span>
         </ListboxButton>
         <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-          <ListboxOptions
-            class="absolute z-10 mt-1 w-full bg-white dark:bg-app-gray-700 max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
-          >
+          <ListboxOptions class="selector">
             <ListboxOption v-for="item in items" :key="item.value" v-slot="{ active, selected }" as="template" :value="item">
               <li
                 :class="[
@@ -87,6 +85,25 @@ const value = computed({
 </template>
 
 <style scoped>
+.selector {
+  @apply absolute
+  z-10
+  mt-1
+  w-full
+  bg-white
+  dark:bg-app-gray-700
+  max-h-56
+  rounded-md
+  py-1
+  text-base
+  ring-1
+  ring-app-gray-400
+  dark:ring-transparent
+  overflow-auto
+  outline-none
+  focus:outline-none
+  sm:text-sm;
+}
 .size-small {
   height: 32px;
 }

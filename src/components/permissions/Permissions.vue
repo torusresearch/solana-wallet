@@ -41,10 +41,7 @@ function openLink() {
 }
 </script>
 <template>
-  <div
-    :class="{ dark: ControllerModule.isDarkMode }"
-    class="inline-block w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-start align-start"
-  >
+  <div :class="{ dark: ControllerModule.isDarkMode }" class="permissions-container">
     <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
       <div>
         <img class="h-7 mx-auto w-auto mb-1 mr-5" :src="props.logoUrl" alt="Dapp Logo" />
@@ -89,6 +86,21 @@ function openLink() {
   </div>
 </template>
 <style scoped>
+.permissions-container {
+  @apply w-screen
+  h-screen
+  overflow-hidden
+  text-left
+  align-middle
+  transition-all
+  transform
+bg-white
+dark:bg-app-gray-800
+  shadow-xl
+  flex
+  flex-col
+  justify-start;
+}
 .title-box {
   flex: 1 1 auto;
 }

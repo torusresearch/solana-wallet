@@ -89,9 +89,7 @@ const explorerUrl = computed(() => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div
-              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4 font-body"
-            >
+            <div class="transfer-nft-container">
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
                   {{ t("walletTransfer.confirmTransaction") }}
@@ -168,6 +166,23 @@ const explorerUrl = computed(() => {
   </TransitionRoot>
 </template>
 <style scoped>
+.transfer-nft-container {
+  @apply inline-block
+  w-full
+  max-w-sm
+  my-8
+  overflow-hidden
+  text-left
+  align-middle
+  transition-all
+  transform
+bg-white
+dark:bg-app-gray-700
+  shadow-xl
+  rounded-md
+  px-4
+  font-body;
+}
 .line_connect {
   transform: translateY(-7px);
 }

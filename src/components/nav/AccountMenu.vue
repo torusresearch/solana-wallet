@@ -29,15 +29,29 @@ const { t } = useI18n();
       leave-from-class="transform opacity-100 scale-100"
       leave-to-class="transform opacity-0 scale-95"
     >
-      <MenuItems
-        class="origin-top-right absolute right-0 mt-2 w-96 rounded-md shadow-lg dark:shadow-dark py-1 bg-white dark:bg-app-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none"
-        ><slot />
-      </MenuItems>
+      <MenuItems class="menu"><slot /> </MenuItems>
     </transition>
   </Menu>
 </template>
 
 <style scoped>
+.menu {
+  @apply origin-top-right
+  absolute
+  right-0
+  mt-2
+  w-96
+  rounded-md
+  shadow-lg
+  dark:shadow-dark
+  py-1
+  bg-white
+  dark:bg-app-gray-700
+  ring-1
+  ring-black
+  ring-opacity-5
+  focus:outline-none;
+}
 .outline-focused:focus {
   outline: 2px solid white;
   outline-offset: 2px;

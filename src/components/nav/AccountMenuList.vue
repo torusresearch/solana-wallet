@@ -111,23 +111,13 @@ const getWalletBalance = (address: string): string => {
         </div>
       </div>
     </div>
-    <div
-      class="flex cursor-pointer items-center border-t border-b sm:border-b-0 w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
-      @click="openImportModal"
-      @keydown="openImportModal"
-    >
+    <div class="menu-button border-t border-b sm:border-b-0" @click="openImportModal" @keydown="openImportModal">
       <PlusIcon class="w-4 h-4 mr-2" aria-hidden="false" />
       <div>Import Account</div>
     </div>
 
     <!-- Page navigation -->
-    <router-link
-      is="router-link"
-      v-for="nav in pageNavigation"
-      :key="nav.route"
-      :to="`/wallet/${nav.route}`"
-      class="flex cursor-pointer sm:hidden items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
-    >
+    <router-link is="router-link" v-for="nav in pageNavigation" :key="nav.route" :to="`/wallet/${nav.route}`" class="menu-button menu-hidden">
       <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ t(nav.name) }}</router-link
     >
 
@@ -158,4 +148,23 @@ const getWalletBalance = (address: string): string => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.menu-button {
+  @apply w-full
+  text-left
+  px-4
+  py-4
+  text-sm
+  font-bold
+  text-app-text-600
+  dark:text-app-text-dark-500
+  dark:hover:text-app-text-600
+  dark:hover:bg-app-gray-400
+  flex
+  cursor-pointer
+  items-center;
+}
+.menu-hidden {
+  @apply sm:hidden;
+}
+</style>

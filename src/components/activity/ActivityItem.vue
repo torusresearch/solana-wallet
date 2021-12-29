@@ -34,13 +34,9 @@ const amountIsVisible = computed(() => {
 });
 </script>
 <template>
-  <div
-    class="w-full bg-white dark:bg-app-gray-700 border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark rounded-md p-4 grid grid-cols-12 gap-2 cursor-pointer"
-    @keydown="toggleDetails(activity.blockExplorerUrl)"
-    @click="toggleDetails(activity.blockExplorerUrl)"
-  >
+  <div class="activity-item" @keydown="toggleDetails(activity.blockExplorerUrl)" @click="toggleDetails(activity.blockExplorerUrl)">
     <!-- date -->
-    <div class="col-span-8 order-3 pl-9 flex items-center justify-start sm:order-1 sm:col-span-2 sm:border-r sm:pl-0 xl:col-span-1">
+    <div class="activity-item-date">
       <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
         {{ dateFormat(new Date(activity.updatedAt || 0), "dS mmm, yyyy") }}
         <br />
@@ -48,10 +44,7 @@ const amountIsVisible = computed(() => {
       </div>
     </div>
     <!-- logo + text -->
-    <div
-      class="col-span-8 order-1 pl-0 sm:order-2 sm:pl-6 sm:col-span-6 xl:col-span-7"
-      :class="{ 'col-span-12 sm:col-span-6 xl:col-span-7': !amountIsVisible }"
-    >
+    <div class="activity-item-logotext" :class="{ 'activity-item-logotext-alt': !amountIsVisible }">
       <div class="flex items-center">
         <div class="logo-container">
           <img class="block h-7 w-auto" :src="activity.logoURI || SolanaLogoURL" alt="Solana Logo" />
@@ -84,10 +77,7 @@ const amountIsVisible = computed(() => {
       </div>
     </div>
     <!-- Amount -->
-    <div
-      v-if="amountIsVisible"
-      class="col-span-4 order-2 text-right sm:col-span-2 sm:order-3 sm:text-left sm:flex sm:items-center sm:justify-center xl:col-span-2"
-    >
+    <div v-if="amountIsVisible" class="activity-item-amount">
       <div>
         <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
           {{ Number(activity.totalAmountString) }}
@@ -98,7 +88,7 @@ const amountIsVisible = computed(() => {
       </div>
     </div>
     <!-- status -->
-    <div class="col-span-4 text-right order-4 flex items-center justify-end sm:col-span-2" :class="{ 'sm:col-span-4': !amountIsVisible }">
+    <div class="activity-item-status" :class="{ 'activity-item-status-alt': !amountIsVisible }">
       <div class="rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5" :style="{ backgroundColor: getTxStatusColor(activity.status) }">
         {{ t(`walletActivity.${activity.status}`) }}
       </div>
@@ -107,6 +97,75 @@ const amountIsVisible = computed(() => {
 </template>
 
 <style scoped>
+.activity-item-date {
+  @apply col-span-8
+  order-3
+  pl-9
+  flex
+  items-center
+  justify-start
+  sm:order-1
+  sm:col-span-2
+  sm:border-r
+  sm:pl-0
+  xl:col-span-1;
+}
+.activity-item-logotext {
+  @apply col-span-8
+  order-1
+  pl-0
+  sm:order-2
+  sm:pl-6
+  sm:col-span-6
+  xl:col-span-7;
+}
+
+.activity-item-logotext-alt {
+  @apply col-span-12 sm:col-span-6 xl:col-span-7;
+}
+
+.activity-item-amount {
+  @apply col-span-4
+  order-2
+  text-right
+  sm:col-span-2
+  sm:order-3
+  sm:text-left
+  sm:flex
+  sm:items-center
+  sm:justify-center
+  xl:col-span-2;
+}
+
+.activity-item-status {
+  @apply col-span-4
+  text-right
+  order-4
+  flex
+  items-center
+  justify-end
+  sm:col-span-2;
+}
+.activity-item-status-alt {
+  @apply sm:col-span-4;
+}
+.activity-item {
+  @apply w-full
+bg-white
+dark:bg-app-gray-700
+  border
+border-app-gray-400
+  dark:border-transparent
+  shadow
+  dark:shadow-dark
+  rounded-md
+  p-4
+  grid
+  grid-cols-12
+  gap-2
+  cursor-pointer;
+}
+
 .logo-container {
   min-width: 32px;
 }

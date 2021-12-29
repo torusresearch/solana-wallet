@@ -53,9 +53,7 @@ watch(localToken, () => {
       </ListboxButton>
 
       <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <ListboxOptions
-          class="absolute z-20 mt-1 w-full bg-white dark:bg-app-gray-800 shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
-        >
+        <ListboxOptions class="selector">
           <ListboxOption :key="'tokenstring'" as="template" :value="null" :disabled="true">
             <li class="option-separator">
               <img class="block h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
@@ -120,6 +118,26 @@ watch(localToken, () => {
 </template>
 
 <style scoped>
+.selector {
+  @apply absolute
+  z-20
+  mt-1
+  w-full
+bg-white
+dark:bg-app-gray-800
+  shadow-lg
+  max-h-56
+  rounded-md
+  py-1
+  text-base
+  ring-1
+ring-app-gray-400
+  dark:ring-transparent
+  overflow-auto
+  outline-none
+  focus:outline-none
+  sm:text-sm;
+}
 .select-container {
   height: 54px;
 }
@@ -127,7 +145,7 @@ watch(localToken, () => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   margin-left: 13px;
   height: 45px;
 }
