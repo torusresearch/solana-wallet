@@ -43,7 +43,7 @@ const logout = () => {
           </router-link>
         </div>
         <div class="flex flex-grow">
-          <div class="hidden sm:-my-px sm:mx-auto sm:flex sm:space-x-0">
+          <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
             <router-link
               v-for="(value, key) in tabs"
               :key="key"
@@ -59,12 +59,12 @@ const logout = () => {
             >
           </div>
         </div>
-        <div class="ml-6 hidden sm:flex items-center">
+        <div class="ml-6 hidden md:flex items-center">
           <LanguageSelector class="mr-2" /><AccountMenu :user="user"
             ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
           /></AccountMenu>
         </div>
-        <div class="ml-6 flex sm:hidden items-center">
+        <div class="ml-6 flex md:hidden items-center">
           <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
@@ -76,7 +76,9 @@ const logout = () => {
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
-          <div class="flex-grow flex"><div id="rightPanel" class="w-full" /></div>
+          <div class="flex-grow flex">
+            <div id="rightPanel" class="w-full" />
+          </div>
         </div>
       </header>
       <main>
