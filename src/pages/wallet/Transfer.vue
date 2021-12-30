@@ -204,7 +204,10 @@ const confirmTransfer = async () => {
     }
     // resetForm();
     transferConfirmed.value = true;
-    showMessageModal({ messageTitle: t("walletTransfer.transferSuccessTitle"), messageStatus: STATUS_INFO });
+    showMessageModal({
+      messageTitle: t("walletTransfer.transferSuccessTitle"),
+      messageStatus: STATUS_INFO,
+    });
   } catch (error) {
     showMessageModal({
       messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
@@ -293,7 +296,7 @@ watch([tokens, nftTokens], () => {
           </div>
         </form>
       </Card>
-      <AsyncWalletBalance class="self-start order-1 sm:order-2" />
+      <AsyncWalletBalance class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
     </dl>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"

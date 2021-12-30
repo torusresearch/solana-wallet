@@ -1,31 +1,53 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
-defineProps<{
+const props = defineProps<{
   showButtons?: boolean;
+  selectedToken?: Partial<SolAndSplToken>;
 }>();
 
 const router = useRouter();
 const currency = computed(() => ControllerModule.torus.currentCurrency);
-const token = computed(() => ControllerModule.torus.nativeCurrency);
-const conversionRate = computed(() => ControllerModule.torus.conversionRate);
-
-const formattedBalance = computed(() => ControllerModule.userBalance);
+const token = computed(() => {
+  if (props.selectedToken && props.selectedToken.symbol !== "SOL") return props.selectedToken?.symbol || "";
+  return ControllerModule.torus.nativeCurrency;
+});
+const conversionRate = computed(() => {
+  if (props.selectedToken) {
+    if (props.selectedToken.symbol?.toLowerCase() === currency.value.toLowerCase()) return 1;
+    if (props.selectedToken.symbol !== "SOL") return props.selectedToken?.price?.[currency.value.toLowerCase()] || 0;
+  }
+  return ControllerModule.torus.conversionRate;
+});
+const formattedBalance = computed(() => {
+  if (props.selectedToken && props.selectedToken.symbol !== "SOL")
+    return ((Number(props.selectedToken?.balance?.uiAmount) || 0) * conversionRate.value).toFixed(2);
+  return ControllerModule.userBalance;
+});
 const updateCurrency = (newCurrency: string) => {
   ControllerModule.setCurrency(newCurrency);
 };
+watch(
+  () => props.selectedToken,
+  (curr, prev) => {
+    if (curr?.symbol !== prev?.symbol && currency.value === prev?.symbol) updateCurrency(curr?.symbol || "USD");
+  }
+);
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">
     <div class="flex">
-      <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletHome.totalValue") }}</div>
+      <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
+        {{ t("walletHome.totalValue") }}
+      </div>
       <div class="ml-auto"><NetworkDisplay /></div>
     </div>
     <div class="flex">

@@ -90,8 +90,8 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
 }
 
 export const supportedCurrencies = (ticker: string): string[] => {
-  const returnArr = ["SOL", ...config.supportedCurrencies];
-  if (ticker !== "SOL") returnArr.unshift(ticker);
+  const returnArr = [...config.supportedCurrencies];
+  returnArr.unshift(ticker);
   return returnArr;
 };
 
