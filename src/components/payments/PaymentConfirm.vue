@@ -81,28 +81,14 @@ const totalFiatCostString = computed(() => {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="
-      w-screen
-      h-screen
-      overflow-hidden
-      text-left
-      align-middle
-      transition-all
-      transform
-      bg-white
-      dark:bg-app-gray-700
-      shadow-xl
-      flex flex-col
-      justify-between
-      align-start
-    "
+    class="w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between align-start"
   >
     <div class="shadow dark:shadow-dark text-center py-6 flex flex-row justify-center items-center" tabindex="0">
       <div>
         <img class="h-7 mx-auto w-auto mb-1 logo" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
       </div>
       <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
-        {{ t("walletActivity.paymentConfirmation") }}
+        {{ t("walletSettings.paymentConfirmation") }}
       </div>
     </div>
     <div class="mt-4 px-6 items-center">
@@ -117,7 +103,7 @@ const totalFiatCostString = computed(() => {
     <div class="mt-4 px-6 items-center scrollbar">
       <div class="flex flex-col justify-start items-start">
         <span class="flex flex-row justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>{{ t("walletTopup.youSend") }}</p>
+          <p>{{ t("walletTopUp.youSend") }}</p>
           <p>{{ props.cryptoAmount }} {{ props.token }}</p>
         </span>
 

@@ -4,7 +4,6 @@ import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { computed, ref, watch } from "vue";
 
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
-import { app } from "@/modules/app";
 import { getClubbedNfts } from "@/utils/helpers";
 
 const props = withDefaults(
@@ -25,7 +24,7 @@ watch(localMintAddress, () => {
 </script>
 <template>
   <Listbox v-model="localMintAddress" as="div" class="nft-select-container">
-    <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
+    <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-700 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span v-if="selectedNft?.metaplexData?.offChainMetaData" class="flex items-center">
           <div class="flex-shrink-0 h-6 w-6 rounded-full img-loader-container">
@@ -42,25 +41,7 @@ watch(localMintAddress, () => {
 
       <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
         <ListboxOptions
-          class="
-            absolute
-            z-10
-            mt-1
-            w-full
-            bg-white
-            dark:bg-app-gray-800
-            shadow-lg
-            max-h-56
-            rounded-md
-            py-1
-            text-base
-            ring-1 ring-app-gray-400
-            dark:ring-transparent
-            overflow-auto
-            outline-none
-            focus:outline-none
-            sm:text-sm
-          "
+          class="absolute z-10 mt-1 w-full bg-white dark:bg-app-gray-800 shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
         >
           <template v-for="item in getClubbedNfts(nftTokens)" :key="item.title">
             <li class="option-separator ml-2 pl-1 nft-group">
