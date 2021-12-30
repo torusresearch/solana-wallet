@@ -119,20 +119,23 @@ test.describe("Transfer page", async () => {
     await switchNetwork(page, "testnet");
 
     await page.click("button >> text=Solana");
-    await page.click("p >> text=I WANT UR NFT (WTB_NFT)");
+    const nft = page.locator(".nft-group + li").first();
+    const nft_symbol = (await nft.innerText()).match(/\((.*)\)/)?.[1] as string;
+    await nft.click();
     await page.fill("input.combo-input-field", IMPORT_ACC_ADDRESS);
     await page.click("button >> text=Transfer");
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
 
     await page.waitForFunction(
-      () => {
+      (symbol) => {
         const ele = document.querySelector(".transaction-activity");
         const text: string = (ele as any).innerText;
-        const nftSent = text.includes("Sent 1 WTB_NFT");
+        const nftSent = text.includes(`Sent 1 ${symbol}`);
         if (nftSent) return true;
         return false;
       },
+      nft_symbol,
       { polling: 500 }
     );
     await wait(4000);
@@ -290,20 +293,23 @@ test.describe("Transfer page using imported account", async () => {
     await switchNetwork(page, "testnet");
 
     await page.click("button >> text=Solana");
-    await page.click("p >> text=I WANT UR NFT (WTB_NFT)");
+    const nft = page.locator(".nft-group + li").first();
+    const nft_symbol = (await nft.innerText()).match(/\((.*)\)/)?.[1] as string;
+    await nft.click();
     await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.click("button >> text=Transfer");
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
 
     await page.waitForFunction(
-      () => {
+      (symbol) => {
         const ele = document.querySelector(".transaction-activity");
         const text: string = (ele as any).innerText;
-        const nftSent = text.includes("Sent 1 WTB_NFT");
+        const nftSent = text.includes(`Sent 1 ${symbol}`);
         if (nftSent) return true;
         return false;
       },
+      nft_symbol,
       { polling: 500 }
     );
     await wait(4000);
