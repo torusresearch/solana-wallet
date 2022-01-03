@@ -21,9 +21,9 @@ import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
-import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
-import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
-import { DatabaseIcon } from "@toruslabs/vue-icons/software";
+// import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
+// import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
+// import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
@@ -77,19 +77,19 @@ export const NAVIGATION_LIST = {
     name: "navBar.home",
     title: "walletHome.walletHome",
     route: "home",
-    icon: PlusIcon,
+    // icon: PlusIcon,
   },
   transfer: {
     name: "navBar.transfer",
     title: "walletTransfer.transferDetails",
     route: "transfer",
-    icon: ArrowBoldForvardIcon,
+    // icon: ArrowBoldForvardIcon,
   },
   topup: {
     name: "navBar.topUp",
     title: "walletTopUp.selectProvider",
     route: "topup",
-    icon: DatabaseIcon,
+    // icon: DatabaseIcon,
   },
   nfts: {
     name: "navBar.nfts",
@@ -101,13 +101,13 @@ export const NAVIGATION_LIST = {
     name: "navBar.activity",
     title: "walletActivity.transactionActivities",
     route: "activity",
-    icon: ListIcon,
+    // icon: ListIcon,
   },
   settings: {
     name: "navBar.settings",
     title: "walletSettings.settings",
     route: "settings",
-    icon: SettingsIcon,
+    // icon: SettingsIcon,
   },
 };
 

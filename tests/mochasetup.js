@@ -1,4 +1,5 @@
 const path = require("path");
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 const fetch = require("node-fetch");
 require("jsdom-global")();
@@ -12,12 +13,12 @@ require("ts-node").register({
   compilerOptions: { module: "CommonJS" },
 });
 
-const register = require("@babel/register").default;
+// const register = require("@babel/register").default;
 
-register({
-  extensions: [".ts", ".js"],
-  rootMode: "upward",
-});
+// register({
+//   extensions: [".ts", ".js"],
+//   rootMode: "upward",
+// });
 
 global.fetch = fetch;
 global.Headers = fetch.Headers;

@@ -11,7 +11,7 @@
     "lint": "vue-cli-service lint",
     "prepare": "husky install",
     "test": "playwright test --config=playwright.config.ts --workers=1",
-    "test:controller": " mocha ./tests/controller/**.ts",
+    "test:controller": "TS_NODE_PROJECT='./tsconfig.test.json' ts-mocha  -r ts-node/register/transpile-only ./tests/controller/**.ts",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js"
   },
