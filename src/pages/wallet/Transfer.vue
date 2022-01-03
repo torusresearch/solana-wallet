@@ -36,8 +36,8 @@ const showAmountField = ref(true);
 const router = useRouter();
 const route = useRoute();
 
-const AsyncWalletBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
+const AsyncTokenBalance = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
@@ -204,7 +204,10 @@ const confirmTransfer = async () => {
     }
     // resetForm();
     transferConfirmed.value = true;
-    showMessageModal({ messageTitle: t("walletTransfer.transferSuccessTitle"), messageStatus: STATUS_INFO });
+    showMessageModal({
+      messageTitle: t("walletTransfer.transferSuccessTitle"),
+      messageStatus: STATUS_INFO,
+    });
   } catch (error) {
     showMessageModal({
       messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
@@ -293,7 +296,7 @@ watch([tokens, nftTokens], () => {
           </div>
         </form>
       </Card>
-      <AsyncWalletBalance class="self-start order-1 sm:order-2" />
+      <AsyncTokenBalance v-if="selectedToken.isFungible" class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
     </dl>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
