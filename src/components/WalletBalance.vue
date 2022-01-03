@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { supportedCurrencies } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -38,8 +39,9 @@ const updateCurrency = (newCurrency: string) => {
 watch(
   () => props.selectedToken,
   (curr, prev) => {
-    if (curr?.symbol !== prev?.symbol && currency.value === prev?.symbol) updateCurrency(curr?.symbol || "USD");
-  }
+    if (curr?.symbol !== prev?.symbol && !supportedCurrencies(curr?.symbol as string).includes(currency.value)) updateCurrency(curr?.symbol || "USD");
+  },
+  { immediate: true }
 );
 </script>
 <template>

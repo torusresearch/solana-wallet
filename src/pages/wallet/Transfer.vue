@@ -296,7 +296,7 @@ watch([tokens, nftTokens], () => {
           </div>
         </form>
       </Card>
-      <AsyncWalletBalance class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
+      <AsyncWalletBalance v-if="selectedToken.isFungible" class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
     </dl>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
