@@ -2,7 +2,7 @@
 import test, { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
-import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
+import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab } from "../../utils";
 
 test("Popup Page Should render", async ({ context }) => {
   const page = await login(context);
@@ -16,7 +16,6 @@ test("Popup Page Should render", async ({ context }) => {
   await page.fill("input[type='number']", "100");
   const usdToSol100 = Number(await getInnerText(page, "#resCryptoAmt"));
   expect(usdToSol100).toBeGreaterThan(0);
-  await wait(2000);
 
   // set amount to be transfered as 200 US Dollars, expect a positive value for expected SOL
   await page.fill("input[type='number']", "200");
@@ -33,23 +32,18 @@ test("Language change should work", async ({ context }) => {
   await switchTab(page, "topup");
 
   await changeLanguage(page, "german");
-  await wait(400);
   await ensureTextualElementExists(page, "Wählen Sie einen Anbieter");
 
   await changeLanguage(page, "japanese");
-  await wait(400);
   await ensureTextualElementExists(page, "プロバイダーを選択");
 
   await changeLanguage(page, "korean");
-  await wait(400);
   await ensureTextualElementExists(page, "공급자를 선택하십시오");
 
   await changeLanguage(page, "mandarin");
-  await wait(400);
   await ensureTextualElementExists(page, "选择供应商");
 
   await changeLanguage(page, "spanish");
-  await wait(400);
   await ensureTextualElementExists(page, "Selecciona un Proveedor");
 
   await changeLanguage(page, "english");

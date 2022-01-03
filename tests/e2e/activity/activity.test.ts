@@ -2,7 +2,7 @@
 import test, { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_SECRET_KEY, login } from "../../auth-helper";
-import { changeLanguage, ensureTextualElementExists, getControllerState, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import { changeLanguage, ensureTextualElementExists, getControllerState, importAccount, switchNetwork, switchTab } from "../../utils";
 
 test.describe("Activity Page", async () => {
   let page: Page;
@@ -29,7 +29,10 @@ test.describe("Activity Page", async () => {
       ControllerModule.torusState.PreferencesControllerState.identities[ControllerModule.torusState.PreferencesControllerState.selectedAddress]
         .displayActivities
     ).length;
-
+    if (no_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity");
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
@@ -43,6 +46,11 @@ test.describe("Activity Page", async () => {
       ControllerModule.torusState.PreferencesControllerState.identities[ControllerModule.torusState.PreferencesControllerState.selectedAddress]
         .displayActivities
     ).length;
+
+    if (no_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
 
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
@@ -58,6 +66,11 @@ test.describe("Activity Page", async () => {
         .displayActivities
     ).length;
 
+    if (no_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
+
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
@@ -69,7 +82,7 @@ test.describe("Activity Page", async () => {
     const transaction = page.locator(".transaction-activity").first();
     const [page2] = await Promise.all([page.waitForEvent("popup"), transaction?.click()]);
     // checks on sol explorer if transaction is valid
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
     // const result = await page2.locator("td >> text=Result").elementHandle();
     // expect(result).toBeTruthy();
     page2.close();
@@ -114,24 +127,29 @@ test.describe("Activity Page", async () => {
     // send activities filter
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Last 1 week").click();
-    await wait(1000);
+    if (no_1week_activities > 0) {
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_1week_activities);
 
     // receive activities filter
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Last 1 month").click();
-    await wait(1000);
+    if (no_1month_activities > 0) {
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_1month_activities);
 
     // topup activities filter
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Last 6 months").click();
-    await wait(1000);
+    if (no_6month_activities > 0) {
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_6month_activities);
 
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=All").click();
-    await wait(1000);
   });
 
   test("Changing Transaction Type Filter works", async () => {
@@ -153,49 +171,49 @@ test.describe("Activity Page", async () => {
     // send activities filter
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Send").click();
-    await wait(1000);
+    if (no_send_activities > 0) {
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_send_activities);
 
     // receive activities filter
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Receive").click();
-    await wait(1000);
+    if (no_receive_activities > 0) {
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_receive_activities);
 
     // topup activities filter
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Topup").click();
-    await wait(1000);
+    if (no_topup_activities > 0) {
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_topup_activities);
 
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=All Transactions").click();
-    await wait(1000);
   });
 
   test("Transaction activities are parsed correctly", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
+    await page.waitForSelector(".transaction-activity", { timeout: 10_000 });
     expect(await page.locator("div >> text=Unknown").elementHandles()).toHaveLength(0);
   });
 
   test("Language Change Works Correctly", async () => {
     await switchTab(page, "activity");
     await changeLanguage(page, "german");
-    await wait(500);
     await ensureTextualElementExists(page, "Transaktionsaktivitäten");
-    await wait(500);
     await changeLanguage(page, "japanese");
     await ensureTextualElementExists(page, "トランザクション履歴");
-    await wait(500);
     await changeLanguage(page, "korean");
-    await wait(500);
     await ensureTextualElementExists(page, "거래 활동");
     await changeLanguage(page, "mandarin");
-    await wait(500);
     await ensureTextualElementExists(page, "交易活动");
     await changeLanguage(page, "spanish");
-    await wait(500);
     await ensureTextualElementExists(page, "Actividades de transacción");
     await changeLanguage(page, "english");
   });
@@ -231,7 +249,10 @@ test.describe("Activity Page with Imported Account", async () => {
       ControllerModule.torusState.PreferencesControllerState.identities[ControllerModule.torusState.PreferencesControllerState.selectedAddress]
         .displayActivities
     ).length;
-
+    if (no_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
@@ -245,7 +266,10 @@ test.describe("Activity Page with Imported Account", async () => {
       ControllerModule.torusState.PreferencesControllerState.identities[ControllerModule.torusState.PreferencesControllerState.selectedAddress]
         .displayActivities
     ).length;
-
+    if (no_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
@@ -259,7 +283,10 @@ test.describe("Activity Page with Imported Account", async () => {
       ControllerModule.torusState.PreferencesControllerState.identities[ControllerModule.torusState.PreferencesControllerState.selectedAddress]
         .displayActivities
     ).length;
-
+    if (no_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
@@ -271,7 +298,7 @@ test.describe("Activity Page with Imported Account", async () => {
     const transaction = page.locator(".transaction-activity").first();
     const [page2] = await Promise.all([page.waitForEvent("popup"), transaction?.click()]);
     // checks on sol explorer if transaction is valid
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
     // const result = await page2.locator("td >> text=Result").elementHandle();
     // expect(result).toBeTruthy();
     page2.close();
@@ -316,24 +343,32 @@ test.describe("Activity Page with Imported Account", async () => {
     // send activities filter
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Last 1 week").click();
-    await wait(1000);
+    if (no_1week_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_1week_activities);
 
     // receive activities filter
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Last 1 month").click();
-    await wait(1000);
+    if (no_1month_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_1month_activities);
 
     // topup activities filter
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Last 6 months").click();
-    await wait(1000);
+    if (no_6month_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_6month_activities);
 
     await timeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=All").click();
-    await wait(1000);
   });
 
   test("Changing Transaction Type Filter works", async () => {
@@ -355,29 +390,38 @@ test.describe("Activity Page with Imported Account", async () => {
     // send activities filter
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Send").click();
-    await wait(1000);
+    if (no_send_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_send_activities);
 
     // receive activities filter
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Receive").click();
-    await wait(1000);
+    if (no_receive_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_receive_activities);
 
     // topup activities filter
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=Topup").click();
-    await wait(1000);
+    if (no_topup_activities > 0) {
+      // wait for transaction activity to load
+      await page.waitForSelector(".transaction-activity", { timeout: 5_000 });
+    }
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_topup_activities);
 
     await typeBTN.click();
     await page.locator("header ul[role='listbox'] div >> text=All Transactions").click();
-    await wait(1000);
   });
 
   test("Transaction activities are parsed correctly", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
+    await page.waitForSelector(".transaction-activity", { timeout: 10_000 });
     expect(await page.locator("div >> text=Unknown").elementHandles()).toHaveLength(0);
   });
 });

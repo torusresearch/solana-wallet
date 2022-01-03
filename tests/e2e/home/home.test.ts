@@ -53,17 +53,36 @@ test.describe("Home Page", async () => {
     // Switching to testnet as it has > 0 balance
     await switchNetwork(page, "testnet");
 
+    const initial_amount = Number(await getInnerText(page, "#conversionRate"));
     // ENSURE On selecting EUR as currency, conversion rate has a positive value
     await page.click("#currencySelector");
     await page.click("li[role='option'] >> text=EUR");
-    await wait(1000);
+    if (initial_amount !== 0)
+      await page.waitForFunction(
+        (prev) => {
+          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
+          if (curr !== prev) return true;
+          return false;
+        },
+        initial_amount,
+        { timeout: 5_000, polling: 500 }
+      );
     const eurRate = Number(await getInnerText(page, "#conversionRate"));
     expect(eurRate).toBeGreaterThan(0);
 
     // ENSURE On selecting USD as currency, conversion rate has a positive value
     await page.click("#currencySelector");
     await page.click("li[role='option'] >> text=USD");
-    await wait(1000);
+    if (eurRate !== 0)
+      await page.waitForFunction(
+        (prev) => {
+          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
+          if (curr !== prev) return true;
+          return false;
+        },
+        eurRate,
+        { timeout: 5_000, polling: 500 }
+      );
     const usdRate = Number(await getInnerText(page, "#conversionRate"));
     expect(usdRate).toBeGreaterThan(0);
 
@@ -157,23 +176,18 @@ test.describe("Home Page", async () => {
     await switchTab(page, "home");
 
     await changeLanguage(page, "german");
-    await wait(400);
     await ensureTextualElementExists(page, "Kontostand");
 
     await changeLanguage(page, "japanese");
-    await wait(400);
     await ensureTextualElementExists(page, "残高");
 
     await changeLanguage(page, "korean");
-    await wait(400);
     await ensureTextualElementExists(page, "계정 잔액");
 
     await changeLanguage(page, "mandarin");
-    await wait(400);
     await ensureTextualElementExists(page, "账户余额");
 
     await changeLanguage(page, "spanish");
-    await wait(400);
     await ensureTextualElementExists(page, "Balance de Cuenta");
 
     await changeLanguage(page, "english");
@@ -225,17 +239,36 @@ test.describe("Home Page with Imported Account", async () => {
     // Switching to testnet as it has > 0 balance
     await switchNetwork(page, "testnet");
 
+    const initial_amount = Number(await getInnerText(page, "#conversionRate"));
     // ENSURE On selecting EUR as currency, conversion rate has a positive value
     await page.click("#currencySelector");
     await page.click("li[role='option'] >> text=EUR");
-    await wait(1000);
+    if (initial_amount !== 0)
+      await page.waitForFunction(
+        (prev) => {
+          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
+          if (curr !== prev) return true;
+          return false;
+        },
+        initial_amount,
+        { timeout: 5_000, polling: 500 }
+      );
     const eurRate = Number(await getInnerText(page, "#conversionRate"));
     expect(eurRate).toBeGreaterThan(0);
 
     // ENSURE On selecting USD as currency, conversion rate has a positive value
     await page.click("#currencySelector");
     await page.click("li[role='option'] >> text=USD");
-    await wait(1000);
+    if (eurRate !== 0)
+      await page.waitForFunction(
+        (prev) => {
+          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
+          if (curr !== prev) return true;
+          return false;
+        },
+        eurRate,
+        { timeout: 5_000, polling: 500 }
+      );
     const usdRate = Number(await getInnerText(page, "#conversionRate"));
     expect(usdRate).toBeGreaterThan(0);
 

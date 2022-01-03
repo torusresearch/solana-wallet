@@ -41,7 +41,7 @@ test.describe("Transfer page", async () => {
     await switchNetwork(page, "testnet");
 
     // Click transfer tab
-    await Promise.all([page.click("text=Transfer"), wait(1500)]);
+    await Promise.all([page.click("text=Transfer"), wait(1000)]);
 
     // Fill a valid sol address
     await page.fill(".combo-input-field[aria-label='Select field']", IMPORT_ACC_ADDRESS);
@@ -50,9 +50,11 @@ test.describe("Transfer page", async () => {
     await page.fill("input[type='number']", transferAmount);
 
     // Click transfer, wait for popup
-    await Promise.all([page.click("button >> text=Transfer"), wait(5000)]);
+    await page.click("button >> text=Transfer");
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     // const total = (await page.locator("div >> text=/~ [0-9.].* SOL/").first().innerText()).split(" ")[1];
     // Click confirm, wait for navigation to activities page
+
     await page.click("button >> text=Confirm");
 
     await page.click("button >> text=Close");
@@ -70,9 +72,8 @@ test.describe("Transfer page", async () => {
       { polling: 500 }
     );
 
-    await wait(4000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
 
     // see that the transaction is success and the amount transferred is same as intended
     // expect(await page2.locator(".badge.bg-success-soft").innerText()).toEqual("Success");
@@ -92,7 +93,8 @@ test.describe("Transfer page", async () => {
     await page.click("p >> text=USD Coin (USDC)");
     await page.fill("input.combo-input-field", IMPORT_ACC_ADDRESS);
     await page.fill("input[type='number']", "0.01");
-    await Promise.all([page.click("button >> text=Transfer"), wait(5000)]);
+    await page.click("button >> text=Transfer");
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
     await page.waitForFunction(
@@ -105,9 +107,8 @@ test.describe("Transfer page", async () => {
       },
       { polling: 500 }
     );
-    await wait(4000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
     await page2.close();
   });
@@ -126,6 +127,7 @@ test.describe("Transfer page", async () => {
     await nft.click();
     await page.fill("input.combo-input-field", IMPORT_ACC_ADDRESS);
     await page.click("button >> text=Transfer");
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
 
@@ -140,9 +142,8 @@ test.describe("Transfer page", async () => {
       nft_symbol,
       { polling: 500 }
     );
-    await wait(4000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+1");
     await page2.close();
   });
@@ -152,23 +153,18 @@ test.describe("Transfer page", async () => {
     await switchTab(page, "transfer");
 
     await changeLanguage(page, "german");
-    await wait(400);
     await ensureTextualElementExists(page, "Übertragungsdetails");
 
     await changeLanguage(page, "japanese");
-    await wait(400);
     await ensureTextualElementExists(page, "送信内容の詳細");
 
     await changeLanguage(page, "korean");
-    await wait(400);
     await ensureTextualElementExists(page, "전송 세부 사항");
 
     await changeLanguage(page, "mandarin");
-    await wait(400);
     await ensureTextualElementExists(page, "转账明细");
 
     await changeLanguage(page, "spanish");
-    await wait(400);
     await ensureTextualElementExists(page, "Detalles de Transferencia");
 
     await changeLanguage(page, "english");
@@ -218,7 +214,7 @@ test.describe("Transfer page using imported account", async () => {
     await switchNetwork(page, "testnet");
 
     // Click transfer tab
-    await Promise.all([page.click("text=Transfer"), wait(1500)]);
+    await Promise.all([page.click("text=Transfer"), wait(1000)]);
 
     // Fill a valid sol address
     await page.fill(".combo-input-field[aria-label='Select field']", PUB_ADDRESS);
@@ -227,7 +223,8 @@ test.describe("Transfer page using imported account", async () => {
     await page.fill("input[type='number']", transferAmount);
 
     // Click transfer, wait for popup
-    await Promise.all([page.click("button >> text=Transfer"), wait(5000)]);
+    await page.click("button >> text=Transfer");
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     // const total = (await page.locator("div >> text=/~ [0-9.].* SOL/").first().innerText()).split(" ")[1];
     // Click confirm, wait for navigation to activities page
     await page.click("button >> text=Confirm");
@@ -246,9 +243,8 @@ test.describe("Transfer page using imported account", async () => {
       transferAmount,
       { polling: 500 }
     );
-    await wait(4000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
 
     // see that the transaction is success and the amount transferred is same as intended
     // expect(await page2.locator(".badge.bg-success-soft").innerText()).toEqual("Success");
@@ -268,7 +264,8 @@ test.describe("Transfer page using imported account", async () => {
     await page.click("p >> text=USD Coin (USDC)");
     await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.fill("input[type='number']", "0.01");
-    await Promise.all([page.click("button >> text=Transfer"), wait(5000)]);
+    await page.click("button >> text=Transfer");
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
     await page.waitForFunction(
@@ -281,9 +278,8 @@ test.describe("Transfer page using imported account", async () => {
       },
       { polling: 500 }
     );
-    await wait(4000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
     await page2.close();
   });
@@ -302,6 +298,7 @@ test.describe("Transfer page using imported account", async () => {
     await nft.click();
     await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.click("button >> text=Transfer");
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
 
@@ -316,9 +313,8 @@ test.describe("Transfer page using imported account", async () => {
       nft_symbol,
       { polling: 500 }
     );
-    await wait(4000);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load");
+    await page2.waitForEvent("load", { timeout: 10_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+1");
     await page2.close();
   });

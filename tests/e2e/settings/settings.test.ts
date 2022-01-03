@@ -44,12 +44,12 @@ test.describe("Settings Page", async () => {
     // **************DISPLAY CHANGES********
     // CHOOSE LIGHT
     await page.click("text=Light");
-    await wait(2000);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(0);
 
     // CHOOSE DARK
     await page.click("text=Dark");
-    await wait(2000);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(1);
   });
 
@@ -71,15 +71,13 @@ test.describe("Settings Page", async () => {
     await page.fill("input[placeholder='Enter Contact Name']", "ImportAcc");
     await page.fill("input[placeholder='Enter SOL Public Key']", IMPORT_ACC_ADDRESS);
     await page.click("text=Add Contact");
-    await wait(1000);
-    await page.waitForSelector("text=Successfully added contact", { timeout: 5000 });
+    await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
     expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS} PUB_ADDRESS,`).first()).toBeTruthy();
     await page.click("li>div>svg");
-    await wait(2000);
     let contactDeleted = false;
-    await page.waitForSelector("text=Successfully deleted contact");
+    await page.waitForSelector("text=Successfully deleted contact", { timeout: 10_000 });
     try {
-      await page.waitForSelector(`span >> text=${IMPORT_ACC_ADDRESS} PUB_ADDRESS,`, { timeout: 2000 });
+      await page.waitForSelector(`span >> text=${IMPORT_ACC_ADDRESS} PUB_ADDRESS,`, { timeout: 2_000 });
     } catch (e) {
       contactDeleted = true;
     }
@@ -91,9 +89,9 @@ test.describe("Settings Page", async () => {
     await switchTab(page, "settings");
 
     await page.click("button[role='switch']");
-    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 5000 });
+    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
     await page.click("button[role='switch']");
-    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 5000 });
+    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
   });
 
   test("Language change should work", async () => {
@@ -101,19 +99,14 @@ test.describe("Settings Page", async () => {
     await switchTab(page, "settings");
 
     await changeLanguage(page, "german");
-    await wait(400);
     await ensureTextualElementExists(page, "die Einstellungen");
     await changeLanguage(page, "japanese");
-    await wait(400);
     await ensureTextualElementExists(page, "設定");
     await changeLanguage(page, "korean");
-    await wait(400);
     await ensureTextualElementExists(page, "설정");
     await changeLanguage(page, "mandarin");
-    await wait(400);
     await ensureTextualElementExists(page, "设定");
     await changeLanguage(page, "spanish");
-    await wait(400);
     await ensureTextualElementExists(page, "Configuraciones");
     await changeLanguage(page, "english");
   });
@@ -164,12 +157,12 @@ test.describe("Settings Page using imported account", async () => {
     // **************DISPLAY CHANGES********
     // CHOOSE LIGHT
     await page.click("text=Light");
-    await wait(2000);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(0);
 
     // CHOOSE DARK
     await page.click("text=Dark");
-    await wait(2000);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(1);
   });
 
@@ -191,13 +184,11 @@ test.describe("Settings Page using imported account", async () => {
     await page.fill("input[placeholder='Enter Contact Name']", "MainTestAcc");
     await page.fill("input[placeholder='Enter SOL Public Key']", PUB_ADDRESS);
     await page.click("text=Add Contact");
-    await wait(1000);
-    await page.waitForSelector("text=Successfully added contact", { timeout: 5000 });
+    await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
     expect(page.locator(`span >> text=${PUB_ADDRESS} PUB_ADDRESS,`).first()).toBeTruthy();
     await page.click("li>div>svg");
-    await wait(2000);
     let contactDeleted = false;
-    await page.waitForSelector("text=Successfully deleted contact");
+    await page.waitForSelector("text=Successfully deleted contact", { timeout: 10_000 });
     try {
       await page.waitForSelector(`span >> text=${PUB_ADDRESS} PUB_ADDRESS,`, { timeout: 2000 });
     } catch (e) {
@@ -211,8 +202,8 @@ test.describe("Settings Page using imported account", async () => {
     await switchTab(page, "settings");
 
     await page.click("button[role='switch']");
-    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 5000 });
+    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
     await page.click("button[role='switch']");
-    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 5000 });
+    await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
   });
 });

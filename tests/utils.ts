@@ -27,7 +27,6 @@ export async function ensureTextualElementExists(page: Page, text: string) {
 }
 
 export async function getInnerText(page: Page, selector: string): Promise<string | undefined> {
-  await wait(200);
   return page.locator(selector)?.first()?.innerText();
 }
 
@@ -64,8 +63,7 @@ export async function switchNetwork(page: Page, network: "mainnet" | "testnet" |
   await switchTab(page, "settings");
   await page.click("#networkSelect");
   await page.click(`ul[role='listbox'] div >> text=${networkLabels[network]}`);
-  await page.waitForSelector(`#networkSelect button >> text=${networkLabels[network]}`);
-  await wait(1000);
+  await page.waitForSelector(`#networkSelect button >> text=${networkLabels[network]}`, { timeout: 5_000 });
   await switchTab(page, currentTab);
 }
 
@@ -90,13 +88,22 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
 
   await page.click("nav button[id^='headlessui-listbox-button'][aria-haspopup='true']");
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
-  await wait(2000);
-  // confirm controller state change
-  const controllerModule = await getControllerState(page);
-  expect(
-    controllerModule?.torusState?.PreferencesControllerState?.identities[controllerModule?.torusState?.PreferencesControllerState?.selectedAddress]
-      ?.locale
-  ).toStrictEqual(languages[language]);
+  // wait for controllerModule language to update
+  await page.waitForFunction(
+    async (locale) => {
+      const state = window.sessionStorage.getItem("controllerModule") || window.localStorage.getItem("controllerModule");
+      const controllerModule = await JSON.parse(state as string)?.controllerModule;
+      if (
+        controllerModule?.torusState?.PreferencesControllerState?.identities[
+          controllerModule?.torusState?.PreferencesControllerState?.selectedAddress
+        ]?.locale === locale
+      )
+        return true;
+      return false;
+    },
+    languages[language],
+    { polling: 500, timeout: 5_000 }
+  );
 }
 
 export async function importAccount(page: Page, privKey: string) {
@@ -105,7 +112,6 @@ export async function importAccount(page: Page, privKey: string) {
     controllerModule?.torusState?.PreferencesControllerState?.identities[controllerModule?.torusState?.PreferencesControllerState?.selectedAddress]
       ?.userInfo?.name;
   await page.click(`nav >> text=${username}`);
-  await wait(400);
   await page.click("nav >> text=Import Account");
   await page.fill("input[placeholder='Private Key']", privKey);
   await page.click("button >> text=Import");
