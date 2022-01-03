@@ -1,48 +1,31 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { supportedCurrencies } from "@/utils/helpers";
-import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
-const props = defineProps<{
+defineProps<{
   showButtons?: boolean;
-  selectedToken?: Partial<SolAndSplToken>;
 }>();
 
 const router = useRouter();
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const token = computed(() => {
-  if (props.selectedToken && props.selectedToken.symbol !== "SOL") return props.selectedToken?.symbol || "";
   return ControllerModule.torus.nativeCurrency;
 });
 const conversionRate = computed(() => {
-  if (props.selectedToken) {
-    if (props.selectedToken.symbol?.toLowerCase() === currency.value.toLowerCase()) return 1;
-    if (props.selectedToken.symbol !== "SOL") return props.selectedToken?.price?.[currency.value.toLowerCase()] || 0;
-  }
   return ControllerModule.torus.conversionRate;
 });
 const formattedBalance = computed(() => {
-  if (props.selectedToken && props.selectedToken.symbol !== "SOL")
-    return ((Number(props.selectedToken?.balance?.uiAmount) || 0) * conversionRate.value).toFixed(2);
   return ControllerModule.userBalance;
 });
 const updateCurrency = (newCurrency: string) => {
   ControllerModule.setCurrency(newCurrency);
 };
-watch(
-  () => props.selectedToken,
-  (curr, prev) => {
-    if (curr?.symbol !== prev?.symbol && !supportedCurrencies(curr?.symbol as string).includes(currency.value)) updateCurrency(curr?.symbol || "USD");
-  },
-  { immediate: true }
-);
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">

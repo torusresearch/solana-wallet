@@ -36,8 +36,8 @@ const showAmountField = ref(true);
 const router = useRouter();
 const route = useRoute();
 
-const AsyncWalletBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
+const AsyncTokenBalance = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
@@ -296,7 +296,7 @@ watch([tokens, nftTokens], () => {
           </div>
         </form>
       </Card>
-      <AsyncWalletBalance v-if="selectedToken.isFungible" class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
+      <AsyncTokenBalance v-if="selectedToken.isFungible" class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
     </dl>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
