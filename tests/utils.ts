@@ -90,7 +90,7 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
 
   await page.click("nav button[id^='headlessui-listbox-button'][aria-haspopup='true']");
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
-  await wait(1000);
+  await wait(2000);
   // confirm controller state change
   const controllerModule = await getControllerState(page);
   expect(

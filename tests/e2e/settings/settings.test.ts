@@ -215,26 +215,4 @@ test.describe("Settings Page using imported account", async () => {
     await page.click("button[role='switch']");
     await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 5000 });
   });
-
-  test("Language change should work", async () => {
-    // see navigation works correctly
-    await switchTab(page, "settings");
-
-    await changeLanguage(page, "german");
-    await wait(400);
-    await ensureTextualElementExists(page, "die Einstellungen");
-    await changeLanguage(page, "japanese");
-    await wait(400);
-    await ensureTextualElementExists(page, "設定");
-    await changeLanguage(page, "korean");
-    await wait(400);
-    await ensureTextualElementExists(page, "설정");
-    await changeLanguage(page, "mandarin");
-    await wait(400);
-    await ensureTextualElementExists(page, "设定");
-    await changeLanguage(page, "spanish");
-    await wait(400);
-    await ensureTextualElementExists(page, "Configuraciones");
-    await changeLanguage(page, "english");
-  });
 });

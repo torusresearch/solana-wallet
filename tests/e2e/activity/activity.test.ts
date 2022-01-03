@@ -75,7 +75,7 @@ test.describe("Activity Page", async () => {
     page2.close();
   });
 
-  test("Changing Transaction Type filter works", async () => {
+  test("Changing Transaction Time filter works", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
 
@@ -134,7 +134,7 @@ test.describe("Activity Page", async () => {
     await wait(1000);
   });
 
-  test("Changing Time Filter works", async () => {
+  test("Changing Transaction Type Filter works", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
 
@@ -222,7 +222,7 @@ test.describe("Activity Page with Imported Account", async () => {
     expect(Object.keys(ControllerModule).length).toBeTruthy();
   });
 
-  test("Activities should be listed mainnet", async () => {
+  test("Activities should work with network=mainnet", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
 
@@ -235,7 +235,7 @@ test.describe("Activity Page with Imported Account", async () => {
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
-  test("Activities should be listed testnet", async () => {
+  test("Activities should work with network=testnet", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     await switchNetwork(page, "testnet");
@@ -249,7 +249,7 @@ test.describe("Activity Page with Imported Account", async () => {
     expect(await page.locator(".transaction-activity").elementHandles()).toHaveLength(no_activities);
   });
 
-  test("Activities should be listed devnet", async () => {
+  test("Activities should work with network=devnet", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     await switchNetwork(page, "devnet");
@@ -277,7 +277,7 @@ test.describe("Activity Page with Imported Account", async () => {
     page2.close();
   });
 
-  test("Changing Type Filter works", async () => {
+  test("Changing Transaction Time Filter works", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
 
@@ -336,7 +336,7 @@ test.describe("Activity Page with Imported Account", async () => {
     await wait(1000);
   });
 
-  test("Changing Time Filter works", async () => {
+  test("Changing Transaction Type Filter works", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
 
@@ -379,26 +379,5 @@ test.describe("Activity Page with Imported Account", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     expect(await page.locator("div >> text=Unknown").elementHandles()).toHaveLength(0);
-  });
-
-  test("Language Change Works Correctly", async () => {
-    await switchTab(page, "activity");
-    await changeLanguage(page, "german");
-    await wait(500);
-    await ensureTextualElementExists(page, "Transaktionsaktivitäten");
-    await wait(500);
-    await changeLanguage(page, "japanese");
-    await ensureTextualElementExists(page, "トランザクション履歴");
-    await wait(500);
-    await changeLanguage(page, "korean");
-    await wait(500);
-    await ensureTextualElementExists(page, "거래 활동");
-    await changeLanguage(page, "mandarin");
-    await wait(500);
-    await ensureTextualElementExists(page, "交易活动");
-    await changeLanguage(page, "spanish");
-    await wait(500);
-    await ensureTextualElementExists(page, "Actividades de transacción");
-    await changeLanguage(page, "english");
   });
 });
