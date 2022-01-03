@@ -212,7 +212,7 @@ const confirmTransfer = async () => {
     if (selectedToken?.value?.mintAddress) {
       // SPL TRANSFER
       await ControllerModule.torus.transferSpl(
-        resolvedAddress.value || transferTo.value,
+        resolvedAddress.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken.value as SolAndSplToken
       );
@@ -220,7 +220,7 @@ const confirmTransfer = async () => {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(resolvedAddress.value || transferTo.value),
+        toPubkey: new PublicKey(resolvedAddress.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
@@ -299,10 +299,10 @@ watch(transferType, (cur, prev) => {
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="resolvedAddress || transferTo"
+                :receiver-pub-key="resolvedAddress"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="transferTo"
+                :receiver-verifier-id="resolvedAddress"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                 :token="selectedToken"
                 :is-open="isOpen && selectedToken.isFungible"
@@ -313,10 +313,10 @@ watch(transferType, (cur, prev) => {
               />
               <TransferNFT
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="resolvedAddress || transferTo"
+                :receiver-pub-key="resolvedAddress"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="transferTo"
+                :receiver-verifier-id="resolvedAddress"
                 :is-open="isOpen && !selectedToken.isFungible"
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"
