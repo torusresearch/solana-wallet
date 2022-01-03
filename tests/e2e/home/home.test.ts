@@ -324,30 +324,30 @@ test.describe("Home Page with Imported Account", async () => {
     }
   });
 
-  test("Language change should work", async () => {
-    // see navigation works correctly
-    await switchTab(page, "home");
+  // test("Language change should work", async () => {
+  //   // see navigation works correctly
+  //   await switchTab(page, "home");
 
-    await changeLanguage(page, "german");
-    await wait(400);
-    await ensureTextualElementExists(page, "Kontostand");
+  //   await changeLanguage(page, "german");
+  //   await wait(400);
+  //   await ensureTextualElementExists(page, "Kontostand");
 
-    await changeLanguage(page, "japanese");
-    await wait(400);
-    await ensureTextualElementExists(page, "残高");
+  //   await changeLanguage(page, "japanese");
+  //   await wait(400);
+  //   await ensureTextualElementExists(page, "残高");
 
-    await changeLanguage(page, "korean");
-    await wait(400);
-    await ensureTextualElementExists(page, "계정 잔액");
+  //   await changeLanguage(page, "korean");
+  //   await wait(400);
+  //   await ensureTextualElementExists(page, "계정 잔액");
 
-    await changeLanguage(page, "mandarin");
-    await wait(400);
-    await ensureTextualElementExists(page, "账户余额");
+  //   await changeLanguage(page, "mandarin");
+  //   await wait(400);
+  //   await ensureTextualElementExists(page, "账户余额");
 
-    await changeLanguage(page, "spanish");
-    await wait(400);
-    await ensureTextualElementExists(page, "Balance de Cuenta");
+  //   await changeLanguage(page, "spanish");
+  //   await wait(400);
+  //   await ensureTextualElementExists(page, "Balance de Cuenta");
 
-    await changeLanguage(page, "english");
-  });
+  //   await changeLanguage(page, "english");
+  // });
 });
