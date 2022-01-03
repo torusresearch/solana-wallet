@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "esNext",
+    "module": "CommonJS",
+    "strict": true,
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "lodash-es" : [ "node_modules/lodash"]
+    },
+    "lib": ["esNext", "dom", "dom.iterable", "scripthost"],
+  },
+  "include": ["tests/**/**.ts"],
+  "exclude": ["node_modules", "dist"]
+}
