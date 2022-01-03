@@ -45,7 +45,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 <template>
   <div class="flex flex-col justify-start items-center w-100">
     <!-- Tabs -->
-    <div class="tab-group-container flex flex-row justify-center items-start w-full">
+    <div class="tab-group-container flex flex-row justify-center items-start w-full mb-4">
       <div
         class="tok-tab flex flex-row justify-center items-center"
         :class="[selectedTab === TOKEN_TAB_TYPES.NFT_TAB ? 'tab-active' : '']"
@@ -68,7 +68,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
     <!-- Tabs -->
 
     <!-- List of token/nft Cards -->
-    <div class="tab-info w-full">
+    <div class="tab-info w-full overflow-x-hidden">
       <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3">
         <div
           v-for="token in fungibleTokens"
@@ -224,5 +224,22 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   width: 260px;
   height: 80px;
   overflow-x: hidden;
+}
+.tab-info {
+  max-height: 272px;
+}
+
+.tab-info::-webkit-scrollbar-track {
+  border-radius: 10px;
+  @apply bg-app-primary-100 dark:bg-app-gray-800;
+}
+
+.tab-info::-webkit-scrollbar {
+  width: 10px;
+  @apply bg-app-primary-100 dark:bg-app-gray-800;
+}
+.tab-info::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #9945ff;
 }
 </style>
