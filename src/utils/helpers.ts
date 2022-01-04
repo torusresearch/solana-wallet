@@ -1,11 +1,13 @@
 import { PublicKey } from "@solana/web3.js";
+import axios from "axios";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
-import { DISCORD, GITHUB, GOOGLE, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { DISCORD, GITHUB, GOOGLE, LOCALE_EN, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { ClubbedNfts, SolAndSplToken } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -89,8 +91,8 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
 }
 
 export const supportedCurrencies = (ticker: string): string[] => {
-  const returnArr = ["SOL", ...config.supportedCurrencies];
-  if (ticker !== "SOL") returnArr.unshift(ticker);
+  const returnArr = [...config.supportedCurrencies];
+  returnArr.unshift(ticker);
   return returnArr;
 };
 
@@ -126,7 +128,52 @@ export const getRelaySigned = async (gaslessHost: string, signedTx: string, bloc
   return resJson.transaction;
 };
 
+export const getUserLanguage = (): string => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let userLanguage = (window.navigator as any).userLanguage || window.navigator.language || "en-US";
+  userLanguage = userLanguage.split("-");
+  userLanguage = userLanguage[0] || LOCALE_EN;
+  return userLanguage;
+};
 export function delay(ms: number) {
   // eslint-disable-next-line no-promise-executor-return
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
+}
+
+export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
+  const finalData: { [collectionName: string]: ClubbedNfts } = {};
+  nfts.forEach((nft) => {
+    const metaData = nft.metaplexData?.offChainMetaData;
+    const collectionName = metaData?.collection?.family || metaData?.symbol || "unknown token";
+    const elem = finalData[collectionName];
+    if (elem) {
+      finalData[collectionName] = { ...elem, title: metaData?.symbol || "", count: elem.count + 1 };
+    } else {
+      finalData[collectionName] = {
+        title: metaData?.name || "",
+        count: 1,
+        description: metaData?.description || "",
+        img: metaData?.image || "",
+        mints: [],
+        collectionName,
+      };
+    }
+    finalData[collectionName].mints.push(`${nft?.mintAddress?.toString()}`);
+  });
+  return Object.values(finalData);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setFallbackImg(target: any, src: string) {
+  // eslint-disable-next-line no-param-reassign
+  (target as { src: string }).src = src;
+}
+
+export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
+  try {
+    const { data } = await axios.get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
+    return data?.[outputCurrencySymbol.toUpperCase()];
+  } catch (e) {
+    return 0;
+  }
 }

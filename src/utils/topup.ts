@@ -1,7 +1,10 @@
 import RampLogo from "@/assets/rampnetwork-logo.svg";
 import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 import { app } from "@/modules/app";
+import i18n from "@/plugins/i18nPlugin";
 import { RAMPNETWORK } from "@/utils/enums";
+
+const { t } = i18n.global;
 
 export type TopupProvider = {
   name: string;
@@ -17,8 +20,7 @@ export type TopupProvider = {
 export const TopupProviders: { [providerName: string]: TopupProvider } = {
   [RAMPNETWORK]: {
     name: "Ramp",
-    description:
-      "Rampnetwork is a secure way to buy cryptocurrency with your payment method. Start by entering an amount below to get a quote before making a purchase.",
+    description: `Rampnetwork ${t("walletTopUp.description")}`,
     paymentMethod: "Credit / Debit / Apple Pay",
     fee: "0.62% to 2.9%",
     limit: "5,000€/purchase, 20,000€/mo",

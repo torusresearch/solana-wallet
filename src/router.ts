@@ -73,6 +73,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "SETTINGS" */ "@/pages/wallet/Settings.vue"),
           meta: { title: "Settings", tab: "settings" },
         },
+        {
+          name: "walletNfts",
+          path: "nfts",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFTS" */ "@/pages/wallet/NftDetail.vue"),
+          meta: { title: "Nfts", tabHeader: false, tab: "home" },
+        },
       ],
     },
     {

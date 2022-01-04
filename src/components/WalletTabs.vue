@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
@@ -8,12 +9,22 @@ import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 
+import LanguageSelector from "./nav/LanguageSelector.vue";
+
 requireLoggedIn();
 
-defineProps<{
-  tab: keyof typeof NAVIGATION_LIST;
-}>();
+const props = withDefaults(
+  defineProps<{
+    tab: keyof typeof NAVIGATION_LIST;
+    showHeader: boolean;
+  }>(),
+  {
+    tab: "home",
+    showHeader: true,
+  }
+);
 
+const { t } = useI18n();
 const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
@@ -32,7 +43,7 @@ const logout = () => {
           </router-link>
         </div>
         <div class="flex flex-grow">
-          <div class="hidden sm:-my-px sm:mx-auto sm:flex sm:space-x-0">
+          <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
             <router-link
               v-for="(value, key) in tabs"
               :key="key"
@@ -44,26 +55,30 @@ const logout = () => {
                 'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
               ]"
               :aria-current="key === tab ? 'page' : undefined"
-              >{{ value.name }}</router-link
+              >{{ t(value.name) }}</router-link
             >
           </div>
         </div>
-        <div class="ml-6 hidden sm:flex items-center">
-          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
+        <div class="ml-6 hidden md:flex items-center">
+          <LanguageSelector class="mr-2" /><AccountMenu :user="user"
+            ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
+          /></AccountMenu>
         </div>
-        <div class="ml-6 flex sm:hidden items-center">
+        <div class="ml-6 flex md:hidden items-center">
           <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
     </nav>
 
     <div class="py-6">
-      <header>
+      <header v-if="props.showHeader">
         <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
-            {{ tabs[tab]?.title || "" }}
+            {{ t(tabs[tab]?.title) || "" }}
           </h1>
-          <div class="flex-grow flex"><div id="rightPanel" class="w-full" /></div>
+          <div class="flex-grow flex">
+            <div id="rightPanel" class="w-full" />
+          </div>
         </div>
       </header>
       <main>

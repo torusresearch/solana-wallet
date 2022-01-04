@@ -3,14 +3,16 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { CopyIcon, EyeIcon, EyeNoIcon } from "@toruslabs/vue-icons/basic";
 import { KeyIcon } from "@toruslabs/vue-icons/security";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
-import ControllersModule from "@/modules/controllers";
+import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
 
+const { t } = useI18n();
 const isOpen = ref(false);
 const isKeyShown = ref(false);
-const key = computed(() => ControllersModule.torus.privateKey);
+const key = computed(() => ControllerModule.torus.privateKey);
 
 const closeModal = () => {
   isOpen.value = false;
@@ -24,25 +26,15 @@ function copyPrivKey() {
 </script>
 <template>
   <div
-    class="
-      flex
-      p-3
-      items-center
-      cursor-pointer
-      rounded rounded:md
-      hover:bg-app-gray-200
-      dark:hover:bg-app-gray-400 dark:hover:text-app-text-500
-      text-app-text-600
-      dark:text-app-text-dark-500
-    "
+    class="flex p-3 items-center cursor-pointer rounded rounded:md hover:bg-app-gray-200 dark:hover:bg-app-gray-400 dark:hover:text-app-text-500 text-app-text-600 dark:text-app-text-dark-500"
     @click="openModal"
     @keydown="openModal"
   >
     <KeyIcon class="w-5 h-5 mr-5" />
-    <div class="font-body">Account Details</div>
+    <div class="font-body">{{ t("walletSettings.accountDetails") }}</div>
   </div>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllersModule.isDarkMode }" as="div" @close="closeModal">
+    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -59,33 +51,18 @@ function copyPrivKey() {
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="
-                inline-block
-                w-full
-                max-w-2xl
-                p-6
-                my-8
-                overflow-hidden
-                text-left
-                align-middle
-                transition-all
-                transform
-                bg-white
-                dark:bg-app-gray-700
-                shadow-xl
-                rounded-2xl
-              "
+              class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-2xl"
             >
               <DialogTitle
                 as="h3"
                 class="text-lg font-bold leading-6 text-app-text-500 dark:text-app-text-dark-400 focus-within:outline-none"
                 tabindex="0"
-                >Private Key</DialogTitle
+                >{{ t("walletSettings.privateKey") }}</DialogTitle
               >
               <div class="mt-5 flex items-center">
                 <div class="flex items-center text-app-text-400 dark:text-app-text-dark-500">
                   <KeyIcon class="w-5 h-5 mr-3" />
-                  <div class="font-body font-medium">Show Private Key</div>
+                  <div class="font-body font-medium">{{ t("walletSettings.showPrivateKey") }}</div>
                 </div>
                 <div class="ml-auto">
                   <Button variant="text" @click="isKeyShown = !isKeyShown">
@@ -98,12 +75,12 @@ function copyPrivKey() {
                 <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2 priv-key">{{ key }}</div>
                 <Button variant="text" @click="copyPrivKey()">
                   <CopyIcon class="w-4 h-4 mr-1" />
-                  Click to copy
+                  {{ t("walletSettings.clickCopy") }}
                 </Button>
               </div>
 
               <div class="mt-8">
-                <Button class="ml-auto" variant="tertiary" @click="closeModal">Close</Button>
+                <Button class="ml-auto" variant="tertiary" @click="closeModal">{{ t("walletSettings.close") }}</Button>
               </div>
             </div>
           </TransitionChild>
