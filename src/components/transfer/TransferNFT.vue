@@ -48,19 +48,19 @@ const currency = computed(() => ControllerModule.torus.currentCurrency);
 const pricePerToken = computed<number>((): number => {
   return ControllerModule.torus.conversionRate;
 });
-const emits = defineEmits(["transferConfirm", "onCloseModal"]);
+const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
 
 const closeModal = () => {
   emits("onCloseModal");
 };
 
 const onCancel = () => {
-  closeModal();
+  emits("transferCancel");
 };
 
 const onConfirm = () => {
-  closeModal();
   emits("transferConfirm");
+  closeModal();
 };
 // Transaction fee
 const fiatTxFeeString = computed(() => {

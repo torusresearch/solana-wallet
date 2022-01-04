@@ -11,6 +11,7 @@ const props = withDefaults(
     modelValue?: string | number;
     errors?: Array<ErrorObject>;
     type?: string;
+    disabled?: boolean;
   }>(),
   {
     size: "medium",
@@ -20,6 +21,7 @@ const props = withDefaults(
     modelValue: "",
     errors: () => [],
     type: "text",
+    disabled: false,
   }
 );
 
@@ -48,6 +50,7 @@ const value = computed({
         :class="size === 'small' ? 'text-xs' : 'text-base'"
         :type="type"
         :placeholder="placeholder"
+        :disabled="disabled"
         aria-label="text field"
       />
     </div>

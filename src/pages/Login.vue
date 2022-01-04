@@ -20,6 +20,13 @@ import { WALLET_COMMUNICATION } from "@/utils/enums";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
+import { checkRedirect, checkRedirectFlow, redirectToResult } from "../utils/helpers";
+
+const redirect = checkRedirect();
+const isRedirectFlow = checkRedirectFlow();
+const queryParams = new URLSearchParams(window.location.search);
+const method = queryParams.get("method");
+const resolveRoute = queryParams.get("resolveRoute");
 
 const { t } = useI18n();
 const router = useRouter();
@@ -47,14 +54,22 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (ControllerModule.torus.selectedAddress) {
+    if (redirect) router.push(`${redirect}&useRedirectFlow=true&resolveRoute=${resolveRoute}${window.location.hash}`);
+    else if (isRedirectFlow) {
+      // send response to deeplink and close
+      redirectToResult(method, { success: true }, resolveRoute);
+    } else if (ControllerModule.torus.selectedAddress) {
       isLoading.value = false;
       router.push("/wallet/home");
     }
   } catch (error) {
     log.error(error);
+    if (isRedirectFlow) {
+      // send response to deeplink and close
+      redirectToResult(method, { success: false }, resolveRoute);
+    }
     addToast({
-      message: t("login.loginError"),
+      message: "Something went wrong, please try again.",
       type: "error",
     });
   } finally {

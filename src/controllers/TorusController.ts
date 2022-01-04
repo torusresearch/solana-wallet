@@ -84,7 +84,6 @@ import {
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
-import { SolAndSplToken } from "@/utils/interfaces";
 
 import { PKG } from "../const";
 
@@ -476,11 +475,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
+  async transferSpl(receiver: string, amount: number, mintAddress: string, decimals = 0): Promise<string> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
-    const tokenMintAddress = selectedToken.mintAddress;
-    const decimals = selectedToken.balance?.decimals || 0;
+    const tokenMintAddress = mintAddress;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
     const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
@@ -988,7 +986,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.handleTopUp(params, windowId);
   }
 
-  async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
+  async handleTopUp(params: PaymentParams, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
       const parameters = {
@@ -1004,7 +1002,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success${redirectFlow ? "&useRedirectFlow=true" : ""}`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
@@ -1014,24 +1012,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // testnet
       // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
 
-      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
-
-      const topUpPopUpWindow = new PopupWithBcHandler({
-        state: {
-          url: finalUrl,
-          windowId,
-        },
-        config: {
-          dappStorageKey: config.dappStorageKey || undefined,
-          communicationEngine: this.communicationEngine,
-          communicationWindowManager: this.communicationManager,
-          target: "_blank",
-        },
-        instanceId: channelName,
-      });
-      await topUpPopUpWindow.handle();
+      if (!redirectFlow) {
+        const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
+        const topUpPopUpWindow = new PopupWithBcHandler({
+          state: {
+            url: finalUrl,
+            windowId,
+          },
+          config: {
+            dappStorageKey: config.dappStorageKey || undefined,
+            communicationEngine: this.communicationEngine,
+            communicationWindowManager: this.communicationManager,
+            target: "_blank",
+          },
+          instanceId: channelName,
+        });
+        await topUpPopUpWindow.handle();
+      } else {
+        window.location.href = finalUrl.toString();
+      }
       return true;
-      // debugger;
     } catch (err) {
       log.error(err);
       throw err;
@@ -1070,98 +1070,132 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
+  getTransactionData(method: string, params: { message: string }) {
+    return {
+      type: method,
+      message: params?.message || "",
+      signer: this.selectedAddress,
+      origin: window.origin,
+      balance: this.userSOLBalance,
+      selectedCurrency: this.currencyController.state.currentCurrency,
+      currencyRate: this.currencyController.state.conversionRate?.toString(),
+      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+      network: this.networkController.state.providerConfig.displayName,
+      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+    };
+  }
+
+  getMessageData(method: string, params: { data: Uint8Array; display?: string }): SignMessageChannelDataType {
+    return {
+      type: method,
+      data: Buffer.from(params?.data || []).toString("hex"),
+      display: params?.display,
+      message: Buffer.from(params?.data || []).toString(),
+      signer: this.selectedAddress,
+      origin: window.location.origin,
+      balance: this.userSOLBalance,
+      selectedCurrency: this.currencyController.state.currentCurrency,
+      currencyRate: this.currencyController.state.conversionRate?.toString(),
+      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
+      network: this.networkController.state.providerConfig.displayName,
+      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+    };
+  }
+
   getWindowId = (): string => Math.random().toString(36).slice(2);
 
-  private initializeProvider() {
-    const providerHandlers: IProviderHandlers = {
-      version: PKG.version,
-      requestAccounts: async (req) => {
-        const accounts = await this.requestAccounts(req);
-        this.engine?.emit("notification", {
-          method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
-          params: {
-            accounts,
-            isUnlocked: accounts.length > 0,
-          },
-        });
-        this.communicationEngine?.emit("notification", {
-          method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
-        });
-        return accounts;
+  async signMessage(
+    req: JRPCRequest<{
+      data: Uint8Array;
+      display: string;
+      message?: string;
+    }> & {
+      origin?: string | undefined;
+      windowId?: string | undefined;
+    },
+    isRedirectFlow = false
+  ) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+    let approve: boolean;
+    if (!isRedirectFlow) approve = await this.handleSignMessagePopup(req);
+    else approve = true;
+    if (approve) {
+      // const msg = Buffer.from(req.params?.message || "", "hex");
+      const data = req.params?.data as Uint8Array;
+      return this.keyringController.signMessage(data, this.selectedAddress);
+    }
+    throw new Error("User Rejected");
+  }
+
+  async getGaslessPublicKey() {
+    const relayPublicKey = this.state.RelayMap.torus;
+    if (!relayPublicKey) throw new Error("Invalid Relay");
+    return relayPublicKey;
+  }
+
+  private async providerRequestAccounts(req: JRPCRequest<unknown>) {
+    const accounts = await this.requestAccounts(req);
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+      params: {
+        accounts,
+        isUnlocked: accounts.length > 0,
       },
+    });
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+      params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+    });
+    return accounts;
+  }
 
-      // Expose no accounts if this origin has not been approved, preventing
-      // account-requiring RPC methods from completing successfully
-      // only show address if account is unlocked
-      getAccounts: async () => (this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : []),
-      signMessage: async (
-        req: JRPCRequest<{
-          data: Uint8Array;
-          display: string;
-          message?: string;
-        }> & {
-          origin?: string | undefined;
-          windowId?: string | undefined;
-        }
-      ) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
-        const approve = await this.handleSignMessagePopup(req);
-        if (approve) {
-          // const msg = Buffer.from(req.params?.message || "", "hex");
-          const data = req.params?.data as Uint8Array;
-          return this.keyringController.signMessage(data, this.selectedAddress);
-        }
-        throw new Error("User Rejected");
-      },
-      signTransaction: async (req) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
+  private async getAccounts() {
+    return this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
+  }
 
-        const message = req.params?.message;
-        if (!message) throw new Error("empty error message");
+  private async providerSignTransaction(req: JRPCRequest<any>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
 
-        const tx = Transaction.from(Buffer.from(message, "hex"));
+    const message = req.params?.message;
+    if (!message) throw new Error("empty error message");
 
-        const ret_signed = await this.txController.addSignTransaction(tx, req);
-        const result = await ret_signed.result;
-        log.info(result);
+    const tx = Transaction.from(Buffer.from(message, "hex"));
 
-        let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
-        const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-        if (gaslessHost) {
-          signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
-        }
-        return signed_tx;
-      },
-      signAllTransactions: async () => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
-        return {} as unknown;
-      },
-      sendTransaction: async (req) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
+    const ret_signed = await this.txController.addSignTransaction(tx, req);
+    const result = await ret_signed.result;
+    log.info(result);
 
-        const message = req.params?.message;
-        if (!message) throw new Error("empty error message");
+    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+    const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+    if (gaslessHost) {
+      signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+    }
+    return signed_tx;
+  }
 
-        const tx = Transaction.from(Buffer.from(message, "hex"));
+  private async signAllTransaction() {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+    return {} as unknown;
+  }
 
-        return this.transfer(tx, req);
-      },
-      getProviderState: (req, res, _, end) => {
-        res.result = {
-          accounts: this.keyringController.getPublicKeys(),
-          chainId: this.networkController.state.chainId,
-          isUnlocked: !!this.selectedAddress,
-        };
-        end();
-      },
-      getGaslessPublicKey: async () => {
-        const relayPublicKey = this.state.RelayMap.torus;
-        if (!relayPublicKey) throw new Error("Invalid Relay");
-        return relayPublicKey;
-      },
+  private async sendTransaction(req: JRPCRequest<any>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+
+    const message = req.params?.message;
+    if (!message) throw new Error("empty error message");
+
+    const tx = Transaction.from(Buffer.from(message, "hex"));
+
+    return this.transfer(tx, req);
+  }
+
+  private getNetworkProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    res.result = {
+      accounts: this.keyringController.getPublicKeys(),
+      chainId: this.networkController.state.chainId,
+      isUnlocked: !!this.selectedAddress,
     };
-    return this.networkController.initializeProvider(providerHandlers);
+    end();
   }
 
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
@@ -1196,29 +1230,56 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   }
 
+  private async getCommProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    res.result = {
+      currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      isLoggedIn: !!this.selectedAddress,
+    };
+    end();
+  }
+
+  private async topup(req: JRPCRequest<TopupInput>) {
+    return this.embedhandleTopUp(req);
+  }
+
+  private async getWalletInstanceId() {
+    return "";
+  }
+
+  private async getUserInfo(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    res.result = normalizeJson<UserInfo>(this.userInfo);
+    end();
+  }
+
+  private initializeProvider() {
+    const providerHandlers: IProviderHandlers = {
+      version: PKG.version,
+      requestAccounts: this.providerRequestAccounts.bind(this),
+
+      // Expose no accounts if this origin has not been approved, preventing
+      // account-requiring RPC methods from completing successfully
+      // only show address if account is unlocked
+      getAccounts: this.getAccounts.bind(this),
+      signMessage: this.signMessage.bind(this),
+      signTransaction: this.providerSignTransaction.bind(this),
+      signAllTransactions: this.signAllTransaction.bind(this),
+      sendTransaction: this.sendTransaction.bind(this),
+      getProviderState: this.getNetworkProviderState.bind(this),
+      getGaslessPublicKey: this.getGaslessPublicKey.bind(this),
+    };
+    return this.networkController.initializeProvider(providerHandlers);
+  }
+
   private initializeCommunicationProvider() {
     const commProviderHandlers: ICommunicationProviderHandlers = {
       setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
       logout: this.logout.bind(this),
-      getUserInfo: (req, res, _, end) => {
-        res.result = normalizeJson<UserInfo>(this.userInfo);
-        end();
-      },
-      getWalletInstanceId: () => {
-        return "";
-      },
-      topup: async (req) => {
-        return this.embedhandleTopUp(req);
-      },
+      getUserInfo: this.getUserInfo.bind(this),
+      getWalletInstanceId: this.getWalletInstanceId.bind(this),
+      topup: this.topup.bind(this),
       handleWindowRpc: this.communicationManager.handleWindowRpc,
-      getProviderState: (req, res, _, end) => {
-        res.result = {
-          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-          isLoggedIn: !!this.selectedAddress,
-        };
-        end();
-      },
+      getProviderState: this.getCommProviderState.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }

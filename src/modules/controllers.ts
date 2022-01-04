@@ -17,6 +17,7 @@ import {
   SelectedAddresssChangeChannelData,
   THEME,
   TX_EVENTS,
+  UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
@@ -34,8 +35,8 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/To
 import i18nPlugin from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { isMain } from "@/utils/helpers";
+import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -447,6 +448,50 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  async handleRedirectFlow({ method, params }: { method: string; params: { [keyof: string]: any } }) {
+    let res;
+    switch (method) {
+      case "topup":
+        await this.torus.handleTopUp(params.params, undefined, true);
+        break;
+      case "wallet_instance_id":
+        res = "";
+        break;
+      case "get_provider_state":
+        res = {
+          currentLoginProvider: this.torus.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          isLoggedIn: !!this.selectedAddress,
+        };
+        break;
+      case "wallet_get_provider_state":
+        res = {
+          accounts: this.torus.state.KeyringControllerState.wallets.map((e) => e.publicKey),
+          chainId: this.torus.state.NetworkControllerState.chainId,
+          isUnlocked: !!this.selectedAddress,
+        };
+        break;
+      case "user_info":
+        res = normalizeJson<UserInfo>(this.torus.userInfo); // send response to deeplink, then close window
+        break;
+      case "get_gasless_public_key":
+        res = this.torus.getGaslessPublicKey();
+        break;
+      case "getAccounts":
+        res = this.torus.state.PreferencesControllerState.selectedAddress ? [this.torus.state.PreferencesControllerState.selectedAddress] : [];
+        break;
+      case "solana_requestAccounts":
+        res = this.torus.state.PreferencesControllerState.selectedAddress ? [this.torus.state.PreferencesControllerState.selectedAddress] : [];
+        break;
+      case "nft_list":
+        await delay(15000);
+        res = this.nonFungibleTokens || [];
+        break;
+      default:
+    }
+    return res;
+  }
+
+  @Action
   openWalletPopup(path: string) {
     this.torus.showWalletPopup(path, this.instanceId);
   }
@@ -456,10 +501,12 @@ const module = getModule(ControllerModule);
 
 installStorePlugin({
   key: CONTROLLER_MODULE_KEY,
-  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
+  storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
-    storage?.setItem(key, JSON.stringify(requiredState));
+    const data = requiredState;
+    (data.controllerModule as any).torusState.TokenInfoState.tokenInfoMap = {};
+    storage?.setItem(key, JSON.stringify(data));
   },
   restoreState: (key: string, storage?: Storage) => {
     const value = storage?.getItem(key);
