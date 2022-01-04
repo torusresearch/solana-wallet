@@ -28,6 +28,8 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+    estimatedBalanceChange: number;
+    hasEstimationError: boolean;
   }>(),
   {
     senderPubKey: "",
@@ -39,6 +41,8 @@ const props = withDefaults(
     tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
+    estimatedBalanceChange: 0,
+    hasEstimationError: false,
   }
 );
 
@@ -50,6 +54,12 @@ const pricePerToken = computed<number>((): number => {
 });
 const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
+function getFees(): number {
+  if (!props.hasEstimationError && props.estimatedBalanceChange) {
+    return Math.abs(props.estimatedBalanceChange);
+  }
+  return props.cryptoTxFee;
+}
 const closeModal = () => {
   emits("onCloseModal");
 };
@@ -64,7 +74,7 @@ const onConfirm = () => {
 };
 // Transaction fee
 const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+  return `${new BigNumber(getFees()).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
 
 const explorerUrl = computed(() => {
@@ -139,15 +149,22 @@ const refDiv = ref(null);
                 </div>
               </div>
               <div
-                class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-row justify-start items-center pb-8 pt-2"
+                class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-col justify-start items-start pb-8 pt-2"
               >
-                <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
-                <p>{{ props.cryptoTxFee }} SOL</p>
+                <div class="flex flex-row justify-start items-center w-full">
+                  <p class="flex-auto">{{ t("walletTransfer.estimated-change") }}</p>
+                  <p v-if="!props.hasEstimationError" class="text-red-500 italic">{{ estimatedBalanceChange }} SOL</p>
+                  <p v-else class="text-red-500 italic">{{ t("walletTransfer.estimated-fail") }}.</p>
+                </div>
+                <div class="flex flex-row justify-start items-center mt-2 w-full">
+                  <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
+                  <p>{{ props.cryptoTxFee }} SOL</p>
+                </div>
               </div>
               <div class="flex flex-row items- justify-start w-full mt-8">
                 <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
-                  <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ props.cryptoTxFee }} SOL</p>
+                  <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ getFees() }} SOL</p>
                   <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
                 </div>
               </div>

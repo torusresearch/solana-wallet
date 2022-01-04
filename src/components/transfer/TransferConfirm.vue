@@ -13,8 +13,8 @@ import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
-const currency = computed(() => ControllerModule.torus.currentCurrency);
 
+const currency = computed(() => ControllerModule.torus.currentCurrency);
 const props = withDefaults(
   defineProps<{
     senderPubKey: string;
@@ -27,6 +27,8 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+    estimatedBalanceChange: number;
+    hasEstimationError: boolean;
   }>(),
   {
     senderPubKey: "",
@@ -38,14 +40,21 @@ const props = withDefaults(
     tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
+    estimatedBalanceChange: 0,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     token: tokens.value[0],
+    hasEstimationError: false,
   }
 );
-
 function isSPLToken(): boolean {
   return !!props.token.mintAddress;
+}
+function getFees(): number {
+  if (!props.hasEstimationError && props.estimatedBalanceChange) {
+    return Math.abs(props.estimatedBalanceChange);
+  }
+  return props.cryptoTxFee;
 }
 const pricePerToken = computed<number>((): number => {
   if (isSPLToken()) {
@@ -80,16 +89,16 @@ const fiatAmountString = computed(() => {
 
 // Total cost
 const totalFiatCostString = computed(() => {
-  const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
+  const totalCost = new BigNumber(getFees()).plus(props.cryptoAmount);
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
 
 const totalCryptoCostString = computed(() => {
   if (isSPLToken()) {
-    return `${props.cryptoAmount} ${props.tokenSymbol} + ${props.cryptoTxFee} SOL`;
+    return `${props.cryptoAmount} ${props.tokenSymbol} + ${getFees()} SOL`;
   }
-  const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
+  const totalCost = new BigNumber(props.cryptoAmount).plus(getFees());
   return `${totalCost.toString(10)} ${props.tokenSymbol}`;
 });
 
@@ -124,9 +133,7 @@ const refDiv = ref(null);
                 <div>
                   <img class="h-7 mx-auto w-auto mb-1" :src="SolanaLogoURL" alt="Solana Logo" />
                 </div>
-                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
-                  {{ t("walletTransfer.confirmTransaction") }}
-                </div>
+                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</div>
               </DialogTitle>
               <div class="mt-5 px-6 items-center">
                 <div class="flex items-center">
@@ -176,6 +183,16 @@ const refDiv = ref(null);
                     <div class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
                   </div>
                 </div>
+                <template v-if="isSPLToken()">
+                  <hr class="mt-3 mb-5" />
+                  <div class="flex mb-2">
+                    <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.estimated-change") }}</div>
+                    <div class="ml-auto text-right">
+                      <div v-if="!hasEstimationError" class="font-body text-xs font-bold text-red-500">{{ estimatedBalanceChange }} SOL</div>
+                      <div v-else class="font-body text-xs font-thin text-red-500 italic">{{ t("walletTransfer.estimated-fail") }}.</div>
+                    </div>
+                  </div>
+                </template>
                 <div class="flex">
                   <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
                   <div class="ml-auto text-right">

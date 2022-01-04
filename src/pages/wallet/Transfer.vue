@@ -218,6 +218,28 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
+async function generateTransaction(): Promise<Transaction> {
+  let tx: Transaction;
+  if (selectedToken?.value?.mintAddress) {
+    // SPL TRANSFER OR NFT TRANSFER
+    tx = await ControllerModule.torus.getTransferSplTransaction(
+      transferTo.value,
+      sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
+      selectedToken.value as SolAndSplToken
+    );
+  } else {
+    // SOL TRANSFER
+    const instuctions = SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
+      toPubkey: new PublicKey(transferTo.value),
+      lamports: sendAmount.value * LAMPORTS_PER_SOL,
+    });
+    tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
+  }
+  return tx;
+}
+const hasEstimationError = ref(false);
+const estimatedBalanceChange = ref(0);
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
@@ -232,6 +254,13 @@ const openModal = async () => {
     }
 
     isOpen.value = true;
+    try {
+      hasEstimationError.value = false;
+      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(await generateTransaction());
+    } catch (e) {
+      hasEstimationError.value = true;
+      log.info("Error in transaction simulation", e);
+    }
   }
 
   // This can't be guarantee
@@ -420,9 +449,45 @@ watch(transferTo, () => {
                 </div>
               </TextField>
             </div>
-            <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
-              {{ t("dappTransfer.transfer") }}
-            </Button>
+            <div class="flex">
+              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
+                {{ t("dappTransfer.transfer") }}
+                <span class="text-base"></span>
+              </Button>
+              <!-- :crypto-tx-fee="state.transactionFee" -->
+              <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
+              <AsyncTransferConfirm
+                :sender-pub-key="ControllerModule.selectedAddress"
+                :receiver-pub-key="resolvedAddress"
+                :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
+                :receiver-verifier="selectedVerifier"
+                :receiver-verifier-id="resolvedAddress"
+                :token-symbol="selectedToken?.data?.symbol || 'SOL'"
+                :token="selectedToken"
+                :is-open="isOpen && selectedToken.isFungible"
+                :crypto-tx-fee="transactionFee"
+                :transfer-disabled="transferDisabled"
+                :estimated-balance-change="estimatedBalanceChange"
+                :has-estimation-error="hasEstimationError"
+                @transfer-confirm="confirmTransfer"
+                @on-close-modal="closeModal"
+              />
+              <TransferNFT
+                :sender-pub-key="ControllerModule.selectedAddress"
+                :receiver-pub-key="resolvedAddress"
+                :crypto-amount="sendAmount"
+                :receiver-verifier="selectedVerifier"
+                :receiver-verifier-id="resolvedAddress"
+                :is-open="isOpen && !selectedToken.isFungible"
+                :token="selectedToken"
+                :crypto-tx-fee="transactionFee"
+                :transfer-disabled="transferDisabled"
+                :estimated-balance-change="estimatedBalanceChange"
+                :has-estimation-error="hasEstimationError"
+                @transfer-confirm="confirmTransfer"
+                @on-close-modal="closeModal"
+              />
+            </div>
           </div>
         </form>
       </Card>

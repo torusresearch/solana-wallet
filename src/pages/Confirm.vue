@@ -8,21 +8,21 @@ import { onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
+import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
-import ControllerModule from "../modules/controllers";
-
-const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
-
 const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
+const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+const hasEstimationError = ref(false);
+const estimatedBalanceChange = ref(0);
 interface FinalTxData {
   slicedSenderAddress: string;
   slicedReceiverAddress: string;
   totalSolAmount: number;
-  totalSolFee: number;
+  totalNetworkFee: number;
   totalFiatAmount: string;
   totalFiatFee: string;
   transactionType: string;
@@ -35,7 +35,7 @@ const finalTxData = reactive<FinalTxData>({
   slicedSenderAddress: "",
   slicedReceiverAddress: "",
   totalSolAmount: 0,
-  totalSolFee: 0,
+  totalNetworkFee: 0,
   totalFiatAmount: "",
   totalFiatFee: "",
   transactionType: "",
@@ -121,7 +121,7 @@ onMounted(async () => {
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
       finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+      finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
@@ -187,11 +187,13 @@ const rejectTxn = async () => {
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
     :crypto-amount="finalTxData.totalSolAmount"
-    :crypto-tx-fee="finalTxData.totalSolFee"
+    :crypto-tx-fee="finalTxData.totalNetworkFee"
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
     :network="network"
-    @on-close-modal="closeModal()"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
+    @on-close-modal="rejectTxn()"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />
@@ -200,7 +202,9 @@ const rejectTxn = async () => {
     :decoded-inst="decodedInst || []"
     :origin="origin"
     :network="network"
-    @on-close-modal="closeModal()"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
+    @on-close-modal="rejectTxn()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
   />
