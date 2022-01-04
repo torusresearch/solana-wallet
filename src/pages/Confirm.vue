@@ -56,17 +56,16 @@ onMounted(async () => {
     await delay(5000);
     const token = ControllerModule.fungibleTokens[0];
     const tx = await ControllerModule.torus.getTransferSplTransaction(
-      "Dg2iGY6UBnb6FeWurZZy16Psi2qgdYFtonNbjhTVfPG1",
-      10 ** 9,
+      "JpKwWzMTy4PqXTim4UPcEr1TZEL88UGibn6SxWEYagb",
+      token.balance?.decimals || 0,
       token as SolAndSplToken
     );
-    log.info("XYZ", token);
     try {
       hasEstimationError.value = false;
       estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(tx);
-      log.info("PR", estimatedBalanceChange.value);
+      log.info("TransEstim", estimatedBalanceChange.value);
     } catch (e) {
-      log.error("PRFAILES");
+      log.error("TransEstim", e);
       hasEstimationError.value = true;
     }
     const conn = new Connection(networkConfig.rpcTarget);
