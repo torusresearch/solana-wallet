@@ -474,7 +474,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
+  async getTransferSplTransaction(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<Transaction> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const transaction = new Transaction();
     const tokenMintAddress = selectedToken.mintAddress;
@@ -520,9 +520,28 @@ export default class TorusController extends BaseController<TorusControllerConfi
       decimals
     );
     transaction.add(transferInstructions);
-
     transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
-    return this.transfer(transaction);
+    return transaction;
+  }
+
+  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<number> {
+    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    try {
+      const signedTransaction = this.keyringController.signTransaction(tx, signer);
+      let serializedTransaction = signedTransaction.serialize({ requireAllSignatures: false }).toString("hex");
+      const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+      if (gaslessHost) {
+        serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
+      }
+      const result = await connection.simulateTransaction(Transaction.from(Buffer.from(serializedTransaction, "hex")), undefined, [
+        new PublicKey(this.selectedAddress),
+      ]);
+      const currentLamports = Number(this.userSOLBalance);
+      return new BigNumber(result?.value?.accounts?.[0]?.lamports || 0).div(new BigNumber(LAMPORTS_PER_SOL)).minus(currentLamports).toNumber();
+    } catch (e) {
+      log.warn("error", e);
+      throw new Error("Failed to simulate transaction for balance change");
+    }
   }
 
   getGaslessHost(feePayer: string): string | undefined {

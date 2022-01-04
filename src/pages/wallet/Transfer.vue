@@ -171,38 +171,52 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
+async function generateTransaction(): Promise<Transaction> {
+  let tx: Transaction;
+  if (selectedToken?.value?.mintAddress) {
+    // SPL TRANSFER OR NFT TRANSFER
+    tx = await ControllerModule.torus.getTransferSplTransaction(
+      transferTo.value,
+      sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
+      selectedToken.value as SolAndSplToken
+    );
+  } else {
+    // SOL TRANSFER
+    const instuctions = SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
+      toPubkey: new PublicKey(transferTo.value),
+      lamports: sendAmount.value * LAMPORTS_PER_SOL,
+    });
+    tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
+  }
+  return tx;
+}
+const hasEstimationError = ref(false);
+const estimatedBalanceChange = ref(0);
 const openModal = async () => {
   $v.value.$touch();
-  if (!$v.value.$invalid) isOpen.value = true;
+  if (!$v.value.$invalid) {
+    isOpen.value = true;
+    try {
+      hasEstimationError.value = false;
+      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(await generateTransaction());
+    } catch (e) {
+      hasEstimationError.value = true;
+      log.info("Error in transaction simulation", e);
+    }
 
-  const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
-  blockhash.value = b_hash;
-  transactionFee.value = fee / LAMPORTS_PER_SOL;
-  transferDisabled.value = false;
+    const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
+    blockhash.value = b_hash;
+    transactionFee.value = fee / LAMPORTS_PER_SOL;
+    transferDisabled.value = false;
+  }
 };
 
 const confirmTransfer = async () => {
   // Delay needed for the message modal
   await delay(500);
   try {
-    if (selectedToken?.value?.mintAddress) {
-      // SPL TRANSFER
-      await ControllerModule.torus.transferSpl(
-        transferTo.value,
-        sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken.value as SolAndSplToken
-      );
-    } else {
-      // SOL TRANSFER
-      const instuctions = SystemProgram.transfer({
-        fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(transferTo.value),
-        lamports: sendAmount.value * LAMPORTS_PER_SOL,
-      });
-      const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
-      await ControllerModule.torus.transfer(tx);
-    }
-    // resetForm();
+    await ControllerModule.torus.transfer(await generateTransaction());
     transferConfirmed.value = true;
     showMessageModal({ messageTitle: t("walletTransfer.transferSuccessTitle"), messageStatus: STATUS_INFO });
   } catch (error) {
@@ -273,6 +287,8 @@ watch([tokens, nftTokens], () => {
                 :is-open="isOpen && selectedToken.isFungible"
                 :crypto-tx-fee="transactionFee"
                 :transfer-disabled="transferDisabled"
+                :estimated-balance-change="estimatedBalanceChange"
+                :has-estimation-error="hasEstimationError"
                 @transfer-confirm="confirmTransfer"
                 @on-close-modal="closeModal"
               />
@@ -286,6 +302,8 @@ watch([tokens, nftTokens], () => {
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"
                 :transfer-disabled="transferDisabled"
+                :estimated-balance-change="estimatedBalanceChange"
+                :has-estimation-error="hasEstimationError"
                 @transfer-confirm="confirmTransfer"
                 @on-close-modal="closeModal"
               />

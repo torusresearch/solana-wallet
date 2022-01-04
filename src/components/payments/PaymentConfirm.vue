@@ -26,6 +26,8 @@ const props = withDefaults(
     isOpen?: boolean;
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
+    estimatedBalanceChange: number;
+    hasEstimationError: boolean;
   }>(),
   {
     senderPubKey: "",
@@ -36,6 +38,8 @@ const props = withDefaults(
     isOpen: false,
     isGasless: true,
     tokenLogoUrl: "",
+    estimatedBalanceChange: 0,
+    hasEstimationError: false,
   }
 );
 
@@ -55,6 +59,12 @@ const onConfirm = () => {
   closeModal();
 };
 
+const getFeesInSol = () => {
+  if (!props.hasEstimationError) {
+    return Math.abs(props.estimatedBalanceChange);
+  }
+  return props.cryptoTxFee;
+};
 // const cryptoAmountString = computed(() => {
 //   return `${props.cryptoAmount} ${props.token}`;
 // });
@@ -68,12 +78,15 @@ const onConfirm = () => {
 //   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
 // });
 const totalCryptoCostString = computed(() => {
-  const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
-  return `${totalCost.toString(10)} ${props.token}`;
+  if (props.token === "SOL") {
+    const totalCost = new BigNumber(props.cryptoAmount).plus(getFeesInSol());
+    return `${totalCost.toString(10)} ${props.token}`;
+  }
+  return `${props.cryptoAmount.toString(10)} ${props.token} + ${getFeesInSol()} SOL`;
 });
 
 const totalFiatCostString = computed(() => {
-  const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
+  const totalCost = new BigNumber(getFeesInSol()).plus(props.cryptoAmount);
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
@@ -81,7 +94,7 @@ const totalFiatCostString = computed(() => {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between align-start"
+    class="inline-block w-screen h-screen overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between align-start"
   >
     <div class="shadow dark:shadow-dark text-center py-6 flex flex-row justify-center items-center" tabindex="0">
       <div>
@@ -108,7 +121,14 @@ const totalFiatCostString = computed(() => {
         </span>
 
         <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-          <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+          <p>Estimated Transaction Changes <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+          <p v-if="!props.hasEstimationError" :class="[props.isGasless ? '' : 'italic text-red-500']">
+            {{ props.isGasless ? "Paid by DApp" : "-" + getFeesInSol() + " " + "SOL" }}
+          </p>
+          <p v-else class="italic text-red-500">Transaction might fail.</p>
+        </span>
+        <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
+          <p>Transaction Fee <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
           <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
         </span>
 

@@ -19,9 +19,13 @@ const props = withDefaults(
     logoUrl?: string;
     decodedInst: DecodedDataType[];
     origin: string;
+    estimatedBalanceChange: number;
+    hasEstimationError: boolean;
   }>(),
   {
     logoUrl: SolanaLogoURL,
+    estimatedBalanceChange: 0,
+    hasEstimationError: false,
   }
 );
 
@@ -69,6 +73,13 @@ function openLink() {
           <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
         </div>
       </div>
+      <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
+        <p>Estimated Transaction Changes</p>
+        <p v-if="!props.hasEstimationError" class="italic text-red-500">
+          {{ props.estimatedBalanceChange + " " + "SOL" }}
+        </p>
+        <p v-else class="italic text-red-500">Transaction might fail.</p>
+      </span>
 
       <div class="flex flex-col justify-start items-start mt-8 mb-12">
         <div class="w-full flex flex-row justify-start items-center">
