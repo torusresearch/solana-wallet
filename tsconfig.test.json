@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "target": "esNext",
-    "module": "CommonJS",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "strict": true,
     "jsx": "preserve",
     "esModuleInterop": true,
     "resolveJsonModule": true,
 
+    "allowJs": true,
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
@@ -15,6 +17,6 @@
     },
     "lib": ["esNext", "dom", "dom.iterable", "scripthost"],
   },
-  "include": ["tests/**/**.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/*.js", "tests/**/*.tsx", "playwright.config.ts", "src/scripts/*.js"],
   "exclude": ["node_modules", "dist"]
 }
