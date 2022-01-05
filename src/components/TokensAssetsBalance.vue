@@ -69,7 +69,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
     <!-- List of token/nft Cards -->
     <div class="tab-info w-full overflow-x-hidden">
-      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap -mx-3 overflow-hidden">
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap overflow-hidden">
         <div
           v-for="token in fungibleTokens"
           :key="token.tokenAddress.toString()"
@@ -106,7 +106,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
       <div
         v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB"
-        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1"
+        class="flex flex-wrap overflow-hidden"
         :class="!nonFungibleTokens?.length ? `w-full justify-center` : ``"
       >
         <div

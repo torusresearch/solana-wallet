@@ -30,13 +30,17 @@ function closeClicked() {
 <template>
   <div
     class="font-body"
-    :class="mode !== NFT_CARD_MODE.SUMMARY ? `flex items-center justify-start` : `container-card px-2`"
+    :class="
+      mode !== NFT_CARD_MODE.SUMMARY
+        ? `flex items-center justify-start`
+        : `my-3 px-3 overflow-hidden w-full sm:w-1/2 md:w-1/3 xl:w-1/4 lg:w-1/4 cursor-pointer`
+    "
     @click="cardClicked"
     @keydown="cardClicked"
   >
     <div
       v-if="props.summaryData && mode === NFT_CARD_MODE.SUMMARY"
-      class="cursor-pointer my-3 p-3 shadow dark:shadow-dark nft-container border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md summary-card"
+      class="cursor-pointer p-3 shadow dark:shadow-dark nft-container border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md summary-card"
     >
       <div class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full">
         <div class="nft-face img-loader-container">
@@ -163,7 +167,7 @@ function closeClicked() {
   max-width: 320px;
   overflow: hidden;
 }
-.container-card {
+/* .container-card {
   width: 290px;
-}
+} */
 </style>
