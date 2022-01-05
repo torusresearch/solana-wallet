@@ -71,13 +71,15 @@ const onEmailLogin = () => {
 </script>
 
 <template>
-  <div class="h-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3" :class="[isLoading ? 'overflow-hidden' : '']">
+  <div class="height-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3" :class="[isLoading ? 'overflow-hidden' : '']">
     <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
           <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
           <div class="flex items-center border-b w-56 pb-4 mb-9">
-            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">{{ t("dappLogin.buildOn") }}</div>
+            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">
+              {{ t("dappLogin.buildOn") }}
+            </div>
             <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </div>
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4" :style="{ maxWidth: '360px' }">
@@ -128,7 +130,9 @@ const onEmailLogin = () => {
             </form>
           </div>
           <div class="mt-8 mb-2 w-full">
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">{{ t("dappLogin.note") }}</div>
+            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">
+              {{ t("dappLogin.note") }}
+            </div>
             <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
               {{ t("login.dataPrivacy") }}
             </div>
@@ -157,7 +161,9 @@ const onEmailLogin = () => {
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <img :src="Landing" alt="" />
-          <div class="font-header text-xl mb-2">{{ t("dappLogin.sendReceive") }}</div>
+          <div class="font-header text-xl mb-2">
+            {{ t("dappLogin.sendReceive") }}
+          </div>
           <div class="font-body text-base">{{ t("dappLogin.transactEasy") }} <br />{{ t("login.slide1Subtitle2") }}</div>
         </div>
       </div>
