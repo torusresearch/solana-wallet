@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
+import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -13,6 +15,7 @@ import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { addToast, app } from "@/modules/app";
+import { WALLET_COMMUNICATION } from "@/utils/enums";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -22,6 +25,7 @@ const { t } = useI18n();
 const router = useRouter();
 const userEmail = ref("");
 const isLoading = ref(false);
+const showSpinner = ref(false);
 
 const rules = computed(() => {
   return {
@@ -32,6 +36,9 @@ const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
+  new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).onmessage = () => {
+    showSpinner.value = true;
+  };
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -62,7 +69,7 @@ const onEmailLogin = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3">
+  <div class="h-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3">
     <div class="col-span-6 md:col-span-4 lg:col-span-3 min-h-screen flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
@@ -153,5 +160,20 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
+    <div v-if="showSpinner" class="spinner"><Loader></Loader></div>
   </div>
 </template>
+<style scoped>
+.spinner {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.884);
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+</style>

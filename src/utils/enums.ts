@@ -229,8 +229,6 @@ export enum NFT_CARD_MODE {
   LARGE = "large",
   EXPANDED = "expanded",
 }
-// const METHODS = {
-// }
 
 export const LOCALE_EN = "en";
 export const LOCALE_DE = "de";
@@ -271,3 +269,7 @@ export const LOCALES = [
     value: LOCALE_ES,
   },
 ];
+
+export enum WALLET_COMMUNICATION {
+  AUTH_COMPLETE = "auth_complete_wallet",
+}
