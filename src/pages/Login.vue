@@ -25,7 +25,6 @@ const { t } = useI18n();
 const router = useRouter();
 const userEmail = ref("");
 const isLoading = ref(false);
-const showSpinner = ref(false);
 
 const rules = computed(() => {
   return {
@@ -37,7 +36,7 @@ const $v = useVuelidate(rules, { userEmail });
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
   new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).onmessage = () => {
-    showSpinner.value = true;
+    isLoading.value = true;
   };
 });
 
@@ -48,7 +47,10 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
+    if (ControllerModule.torus.selectedAddress) {
+      isLoading.value = false;
+      router.push("/wallet/home");
+    }
   } catch (error) {
     log.error(error);
     addToast({
@@ -69,7 +71,7 @@ const onEmailLogin = () => {
 </script>
 
 <template>
-  <div class="h-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3" :class="[showSpinner ? 'overflow-hidden' : '']">
+  <div class="h-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3" :class="[isLoading ? 'overflow-hidden' : '']">
     <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
@@ -160,7 +162,7 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div v-if="showSpinner" class="spinner"><Loader></Loader></div>
+    <div v-if="isLoading" class="spinner"><Loader></Loader></div>
   </div>
 </template>
 <style scoped>

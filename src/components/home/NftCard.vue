@@ -30,13 +30,13 @@ function closeClicked() {
 <template>
   <div
     class="font-body"
-    :class="mode !== NFT_CARD_MODE.SUMMARY ? `flex items-center justify-start` : `container-card`"
+    :class="mode !== NFT_CARD_MODE.SUMMARY ? `flex items-center justify-start` : `container-card px-2`"
     @click="cardClicked"
     @keydown="cardClicked"
   >
     <div
       v-if="props.summaryData && mode === NFT_CARD_MODE.SUMMARY"
-      class="cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 nft-container border border-app-gray-200 dark:border-transparent m-4 bg-white dark:bg-app-gray-700 rounded-md summary-card"
+      class="cursor-pointer my-3 p-3 shadow dark:shadow-dark nft-container border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md summary-card"
     >
       <div class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full">
         <div class="nft-face img-loader-container">
@@ -51,7 +51,7 @@ function closeClicked() {
 
     <div
       v-if="mode !== NFT_CARD_MODE.SUMMARY && nftToken"
-      class="large-card cursor-pointer my-3 px-3 shadow dark:shadow-dark sm:my-3 sm:px-3 md:my-3 md:px-3 lg:my-3 lg:px-3 xl:my-3 xl:px-3 border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
+      class="large-card cursor-pointer my-3 px-3 shadow dark:shadow-dark border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
     >
       <div class="nft-item flex flex-col justify-start align-start w-100">
         <div class="nft-face-large" style="background-color: rgb(156, 156, 156)">
@@ -106,10 +106,10 @@ function closeClicked() {
   margin-right: 16px;
   background: rgb(156, 156, 156);
 }
-.nft-container {
+/* .nft-container {
   min-height: 80px;
   padding: 20px;
-}
+} */
 
 .token-name {
   font-style: normal;
@@ -160,10 +160,9 @@ function closeClicked() {
   white-space: nowrap;
 }
 .summary-card {
-  width: 260px;
+  max-width: 320px;
   overflow: hidden;
 }
-
 .container-card {
   width: 290px;
 }
