@@ -138,7 +138,7 @@ const onEmailLogin = () => {
   <div :class="isEmbed ? 'grid grid-cols-3 gap-4 w-full' : 'grid grid-cols-3 gap-2 w-full sm:w-10/12'">
     <div class="col-span-3">
       <Button
-        :size="isEmbed ? 'large' : 'medium'"
+        :size="isEmbed ? 'small' : 'medium'"
         :class="isEmbed && 'embed-google relative'"
         :variant="isEmbed ? 'secondary' : 'tertiary'"
         :block="true"
@@ -147,8 +147,8 @@ const onEmailLogin = () => {
         @mouseover="hover(LOGIN_PROVIDER.GOOGLE)"
         @focus="hover(LOGIN_PROVIDER.GOOGLE)"
       >
-        <div v-if="isEmbed" class="w-12 h-12 absolute left-1 flex justify-center items-center rounded-md bg-white">
-          <img class="w-6 h-6" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
+        <div v-if="isEmbed" class="w-10 h-10 absolute left-1 flex justify-center items-center rounded-md bg-white">
+          <img class="w-4 h-4" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
         </div>
         <img v-else-if="activeButton === LOGIN_PROVIDER.GOOGLE" class="w-6 h-6" :src="iconList[LOGIN_PROVIDER.GOOGLE].active" alt="" />
         <component :is="iconList[LOGIN_PROVIDER.GOOGLE].default" v-else class="w-6 h-6 mr-1 text-app-text-400" />
@@ -158,7 +158,7 @@ const onEmailLogin = () => {
     <div v-for="loginButton in mainButtons" :key="loginButton.loginProvider" class="col-span-1">
       <Button
         v-if="loginButton.loginProvider"
-        :size="isEmbed ? 'large' : 'medium'"
+        :size="isEmbed ? 'small' : 'medium'"
         :class="isEmbed && `embed-${loginButton.loginProvider}`"
         :variant="isEmbed ? 'secondary' : 'tertiary'"
         icon
@@ -179,7 +179,7 @@ const onEmailLogin = () => {
       </Button>
     </div>
   </div>
-  <div :class="isEmbed ? 'mt-6 relative w-full' : 'mt-3 relative w-full sm:w-10/12'">
+  <div :class="isEmbed ? 'mt-4 relative w-full' : 'mt-3 relative w-full sm:w-10/12'">
     <div class="absolute inset-0 flex items-center" aria-hidden="true">
       <div class="w-full border-t border-app-text-400" />
     </div>
@@ -192,17 +192,17 @@ const onEmailLogin = () => {
       >
     </div>
   </div>
-  <div :class="isEmbed ? 'mt-7 w-full' : 'sm:w-10/12 mt-3 w-full'">
+  <div :class="isEmbed ? 'mt-4 w-full' : 'sm:w-10/12 mt-3 w-full'">
     <form @submit.prevent="onEmailLogin">
       <TextField
         v-model.lazy="userEmail"
-        :size="isEmbed ? 'large' : 'medium'"
+        :size="isEmbed ? 'medium' : 'medium'"
         variant="dark-bg"
         :placeholder="t('login.enterYourEmail')"
         :errors="$v.userEmail.$errors"
       />
       <Button
-        :size="isEmbed ? 'large' : 'medium'"
+        :size="isEmbed ? 'medium' : 'medium'"
         :variant="isEmbed ? 'primary' : 'tertiary'"
         :class="isEmbed ? 'mt-4 font-bold continue text-base' : 'mt-3'"
         :block="true"
@@ -227,9 +227,10 @@ button.continue:active {
   background-color: rgba(214, 164, 255, 0.2) !important;
 }
 .embed-google {
-  height: 3.5rem !important;
+  height: 3rem !important;
   background-color: #4285f4 !important;
   border: none !important;
+  padding-left: 3rem;
   font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 
@@ -237,7 +238,7 @@ button.continue:active {
   background-color: rgba(66, 133, 244, 0.8) !important;
 }
 .embed-facebook {
-  height: 3.5rem !important;
+  height: 3rem !important;
   background-color: #1977f3 !important;
   border: none !important;
 }
@@ -245,7 +246,7 @@ button.continue:active {
   background-color: rgba(25, 119, 243, 0.8) !important;
 }
 .embed-twitter {
-  height: 3.5rem !important;
+  height: 3rem !important;
   background-color: #4d9fec !important;
   border: none !important;
 }
@@ -255,11 +256,20 @@ button.continue:active {
 }
 
 .embed-discord {
-  height: 3.5rem !important;
+  height: 3rem !important;
   background-color: #5865f2 !important;
   border: none !important;
 }
 .embed-discord:hover {
   background-color: rgba(88, 101, 242, 0.8) !important;
+}
+
+@media screen and (max-width: 639px) {
+  .embed-discord,
+  .embed-facebook,
+  .embed-twitter {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 </style>

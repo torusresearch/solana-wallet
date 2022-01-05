@@ -58,19 +58,19 @@ const setActiveButton = (provider: string) => {
           >
             <div class="login-container">
               <DialogTitle as="div" class="py-0 px-4 relative focus-within:outline-none bg-transparent w-full" tabindex="0">
-                <h1 class="font-bold text-white login-title mt-14 text-center">{{ t("login.setupWallet") }}</h1>
+                <h1 class="font-bold text-white text-xl mt-10 text-center">{{ t("login.setupWallet") }}</h1>
                 <div
-                  class="w-8 h-8 absolute top-4 right-4 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
+                  class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
                   @click="closeModal"
                   @keydown="closeModal"
                 >
-                  <XIcon class="w-6 h-6 text-white text-opacity-70 hover:text-opacity-100" />
+                  <XIcon class="w-5 h-5 text-white text-opacity-70 hover:text-opacity-100" />
                 </div>
               </DialogTitle>
-              <p class="text-white text-opacity-80 font-normal text-xl mt-4 text-center px-7">
+              <p class="text-white text-opacity-80 font-normal text-sm mt-4 text-center px-7">
                 {{ t("login.poweredBy") }}
               </p>
-              <div class="mt-14 w-full px-4">
+              <div class="mt-8 w-full px-4">
                 <LoginButtons
                   :is-embed="true"
                   :active-button="activeButton"
@@ -79,7 +79,7 @@ const setActiveButton = (provider: string) => {
                   @on-hover="setActiveButton"
                 />
               </div>
-              <div class="flex justify-center items-center mt-9">
+              <div class="flex justify-center items-center mt-6 mb-12">
                 <span class="text-white text-opacity-70 mr-2 text-xs font-normal">{{ t("dappLogin.poweredBy") }}</span>
                 <img :src="TorusLogoLightURL" alt="Torus Logo" class="h-4 w-auto opacity-70" />
               </div>
@@ -105,8 +105,8 @@ const setActiveButton = (provider: string) => {
     flex-col
     items-center
     w-full
-    max-w-sm
-    my-8
+    max-w-xs
+    my-4
     overflow-hidden
     text-left
     transition-all
@@ -115,14 +115,9 @@ const setActiveButton = (provider: string) => {
     dark:bg-app-gray-800
     shadow
     rounded-lg;
-  height: 45rem;
+  height: auto;
   font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;
   background-color: #10141f !important;
-}
-
-.login-title {
-  font-size: 1.75rem;
-  line-height: 2.1rem;
 }
 </style>
