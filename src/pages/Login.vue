@@ -165,7 +165,7 @@ const onEmailLogin = () => {
 </template>
 <style scoped>
 .spinner {
-  position: absolute;
+  position: fixed;
   background: rgba(0, 0, 0, 0.884);
   top: 0;
   left: 0;
