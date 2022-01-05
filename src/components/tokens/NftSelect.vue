@@ -23,7 +23,7 @@ watch(localMintAddress, () => {
 });
 </script>
 <template>
-  <Listbox v-model="localMintAddress" as="div" class="nft-select-container">
+  <Listbox v-model="localMintAddress" as="div" class="w-full lg:w-1/2">
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-700 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span v-if="selectedNft?.metaplexData?.offChainMetaData" class="flex items-center">
@@ -44,7 +44,7 @@ watch(localMintAddress, () => {
           class="absolute z-10 mt-1 w-full bg-white dark:bg-app-gray-800 shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
         >
           <template v-for="item in getClubbedNfts(nftTokens)" :key="item.title">
-            <li class="option-separator ml-2 pl-1 nft-group">
+            <li class="option-separator ml-2 pl-1">
               <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">{{ item.collectionName }} ({{ item.count }})</p>
             </li>
             <ListboxOption v-for="mintAddress in item.mints" v-slot="{ active, selected }" :key="mintAddress" as="template" :value="mintAddress">
@@ -82,12 +82,5 @@ watch(localMintAddress, () => {
   justify-content: start;
   margin-left: 13px;
   height: 45px;
-}
-.nft-group {
-  margin-left: 22px;
-}
-.nft-select-container {
-  width: 50vw;
-  min-width: 200px;
 }
 </style>

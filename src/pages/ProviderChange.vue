@@ -53,7 +53,7 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-app-gray-700 flex justify-center items-center">
+  <div class="min-h-full bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="items-center">
       <div class="shadow dark:shadow-dark text-center py-6">
         <div>
