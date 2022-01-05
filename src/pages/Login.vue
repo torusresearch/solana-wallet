@@ -69,8 +69,8 @@ const onEmailLogin = () => {
 </script>
 
 <template>
-  <div class="h-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3">
-    <div class="col-span-6 md:col-span-4 lg:col-span-3 min-h-screen flex items-center">
+  <div class="h-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3" :class="[showSpinner ? 'overflow-hidden' : '']">
+    <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
           <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
@@ -151,7 +151,7 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div class="col-span-6 md:col-span-2 lg:col-span-3 min-h-screen flex items-center">
+    <div class="col-span-6 md:col-span-2 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <img :src="Landing" alt="" />
