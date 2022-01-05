@@ -58,7 +58,9 @@ const setActiveButton = (provider: string) => {
           >
             <div class="login-container">
               <DialogTitle as="div" class="py-0 px-4 relative focus-within:outline-none bg-transparent w-full" tabindex="0">
-                <h1 class="font-bold text-white text-xl mt-10 text-center">{{ t("login.setupWallet") }}</h1>
+                <h1 class="font-bold text-white text-2xl mt-10 text-center">
+                  {{ t("login.setupWallet") }}
+                </h1>
                 <div
                   class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
                   @click="closeModal"
@@ -79,9 +81,9 @@ const setActiveButton = (provider: string) => {
                   @on-hover="setActiveButton"
                 />
               </div>
-              <div class="flex justify-center items-center mt-6 mb-12">
-                <span class="text-white text-opacity-70 mr-2 text-xs font-normal">{{ t("dappLogin.poweredBy") }}</span>
-                <img :src="TorusLogoLightURL" alt="Torus Logo" class="h-4 w-auto opacity-70" />
+              <div class="w-full mt-6 mb-12 text-center">
+                <span class="text-white text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
+                <img :src="TorusLogoLightURL" alt="Torus Logo" class="h-4 w-auto opacity-70 inline-block" />
               </div>
               <div
                 v-if="otherWallets === 'true'"
