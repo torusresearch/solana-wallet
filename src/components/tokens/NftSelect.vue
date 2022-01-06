@@ -79,7 +79,7 @@ watch(localMintAddress, () => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   margin-left: 13px;
   height: 45px;
 }
