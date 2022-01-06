@@ -185,7 +185,7 @@ const refDiv = ref(null);
                 </div>
                 <template v-if="isSPLToken()">
                   <hr class="mt-3 mb-5" />
-                  <div class="flex mb-2">
+                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500 mb-2">
                     <EstimateChanges
                       :estimated-balance-change="props.estimatedBalanceChange"
                       :has-estimation-error="props.hasEstimationError"

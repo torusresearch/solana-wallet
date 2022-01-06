@@ -152,7 +152,7 @@ const refDiv = ref(null);
               <div
                 class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-col justify-start items-start pb-8 pt-2"
               >
-                <div class="flex flex-row justify-start items-center w-full">
+                <div class="w-full">
                   <EstimateChanges
                     :estimated-balance-change="props.estimatedBalanceChange"
                     :has-estimation-error="props.hasEstimationError"
