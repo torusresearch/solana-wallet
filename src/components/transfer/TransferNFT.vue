@@ -56,7 +56,7 @@ const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"])
 
 function getFees(): number {
   if (!props.hasEstimationError) {
-    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
+    const solChanges = props.estimatedBalanceChange.find((item) => item.address === ControllerModule.selectedAddress);
     if (solChanges) return Math.abs(solChanges.changes);
   }
   return props.cryptoTxFee;

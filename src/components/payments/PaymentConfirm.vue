@@ -62,7 +62,7 @@ const onConfirm = () => {
 
 const getFeesInSol = () => {
   if (!props.hasEstimationError) {
-    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
+    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === ControllerModule.selectedAddress);
     if (solChanges) return Math.abs(solChanges.changes);
   }
   return props.cryptoTxFee;
