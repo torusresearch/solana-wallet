@@ -104,15 +104,11 @@ class ControllerModule extends VuexModule {
               cryptoCurrency: nftInfo.symbol,
             };
           }
-        } else {
-          const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
-          if (tokenInfo) {
-            return {
-              ...item,
-              logoURI: tokenInfo.logoURI,
-              cryptoCurrency: tokenInfo.symbol,
-            };
-          }
+          return { ...item, cryptoCurrency: addressSlicer(item.mintAddress) };
+        }
+        const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
+        if (tokenInfo) {
+          return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
         }
         return {
           ...item,

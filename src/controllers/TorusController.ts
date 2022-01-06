@@ -622,8 +622,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // get writeable accounts from all instruction
       const accounts = tx.instructions.reduce((prev, current) => {
+        // log.info(current.keys)
         current.keys.forEach((item) => {
-          if (item.isWritable) {
+          if (item.isWritable || item.isSigner) {
             prev.set(item.pubkey.toBase58(), item.pubkey);
           }
         });
@@ -654,6 +655,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const returnResult: { changes: number; symbol: string }[] = [];
 
     const accIdx = accountKeys.findIndex((item) => item === this.selectedAddress);
+    log.info(accIdx);
     if (accIdx >= 0) {
       const solchanges = (result.accounts?.at(accIdx)?.lamports || 0) / LAMPORTS_PER_SOL - Number(this.userSOLBalance);
       returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL" });
@@ -683,9 +685,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
             });
 
             const decimals = current_token?.balance?.decimals || 0;
-            log.error(decimals);
-            log.error(current_token?.balance);
-            log.error(tokenDetail.data.amount.toNumber());
+            log.info(decimals);
+            log.info(current_token?.balance);
+            log.info(tokenDetail.data.amount.toNumber());
             const changes = tokenDetail.data.amount.sub(new BN(current_token?.balance?.amount || 0)).toNumber() / 10 ** decimals;
 
             // log.error();
@@ -699,7 +701,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
     // add filter new interested program and its account
 
-    log.error(returnResult);
+    log.info(returnResult);
     return returnResult;
   };
 

@@ -50,6 +50,7 @@ const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
 
+const signTxOnly = ref(false);
 onMounted(async () => {
   try {
     let txData: Partial<TransactionChannelDataType>;
@@ -67,8 +68,12 @@ onMounted(async () => {
       redirectToResult(jsonrpc, { message: "Invalid or Missing Params", method }, req_id, resolveRoute);
       return;
     }
+
     origin.value = txData.origin as string;
     network.value = txData.network || "";
+    const networkConfig = txData.networkDetails;
+    log.info(txData);
+    signTxOnly.value = txData.type === "sign_transaction";
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
@@ -213,6 +218,7 @@ const rejectTxn = async () => {
     :network="network"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
+    :sign-tx-only="signTxOnly"
     @on-close-modal="rejectTxn()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"

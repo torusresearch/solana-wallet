@@ -22,6 +22,7 @@ const props = withDefaults(
     network: string;
     estimatedBalanceChange: { changes: number; symbol: string }[];
     hasEstimationError: boolean;
+    signTxOnly: boolean;
   }>(),
   {
     logoUrl: SolanaLogoURL,
@@ -70,7 +71,10 @@ function openLink() {
           </div>
         </div>
       </div>
-      <div class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
+      <div
+        v-if="!props.signTxOnly"
+        class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500"
+      >
         <EstimateChanges
           :estimated-balance-change="props.estimatedBalanceChange"
           :has-estimation-error="props.hasEstimationError"
