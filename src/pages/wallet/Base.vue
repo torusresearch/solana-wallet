@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import * as Sentry from "@sentry/vue";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import WalletTabs from "@/components/WalletTabs.vue";
+import ControllerModule from "@/modules/controllers";
 
 const router = useRouter();
 const showRouterChild = ref(false);
@@ -18,6 +20,7 @@ onMounted(() => {
   setTimeout(() => {
     showRouterChild.value = true;
   });
+  Sentry.setUser({ email: ControllerModule.torus?.userInfo?.email || ControllerModule.torus?.selectedAddress || "unknown" });
 });
 </script>
 <template>
