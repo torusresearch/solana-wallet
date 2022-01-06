@@ -60,12 +60,12 @@ const onConfirm = () => {
   closeModal();
 };
 
-const getFeesInSol = () => {
+const getTotalInSol = () => {
   if (!props.hasEstimationError) {
-    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === ControllerModule.selectedAddress);
+    const solChanges = props.estimatedBalanceChange.find((item) => item.address === ControllerModule.selectedAddress);
     if (solChanges) return Math.abs(solChanges.changes);
   }
-  return props.cryptoTxFee;
+  return new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
 };
 // const cryptoAmountString = computed(() => {
 //   return `${props.cryptoAmount} ${props.token}`;
@@ -81,14 +81,14 @@ const getFeesInSol = () => {
 // });
 const totalCryptoCostString = computed(() => {
   if (props.token === "SOL") {
-    const totalCost = new BigNumber(props.cryptoAmount).plus(getFeesInSol());
+    const totalCost = getTotalInSol();
     return `${totalCost.toString(10)} ${props.token}`;
   }
-  return `${props.cryptoAmount.toString(10)} ${props.token} + ${getFeesInSol()} SOL`;
+  return `${props.cryptoAmount.toString(10)} ${props.token} + ${getTotalInSol()} SOL`;
 });
 
 const totalFiatCostString = computed(() => {
-  const totalCost = new BigNumber(getFeesInSol()).plus(props.cryptoAmount);
+  const totalCost = new BigNumber(getTotalInSol());
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
@@ -128,7 +128,7 @@ const totalFiatCostString = computed(() => {
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
             <p>Estimated Transaction Changes <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
             <p v-if="!props.hasEstimationError" :class="[props.isGasless ? '' : 'italic text-red-500']">
-              {{ props.isGasless ? "Paid by DApp" : "-" + getFeesInSol() + " " + "SOL" }}
+              {{ getTotalInSol() + " " + "SOL" }}
             </p>
             <p v-else class="italic text-red-500">Transaction might fail.</p>
           </span>
