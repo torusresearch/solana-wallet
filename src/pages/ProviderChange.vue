@@ -54,10 +54,8 @@ const denyProviderChange = async () => {
 <template>
   <div class="min-h-full bg-white dark:bg-app-gray-700 flex justify-center items-center" :class="{ dark: ControllerModule.isDarkMode }">
     <div class="content-box w-full h-screen bg-white dark:bg-app-gray-700 flex flex-col justify-between items-center shadow dark:shadow-dark">
-      <div class="shadow w-full dark:shadow-dark text-center py-6 flex flex-row justify-between items-center" tabindex="0">
-        <div>
-          <img class="h-7 mx-auto w-auto mb-1 logo" :src="SolanaLogoURL" alt="Solana Logo" />
-        </div>
+      <div class="shadow w-full dark:shadow-dark text-center py-6 relative" tabindex="0">
+        <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="SolanaLogoURL" alt="Solana Logo" />
         <div class="font-header w-full text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
           {{ `${t("dappTransfer.confirm")} ${t("dappTransfer.permission")}` }}
         </div>
@@ -99,8 +97,5 @@ const denyProviderChange = async () => {
 .content-box {
   max-width: 400px;
   max-height: 600px;
-}
-.logo {
-  transform: translateX(100%);
 }
 </style>

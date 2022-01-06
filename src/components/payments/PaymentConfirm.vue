@@ -84,12 +84,10 @@ const totalFiatCostString = computed(() => {
     class="w-screen h-screen overflow-hidden bg-white dark:bg-app-gray-700 flex items-center justify-center"
   >
     <div
-      class="content-box h-full w-full text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between align-start"
+      class="content-box h-full w-full text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between align-start relative"
     >
-      <div class="shadow dark:shadow-dark text-center py-6 flex flex-row justify-center items-center" tabindex="0">
-        <div>
-          <img class="h-7 mx-auto w-auto mb-1 logo" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
-        </div>
+      <div class="shadow dark:shadow-dark text-center py-6" tabindex="0">
+        <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
         <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
           {{ t("walletSettings.paymentConfirmation") }}
         </div>
@@ -159,9 +157,6 @@ hr {
 }
 .title-box {
   flex: 1 1 auto;
-}
-.logo {
-  transform: translateX(100%);
 }
 
 .scrollbar {

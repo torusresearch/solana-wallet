@@ -45,11 +45,12 @@ function openLink() {
     :class="{ dark: ControllerModule.isDarkMode }"
     class="inline-block w-screen h-full overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-start align-start"
   >
-    <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
-      <div>
-        <img class="h-7 mx-auto w-auto mb-1 mr-5" :src="props.logoUrl" alt="Dapp Logo" />
-      </div>
-      <p class="text-left font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+    <div
+      class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4 relative"
+      tabindex="0"
+    >
+      <img class="h-7 mx-auto w-auto mb-1 mr-5 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
+      <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
         {{ t("dappTransfer.permission") }}
       </p>
     </div>
