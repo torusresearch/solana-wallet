@@ -355,8 +355,11 @@ class ControllerModule extends VuexModule {
         window.location.href = "/";
       }
     }
+    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    this.updateTorusState(initialState);
+
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+    this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
     this.torus.setOrigin(origin);
 
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");

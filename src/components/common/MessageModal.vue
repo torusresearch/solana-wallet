@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, XCircleIcon, XIcon } from "@heroicons/vue/solid";
+import { ref } from "vue";
 
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { STATUS_ERROR, STATUS_INFO, STATUS_SUCCESS, STATUS_TYPE, STATUS_WARNING } from "@/utils/enums";
+import { STATUS, STATUS_TYPE } from "@/utils/enums";
 
 withDefaults(
   defineProps<{
@@ -16,7 +17,7 @@ withDefaults(
   {
     isOpen: false,
     description: "",
-    status: STATUS_INFO,
+    status: STATUS.INFO,
   }
 );
 const emits = defineEmits(["onClose"]);
@@ -24,11 +25,12 @@ const emits = defineEmits(["onClose"]);
 const closeModal = () => {
   emits("onClose");
 };
+const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" :initial-focus="refDiv" as="div" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
@@ -49,9 +51,9 @@ const closeModal = () => {
                 class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md flex justify-center py-8 relative"
                 tabindex="0"
               >
-                <CheckCircleIcon v-if="status === STATUS_SUCCESS" class="w-20 h-20 text-app-success" />
-                <XCircleIcon v-else-if="status === STATUS_ERROR" class="w-20 h-20 text-app-error" />
-                <ExclamationCircleIcon v-else-if="status === STATUS_WARNING" class="w-20 h-20 text-app-warning" />
+                <CheckCircleIcon v-if="status === STATUS.SUCCESS" class="w-20 h-20 text-app-success" />
+                <XCircleIcon v-else-if="status === STATUS.ERROR" class="w-20 h-20 text-app-error" />
+                <ExclamationCircleIcon v-else-if="status === STATUS.WARNING" class="w-20 h-20 text-app-warning" />
                 <InformationCircleIcon v-else class="w-20 h-20 text-app-info" />
                 <XIcon class="w-6 h-6 absolute top-3 right-3 text-app-text-500 cursor-pointer" @click="closeModal" />
               </DialogTitle>
