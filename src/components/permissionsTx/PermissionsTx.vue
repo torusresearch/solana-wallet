@@ -8,6 +8,7 @@ import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import { getDomainFromUrl } from "@/utils/helpers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
+import { AccountEstimation } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
 import EstimateChanges from "../payments/EstimateChanges.vue";
@@ -20,7 +21,7 @@ const props = withDefaults(
     decodedInst: DecodedDataType[];
     origin: string;
     network: string;
-    estimatedBalanceChange: { changes: number; symbol: string }[];
+    estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: boolean;
     signTxOnly: boolean;
   }>(),

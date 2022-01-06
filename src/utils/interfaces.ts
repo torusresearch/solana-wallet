@@ -14,3 +14,10 @@ export interface ClubbedNfts {
   mints: string[];
   collectionName: string;
 }
+
+export interface AccountEstimation {
+  changes: number;
+  symbol: string;
+  mint: string;
+  address: string;
+}

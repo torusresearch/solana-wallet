@@ -11,13 +11,14 @@ import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { AccountEstimation } from "@/utils/interfaces";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
 const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const hasEstimationError = ref(false);
-const estimatedBalanceChange = ref<{ changes: number; symbol: string }[]>([]);
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
 interface FinalTxData {
   slicedSenderAddress: string;
   slicedReceiverAddress: string;

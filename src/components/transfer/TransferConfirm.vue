@@ -10,7 +10,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import { tokens } from "@/components/transfer/token-helper";
 import ControllerModule from "@/modules/controllers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import EstimateChanges from "../payments/EstimateChanges.vue";
 
@@ -27,7 +27,7 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
-    estimatedBalanceChange: { changes: number; symbol: string }[];
+    estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: boolean;
   }>(),
   {

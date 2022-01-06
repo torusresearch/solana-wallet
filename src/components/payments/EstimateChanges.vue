@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
+import { AccountEstimation } from "@/utils/interfaces";
+
 const props = withDefaults(
   defineProps<{
     isExpand: boolean;
-    estimatedBalanceChange: { changes: number; symbol: string }[];
+    estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: boolean;
   }>(),
   {}

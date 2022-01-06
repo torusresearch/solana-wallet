@@ -14,7 +14,7 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { debounceAsyncValidator, delay, ruleVerifierId } from "@/utils/helpers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
@@ -239,7 +239,7 @@ async function generateTransaction(): Promise<Transaction> {
   return tx;
 }
 const hasEstimationError = ref(false);
-const estimatedBalanceChange = ref<{ changes: number; symbol: string }[]>([]);
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;

@@ -99,7 +99,7 @@ import {
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken, SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
@@ -610,7 +610,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return transaction;
   }
 
-  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<{ changes: number; symbol: string }[]> {
+  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<AccountEstimation[]> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
       const signedTransaction = this.keyringController.signTransaction(tx, signer);
@@ -649,16 +649,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  calculateChanges = (result: SimulatedTransactionResponse, selecteAddress: string, accountKeys: string[]) => {
+  calculateChanges = (result: SimulatedTransactionResponse, selecteAddress: string, accountKeys: string[]): AccountEstimation[] => {
     // filter out  address token (Token ProgramId ).
     // parse account data, filter selecteAddress as token holder
-    const returnResult: { changes: number; symbol: string }[] = [];
+    const returnResult: AccountEstimation[] = [];
 
     const accIdx = accountKeys.findIndex((item) => item === this.selectedAddress);
     log.info(accIdx);
     if (accIdx >= 0) {
       const solchanges = (result.accounts?.at(accIdx)?.lamports || 0) / LAMPORTS_PER_SOL - Number(this.userSOLBalance);
-      returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL" });
+      returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selecteAddress });
     }
     result.accounts?.forEach((item, idx) => {
       if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner))) {
@@ -694,6 +694,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
             returnResult.push({
               changes,
               symbol,
+              mint,
+              address: tokenDetail.pubkey.toBase58(),
             });
           }
         }

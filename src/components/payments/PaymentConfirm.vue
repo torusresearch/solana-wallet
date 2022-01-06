@@ -9,6 +9,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
+import { AccountEstimation } from "@/utils/interfaces";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
@@ -27,7 +28,7 @@ const props = withDefaults(
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
-    estimatedBalanceChange: { changes: number; symbol: string }[];
+    estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: boolean;
   }>(),
   {
