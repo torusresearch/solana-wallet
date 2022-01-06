@@ -27,7 +27,7 @@ const props = withDefaults(
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
-    estimatedBalanceChange: number;
+    estimatedBalanceChange: { changes: number; symbol: string }[];
     hasEstimationError: boolean;
   }>(),
   {
@@ -39,7 +39,6 @@ const props = withDefaults(
     isOpen: false,
     isGasless: true,
     tokenLogoUrl: "",
-    estimatedBalanceChange: 0,
     hasEstimationError: false,
   }
 );
@@ -62,7 +61,8 @@ const onConfirm = () => {
 
 const getFeesInSol = () => {
   if (!props.hasEstimationError) {
-    return Math.abs(props.estimatedBalanceChange);
+    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
+    if (solChanges) return Math.abs(solChanges.changes);
   }
   return props.cryptoTxFee;
 };

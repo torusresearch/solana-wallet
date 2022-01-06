@@ -1,10 +1,12 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
+import { TokenAccount } from "@metaplex-foundation/mpl-core";
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
 import {
+  addressSlicer,
   BaseConfig,
   BaseController,
   BaseEmbedController,
@@ -71,6 +73,7 @@ import {
 } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import { BigNumber } from "bignumber.js";
+import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
 import cloneDeep from "lodash-es/cloneDeep";
@@ -607,7 +610,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return transaction;
   }
 
-  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<number> {
+  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<{ changes: number; symbol: string }[]> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
       const signedTransaction = this.keyringController.signTransaction(tx, signer);
@@ -616,16 +619,89 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (gaslessHost) {
         serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
       }
-      const result = await connection.simulateTransaction(Transaction.from(Buffer.from(serializedTransaction, "hex")), undefined, [
-        new PublicKey(this.selectedAddress),
-      ]);
-      const currentLamports = Number(this.userSOLBalance);
-      return new BigNumber(result?.value?.accounts?.[0]?.lamports || 0).div(new BigNumber(LAMPORTS_PER_SOL)).minus(currentLamports).toNumber();
+
+      // get writeable accounts from all instruction
+      const accounts = tx.instructions.reduce((prev, current) => {
+        current.keys.forEach((item) => {
+          if (item.isWritable) {
+            prev.set(item.pubkey.toBase58(), item.pubkey);
+          }
+        });
+        return prev;
+      }, new Map<string, PublicKey>());
+
+      // Simulate Transaction with Accounts
+      const result = await connection.simulateTransaction(
+        Transaction.from(Buffer.from(serializedTransaction, "hex")),
+        undefined,
+        Array.from(accounts.values())
+      );
+
+      // calculate diff of the token and sol
+      return this.calculateChanges(result.value, this.selectedAddress, Array.from(accounts.keys()));
+
+      // const currentLamports = Number(this.userSOLBalance);
+      // return new BigNumber(result?.value?.accounts?.[0]?.lamports || 0).div(new BigNumber(LAMPORTS_PER_SOL)).minus(currentLamports).toNumber();
     } catch (e) {
       log.warn("error", e);
-      throw new Error("Failed to simulate transaction for balance change");
+      throw new Error("Failed to simulate transaction for alance change");
     }
   }
+
+  calculateChanges = (result: SimulatedTransactionResponse, selecteAddress: string, accountKeys: string[]) => {
+    // filter out  address token (Token ProgramId ).
+    // parse account data, filter selecteAddress as token holder
+    const returnResult: { changes: number; symbol: string }[] = [];
+
+    const accIdx = accountKeys.findIndex((item) => item === this.selectedAddress);
+    if (accIdx >= 0) {
+      const solchanges = (result.accounts?.at(accIdx)?.lamports || 0) / LAMPORTS_PER_SOL - Number(this.userSOLBalance);
+      returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL" });
+    }
+    result.accounts?.forEach((item, idx) => {
+      if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner))) {
+        const tokenDetail = new TokenAccount(accountKeys[idx], {
+          ...item,
+          owner: new PublicKey(item.owner),
+          data: Buffer.from(item.data[0], item.data[1] as BufferEncoding),
+        });
+
+        // log.error(tokenDetail);
+
+        if (tokenDetail.data.owner.toBase58() === selecteAddress) {
+          // log.error(tokenDetail.data.amount.toString());
+          // log.error(tokenDetail.pubkey.toBase58());
+          // log.error(tokenDetail.data.owner.toBase58());
+          const mint = tokenDetail.data.mint.toBase58();
+          const symbol =
+            this.state.TokenInfoState.tokenInfoMap[mint]?.symbol ||
+            this.state.TokenInfoState.metaplexMetaMap[mint]?.symbol ||
+            addressSlicer(tokenDetail.data.mint.toBase58());
+          if (this.state.TokensTrackerState.tokens) {
+            const current_token = this.state.TokensTrackerState.tokens[selecteAddress].find((stateToken) => {
+              return stateToken.tokenAddress === tokenDetail.pubkey.toBase58();
+            });
+
+            const decimals = current_token?.balance?.decimals || 0;
+            log.error(decimals);
+            log.error(current_token?.balance);
+            log.error(tokenDetail.data.amount.toNumber());
+            const changes = tokenDetail.data.amount.sub(new BN(current_token?.balance?.amount || 0)).toNumber() / 10 ** decimals;
+
+            // log.error();
+            returnResult.push({
+              changes,
+              symbol,
+            });
+          }
+        }
+      }
+    });
+    // add filter new interested program and its account
+
+    log.error(returnResult);
+    return returnResult;
+  };
 
   getGaslessHost(_feePayer: string): string | undefined {
     return undefined;

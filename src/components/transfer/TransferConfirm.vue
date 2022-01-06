@@ -12,7 +12,7 @@ import { tokens } from "@/components/transfer/token-helper";
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
-const { t } = useI18n();
+import EstimateChanges from "../payments/EstimateChanges.vue";
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const props = withDefaults(
@@ -27,7 +27,7 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
-    estimatedBalanceChange: number;
+    estimatedBalanceChange: { changes: number; symbol: string }[];
     hasEstimationError: boolean;
   }>(),
   {
@@ -40,7 +40,6 @@ const props = withDefaults(
     tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
-    estimatedBalanceChange: 0,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     token: tokens.value[0],
@@ -51,9 +50,10 @@ function isSPLToken(): boolean {
   return !!props.token.mintAddress;
 }
 function getFees(): number {
-  if (!props.hasEstimationError && props.estimatedBalanceChange) {
-    return Math.abs(props.estimatedBalanceChange);
-  }
+  // if (!props.hasEstimationError) {
+  //   const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
+  //   if (solChanges) return Math.abs(solChanges.changes);
+  // }
   return props.cryptoTxFee;
 }
 const pricePerToken = computed<number>((): number => {
@@ -186,11 +186,11 @@ const refDiv = ref(null);
                 <template v-if="isSPLToken()">
                   <hr class="mt-3 mb-5" />
                   <div class="flex mb-2">
-                    <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.estimated-change") }}</div>
-                    <div class="ml-auto text-right">
-                      <div v-if="!hasEstimationError" class="font-body text-xs font-bold text-red-500">{{ estimatedBalanceChange }} SOL</div>
-                      <div v-else class="font-body text-xs font-thin text-red-500 italic">{{ t("walletTransfer.estimated-fail") }}.</div>
-                    </div>
+                    <EstimateChanges
+                      :estimated-balance-change="props.estimatedBalanceChange"
+                      :has-estimation-error="props.hasEstimationError"
+                      :is-expand="true"
+                    />
                   </div>
                 </template>
                 <div class="flex">

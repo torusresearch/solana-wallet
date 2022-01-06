@@ -17,7 +17,7 @@ const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRed
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 const hasEstimationError = ref(false);
-const estimatedBalanceChange = ref(0);
+const estimatedBalanceChange = ref<{ changes: number; symbol: string }[]>([]);
 interface FinalTxData {
   slicedSenderAddress: string;
   slicedReceiverAddress: string;
@@ -92,6 +92,15 @@ onMounted(async () => {
       tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
     } else {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+    }
+
+    try {
+      hasEstimationError.value = false;
+      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(tx.value);
+      log.info("TransEstim", estimatedBalanceChange.value);
+    } catch (e) {
+      log.error("TransEstim", e);
+      hasEstimationError.value = true;
     }
 
     const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");

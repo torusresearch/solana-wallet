@@ -15,6 +15,7 @@ import { setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
+import EstimateChanges from "../payments/EstimateChanges.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -28,7 +29,7 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
-    estimatedBalanceChange: number;
+    estimatedBalanceChange: { changes: number; symbol: string }[];
     hasEstimationError: boolean;
   }>(),
   {
@@ -41,7 +42,6 @@ const props = withDefaults(
     tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
-    estimatedBalanceChange: 0,
     hasEstimationError: false,
   }
 );
@@ -55,8 +55,9 @@ const pricePerToken = computed<number>((): number => {
 const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
 function getFees(): number {
-  if (!props.hasEstimationError && props.estimatedBalanceChange) {
-    return Math.abs(props.estimatedBalanceChange);
+  if (!props.hasEstimationError) {
+    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
+    if (solChanges) return Math.abs(solChanges.changes);
   }
   return props.cryptoTxFee;
 }
@@ -152,9 +153,11 @@ const refDiv = ref(null);
                 class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-col justify-start items-start pb-8 pt-2"
               >
                 <div class="flex flex-row justify-start items-center w-full">
-                  <p class="flex-auto">{{ t("walletTransfer.estimated-change") }}</p>
-                  <p v-if="!props.hasEstimationError" class="text-red-500 italic">{{ estimatedBalanceChange }} SOL</p>
-                  <p v-else class="text-red-500 italic">{{ t("walletTransfer.estimated-fail") }}.</p>
+                  <EstimateChanges
+                    :estimated-balance-change="props.estimatedBalanceChange"
+                    :has-estimation-error="props.hasEstimationError"
+                    :is-expand="true"
+                  />
                 </div>
                 <div class="flex flex-row justify-start items-center mt-2 w-full">
                   <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>

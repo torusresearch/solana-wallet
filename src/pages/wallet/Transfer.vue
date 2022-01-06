@@ -239,7 +239,7 @@ async function generateTransaction(): Promise<Transaction> {
   return tx;
 }
 const hasEstimationError = ref(false);
-const estimatedBalanceChange = ref(0);
+const estimatedBalanceChange = ref<{ changes: number; symbol: string }[]>([]);
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
