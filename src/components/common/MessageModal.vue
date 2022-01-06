@@ -43,7 +43,9 @@ const closeModal = () => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="inline-block w-96 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 rounded-md">
+            <div
+              class="inline-block gt-sm:w-96 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 rounded-md"
+            >
               <DialogTitle
                 as="div"
                 class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md flex justify-center py-8 relative"
