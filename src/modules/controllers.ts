@@ -317,14 +317,12 @@ class ControllerModule extends VuexModule {
       name: "iframe_torus",
       target: "embed_torus",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
 
     const communicationStream = new BasePostMessageStream({
       name: "iframe_communication",
       target: "embed_communication",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
     this.torus.setupUnTrustedCommunication(torusStream, origin);
     this.torus.setupCommunicationChannel(communicationStream, origin);
