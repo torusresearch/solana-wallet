@@ -81,7 +81,7 @@ const totalFiatCostString = computed(() => {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-screen h-screen overflow-hidden bg-white dark:bg-app-gray-700 flex items-center justify-center"
+    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-700 flex items-center justify-center"
   >
     <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between relative">
       <div class="shadow dark:shadow-dark text-center py-6" tabindex="0">
@@ -167,8 +167,10 @@ hr {
   height: 0px;
 }
 
-.content-box {
-  max-width: 400px;
-  max-height: 600px;
+@screen gt-xs {
+  .content-box {
+    max-width: 400px;
+    max-height: 600px;
+  }
 }
 </style>
