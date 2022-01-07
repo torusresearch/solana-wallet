@@ -1,5 +1,5 @@
 import * as bors from "@project-serum/borsh";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
@@ -269,6 +269,7 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
     const type = "transferChecked";
     const params = {
       source: instruction.keys[0].pubkey,
+      mint: instruction.keys[1].pubkey,
       destination: instruction.keys[2].pubkey,
       owner: instruction.keys[3].pubkey,
       amount: decodedData.transferChecked.amount.toNumber(),
@@ -322,6 +323,17 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
     }
   } catch (err) {
     log.error(err);
+  }
+  if (instruction.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID)) {
+    if (!instruction.data.length) {
+      return {
+        type: "Create Token Account",
+        data: {
+          programId: instruction.programId.toBase58(),
+        },
+      } as DecodedDataType;
+    }
+    return decodeUnknownInstruction(instruction);
   }
   return decodeUnknownInstruction(instruction);
 };
