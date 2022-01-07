@@ -75,7 +75,11 @@ const onConfirm = () => {
 };
 // Transaction fee
 const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(getFees()).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+  return `${Number((props.cryptoTxFee * pricePerToken.value).toFixed(5))} ${currency.value}`;
+});
+
+const fiatTxCostString = computed(() => {
+  return `${Number((getFees() * pricePerToken.value).toFixed(5))} ${currency.value}`;
 });
 
 const explorerUrl = computed(() => {
@@ -161,14 +165,17 @@ const refDiv = ref(null);
                 </div>
                 <div class="flex flex-row justify-start items-center mt-2 w-full">
                   <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
-                  <p>{{ props.cryptoTxFee }} SOL</p>
+                  <div>
+                    <p>{{ props.cryptoTxFee }} SOL</p>
+                    <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
+                  </div>
                 </div>
               </div>
               <div class="flex flex-row items- justify-start w-full mt-8">
                 <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
                   <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ getFees() }} SOL</p>
-                  <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
+                  <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxCostString }}</p>
                 </div>
               </div>
               <div class="flex flex-row items-center my-6 mx-3">

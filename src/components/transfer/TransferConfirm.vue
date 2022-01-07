@@ -2,9 +2,7 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-import { BigNumber } from "bignumber.js";
-import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
@@ -49,19 +47,14 @@ const props = withDefaults(
 function isSPLToken(): boolean {
   return !!props.token.mintAddress;
 }
-function getFees(): number {
-  // if (!props.hasEstimationError) {
-  //   const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
-  //   if (solChanges) return Math.abs(solChanges.changes);
-  // }
-  return props.cryptoTxFee;
-}
-const pricePerToken = computed<number>((): number => {
-  if (isSPLToken()) {
-    return props.token?.price?.[currency.value.toLowerCase()] || 0;
+function getSolCost(): number {
+  if (!props.hasEstimationError) {
+    const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
+    if (solChanges) return Math.abs(solChanges.changes);
   }
-  return ControllerModule.torus.conversionRate;
-});
+  return props.cryptoTxFee + props.cryptoAmount;
+}
+
 const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
 
 const closeModal = () => {
@@ -83,28 +76,31 @@ const cryptoAmountString = computed(() => {
 });
 
 const fiatAmountString = computed(() => {
-  const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
+  const totalFiatAmount =
+    props.cryptoAmount * (isSPLToken() ? props.token?.price?.[currency.value.toLowerCase()] || 0 : ControllerModule.torus.conversionRate);
   return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
 });
 
 // Total cost
 const totalFiatCostString = computed(() => {
-  const totalCost = new BigNumber(getFees()).plus(props.cryptoAmount);
-  const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
+  let totalCost = getSolCost() * ControllerModule.torus.conversionRate;
+  if (isSPLToken()) totalCost += props.cryptoAmount * (props.token?.price?.[currency.value.toLowerCase()] || 0);
+  const totalFee = significantDigits(totalCost, false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
 
 const totalCryptoCostString = computed(() => {
   if (isSPLToken()) {
-    return `${props.cryptoAmount} ${props.tokenSymbol} + ${getFees()} SOL`;
+    return `${props.cryptoAmount} ${props.tokenSymbol} + ${getSolCost()} SOL`;
   }
-  const totalCost = new BigNumber(props.cryptoAmount).plus(getFees());
+  const totalCost = significantDigits(getSolCost(), false, 2);
   return `${totalCost.toString(10)} ${props.tokenSymbol}`;
 });
 
 // Transaction fee
 const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+  const fee = significantDigits(props.cryptoTxFee * ControllerModule.torus.conversionRate, false, 2);
+  return `${fee.toString(10)} ${currency.value}`;
 });
 const refDiv = ref(null);
 </script>
@@ -196,6 +192,9 @@ const refDiv = ref(null);
                 <div class="flex">
                   <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
                   <div class="ml-auto text-right">
+                    <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">
+                      {{ significantDigits(props.cryptoTxFee, false, 2) }} SOL
+                    </div>
                     <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ fiatTxFeeString }}</div>
                     <div class="text-xs text-app-text-400 dark:text-app-text-dark-600">
                       (In &lt; {{ t("walletTransfer.fee-edit-time-sec", { time: "30" }) }})

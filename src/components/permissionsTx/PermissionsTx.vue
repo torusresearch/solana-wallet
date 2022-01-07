@@ -24,6 +24,7 @@ const props = withDefaults(
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: boolean;
     signTxOnly: boolean;
+    txFee: number;
   }>(),
   {
     logoUrl: SolanaLogoURL,
@@ -93,6 +94,21 @@ function openLink() {
             @keydown="() => (expand_inst = !expand_inst)"
           >
             {{ expand_inst ? t("dappPermission.hideDetails") : t("dappPermission.viewMoreDetails") }}
+<!--
+      <span
+        v-if="!signTxOnly"
+        class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500"
+      >
+        <p>Estimated Network Fee</p>
+        <p>~{{ props.txFee + " " + "SOL" }}</p>
+      </span>
+
+      <div class="flex flex-col justify-start items-start mt-8 mb-12">
+        <div class="w-full flex flex-row justify-start items-center">
+          <img :src="SubtractURL" alt="Message Info" class="mr-2" />
+          <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
+            {{ decodedInst.length }} {{ t("walletSettings.transactionInstructions") }} -->
+
           </p>
           <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
         </div>

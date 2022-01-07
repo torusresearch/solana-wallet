@@ -111,9 +111,24 @@ onMounted(async () => {
 
     const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
 
-    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
+    const signerCount = tx.value.instructions.reduce((prev, current) => {
+      current.keys.forEach((item) => {
+        if (item.isSigner) prev.add(item.pubkey.toBase58());
+      });
+      return prev;
+    }, new Set<string>());
+    signerCount.add(txData.signer || "");
 
+    log.info(signerCount);
+    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
+    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature * signerCount.size;
+
+    log.info(txFee);
+    decodedInst.value = tx.value.instructions.map((inst) => {
+      return decodeInstruction(inst);
+    });
+
+    finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
         return decodeInstruction(inst);
@@ -136,7 +151,7 @@ onMounted(async () => {
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
       finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+      // finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
@@ -220,6 +235,7 @@ const rejectTxn = async () => {
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
     :sign-tx-only="signTxOnly"
+    :tx-fee="finalTxData.totalNetworkFee"
     @on-close-modal="rejectTxn()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
