@@ -12,7 +12,7 @@ import { Button, Card, ComboBox, SelectField, TextField } from "@/components/com
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -73,7 +73,7 @@ const messageModalState = reactive({
   showMessage: false,
   messageTitle: "",
   messageDescription: "",
-  messageStatus: STATUS_INFO as STATUS_TYPE,
+  messageStatus: STATUS.INFO as STATUS_TYPE,
 });
 
 const validVerifier = (value: string) => {
@@ -161,7 +161,7 @@ const onMessageModalClosed = () => {
   messageModalState.showMessage = false;
   messageModalState.messageDescription = "";
   messageModalState.messageTitle = "";
-  messageModalState.messageStatus = STATUS_INFO;
+  messageModalState.messageStatus = STATUS.INFO;
   if (transferConfirmed.value) {
     router.push("/wallet/activity");
   }
@@ -209,12 +209,12 @@ const confirmTransfer = async () => {
     transferConfirmed.value = true;
     showMessageModal({
       messageTitle: t("walletTransfer.transferSuccessTitle"),
-      messageStatus: STATUS_INFO,
+      messageStatus: STATUS.INFO,
     });
   } catch (error) {
     showMessageModal({
       messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
-      messageStatus: STATUS_ERROR,
+      messageStatus: STATUS.ERROR,
     });
   }
 };

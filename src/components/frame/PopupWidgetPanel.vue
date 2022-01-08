@@ -8,7 +8,7 @@ import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { GoogleIcon } from "@toruslabs/vue-icons/auth";
 import { PlusIcon } from "@toruslabs/vue-icons/basic";
 import { CreditcardFaceIcon } from "@toruslabs/vue-icons/finance";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
@@ -39,12 +39,13 @@ const closePanel = () => {
 const showWallet = (path: string) => {
   emits("showWallet", path);
 };
+const refDiv = ref(null);
 </script>
 
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closePanel">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closePanel">
+      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
