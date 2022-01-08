@@ -199,7 +199,10 @@ const confirmTransfer = async () => {
         toPubkey: new PublicKey(transferTo.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
-      const tx = new Transaction({ recentBlockhash: blockhash.value, feePayer: new PublicKey(ControllerModule.selectedAddress) }).add(instuctions);
+      const tx = new Transaction({
+        recentBlockhash: blockhash.value,
+        feePayer: new PublicKey(ControllerModule.selectedAddress),
+      }).add(instuctions);
       await ControllerModule.torus.transfer(tx);
     }
     // resetForm();
