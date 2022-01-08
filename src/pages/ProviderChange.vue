@@ -7,7 +7,6 @@ import { onMounted, reactive } from "vue";
 // import log from "loglevel";
 import { useI18n } from "vue-i18n";
 
-import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
@@ -53,13 +52,11 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <div class="min-h-full bg-white dark:bg-app-gray-700 flex justify-center items-center">
-    <div class="items-center">
-      <div class="shadow dark:shadow-dark text-center py-6">
-        <div>
-          <img class="h-7 mx-auto w-auto mb-1" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
-        </div>
-        <div class="font-header text-lg font-bold text-app-text-500 dark:text-app-text-dark-500">
+  <div class="min-h-full bg-white dark:bg-app-gray-700 flex justify-center items-center" :class="{ dark: ControllerModule.isDarkMode }">
+    <div class="content-box w-full h-screen bg-white dark:bg-app-gray-700 flex flex-col justify-between items-center shadow dark:shadow-dark">
+      <div class="shadow w-full dark:shadow-dark text-center py-6 relative" tabindex="0">
+        <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="SolanaLogoURL" alt="Solana Logo" />
+        <div class="font-header w-full text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
           {{ `${t("dappTransfer.confirm")} ${t("dappTransfer.permission")}` }}
         </div>
       </div>
@@ -73,13 +70,13 @@ const denyProviderChange = async () => {
             <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
           </div> -->
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">
               {{ `${t("dappPermission.currentNetwork")}:` }}
             </div>
             <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">{{ t("dappPermission.requestNew") }}</div>
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("dappPermission.requestNew") }}</div>
             <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
           </div>
         </div>
@@ -96,3 +93,9 @@ const denyProviderChange = async () => {
     </div>
   </div>
 </template>
+<style scoped>
+.content-box {
+  max-width: 400px;
+  max-height: 600px;
+}
+</style>

@@ -35,7 +35,7 @@ const logout = () => {
 
 <template>
   <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
-    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent">
+    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30">
       <div class="flex h-16 px-4">
         <div class="flex-none flex items-center">
           <router-link to="/wallet/home">

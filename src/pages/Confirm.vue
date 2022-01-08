@@ -48,7 +48,23 @@ onMounted(async () => {
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     const networkConfig = txData.networkDetails;
 
-    const tx = Transaction.from(Buffer.from(txData.message, "hex"));
+    origin.value = txData.origin;
+
+    // TODO: currently, controllers does not support multi transaction fllow
+    if (txData.type === "sign_all_transactions") {
+      const decoded: DecodedDataType[] = [];
+      (txData.message as string[]).forEach((msg) => {
+        const tx = Transaction.from(Buffer.from(msg, "hex"));
+        tx.instructions.forEach((inst) => {
+          decoded.push(decodeInstruction(inst));
+        });
+      });
+
+      decodedInst.value = decoded;
+      return;
+    }
+
+    const tx = Transaction.from(Buffer.from(txData.message as string, "hex"));
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
 
@@ -58,7 +74,6 @@ onMounted(async () => {
     decodedInst.value = tx.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
-    origin.value = txData.origin;
 
     try {
       if (tx.instructions.length > 1) return;
