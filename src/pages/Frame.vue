@@ -17,7 +17,7 @@ const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
   apiKey: "torus-default",
-  network: WALLET_SUPPORTED_NETWORKS.testnet,
+  network: WALLET_SUPPORTED_NETWORKS.mainnet,
   dappMetadata: {
     icon: "",
     name: "",
