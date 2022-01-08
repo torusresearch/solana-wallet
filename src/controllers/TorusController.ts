@@ -528,14 +528,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.transfer(transaction);
   }
 
-  getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer || feePayer === this.selectedAddress) return undefined;
+  getGaslessHost(_feePayer: string): string | undefined {
+    return undefined;
+    // if (!feePayer || feePayer === this.selectedAddress) return undefined;
 
-    const relayHost = this.state.RelayKeyHostMap[feePayer];
-    if (relayHost) {
-      return `${relayHost}/partial_sign`;
-    }
-    throw new Error("Invalid Relay");
+    // const relayHost = this.state.RelayKeyHostMap[feePayer];
+    // if (relayHost) {
+    //   return `${relayHost}/partial_sign`;
+    // }
+    // throw new Error("Invalid Relay");
   }
 
   importExternalAccount(privKey: string, userInfo: UserInfo): Promise<string> {
