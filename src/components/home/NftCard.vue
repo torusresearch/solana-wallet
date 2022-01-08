@@ -166,6 +166,7 @@ function closeClicked() {
 .summary-card {
   max-width: 320px;
   overflow: hidden;
+  margin: auto;
 }
 /* .container-card {
   width: 290px;

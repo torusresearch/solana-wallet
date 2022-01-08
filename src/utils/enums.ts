@@ -162,11 +162,15 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [ENS]: "walletSettings.invalidEns",
 };
 
-export const STATUS_SUCCESS = "success";
-export const STATUS_WARNING = "warning";
-export const STATUS_ERROR = "error";
-export const STATUS_INFO = "info";
-export type STATUS_TYPE = typeof STATUS_SUCCESS | typeof STATUS_WARNING | typeof STATUS_ERROR | typeof STATUS_INFO;
+export const STATUS = {
+  SUCCESS: "success",
+  WARNING: "warning",
+  ERROR: "error",
+  INFO: "info",
+} as const;
+
+export type STATUS_TYPE = typeof STATUS[keyof typeof STATUS];
+
 // export type TX_TYPE = "Transfer" | "Deploy" | "Buy Crypto";
 
 export const BUTTON_POSITION = {
@@ -192,7 +196,7 @@ export interface EmbedInitParams {
 
 export type TransactionChannelDataType = {
   type: string;
-  message: string;
+  message: string | string[];
   origin: string;
   signer: string;
   balance: string;

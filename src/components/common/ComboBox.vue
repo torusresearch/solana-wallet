@@ -58,11 +58,11 @@ const onBlur = () => {
       <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
     </div>
     <div v-show="filteredItems.length > 0 && isListOpen" class="z-10">
-      <ul class="w-full absolute bg-white dark:bg-app-gray-700 rounded-md shadow dark:shadow-dark overflow-hidden">
+      <ul class="lt-sm:w-72 w-full absolute bg-white dark:bg-app-gray-700 rounded-md shadow dark:shadow-dark overflow-hidden">
         <li
           v-for="(filteredItem, idx) in filteredItems"
           :key="idx"
-          class="text-app-text-500 py-3 text-sm dark:text-app-text-dark-500 hover:bg-app-gray-200 dark:hover:bg-app-gray-500 cursor-pointer px-4"
+          class="text-app-text-500 break-words py-3 text-sm dark:text-app-text-dark-500 hover:bg-app-gray-200 dark:hover:bg-app-gray-500 cursor-pointer px-4"
           @click="setSelectedItem(filteredItem)"
           @keydown="setSelectedItem(filteredItem)"
         >

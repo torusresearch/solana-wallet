@@ -72,6 +72,7 @@ module.exports = {
       },
       screens: {
         'lt-sm': {'max': '767px'}, // less than sm
+        'gt-sm': {'min': '767px'},
         'sm-md': {'min': '768px', 'max': '1023px'}, // between sm and md
         'md-lg': {'min': '1024px', 'max': '1279px'}, // between md and lg
         'lg-xl': {'min': '1280px', 'max': '1535px'}, // between lg and xl

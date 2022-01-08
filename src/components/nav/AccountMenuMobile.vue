@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { MenuIcon } from "@toruslabs/vue-icons/basic";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import { Button } from "@/components/common";
+
+const router = useRouter();
 
 const showNav = ref(false);
 const toggleNav = () => {
   showNav.value = !showNav.value;
 };
+onMounted(() => {
+  router.beforeResolve(() => {
+    showNav.value = false;
+  });
+});
 </script>
 
 <template>
@@ -15,13 +23,13 @@ const toggleNav = () => {
 
   <div
     :class="{ hidden: !showNav }"
-    class="fixed bg-app-gray-900 opacity-40 inset-0 z-10"
+    class="fixed bg-app-gray-900 opacity-40 inset-0 z-20"
     @click.self="toggleNav()"
     @keydown.self="toggleNav()"
   ></div>
   <div
-    :class="{ 'translate-x-full': !showNav }"
-    class="fixed bg-white dark:bg-app-gray-700 w-80 right-0 inset-y-0 z-20 transform transition duration-200 ease-in-out overflow-auto"
+    :class="{ 'translate-x-full transform': !showNav }"
+    class="fixed bg-white dark:bg-app-gray-700 w-80 right-0 inset-y-0 z-20 transition duration-200 ease-in-out overflow-auto"
   >
     <slot />
   </div>

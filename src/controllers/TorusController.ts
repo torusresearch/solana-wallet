@@ -524,17 +524,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     transaction.add(transferInstructions);
 
     transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    transaction.feePayer = new PublicKey(this.selectedAddress);
     return this.transfer(transaction);
   }
 
-  getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer || feePayer === this.selectedAddress) return undefined;
+  getGaslessHost(_feePayer: string): string | undefined {
+    return undefined;
+    // if (!feePayer || feePayer === this.selectedAddress) return undefined;
 
-    const relayHost = this.state.RelayKeyHostMap[feePayer];
-    if (relayHost) {
-      return `${relayHost}/partial_sign`;
-    }
-    throw new Error("Invalid Relay");
+    // const relayHost = this.state.RelayKeyHostMap[feePayer];
+    // if (relayHost) {
+    //   return `${relayHost}/partial_sign`;
+    // }
+    // throw new Error("Invalid Relay");
   }
 
   importExternalAccount(privKey: string, userInfo: UserInfo): Promise<string> {
@@ -566,6 +568,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
     this.preferencesController.sync(address);
+    this.accountTracker.refresh();
+    this.tokensTracker.updateSolanaTokens(this.selectedAddress);
     this.preferencesController.initializeDisplayActivity();
   }
 
@@ -891,7 +895,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     throw new Error("user denied provider change request");
   }
 
-  async handleTransactionPopup(txId: string, req: JRPCRequest<{ message: string }> & { origin: string; windowId: string }): Promise<void> {
+  async handleTransactionPopup(txId: string, req: Ihandler<{ message: string | string[] | undefined }>): Promise<boolean> {
     try {
       const { windowId } = req;
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
@@ -927,13 +931,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
       if (approve) {
-        this.approveSignTransaction(txId);
-      } else {
-        this.txController.setTxStatusRejected(txId);
+        if (txId) this.approveSignTransaction(txId);
+        return true; // TODO: fix temp bypass for sign all transactions
       }
+      if (txId) this.txController.setTxStatusRejected(txId); // rejected
+      return false;
     } catch (error) {
       log.error(error);
       this.txController.setTxStatusRejected(txId);
+      return false;
     }
   }
 
@@ -1133,9 +1139,23 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
         return signed_tx;
       },
-      signAllTransactions: async () => {
+      signAllTransactions: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
-        return {} as unknown;
+
+        // send to popup with all transaction
+        const approved = await this.handleTransactionPopup("", req);
+
+        // throw error on reject
+        if (!approved) throw new Error("User Rejected the Transaction");
+
+        // sign all transaction
+        const allTransactions = req.params?.message.map((msg) => {
+          let tx = Transaction.from(Buffer.from(msg, "hex"));
+          tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+          const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+          return signedMessage;
+        });
+        return allTransactions;
       },
       sendTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");

@@ -317,14 +317,12 @@ class ControllerModule extends VuexModule {
       name: "iframe_torus",
       target: "embed_torus",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
 
     const communicationStream = new BasePostMessageStream({
       name: "iframe_communication",
       target: "embed_communication",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
     this.torus.setupUnTrustedCommunication(torusStream, origin);
     this.torus.setupCommunicationChannel(communicationStream, origin);
@@ -355,8 +353,11 @@ class ControllerModule extends VuexModule {
         window.location.href = "/";
       }
     }
+    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    this.updateTorusState(initialState);
+
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+    this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
     this.torus.setOrigin(origin);
 
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
