@@ -524,6 +524,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     transaction.add(transferInstructions);
 
     transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    transaction.feePayer = new PublicKey(this.selectedAddress);
     return this.transfer(transaction);
   }
 
