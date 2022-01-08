@@ -931,9 +931,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const { approve = false } = result;
       if (approve) {
         if (txId) this.approveSignTransaction(txId);
-        return true;
+        return true; // TODO: fix temp bypass for sign all transactions
       }
-      if (txId) this.txController.setTxStatusRejected(txId);
+      if (txId) this.txController.setTxStatusRejected(txId); // rejected
       return false;
     } catch (error) {
       log.error(error);
@@ -1140,8 +1140,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       },
       signAllTransactions: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
+
         // send to popup with all transaction
         const approved = await this.handleTransactionPopup("", req);
+
         // throw error on reject
         if (!approved) throw new Error("User Rejected the Transaction");
 

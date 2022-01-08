@@ -50,6 +50,7 @@ onMounted(async () => {
 
     origin.value = txData.origin;
 
+    // TODO: currently, controllers does not support multi transaction fllow
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
       (txData.message as string[]).forEach((msg) => {
