@@ -567,6 +567,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
     this.preferencesController.sync(address);
+    this.accountTracker.refresh();
+    this.tokensTracker.updateSolanaTokens(this.selectedAddress);
     this.preferencesController.initializeDisplayActivity();
   }
 
