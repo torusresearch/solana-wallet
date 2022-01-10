@@ -2,7 +2,7 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
@@ -26,7 +26,7 @@ const props = withDefaults(
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
     estimatedBalanceChange: AccountEstimation[];
-    hasEstimationError: boolean;
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -41,7 +41,7 @@ const props = withDefaults(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     token: tokens.value[0],
-    hasEstimationError: false,
+    hasEstimationError: "",
   }
 );
 function isSPLToken(): boolean {

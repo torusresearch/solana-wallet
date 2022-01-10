@@ -4,7 +4,6 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
-import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -30,7 +29,7 @@ const props = withDefaults(
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
     estimatedBalanceChange: AccountEstimation[];
-    hasEstimationError: boolean;
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -42,7 +41,7 @@ const props = withDefaults(
     tokenSymbol: "SOL",
     transferDisabled: false,
     isOpen: false,
-    hasEstimationError: false,
+    hasEstimationError: "",
   }
 );
 

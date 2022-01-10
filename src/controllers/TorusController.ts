@@ -610,16 +610,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return transaction;
   }
 
-  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<AccountEstimation[]> {
+  async getEstimateBalanceChange(tx: Transaction, _signer = this.selectedAddress): Promise<AccountEstimation[]> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
-      const signedTransaction = this.keyringController.signTransaction(tx, signer);
-      let serializedTransaction = signedTransaction.serialize({ requireAllSignatures: false }).toString("hex");
-      const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-      if (gaslessHost) {
-        serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
-      }
-
       // get writeable accounts from all instruction
       const accounts = tx.instructions.reduce((prev, current) => {
         // log.info(current.keys)
@@ -630,22 +623,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         return prev;
       }, new Map<string, PublicKey>());
-
+      // const rkey = Keypair.generate();
+      // accounts.set(rkey.publicKey.toBase58(), rkey.publicKey);
       // Simulate Transaction with Accounts
-      const result = await connection.simulateTransaction(
-        Transaction.from(Buffer.from(serializedTransaction, "hex")),
-        undefined,
-        Array.from(accounts.values())
-      );
+      const result = await connection.simulateTransaction(tx, undefined, Array.from(accounts.values()));
 
       // calculate diff of the token and sol
       return this.calculateChanges(result.value, this.selectedAddress, Array.from(accounts.keys()));
-
-      // const currentLamports = Number(this.userSOLBalance);
-      // return new BigNumber(result?.value?.accounts?.[0]?.lamports || 0).div(new BigNumber(LAMPORTS_PER_SOL)).minus(currentLamports).toNumber();
     } catch (e) {
-      log.warn("error", e);
-      throw new Error("Failed to simulate transaction for alance change");
+      log.warn(e);
+      if ((e as string).match("Too many accounts provided; max 0")) log.warn("Found Unable to estimate balances");
+      throw new Error("Failed to simulate transaction for balance change");
     }
   }
 

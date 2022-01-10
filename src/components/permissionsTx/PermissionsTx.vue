@@ -22,13 +22,14 @@ const props = withDefaults(
     origin: string;
     network: string;
     estimatedBalanceChange: AccountEstimation[];
-    hasEstimationError: boolean;
+    hasEstimationError: string;
     signTxOnly: boolean;
+    isGasless: boolean;
     txFee: number;
   }>(),
   {
     logoUrl: SolanaLogoURL,
-    hasEstimationError: false,
+    hasEstimationError: "",
   }
 );
 
@@ -72,14 +73,13 @@ function openLink() {
             </div>
           </div>
         </div>
-      </div>
-      <div v-if="!props.signTxOnly" class="mt-3 items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-        <EstimateChanges
-          :estimated-balance-change="props.estimatedBalanceChange"
-          :has-estimation-error="props.hasEstimationError"
-          :is-expand="true"
-        />
-      </div>
+        <div class="mt-3 items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
+          <EstimateChanges
+            :estimated-balance-change="props.estimatedBalanceChange"
+            :has-estimation-error="props.hasEstimationError"
+            :is-expand="true"
+          />
+        </div>
 
         <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
@@ -94,7 +94,7 @@ function openLink() {
             @keydown="() => (expand_inst = !expand_inst)"
           >
             {{ expand_inst ? t("dappPermission.hideDetails") : t("dappPermission.viewMoreDetails") }}
-<!--
+            <!--
       <span
         v-if="!signTxOnly"
         class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500"
@@ -108,7 +108,6 @@ function openLink() {
           <img :src="SubtractURL" alt="Message Info" class="mr-2" />
           <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
             {{ decodedInst.length }} {{ t("walletSettings.transactionInstructions") }} -->
-
           </p>
           <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
         </div>

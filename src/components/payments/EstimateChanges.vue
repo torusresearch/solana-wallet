@@ -7,7 +7,7 @@ const props = withDefaults(
   defineProps<{
     isExpand: boolean;
     estimatedBalanceChange: AccountEstimation[];
-    hasEstimationError: boolean;
+    hasEstimationError: string;
   }>(),
   {}
 );
@@ -20,5 +20,8 @@ const { t } = useI18n();
     <div :class="item.changes >= 0 && 'text-green-400'">{{ item.changes + "   " + item.symbol }}</div>
     <!-- <div>{{ item.symbol }}</div> -->
   </div>
-  <div v-if="props.hasEstimationError" class="font-body text-xs font-thin text-red-500 italic">{{ t("walletTransfer.estimated-fail") }}.</div>
+  <div v-if="props.hasEstimationError" class="font-body text-xs font-thin text-red-500 italic">
+    <!-- {{ t("walletTransfer.estimated-fail") }}. -->
+    {{ props.hasEstimationError }}
+  </div>
 </template>

@@ -14,14 +14,12 @@ const props = withDefaults(
     logoUrl?: string;
     approvalMessage?: string;
     estimatedBalanceChange?: number;
-    hasEstimationError: boolean;
   }>(),
   {
     logoUrl: SolanaLogoURL,
     requestedFrom: "",
     approvalMessage: "",
     estimatedBalanceChange: 0,
-    hasEstimationError: false,
   }
 );
 

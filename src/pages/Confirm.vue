@@ -17,7 +17,7 @@ import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers"
 const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
-const hasEstimationError = ref(false);
+const hasEstimationError = ref("");
 const estimatedBalanceChange = ref<AccountEstimation[]>([]);
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -73,8 +73,11 @@ onMounted(async () => {
     origin.value = txData.origin as string;
     network.value = txData.network || "";
     const networkConfig = txData.networkDetails;
+    const conn = new Connection(networkConfig.rpcTarget);
+    const block = await conn.getRecentBlockhash("finalized");
+
     log.info(txData);
-    signTxOnly.value = txData.type === "sign_transaction";
+    signTxOnly.value = ["sign_transaction", "sign_all_transactions"].includes(txData.type);
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
@@ -89,7 +92,13 @@ onMounted(async () => {
         tx2.instructions.forEach((inst) => {
           decoded.push(decodeInstruction(inst));
         });
+        // TODO use latest rpc api to get Fee from message
+        // Waiting for web3js for now
+        // finalTxData.totalNetworkFee += 0
       });
+
+      // Could not estimate balance for multiple Transactions
+      hasEstimationError.value = "Unable estimate changes";
       decodedInst.value = decoded;
       return;
     }
@@ -101,12 +110,12 @@ onMounted(async () => {
     }
 
     try {
-      hasEstimationError.value = false;
+      hasEstimationError.value = "";
       estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(tx.value);
       log.info("TransEstim", estimatedBalanceChange.value);
     } catch (e) {
       log.error("TransEstim", e);
-      hasEstimationError.value = true;
+      hasEstimationError.value = "Unable estimate changes";
     }
 
     const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
@@ -143,6 +152,8 @@ onMounted(async () => {
       });
 
       const from = decoded[0].fromPubkey;
+      if (from.toBase58() !== txData.signer) return;
+
       const to = decoded[0].toPubkey;
 
       const txAmount = decoded[0].lamports;
@@ -236,6 +247,7 @@ const rejectTxn = async () => {
     :has-estimation-error="hasEstimationError"
     :sign-tx-only="signTxOnly"
     :tx-fee="finalTxData.totalNetworkFee"
+    :is-gasless="finalTxData.isGasless"
     @on-close-modal="rejectTxn()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"

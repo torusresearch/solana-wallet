@@ -11,6 +11,7 @@ import ControllerModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
 import { AccountEstimation } from "@/utils/interfaces";
 
+import EstimateChanges from "./EstimateChanges.vue";
 import InstructionDisplay from "./InstructionDisplay.vue";
 
 const { t } = useI18n();
@@ -29,7 +30,7 @@ const props = withDefaults(
     decodedInst: DecodedDataType[];
     network: string;
     estimatedBalanceChange: AccountEstimation[];
-    hasEstimationError: boolean;
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -40,7 +41,7 @@ const props = withDefaults(
     isOpen: false,
     isGasless: true,
     tokenLogoUrl: "",
-    hasEstimationError: false,
+    hasEstimationError: "",
   }
 );
 
@@ -122,11 +123,16 @@ const totalFiatCostString = computed(() => {
           </span>
 
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-            <p>Estimated Balance Changes <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+            <!-- <p>Estimated Balance Changes <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
             <p v-if="!props.hasEstimationError" :class="[props.isGasless ? '' : 'italic text-red-500']">
               {{ getTotalInSol() + " " + "SOL" }}
-            </p>
-            <p v-else class="italic text-red-500">Transaction might fail.</p>
+            </p> -->
+            <EstimateChanges
+              :has-estimation-error="props.hasEstimationError"
+              :estimated-balance-change="props.estimatedBalanceChange"
+              :is-expand="true"
+            />
+            <!-- <p v-if="props.hasEstimationError" class="italic text-red-500">{{ props.hasEstimationError }}</p> -->
           </span>
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
             <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
