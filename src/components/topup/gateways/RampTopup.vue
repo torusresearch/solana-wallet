@@ -111,26 +111,26 @@ onMounted(() => {
 
 <template>
   <form @submit.prevent="onSave">
-    <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 sm:rounded-md sm:overflow-hidden">
-      <div class="py-6 px-4 space-y-6 sm:p-6">
+    <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 gt-sm:rounded-md gt-sm:overflow-hidden">
+      <div class="py-6 px-4 space-y-6 gt-sm:p-6">
         <div>
           <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">{{ selectedProvider.description }}.</p>
         </div>
 
         <div class="grid grid-cols-3">
-          <div class="col-span-3 sm:col-span-1">
+          <div class="col-span-3 gt-sm:col-span-1">
             <SelectField id="ramp_crypto_select" v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-4">
-          <div class="col-span-3 sm:col-span-2">
+          <div class="col-span-3 gt-sm:col-span-2">
             <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("walletTopUp.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
               {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }}
             </p>
           </div>
-          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1 gt-sm:pt-6">
+          <div id="ramp_fiat_select" class="col-span-3 gt-sm:col-span-1 gt-sm:pt-6">
             <SelectField id="ramp_fiat_select" v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
@@ -152,7 +152,7 @@ onMounted(() => {
           <div>{{ t("walletTopUp.receiveHint") }}</div>
         </div>
       </div>
-      <div class="px-4 py-3 mb-4 sm:px-6">
+      <div class="px-4 py-3 mb-4 gt-sm:px-6">
         <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">{{
           t("walletHome.topUp")
         }}</Button>

@@ -86,7 +86,7 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <div class="h-full w-full bg-white dark:bg-app-gray-700 flex justify-center items-center" :class="{ dark: ControllerModule.isDarkMode }">
+  <div class="h-full w-full bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="content-box h-full bg-white dark:bg-app-gray-700 flex flex-col justify-between shadow dark:shadow-dark">
       <div class="shadow w-full dark:shadow-dark text-center py-6 relative" tabindex="0">
         <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="SolanaLogoURL" alt="Solana Logo" />

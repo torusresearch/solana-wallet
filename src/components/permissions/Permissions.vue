@@ -5,7 +5,6 @@ import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
-import ControllerModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
 
 const { t } = useI18n();
@@ -42,8 +41,7 @@ function openLink() {
 </script>
 <template>
   <div
-    :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-full h-full overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center"
+    class="w-full h-full overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center"
   >
     <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
       <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">

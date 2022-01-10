@@ -110,11 +110,13 @@ function nftClicked(mints: string[]) {
   width: 260px;
 }
 .tab-info {
-  height: max(300px, calc(100vh - 450px));
+  height: fit-content;
+  max-height: max(280px, calc(100vh - 450px));
 }
 @screen lt-sm {
   .tab-info {
-    height: max(300px, calc(100vh - 610px));
+    height: fit-content;
+    max-height: max(280px, calc(100vh - 610px));
   }
 }
 

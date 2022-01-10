@@ -121,7 +121,7 @@ const onDelete = (contactId: number) => {
       <div class="col-span-3 sm:col-span-1 text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">
         {{ t("walletSettings.listContacts") }}
       </div>
-      <div class="col-span-3 sm:col-span-2 flex gap-2">
+      <div class="col-span-3 sm:col-span-2 flex space-x-2">
         <TextField v-model="searchFilter" size="small" :placeholder="t('walletSettings.searchByName')" />
         <SelectField v-model="typeFilter" size="small" :placeholder="t('walletSettings.filterByType')" :items="filterTypes" />
       </div>

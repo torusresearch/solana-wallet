@@ -63,6 +63,7 @@ const value = computed({
       :placeholder="placeholder"
       aria-label="text field"
       :spellcheck="spellCheck"
+      :disabled="disabled"
     />
 
     <div class="p-1 h-full"><slot></slot></div>

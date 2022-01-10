@@ -18,7 +18,7 @@ import { STATUS } from "@/utils/enums";
       }"
     >
       <div class="text-center justify-self-center">{{ toast.message }}</div>
-      <XIcon class="w-5 h-5 cursor-pointer absolute right-3 top-1/2 transform -translate-y-1/2" @click="removeToast(toast)" />
+      <XIcon class="w-5 h-5 cursor-pointer absolute right-3 top-1/2 -translate-y-1/2" @click="removeToast(toast)" />
     </div>
   </div>
 </template>

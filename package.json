@@ -66,10 +66,11 @@
     "vuex-module-decorators": "^1.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.17.1",
     "@commitlint/cli": "^16.0.1",
     "@commitlint/config-conventional": "^16.0.0",
     "@commitlint/is-ignored": "^16.0.0",
+    "@playwright/test": "^1.17.1",
+    "@sentry/cli": "^1.71.0",
     "@tailwindcss/forms": "^0.4.0",
     "@toruslabs/eslint-config-vue": "^0.1.4",
     "@types/bs58": "^4.0.1",
@@ -89,8 +90,7 @@
     "@vue/cli-service": "~5.0.0-rc.1",
     "@vue/compiler-sfc": "^3.2.26",
     "assert": "^2.0.0",
-    "autoprefixer": "^10.4.1",
-    "@sentry/cli": "^1.71.0",
+    "autoprefixer": "^10.4.2",
     "color": "^4.1.0",
     "crypto-browserify": "^3.12.0",
     "dotenv": "^10.0.0",
@@ -113,7 +113,7 @@
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "tailwindcss": "^2.2.19",
+    "tailwindcss": "^3.0.12",
     "typescript": "^4.5.4",
     "workbox-webpack-plugin": "^6.4.2"
   },
