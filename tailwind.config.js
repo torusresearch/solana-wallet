@@ -10,7 +10,11 @@ const appColors = {
 };
 
 module.exports = {
-  purge: ["public/index.html", "src/**/*.{ts,tsx,jsx,js,vue}", "node_modules/\\@toruslabs/**/*.{ts,tsx,jsx,js,vue}"],
+  purge: [
+    "public/index.html",
+    "src/**/*.{ts,tsx,jsx,js,vue}",
+    "node_modules/\\@toruslabs/**/*.{ts,tsx,jsx,js,vue}",
+  ],
   darkMode: "class",
   theme: {
     extend: {
@@ -32,10 +36,10 @@ module.exports = {
             600: darken(appColors.primary, 0.24),
             700: darken(appColors.primary, 0.4),
             800: darken(appColors.primary, 0.64),
-            900: darken(appColors.primary, 0.80),
+            900: darken(appColors.primary, 0.8),
           },
-          secondary: '#47B2FD',
-          secondary2: '#DAF0FF',
+          secondary: "#47B2FD",
+          secondary2: "#DAF0FF",
           text: {
             400: "#A2A5B5",
             500: "#5C6C7F",
@@ -71,13 +75,15 @@ module.exports = {
         dark2: "5px 5px 10px #212121, -5px -5px 10px rgb(55 56 60 / 25%)",
       },
       screens: {
-        'lt-sm': {'max': '767px'}, // less than sm
-        'sm-md': {'min': '768px', 'max': '1023px'}, // between sm and md
-        'md-lg': {'min': '1024px', 'max': '1279px'}, // between md and lg
-        'lg-xl': {'min': '1280px', 'max': '1535px'}, // between lg and xl
-        'gt-2xl': {'min': '1536px'}, // more than 2xl
+        "gt-xs": { min: "440px" }, // mobile
+        "lt-sm": { max: "767px" }, // less than sm
+        "gt-sm": { min: "767px" },
+        "sm-md": { min: "768px", max: "1023px" }, // between sm and md
+        "md-lg": { min: "1024px", max: "1279px" }, // between md and lg
+        "lg-xl": { min: "1280px", max: "1535px" }, // between lg and xl
+        "gt-2xl": { min: "1536px" }, // more than 2xl
       },
-    }
+    },
   },
   variants: {
     extend: {
@@ -87,7 +93,7 @@ module.exports = {
       borderColor: ["disabled"],
       outline: ["focus"],
       boxShadow: ["dark"],
-      textOpacity: ["hover"]
+      textOpacity: ["hover"],
     },
   },
   plugins: [require("@tailwindcss/forms")],
