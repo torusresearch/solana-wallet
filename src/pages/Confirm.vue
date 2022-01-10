@@ -9,18 +9,14 @@ import { onMounted, reactive, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "@/utils/helpers";
+import { useRedirectFlow } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
 import ControllerModule from "../modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
-const isRedirectFlow = checkRedirectFlow();
-const params = getB64DecodedParams();
-const queryParams = new URLSearchParams(window.location.search);
-const method = queryParams.get("method");
-const resolveRoute = queryParams.get("resolveRoute");
+const { isRedirectFlow, params, method, resolveRoute, redirectToResult } = useRedirectFlow();
 
 interface FinalTxData {
   slicedSenderAddress: string;

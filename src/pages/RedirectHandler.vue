@@ -4,9 +4,9 @@ import { BroadcastChannel } from "broadcast-channel";
 import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { checkRedirectFlow, redirectToResult } from "../utils/helpers";
+import { useRedirectFlow } from "../utils/helpers";
 
-const isRedirectFlow = checkRedirectFlow();
+const { isRedirectFlow, method, resolveRoute, redirectToResult } = useRedirectFlow();
 
 const { t } = useI18n();
 
@@ -14,11 +14,11 @@ const checkTopupSuccess = async () => {
   const queryParameters = new URLSearchParams(window.location.search);
   const instanceId = queryParameters.get("instanceId");
   const topupResult = queryParameters.get("topup");
-  const method = queryParameters.get("method");
-  const resolveRoute = queryParameters.get("resolveRoute");
   if (topupResult === "success" && !isRedirectFlow) {
     const bc = new BroadcastChannel(`${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`, broadcastChannelOptions);
-    await bc.postMessage({ data: `${t("walletProvider.topup")} ${t("walletActivity.successful")}` });
+    await bc.postMessage({
+      data: `${t("walletProvider.topup")} ${t("walletActivity.successful")}`,
+    });
     bc.close();
   }
   if (isRedirectFlow && topupResult) {

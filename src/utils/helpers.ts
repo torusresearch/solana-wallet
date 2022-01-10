@@ -241,3 +241,13 @@ export const redirectToResult = (method: string | null | undefined, result: any,
     document.getElementById("app")?.appendChild(elem);
   }
 };
+
+export const useRedirectFlow = (defaultParams?: unknown) => {
+  const params = getB64DecodedParams(defaultParams);
+  const queryParameters = new URLSearchParams(window.location.search);
+  const method = queryParameters.get("method");
+  const resolveRoute = queryParameters.get("resolveRoute");
+  const redirect = checkRedirect();
+  const isRedirectFlow = checkRedirectFlow();
+  return { params, method, resolveRoute, redirect, isRedirectFlow, redirectToResult };
+};

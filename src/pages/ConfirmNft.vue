@@ -6,14 +6,12 @@ import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper"
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, getB64DecodedParams, redirectToResult } from "../utils/helpers";
+import { delay, useRedirectFlow } from "../utils/helpers";
 
-const params = getB64DecodedParams();
+const { params, method, resolveRoute, redirectToResult } = useRedirectFlow();
+
 const transactionFee = ref(0);
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));
-const queryParams = new URLSearchParams(window.location.search);
-const method = queryParams.get("method");
-const resolveRoute = queryParams.get("resolveRoute");
 onMounted(async () => {
   const { fee } = await ControllerModule.torus.calculateTxFee();
   transactionFee.value = fee / LAMPORTS_PER_SOL;

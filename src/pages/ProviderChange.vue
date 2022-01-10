@@ -19,9 +19,9 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 
-import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
+import { useRedirectFlow } from "../utils/helpers";
 
-const params = getB64DecodedParams({
+const { params, isRedirectFlow, method, resolveRoute, redirectToResult } = useRedirectFlow({
   blockExplorerUrl: "?cluster=mainnet",
   chainId: "0x1",
   displayName: "Solana Mainnet",
@@ -30,10 +30,6 @@ const params = getB64DecodedParams({
   ticker: "SOL",
   tickerName: "Solana Token",
 });
-const isRedirectFlow = checkRedirectFlow();
-const queryParams = new URLSearchParams(window.location.search);
-const method = queryParams.get("method");
-const resolveRoute = queryParams.get("resolveRoute");
 
 const { t } = useI18n();
 
@@ -45,6 +41,7 @@ interface FinalTxData {
   fromNetwork: string;
   whitelabelData: PopupWhitelabelData;
 }
+
 const finalProviderData = reactive<FinalTxData>({
   origin: "",
   toNetwork: "",
@@ -53,6 +50,7 @@ const finalProviderData = reactive<FinalTxData>({
     theme: "light",
   },
 });
+
 onMounted(async () => {
   if (!isRedirectFlow) {
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);

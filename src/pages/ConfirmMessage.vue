@@ -8,13 +8,9 @@ import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
 import ControllerModule from "../modules/controllers";
-import { checkRedirectFlow, getB64DecodedParams, redirectToResult } from "../utils/helpers";
+import { useRedirectFlow } from "../utils/helpers";
 
-const isRedirectFlow = checkRedirectFlow();
-const params = getB64DecodedParams();
-const queryParams = new URLSearchParams(window.location.search);
-const method = queryParams.get("method");
-const resolveRoute = queryParams.get("resolveRoute");
+const { isRedirectFlow, params, method, resolveRoute, redirectToResult } = useRedirectFlow();
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
