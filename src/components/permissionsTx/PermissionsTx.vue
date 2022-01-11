@@ -87,7 +87,6 @@ function openLink() {
         >
           <p>Estimated Network Fee</p>
           <p>~{{ props.isGasless ? "Paid by DApp" : props.txFee + "SOL" }}</p>
-          <!-- <p>~{{ props.txFee + " " + "SOL" }}</p> -->
         </span>
 
         <div class="flex flex-col justify-start items-start w-full">

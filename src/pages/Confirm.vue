@@ -115,7 +115,7 @@ onMounted(async () => {
       log.info("TransEstim", estimatedBalanceChange.value);
     } catch (e) {
       log.error("TransEstim", e);
-      hasEstimationError.value = "Unable estimate changes";
+      hasEstimationError.value = "Unable estimate balance changes";
     }
 
     const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
@@ -130,14 +130,16 @@ onMounted(async () => {
 
     log.info(signerCount);
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
+    finalTxData.isGasless = isGasless;
+
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature * signerCount.size;
+    finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
 
     log.info(txFee);
     decodedInst.value = tx.value.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
 
-    finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
         return decodeInstruction(inst);
@@ -166,7 +168,6 @@ onMounted(async () => {
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
-      finalTxData.isGasless = isGasless;
     } catch (e) {
       log.error(e);
     }

@@ -13,13 +13,11 @@ const props = withDefaults(
     requestedFrom: string;
     logoUrl?: string;
     approvalMessage?: string;
-    estimatedBalanceChange?: number;
   }>(),
   {
     logoUrl: SolanaLogoURL,
     requestedFrom: "",
     approvalMessage: "",
-    estimatedBalanceChange: 0,
   }
 );
 

@@ -3,6 +3,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
@@ -12,6 +13,7 @@ import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import EstimateChanges from "../payments/EstimateChanges.vue";
 
+const { t } = useI18n();
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const props = withDefaults(
   defineProps<{
@@ -129,7 +131,9 @@ const refDiv = ref(null);
                 <div>
                   <img class="h-7 mx-auto w-auto mb-1" :src="SolanaLogoURL" alt="Solana Logo" />
                 </div>
-                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Confirm Transaction</div>
+                <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
+                  {{ t("walletTransfer.confirmTransaction") }}
+                </div>
               </DialogTitle>
               <div class="mt-5 px-6 items-center">
                 <div class="flex items-center">

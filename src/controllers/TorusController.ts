@@ -623,8 +623,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         return prev;
       }, new Map<string, PublicKey>());
-      // const rkey = Keypair.generate();
-      // accounts.set(rkey.publicKey.toBase58(), rkey.publicKey);
+
       // Simulate Transaction with Accounts
       const result = await connection.simulateTransaction(tx, undefined, Array.from(accounts.values()));
 
@@ -632,7 +631,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       return this.calculateChanges(result.value, this.selectedAddress, Array.from(accounts.keys()));
     } catch (e) {
       log.warn(e);
-      if ((e as string).match("Too many accounts provided; max 0")) log.warn("Found Unable to estimate balances");
+      // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
       throw new Error("Failed to simulate transaction for balance change");
     }
   }
@@ -656,12 +655,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           data: Buffer.from(item.data[0], item.data[1] as BufferEncoding),
         });
 
-        // log.error(tokenDetail);
-
         if (tokenDetail.data.owner.toBase58() === selecteAddress) {
-          // log.error(tokenDetail.data.amount.toString());
-          // log.error(tokenDetail.pubkey.toBase58());
-          // log.error(tokenDetail.data.owner.toBase58());
           const mint = tokenDetail.data.mint.toBase58();
           const symbol =
             this.state.TokenInfoState.tokenInfoMap[mint]?.symbol ||
@@ -673,18 +667,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
             });
 
             const decimals = current_token?.balance?.decimals || 0;
-            log.info(decimals);
-            log.info(current_token?.balance);
-            log.info(tokenDetail.data.amount.toNumber());
             const changes = tokenDetail.data.amount.sub(new BN(current_token?.balance?.amount || 0)).toNumber() / 10 ** decimals;
 
-            // log.error();
             returnResult.push({
               changes,
               symbol,
               mint,
               address: tokenDetail.pubkey.toBase58(),
             });
+          } else {
+            // unable go get tokenInfo from tokenInfo controller
+            // Need to query Blockchain
+            // TODO fix to get decimal of mint address
+            // const mintInfo = await this.connection.getAccountInfo(new PublicKey(mint));
+            // const decimal = 0;
+            // returnResult.push({
+            //   changes: tokenDetail.data.amount.toNumber() / 10 ** decimal,
+            //   symbol,
+            //   mint,
+            //   address: tokenDetail.pubkey.toBase58(),
+            // });
           }
         }
       }

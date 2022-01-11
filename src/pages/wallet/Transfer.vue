@@ -287,28 +287,8 @@ const confirmTransfer = async () => {
   // Delay needed for the message modal
   await delay(500);
   try {
-    //   if (selectedToken?.value?.mintAddress) {
-    //     // SPL TRANSFER
-    //     await ControllerModule.torus.transferSpl(
-    //       transferTo.value,
-    //       sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-    //       selectedToken.value as SolAndSplToken
-    //     );
-    //   } else {
-    //     // SOL TRANSFER
-    //     const instuctions = SystemProgram.transfer({
-    //       fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-    //       toPubkey: new PublicKey(transferTo.value),
-    //       lamports: sendAmount.value * LAMPORTS_PER_SOL,
-    //     });
-    //     const tx = new Transaction({
-    //       recentBlockhash: blockhash.value,
-    //       feePayer: new PublicKey(ControllerModule.selectedAddress),
-    //     }).add(instuctions);
     const tx = await generateTransaction();
     await ControllerModule.torus.transfer(tx);
-    // }
-    // resetForm();
     transferConfirmed.value = true;
     showMessageModal({
       messageTitle: t("walletTransfer.transferSuccessTitle"),
