@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -63,6 +63,7 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
+import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -79,6 +80,7 @@ import {
   TorusControllerConfig,
   TorusControllerState,
   TransactionChannelDataType,
+  WALLET_COMMUNICATION,
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
@@ -319,7 +321,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
-      log.info(req);
       this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
     });
 
@@ -521,17 +522,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     transaction.add(transferInstructions);
 
     transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    transaction.feePayer = new PublicKey(this.selectedAddress);
     return this.transfer(transaction);
   }
 
-  getGaslessHost(feePayer: string): string | undefined {
-    if (!feePayer || feePayer === this.selectedAddress) return undefined;
+  getGaslessHost(_feePayer: string): string | undefined {
+    return undefined;
+    // if (!feePayer || feePayer === this.selectedAddress) return undefined;
 
-    const relayHost = this.state.RelayKeyHostMap[feePayer];
-    if (relayHost) {
-      return `${relayHost}/partial_sign`;
-    }
-    throw new Error("Invalid Relay");
+    // const relayHost = this.state.RelayKeyHostMap[feePayer];
+    // if (relayHost) {
+    //   return `${relayHost}/partial_sign`;
+    // }
+    // throw new Error("Invalid Relay");
   }
 
   importExternalAccount(privKey: string, userInfo: UserInfo): Promise<string> {
@@ -563,8 +566,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
     this.preferencesController.sync(address);
+
+    // set account in accountTracker
     this.accountTracker.syncAccounts();
+    // get state from chain
     this.accountTracker.refresh();
+
     this.tokensTracker.updateSolanaTokens();
     this.preferencesController.initializeDisplayActivity();
   }
@@ -891,13 +898,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     throw new Error("user denied provider change request");
   }
 
-  async handleTransactionPopup(txId: string, req: JRPCRequest<{ message: string }> & { origin: string; windowId: string }): Promise<void> {
+  async handleTransactionPopup(txId: string, req: Ihandler<{ message: string | string[] | undefined }>): Promise<boolean> {
     try {
       const { windowId } = req;
-      log.info(windowId);
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
-      log.info(req);
 
       const popupPayload: TransactionChannelDataType = {
         type: req.method,
@@ -929,13 +934,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
       if (approve) {
-        this.approveSignTransaction(txId);
-      } else {
-        this.txController.setTxStatusRejected(txId);
+        if (txId) this.approveSignTransaction(txId);
+        return true; // TODO: fix temp bypass for sign all transactions
       }
+      if (txId) this.txController.setTxStatusRejected(txId); // rejected
+      return false;
     } catch (error) {
       log.error(error);
       this.txController.setTxStatusRejected(txId);
+      return false;
     }
   }
 
@@ -944,11 +951,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<boolean> {
     try {
       const { windowId } = req;
-      log.info(windowId);
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm_message?instanceId=${windowId}&integrity=true&id=${windowId}`);
-      log.info(req);
-      // debugger;
 
       const popupPayload: SignMessageChannelDataType = {
         type: req.method,
@@ -1019,7 +1023,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // testnet
       // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
 
-      log.info(windowId);
       const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
 
       const topUpPopUpWindow = new PopupWithBcHandler({
@@ -1061,8 +1064,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationWindowManager: this.communicationManager,
       });
       const { privKey, userInfo } = result;
-      log.info(privKey);
       const paddedKey = privKey.padStart(64, "0");
+
+      new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).postMessage(true);
+
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);
@@ -1120,32 +1125,49 @@ export default class TorusController extends BaseController<TorusControllerConfi
       },
       signTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
+
         const message = req.params?.message;
         if (!message) throw new Error("empty error message");
 
-        const data = Buffer.from(message, "hex");
-        const tx = Transaction.populate(Message.from(data));
+        const tx = Transaction.from(Buffer.from(message, "hex"));
+
         const ret_signed = await this.txController.addSignTransaction(tx, req);
         const result = await ret_signed.result;
+        log.info(result);
+
         let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
         const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
         if (gaslessHost) {
           signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
         }
-        log.info(result);
         return signed_tx;
       },
       signAllTransactions: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
-        log.info(req.method);
-        return {} as unknown;
+
+        // send to popup with all transaction
+        const approved = await this.handleTransactionPopup("", req);
+
+        // throw error on reject
+        if (!approved) throw new Error("User Rejected the Transaction");
+
+        // sign all transaction
+        const allTransactions = req.params?.message.map((msg) => {
+          let tx = Transaction.from(Buffer.from(msg, "hex"));
+          tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+          const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+          return signedMessage;
+        });
+        return allTransactions;
       },
       sendTransaction: async (req) => {
         if (!this.selectedAddress) throw new Error("Not logged in");
+
         const message = req.params?.message;
         if (!message) throw new Error("empty error message");
-        const data = Buffer.from(message, "hex");
-        const tx = Transaction.populate(Message.from(data), []);
+
+        const tx = Transaction.from(Buffer.from(message, "hex"));
+
         return this.transfer(tx, req);
       },
       getProviderState: (req, res, _, end) => {
@@ -1189,7 +1211,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
         // We show the modal to login
         this.embedController.update({ loginInProgress: true, oauthModalVisibility: true });
         this.once("LOGIN_RESPONSE", (error: string, address: string) => {
-          log.info("enter update embeded");
           this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
           if (error) reject(new Error(error));
           else resolve([address]);

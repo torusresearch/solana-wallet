@@ -45,7 +45,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 <template>
   <div class="flex flex-col justify-start items-center w-100">
     <!-- Tabs -->
-    <div class="tab-group-container flex flex-row justify-center items-start w-full">
+    <div class="tab-group-container flex flex-row justify-center items-start w-full mb-4">
       <div
         class="tok-tab flex flex-row justify-center items-center"
         :class="[selectedTab === TOKEN_TAB_TYPES.NFT_TAB ? 'tab-active' : '']"
@@ -68,41 +68,17 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
     <!-- Tabs -->
 
     <!-- List of token/nft Cards -->
-    <div class="tab-info w-full">
-      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3">
+    <div class="tab-info w-full overflow-x-hidden">
+      <div v-if="selectedTab === TOKEN_TAB_TYPES.TOKEN_TAB" class="flex flex-wrap overflow-hidden">
         <div
           v-for="token in fungibleTokens"
           :key="token.tokenAddress.toString()"
-          class="
-            my-3
-            px-3
-            overflow-hidden
-            sm:my-3 sm:px-3
-            md:my-3 md:px-3
-            lg:my-3 lg:px-3
-            xl:my-3 xl:px-3
-            w-full
-            sm:w-1/2
-            md:w-1/3
-            xl:w-1/4
-            lg:w-1/4
-            cursor-pointer
-          "
+          class="my-3 px-3 overflow-hidden w-full sm:w-1/2 md:w-1/3 xl:w-1/4 lg:w-1/4 cursor-pointer"
           @click="transferToken(token.mintAddress)"
           @keydown="transferToken(token.mintAddress)"
         >
           <div
-            class="
-              token-item
-              shadow
-              dark:shadow-dark
-              flex flex-col
-              justify-start
-              align-start
-              w-100
-              border-solid border-app-gray-200
-              dark:border-transparent
-            "
+            class="token-item shadow dark:shadow-dark flex flex-col justify-start align-start w-100 border-solid border-app-gray-200 dark:border-transparent"
           >
             <div class="flex flex-row justify-between items-center w-100 token-header shadow dark:shadow-dark">
               <span class="flex flex-row justify-start items-center ml-3">
@@ -130,32 +106,12 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
       <div
         v-if="selectedTab === TOKEN_TAB_TYPES.NFT_TAB"
-        class="flex flex-wrap -mx-3 overflow-hidden sm:-mx-3 md:-mx-3 lg:-mx-3 xl:-mx-3 pb-4 pt-1"
+        class="flex flex-wrap overflow-hidden"
         :class="!nonFungibleTokens?.length ? `w-full justify-center` : ``"
       >
         <div
           v-if="!nonFungibleTokens?.length"
-          class="
-            no-nft
-            my-3
-            px-3
-            shadow
-            dark:shadow-dark
-            sm:my-3 sm:px-3
-            md:my-3 md:px-3
-            lg:my-3 lg:px-3
-            xl:my-3 xl:px-3
-            nft-container
-            border border-app-gray-200
-            dark:border-transparent
-            m-4
-            bg-white
-            dark:bg-app-gray-700
-            rounded-md
-            flex flex-col
-            items-center
-            justify-center
-          "
+          class="no-nft my-3 px-3 shadow dark:shadow-dark nft-container border border-app-gray-200 dark:border-transparent m-4 bg-white dark:bg-app-gray-700 rounded-md flex flex-col items-center justify-center"
         >
           <p class="text-app-text-500 dark:text-app-text-dark-500 text-sm font-bold mb-2">{{ t("walletHome.getFirstNFT") }}</p>
           <a href="https://www.holaplex.com/" target="_blank" class="text-app-text-accent text-xs">{{ t("walletHome.holaplex") }}</a>
@@ -268,5 +224,22 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   width: 260px;
   height: 80px;
   overflow-x: hidden;
+}
+.tab-info {
+  max-height: 272px;
+}
+
+.tab-info::-webkit-scrollbar-track {
+  border-radius: 10px;
+  @apply bg-app-primary-100 dark:bg-app-gray-800;
+}
+
+.tab-info::-webkit-scrollbar {
+  width: 4px;
+  @apply bg-app-primary-100 dark:bg-app-gray-800;
+}
+.tab-info::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: #9945ff;
 }
 </style>

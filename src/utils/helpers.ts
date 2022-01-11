@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import axios from "axios";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -90,8 +91,8 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
 }
 
 export const supportedCurrencies = (ticker: string): string[] => {
-  const returnArr = ["SOL", ...config.supportedCurrencies];
-  if (ticker !== "SOL") returnArr.unshift(ticker);
+  const returnArr = [...config.supportedCurrencies];
+  returnArr.unshift(ticker);
   return returnArr;
 };
 
@@ -166,4 +167,13 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
 export function setFallbackImg(target: any, src: string) {
   // eslint-disable-next-line no-param-reassign
   (target as { src: string }).src = src;
+}
+
+export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
+  try {
+    const { data } = await axios.get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
+    return data?.[outputCurrencySymbol.toUpperCase()];
+  } catch (e) {
+    return 0;
+  }
 }

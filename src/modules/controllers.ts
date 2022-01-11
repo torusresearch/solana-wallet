@@ -28,6 +28,7 @@ import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
+import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import i18nPlugin from "@/plugins/i18nPlugin";
@@ -47,10 +48,7 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({
-    _config: DEFAULT_CONFIG,
-    _state: DEFAULT_STATE,
-  });
+  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -179,10 +177,7 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({
-      _config: DEFAULT_CONFIG,
-      _state: DEFAULT_STATE,
-    });
+    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
   }
 
   @Action
@@ -322,14 +317,12 @@ class ControllerModule extends VuexModule {
       name: "iframe_torus",
       target: "embed_torus",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
 
     const communicationStream = new BasePostMessageStream({
       name: "iframe_communication",
       target: "embed_communication",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
     this.torus.setupUnTrustedCommunication(torusStream, origin);
     this.torus.setupCommunicationChannel(communicationStream, origin);
@@ -346,11 +339,27 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  logout(): void {
-    this.updateTorusState(cloneDeep(DEFAULT_STATE));
+  async logout(): Promise<void> {
+    if (isMain && this.selectedAddress) {
+      try {
+        const openLoginInstance = await OpenLoginFactory.getInstance();
+        if (openLoginInstance.state.support3PC) {
+          // eslint-disable-next-line no-underscore-dangle
+          openLoginInstance._syncState(await openLoginInstance._getData());
+          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+        }
+      } catch (error) {
+        log.warn(error, "unable to logout with openlogin");
+        window.location.href = "/";
+      }
+    }
+    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    this.updateTorusState(initialState);
+
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
     this.torus.setOrigin(origin);
+
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(

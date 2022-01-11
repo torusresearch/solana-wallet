@@ -6,6 +6,9 @@ import App from "@/App.vue";
 import router from "@/router";
 
 import i18nPlugin from "./plugins/i18nPlugin";
+import { installSentry } from "./sentry";
 import store from "./store";
 
-createApp(App).use(i18nPlugin).use(router).use(store).mount("#app");
+const vue = createApp(App);
+vue.use(i18nPlugin).use(router).use(store).mount("#app");
+installSentry(vue);

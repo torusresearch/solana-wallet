@@ -12,7 +12,7 @@ import { Button, Card, ComboBox, SelectField, TextField } from "@/components/com
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
-import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS_ERROR, STATUS_INFO, STATUS_TYPE, TransferType } from "@/utils/enums";
+import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -36,8 +36,8 @@ const showAmountField = ref(true);
 const router = useRouter();
 const route = useRoute();
 
-const AsyncWalletBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
+const AsyncTokenBalance = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
@@ -73,7 +73,7 @@ const messageModalState = reactive({
   showMessage: false,
   messageTitle: "",
   messageDescription: "",
-  messageStatus: STATUS_INFO as STATUS_TYPE,
+  messageStatus: STATUS.INFO as STATUS_TYPE,
 });
 
 const validVerifier = (value: string) => {
@@ -161,7 +161,7 @@ const onMessageModalClosed = () => {
   messageModalState.showMessage = false;
   messageModalState.messageDescription = "";
   messageModalState.messageTitle = "";
-  messageModalState.messageStatus = STATUS_INFO;
+  messageModalState.messageStatus = STATUS.INFO;
   if (transferConfirmed.value) {
     router.push("/wallet/activity");
   }
@@ -199,16 +199,22 @@ const confirmTransfer = async () => {
         toPubkey: new PublicKey(transferTo.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
-      const tx = new Transaction({ recentBlockhash: blockhash.value }).add(instuctions);
+      const tx = new Transaction({
+        recentBlockhash: blockhash.value,
+        feePayer: new PublicKey(ControllerModule.selectedAddress),
+      }).add(instuctions);
       await ControllerModule.torus.transfer(tx);
     }
     // resetForm();
     transferConfirmed.value = true;
-    showMessageModal({ messageTitle: t("walletTransfer.transferSuccessTitle"), messageStatus: STATUS_INFO });
+    showMessageModal({
+      messageTitle: t("walletTransfer.transferSuccessTitle"),
+      messageStatus: STATUS.INFO,
+    });
   } catch (error) {
     showMessageModal({
       messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
-      messageStatus: STATUS_ERROR,
+      messageStatus: STATUS.ERROR,
     });
   }
 };
@@ -293,7 +299,7 @@ watch([tokens, nftTokens], () => {
           </div>
         </form>
       </Card>
-      <AsyncWalletBalance class="self-start order-1 sm:order-2" />
+      <AsyncTokenBalance v-if="selectedToken.isFungible" class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
     </dl>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
