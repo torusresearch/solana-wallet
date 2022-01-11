@@ -130,7 +130,7 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
-async function snsRule(value: any, debounce: any): Promise<boolean> {
+async function snsRule(value: string, debounce: () => Promise<void>): Promise<boolean> {
   if (!value) return true;
   if (transferType.value.value !== "sns") return true;
   try {
@@ -196,8 +196,13 @@ const openModal = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
     const address = await addressPromise();
-    resolvedAddress.value = address || transferTo.value;
-    isOpen.value = true;
+    if (address) {
+      resolvedAddress.value = address;
+      isOpen.value = true;
+    } else {
+      $v.value.$touch();
+      return;
+    }
   }
   const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
@@ -265,8 +270,9 @@ watch([tokens, nftTokens], () => {
     updateSelectedToken(tokens.value[0]);
   }
 });
-watch(transferType, (cur, prev) => {
-  if (cur.value !== prev.value) transferTo.value = "";
+watch(transferTo, () => {
+  // eslint-disable-next-line prefer-destructuring
+  if (/\.sol$/g.test(transferTo.value)) transferType.value = ALLOWED_VERIFIERS[1];
 });
 </script>
 

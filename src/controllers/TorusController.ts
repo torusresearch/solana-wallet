@@ -456,7 +456,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null> {
-    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
+    const conn = this.connection;
     let inputDomainKey;
     switch (type) {
       case "sns":
@@ -470,7 +470,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
-    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
+    const conn = this.connection;
     const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
     const fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
     return { b_hash, fee };
@@ -485,7 +485,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
-    const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const conn = this.connection;
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     await signedTransaction.result;
     try {
@@ -512,7 +512,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
-    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const { connection } = this;
     const transaction = new Transaction();
     const tokenMintAddress = selectedToken.mintAddress;
     const decimals = selectedToken.balance?.decimals || 0;
