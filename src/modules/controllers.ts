@@ -58,6 +58,14 @@ class ControllerModule extends VuexModule {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
   }
 
+  get allAddresses(): string[] {
+    return this.torusState.KeyringControllerState.wallets.map((x) => x.publicKey);
+  }
+
+  get allBalances() {
+    return this.torusState.AccountTrackerState.accounts;
+  }
+
   get selectedAccountPreferences(): ExtendedAddressPreferences {
     const preferences = this.torus.getAccountPreferences(this.selectedAddress);
     return (
@@ -102,6 +110,15 @@ class ControllerModule extends VuexModule {
     return lamports.div(LAMPORTS_PER_SOL);
   }
 
+  get conversionRate(): number {
+    return this.torus.conversionRate;
+  }
+
+  get currentCurrency(): string {
+    return this.torus.currentCurrency;
+  }
+
+  // user balance in equivalent selected currecny
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
