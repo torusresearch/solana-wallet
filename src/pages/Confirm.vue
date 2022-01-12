@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -54,13 +54,30 @@ onMounted(async () => {
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
-    } else if (method) txData = ControllerModule.torus.getTransactionData(method as string, params);
-    else throw new Error("method not supplied");
+    } else if (method) {
+      txData = ControllerModule.torus.getTransactionData(method as string, params);
+    } else throw new Error("method not supplied");
+
+    origin.value = txData.origin;
+
+    // TODO: currently, controllers does not support multi transaction fllow
+    if (txData.type === "sign_all_transactions") {
+      const decoded: DecodedDataType[] = [];
+      if (Array.isArray(txData.message)) {
+        txData.message.forEach((msg) => {
+          const tx2 = Transaction.from(Buffer.from(msg, "hex"));
+          tx2.instructions.forEach((inst) => {
+            decoded.push(decodeInstruction(inst));
+          });
+        });
+      }
+      decodedInst.value = decoded;
+      return;
+    }
 
     const networkConfig = txData.networkDetails;
 
-    const msg = Message.from(Buffer.from(txData.message, "hex"));
-    tx.value = Transaction.populate(msg);
+    tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     const conn = new Connection(networkConfig.rpcTarget);
     const block = await conn.getRecentBlockhash("finalized");
 
@@ -70,7 +87,7 @@ onMounted(async () => {
     decodedInst.value = tx.value.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
-    origin.value = txData.origin;
+
     try {
       if (tx.value.instructions.length > 1) return;
       if (!tx.value.instructions[0].programId.equals(SystemProgram.programId)) return;

@@ -226,7 +226,8 @@ export const getRedirectConfig = (method: string | null | undefined): { redirect
 export const timeoutWindowClose = (): void => {
   setTimeout(window.close, 0);
 };
-// eslint-disable-next-line
+
+// eslint-disable-next-line consistent-return
 export const redirectToResult = (method: string | null | undefined, result: any, resolveRoute: string | null): void => {
   const res = Buffer.from(JSON.stringify(result)).toString("base64");
   if (!resolveRoute) return timeoutWindowClose();
