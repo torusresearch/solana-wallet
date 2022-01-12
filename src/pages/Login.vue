@@ -37,7 +37,8 @@ const rules = computed(() => {
 const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
-  if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
+  if (ControllerModule.torus.selectedAddress && isRedirectFlow) redirectToResult(method, { success: true }, resolveRoute);
+  if (ControllerModule.torus.selectedAddress && !isRedirectFlow) router.push("/wallet/home");
   new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).onmessage = () => {
     isLoading.value = true;
   };

@@ -3,7 +3,7 @@ import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordNam
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 
-import { checkRedirectFlow, getRedirectConfig } from "./utils/helpers";
+import { getRedirectConfig } from "./utils/helpers";
 
 const enum AuthStates {
   AUTHENTICATED = "auth",
@@ -172,7 +172,12 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
     return next();
   }
   if (!hasInstanceId(toRoute) && hasInstanceId(fromRoute)) {
-    return next({ name: toRoute.name as RouteRecordName, query: fromRoute.query, hash: toRoute.hash, params: toRoute.params });
+    return next({
+      name: toRoute.name as RouteRecordName,
+      query: fromRoute.query,
+      hash: toRoute.hash,
+      params: toRoute.params,
+    });
   }
   return next();
 });
@@ -180,7 +185,7 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 router.beforeEach((to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
-  const isRedirectFlow = checkRedirectFlow();
+  const isRedirectFlow = to.query.useRedirectFlow === "true";
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) {
     next("/login");
   } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) {
