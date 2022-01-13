@@ -128,12 +128,16 @@ const approveTxn = async (): Promise<void> => {
     bc.close();
   } else if (tx.value) {
     let res: string | Transaction;
-    if (method === "send_transaction") {
-      res = await ControllerModule.torus.transfer(tx.value, params);
-      redirectToResult(method, res, resolveRoute);
-    } else if (method === "sign_transaction") {
-      res = ControllerModule.torus.signTransaction(tx.value);
-      redirectToResult(method, res, resolveRoute);
+    try {
+      if (method === "send_transaction") {
+        res = await ControllerModule.torus.transfer(tx.value, params);
+        redirectToResult(method, res, resolveRoute);
+      } else if (method === "sign_transaction") {
+        res = ControllerModule.torus.signTransaction(tx.value);
+        redirectToResult(method, res, resolveRoute);
+      }
+    } catch (e) {
+      redirectToResult(method, `failed to execute ${method} : ${e}`, resolveRoute);
     }
   }
 };
