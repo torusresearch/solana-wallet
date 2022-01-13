@@ -450,29 +450,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async getInputKey(input: string) {
-    const hashed_input_name = await getHashedName(input);
-    const inputDomainKey = await getNameAccountKey(hashed_input_name, undefined, SOL_TLD_AUTHORITY);
-    return { inputDomainKey, hashedInputName: hashed_input_name };
+    const hashedInputName = await getHashedName(input);
+    const inputDomainKey = await getNameAccountKey(hashedInputName, undefined, SOL_TLD_AUTHORITY);
+    return { inputDomainKey, hashedInputName };
   }
 
   async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null> {
-    const conn = this.connection;
-    let inputDomainKey;
+    const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns":
-        ({ inputDomainKey } = await this.getInputKey(address));
-        return NameRegistryState.retrieve(conn, inputDomainKey);
+        return NameRegistryState.retrieve(this.connection, inputDomainKey);
       case "twitter":
-        return getTwitterRegistry(conn, address);
+        return getTwitterRegistry(this.connection, address);
       default:
         return null;
     }
   }
 
   async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
-    const conn = this.connection;
-    const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
-    const fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+    const b_hash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
+    const fee = (await this.connection.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
     return { b_hash, fee };
   }
 
@@ -485,7 +482,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
-    const conn = this.connection;
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     await signedTransaction.result;
     try {
@@ -497,7 +493,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       }
 
       // submit onchain
-      const signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
 
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
