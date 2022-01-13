@@ -50,7 +50,20 @@ export const openloginFaker = [
 //   signed_message:
 //     "e39fefbc4dc11899e26de146d194267c75ec160ec53a2b62fbc70cba0d2d62591facf1e15f67549b106af485c5cb450289829d78a6c637fd97a0f75f25b7920e",
 // },
-
+export const postTransaction = [
+  {
+    success: true,
+    response: [354],
+  },
+  {
+    success: true,
+    response: [355],
+  },
+  {
+    success: true,
+    response: [356],
+  },
+];
 export const mockData = {
   backend: {
     currency: {
@@ -118,6 +131,7 @@ export const mockData = {
       },
       success: true,
     },
+    transaction: postTransaction[0],
   },
   coingekco: {
     "usd-coin": {
