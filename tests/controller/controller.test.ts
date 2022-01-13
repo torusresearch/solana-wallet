@@ -1,6 +1,7 @@
 // import { Connection } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import assert from "assert";
 import log from "loglevel";
 // import assert from "assert";
 import nock from "nock";
@@ -11,7 +12,7 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 
 import { mockConnection } from "./mockConnection";
-import { mockData, openloginFaker } from "./mockData";
+import { mockData, openloginFaker, sKeyPair } from "./mockData";
 
 describe("TorusController", () => {
   let torusController: TorusController;
@@ -36,8 +37,8 @@ describe("TorusController", () => {
       .get("/user")
       .delay(100)
       .query(true)
-      .reply(200, (uri) => {
-        log.error(uri);
+      .reply(200, (_uri) => {
+        // log.error(uri);
         return JSON.stringify(mockData.backend.user);
       });
 
@@ -68,16 +69,12 @@ describe("TorusController", () => {
 
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockConnection);
-    // sandbox.stub(torusController["preferencesController"], 'sync')
-    // sandbox.stub(torusController["networkController"], 'getConnection').callsFake(() => mockConnection)
 
     torusController = new TorusController({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
     log.info(torusController);
     torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
 
     // spy transaction controller event
-    // sandbox.spy(torusController, 'transac')
-    // fake openlogin
     clock = sinon.useFakeTimers();
   });
 
@@ -87,42 +84,63 @@ describe("TorusController", () => {
     clock.restore();
   });
   // Initialization
-  describe("#Initialization flow", () => {
+  describe("#Initialization, login logout flow", () => {
     it("trigger login flow", async () => {
       // log.error(torusController);
-      sandbox.stub(mockData, "openLoginHandler").get(() => openloginFaker[2]);
+      sandbox.stub(mockData, "openLoginHandler").get(() => openloginFaker[0]);
+
+      assert.deepStrictEqual(torusController.state.AccountTrackerState.accounts, {});
+      assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
+
       await torusController.triggerLogin({ loginProvider: "google" });
-      // log.error(result);
+      // log.error(result)
       clock.tick(1000);
 
       // validate login state
+      // log.error(torusController.state.PreferencesControllerState.identities);
+      // log.error(torusController.state.AccountTrackerState);
+      const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
+      assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
+      assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
 
       // logout flow
       await torusController.handleLogout();
       // validate logout state
+      // only emit logout event, will be handle by controller module
+      // assert.deepStrictEqual(torusController.state.AccountTrackerState.accounts, {});
+      // assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
     });
   });
 
   // Login Flow
-  describe("#Login flow", () => {
+  describe("#Embed Login Logout flow", () => {
     it("embed trigger login flow", async () => {
+      sandbox.stub(mockData, "openLoginHandler").get(() => openloginFaker[0]);
+
+      assert.deepStrictEqual(torusController.state.AccountTrackerState.accounts, {});
+      assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
+
       const result = torusController.provider.sendAsync({
         method: "solana_requestAccounts",
         params: [],
       });
       // Frame.vue on click login
-      torusController.triggerLogin({ loginProvider: "google" });
-
+      await torusController.triggerLogin({ loginProvider: "google" });
       // wait for login complete
       await result;
       // log.error(result);
+
+      const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
+      assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
+      assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
 
       //  to validate state
       const logoutResult = await torusController.communicationProvider.sendAsync({
         method: "logout",
         params: [],
       });
-      log.error(logoutResult);
+      // expect return true
+      assert(logoutResult);
       // validate logout state
     });
     // add account
@@ -169,8 +187,8 @@ describe("TorusController", () => {
         lamports: Math.random() * LAMPORTS_PER_SOL,
       });
     };
-    beforeEach(() => {
-      torusController.triggerLogin({ loginProvider: "google" });
+    beforeEach(async () => {
+      await torusController.triggerLogin({ loginProvider: "google" });
       // mock popup handler
     });
 
@@ -209,7 +227,7 @@ describe("TorusController", () => {
     xit("embed signAllTransaction flow", async () => {
       const msg = [""];
       const result = torusController.provider.sendAsync({
-        method: "sign_transaction",
+        method: "sign_all_transactions",
         params: {
           message: msg,
         },
