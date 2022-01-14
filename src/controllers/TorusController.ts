@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import { TokenAccount } from "@metaplex-foundation/mpl-core";
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, MintInfo, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
 import {
   addressSlicer,
@@ -97,7 +97,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, MintLayout, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { AccountEstimation, SolAndSplToken, SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
@@ -610,6 +610,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return transaction;
   }
 
+  // TODO: Try take this function out of toruscontroller
   async getEstimateBalanceChange(tx: Transaction, _signer = this.selectedAddress): Promise<AccountEstimation[]> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
@@ -636,7 +637,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  calculateChanges = (result: SimulatedTransactionResponse, selecteAddress: string, accountKeys: string[]): AccountEstimation[] => {
+  calculateChanges = async (result: SimulatedTransactionResponse, selecteAddress: string, accountKeys: string[]): Promise<AccountEstimation[]> => {
     // filter out  address token (Token ProgramId ).
     // parse account data, filter selecteAddress as token holder
     const returnResult: AccountEstimation[] = [];
@@ -647,6 +648,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const solchanges = (result.accounts?.at(accIdx)?.lamports || 0) / LAMPORTS_PER_SOL - Number(this.userSOLBalance);
       returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selecteAddress });
     }
+
+    const mintTokenAddress: string[] = [];
+    const postTokenDetails: TokenAccount[] = [];
     result.accounts?.forEach((item, idx) => {
       if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner))) {
         const tokenDetail = new TokenAccount(accountKeys[idx], {
@@ -656,42 +660,44 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
 
         if (tokenDetail.data.owner.toBase58() === selecteAddress) {
-          const mint = tokenDetail.data.mint.toBase58();
-          const symbol =
-            this.state.TokenInfoState.tokenInfoMap[mint]?.symbol ||
-            this.state.TokenInfoState.metaplexMetaMap[mint]?.symbol ||
-            addressSlicer(tokenDetail.data.mint.toBase58());
-          if (this.state.TokensTrackerState.tokens) {
-            const current_token = this.state.TokensTrackerState.tokens[selecteAddress].find((stateToken) => {
-              return stateToken.tokenAddress === tokenDetail.pubkey.toBase58();
-            });
-
-            const decimals = current_token?.balance?.decimals || 0;
-            const changes = tokenDetail.data.amount.sub(new BN(current_token?.balance?.amount || 0)).toNumber() / 10 ** decimals;
-
-            returnResult.push({
-              changes,
-              symbol,
-              mint,
-              address: tokenDetail.pubkey.toBase58(),
-            });
-          } else {
-            // unable go get tokenInfo from tokenInfo controller
-            // Need to query Blockchain
-            // TODO fix to get decimal of mint address
-            // const mintInfo = await this.connection.getAccountInfo(new PublicKey(mint));
-            // const decimal = 0;
-            // returnResult.push({
-            //   changes: tokenDetail.data.amount.toNumber() / 10 ** decimal,
-            //   symbol,
-            //   mint,
-            //   address: tokenDetail.pubkey.toBase58(),
-            // });
-          }
+          mintTokenAddress.push(tokenDetail.data.mint.toBase58());
+          postTokenDetails.push(tokenDetail);
         }
       }
     });
-    // add filter new interested program and its account
+
+    const connection = this.networkController.getConnection();
+    const mintAccounts = await connection.getMultipleAccountsInfo(mintTokenAddress.map((item) => new PublicKey(item)));
+    const mintAccountInfos: MintInfo[] = mintAccounts.map((item) => MintLayout.decode(item?.data));
+
+    const tokenAccounts = await connection.getMultipleAccountsInfo(postTokenDetails.map((item) => item.pubkey));
+    const preTokenDetails = tokenAccounts.map((item, idx) => (item ? new TokenAccount(postTokenDetails[idx].pubkey, item) : null));
+
+    postTokenDetails.forEach(async (item, idx) => {
+      const mint = item.data.mint.toBase58();
+      const symbol =
+        this.state.TokenInfoState.tokenInfoMap[mint]?.symbol ||
+        this.state.TokenInfoState.metaplexMetaMap[mint]?.symbol ||
+        addressSlicer(item.data.mint.toBase58());
+
+      const { decimals } = mintAccountInfos[idx];
+      const preTokenAmount = preTokenDetails[idx]?.data.amount || new BN(0);
+      const changes =
+        item.data.amount
+          .sub(preTokenAmount)
+          // .div(new BN(10 ** decimals))
+          .toNumber() /
+        10 ** decimals;
+
+      returnResult.push({
+        changes,
+        symbol,
+        mint,
+        address: item.pubkey.toBase58(),
+      });
+    });
+
+    // // add filter new interested program and its account
 
     log.info(returnResult);
     return returnResult;
