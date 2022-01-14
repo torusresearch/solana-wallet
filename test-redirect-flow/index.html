@@ -37,7 +37,7 @@
                 "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"
             ),
         }).add(TransactionInstruction);
-        return transaction.serializeMessage().toString("hex");
+        return transaction.serialize({requireAllSignatures: false, verifySignatures: false}).toString("hex");
     };
     async function openurl(method) {
         const baseurl = "http://localhost:8080/redirectflow";
@@ -101,6 +101,7 @@
             useParams = false;
         if (Array.isArray(params) && params.length === 0) useParams = false;
         const resolvePath = window.location.origin + window.location.pathname;
+        console.log("XX", params);
         url = `${url}?${queryParams.toString()}&resolveRoute=${resolvePath}${useParams ? "#params=" + encodedParams : ""
             }`;
         Object.assign(document.createElement("a"), {
@@ -169,7 +170,7 @@
         <div class="controlsContainer">
             <div class="flexwrapper">
                 <h1>Auth Routes</h1>
-                <button onclick="openurl('login')">Login</button>
+                <button onclick="openurl('set_provider')">Login</button>
                 <button onclick="openurl('logout')">Logout</button>
             </div>
             <div class="flexwrapper">
