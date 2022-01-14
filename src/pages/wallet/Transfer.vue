@@ -13,17 +13,17 @@ import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, ruleVerifierId } from "@/utils/helpers";
+import { debounceAsyncValidator, delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
-// const ensError = ref("");
+const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTo = ref("");
+const transferTo = ref<string>("");
+const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
-const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
@@ -80,6 +80,12 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
+const addressPromise = () => {
+  return ControllerModule.getSNSAddress({
+    type: transferType.value.value,
+    address: transferTo.value,
+  });
+};
 
 const tokenAddressVerifier = async (value: string) => {
   // if not selected token, It is possible transfering sol, skip token address check
@@ -88,7 +94,15 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount = new PublicKey(value);
+  let associatedAccount;
+  if (transferType.value.value === "sns") {
+    try {
+      associatedAccount = new PublicKey((await addressPromise()) as string);
+    } catch (e) {
+      // since our sns validator will return false anyway
+      return true;
+    }
+  } else associatedAccount = new PublicKey(value);
   // try generate associatedAccount. if it failed, it might be token associatedAccount
   // if succeed generate associatedAccount, it is valid main Sol Account.
   try {
@@ -116,6 +130,18 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
+async function snsRule(value: string, debounce: () => Promise<void>): Promise<boolean> {
+  if (!value) return true;
+  if (transferType.value.value !== "sns") return true;
+  try {
+    await debounce();
+    const address = await addressPromise();
+    return address !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
@@ -130,8 +156,8 @@ const rules = computed(() => {
   return {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
-      // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage(t("walletTransfer.required"), required),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator<string>(snsRule, 500))),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
@@ -142,12 +168,7 @@ const rules = computed(() => {
   };
 });
 
-const $v = useVuelidate(rules, {
-  transferTo,
-  transferId,
-  sendAmount,
-  transactionFee,
-});
+const $v = useVuelidate(rules, { transferTo, sendAmount });
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -173,8 +194,16 @@ const closeModal = () => {
 
 const openModal = async () => {
   $v.value.$touch();
-  if (!$v.value.$invalid) isOpen.value = true;
-
+  if (!$v.value.$invalid) {
+    const address = await addressPromise();
+    if (address) {
+      resolvedAddress.value = address;
+      isOpen.value = true;
+    } else {
+      $v.value.$touch();
+      return;
+    }
+  }
   const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
@@ -188,7 +217,7 @@ const confirmTransfer = async () => {
     if (selectedToken?.value?.mintAddress) {
       // SPL TRANSFER
       await ControllerModule.torus.transferSpl(
-        transferTo.value,
+        resolvedAddress.value,
         sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken.value as SolAndSplToken
       );
@@ -196,7 +225,7 @@ const confirmTransfer = async () => {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(transferTo.value),
+        toPubkey: new PublicKey(resolvedAddress.value),
         lamports: sendAmount.value * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({
@@ -241,6 +270,10 @@ watch([tokens, nftTokens], () => {
     updateSelectedToken(tokens.value[0]);
   }
 });
+watch(transferTo, () => {
+  // eslint-disable-next-line prefer-destructuring
+  if (/\.sol$/g.test(transferTo.value)) transferType.value = ALLOWED_VERIFIERS[1];
+});
 </script>
 
 <template>
@@ -252,7 +285,12 @@ watch([tokens, nftTokens], () => {
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
               <div class="col-span-3 sm:col-span-2">
-                <ComboBox v-model="transferTo" :label="t('walletActivity.sendTo')" :errors="$v.transferTo.$errors" :items="contacts" />
+                <ComboBox
+                  v-model="transferTo"
+                  :label="t('walletActivity.sendTo')"
+                  :errors="isOpen ? undefined : $v.transferTo.$errors"
+                  :items="contacts"
+                />
               </div>
               <div class="col-span-3 sm:col-span-1">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
@@ -270,10 +308,10 @@ watch([tokens, nftTokens], () => {
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="transferTo"
+                :receiver-pub-key="resolvedAddress"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="transferTo"
+                :receiver-verifier-id="resolvedAddress"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                 :token="selectedToken"
                 :is-open="isOpen && selectedToken.isFungible"
@@ -284,10 +322,10 @@ watch([tokens, nftTokens], () => {
               />
               <TransferNFT
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="transferTo"
+                :receiver-pub-key="resolvedAddress"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="transferTo"
+                :receiver-verifier-id="resolvedAddress"
                 :is-open="isOpen && !selectedToken.isFungible"
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"

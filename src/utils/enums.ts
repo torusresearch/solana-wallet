@@ -113,6 +113,7 @@ export const DEFAULT_USER_INFO = {
 };
 
 export const SOL = "sol";
+export const SNS = "sns";
 export const ENS = "ens";
 export const GOOGLE = "google";
 export const REDDIT = "reddit";
@@ -130,17 +131,17 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
     label: "Solana address",
     value: SOL,
   },
+  {
+    label: "SOL Domain",
+    value: SNS,
+  },
   // {
-  //   label: "ENS domain",
-  //   value: ENS,
+  //   label: "Twitter handle",
+  //   value: TWITTER,
   // },
   // {
   //   label: "Google account",
   //   value: GOOGLE,
-  // },
-  // {
-  //   label: "Twitter handle",
-  //   value: TWITTER,
   // },
   // {
   //   label: "Reddit username",
@@ -159,7 +160,7 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [DISCORD]: "walletSettings.invalidDiscord",
   [TWITTER]: "walletSettings.invalidTwitter",
   [GITHUB]: "walletSettings.invalidGithub",
-  [ENS]: "walletSettings.invalidEns",
+  [SNS]: "walletSettings.invalidSns",
 };
 
 export const STATUS = {

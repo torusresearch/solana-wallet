@@ -222,6 +222,28 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  public async getSNSAddress({ type, address }: { type: string; address: string }): Promise<string | null> {
+    let filtered_address;
+    switch (type) {
+      case "sns":
+        filtered_address = address.replace(/\.sol$/, "");
+        break;
+      case "twitter":
+        filtered_address = address.replace(/^@/, "");
+        break;
+      default:
+        filtered_address = "";
+    }
+    let data;
+    try {
+      data = await this.torus.getSNSAccount(type, filtered_address);
+      return data ? data.owner.toBase58() : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
     const { t } = i18nPlugin.global;
     const isDeleted = await this.torus.addContact(contactPayload);
