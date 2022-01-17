@@ -1,9 +1,10 @@
 import { AccountInfo, Commitment, Connection, PublicKey, Transaction } from "@solana/web3.js";
-// import log from "loglevel";
+import base58 from "bs58";
 // import log from "loglevel";
 
 export const mockConnection: Partial<Connection> = {
   getRecentBlockhashAndContext: async () => {
+    // log.error("blockhash polled");
     return {
       context: { slot: 23134 },
       value: {
@@ -20,7 +21,10 @@ export const mockConnection: Partial<Connection> = {
     // log.error(rawTranaction)
     const tx = Transaction.from(rawTranaction);
     tx.verifySignatures();
-    return tx.signature?.toString("hex") || "";
+    return base58.encode(tx.signature || []);
+  },
+  getSignaturesForAddress: async () => {
+    return [];
   },
 };
 export const mockGetConnection = (): Connection => {

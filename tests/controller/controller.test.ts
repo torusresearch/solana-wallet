@@ -1,12 +1,12 @@
 // import { Connection } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
 import { PopupWithBcHandler, TX_EVENTS } from "@toruslabs/base-controllers";
+import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
 import { NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
-import log from "loglevel";
-// import assert from "assert";
 import nock from "nock";
 import sinon from "sinon";
 
@@ -14,15 +14,17 @@ import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 
+// import { delay } from "@/utils/helpers";
 import { mockGetConnection } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
 
 describe("TorusController", () => {
   let torusController: TorusController;
   const sandbox = sinon.createSandbox();
-  let clock: sinon.SinonFakeTimers;
+  // let clock: sinon.SinonFakeTimers;
   // const noop = () => {};
-
+  let popupResult = { approve: true };
+  let popupStub: sinon.SinonStub;
   beforeEach(async () => {
     nock.cleanAll();
     nock.enableNetConnect((host) => host.includes("localhost") || host.includes("mainnet.infura.io:443"));
@@ -59,9 +61,50 @@ describe("TorusController", () => {
 
     // api.mainnet-beta nock
     nock("https://api.mainnet-beta.solana.com")
+      .persist()
       .post("/")
-      .reply(200, (_data) => {
-        // log.error(data);
+      .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { method, params, ...others } = body;
+        // log.error(method);
+        if (method === "getHealth") {
+          const value = { ...others, result: "ok" };
+          // log.error(value);
+          return value;
+        }
+        throw new Error(`Unimplemented mock mainnet rpc method ${body.method}`);
+      });
+
+    // api.testnet nock
+    nock("https://api.testnet.solana.com")
+      .persist()
+      .post("/")
+      .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { method, params, ...others } = body;
+        // log.error("testnet", method);
+        if (method === "getHealth") {
+          const value = { ...others, result: "ok" };
+          // log.error(value);
+          return value;
+        }
+        throw new Error(`Unimplemented mock testnet rpc method ${body.method}`);
+      });
+
+    // api.devnet nock
+    nock("https://api.devnet.solana.com")
+      .persist()
+      .post("/")
+      .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { method, params, ...others } = body;
+        // log.error("devnet", method);
+        if (method === "getHealth") {
+          const value = { ...others, result: "ok" };
+          // log.error(value);
+          return value;
+        }
+        throw new Error(`Unimplemented mock devnet rpc method ${body.method}`);
       });
 
     // Stubing Openlogin
@@ -72,6 +115,10 @@ describe("TorusController", () => {
       return mockData.openLoginHandler;
     });
 
+    // mock popup handler
+    popupStub = sandbox.stub(PopupWithBcHandler.prototype, "handleWithHandshake").callsFake(async (_payload: unknown) => {
+      return popupResult;
+    });
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
 
@@ -79,14 +126,15 @@ describe("TorusController", () => {
     torusController.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
 
     // spy transaction controller event
-    clock = sinon.useFakeTimers();
+    // clock = sinon.useFakeTimers();
   });
 
   afterEach(() => {
     nock.cleanAll();
     sandbox.restore();
-    clock.restore();
+    // clock.restore();
   });
+
   // Initialization
   describe("#Initialization, login logout flow", () => {
     it("trigger login flow", async () => {
@@ -97,8 +145,6 @@ describe("TorusController", () => {
       assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
 
       await torusController.triggerLogin({ loginProvider: "google" });
-      // log.error(result)
-      clock.tick(1000);
 
       // validate login state
       // log.error(torusController.state.PreferencesControllerState.identities);
@@ -121,22 +167,26 @@ describe("TorusController", () => {
     it("embed trigger login flow", async () => {
       sandbox.stub(mockData, "openLoginHandler").get(() => openloginFaker[0]);
 
-      assert.deepStrictEqual(torusController.state.AccountTrackerState.accounts, {});
-      assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
+      assert.equal(Object.keys(torusController.state.AccountTrackerState.accounts).length, 0);
+      assert.equal(torusController.state.KeyringControllerState.wallets.length, 0);
 
       const loginResult = torusController.provider.sendAsync({
         method: "solana_requestAccounts",
         params: [],
       });
+
       // Frame.vue on click login
       await torusController.triggerLogin({ loginProvider: "google" });
       // wait for login complete
-      await loginResult;
-      // log.error(result);
+      const result = await loginResult;
 
+      // check return array of wallet public key
+      assert.deepStrictEqual(result, [sKeyPair[0].publicKey.toBase58()]);
       const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
       assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
+      assert.equal(torusController.state.KeyringControllerState.wallets.length, 1);
+      // assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets[0].publicKey ===sKeyPair[0].publicKey.toBase58(), sKeyPair[0].secretKey);
 
       //  to validate state
       const logoutResult = await torusController.communicationProvider.sendAsync({
@@ -184,13 +234,15 @@ describe("TorusController", () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
       tx.add(transferInstruction());
       const results = await torusController.transfer(tx);
-      log.error("transfer here");
-      log.error(results);
+      tx.sign(sKeyPair[0]);
+
+      // verify
+      assert.equal(results, base58.encode(tx.signature || [1]));
 
       torusController.removeAllListeners(TX_EVENTS.TX_UNAPPROVED);
       // check state
     });
-    it("Spl Transfer", async () => {
+    xit("Spl Transfer", async () => {
       // torusController.transferSpl()
       // torusController.transfer();
       torusController.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req: _req }) => {
@@ -231,13 +283,8 @@ describe("TorusController", () => {
       });
     };
 
-    let popupResult = { approve: true };
-    let popupStub: sinon.SinonStub;
     beforeEach(async () => {
       // mock popup handler
-      popupStub = sandbox.stub(PopupWithBcHandler.prototype, "handleWithHandshake").callsFake(async (_payload: unknown) => {
-        return popupResult;
-      });
       // consume on new unapproved event
       torusController.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
         // torusController.approveSignTransaction(txMeta.id);
@@ -249,7 +296,7 @@ describe("TorusController", () => {
     // Solana Api
     it("embed sendTransaction flow", async () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
-      const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false });
+      const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false }).toString("hex");
 
       // validate state before
       const result = await torusController.provider.sendAsync({
@@ -258,28 +305,34 @@ describe("TorusController", () => {
           message: msg,
         },
       });
+      tx.sign(sKeyPair[0]);
 
       // validate state after
       assert(popupStub.called);
-      assert(result);
+      // log.error(base58.encode(tx.signature || [1]));
+      // log.error(result);
+      assert.equal(result, base58.encode(tx.signature || [1]));
 
       // Reject Transaction
       popupResult = { approve: false };
-      // const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false });
-      try {
-        await torusController.provider.sendAsync({
-          method: "send_transaction",
-          params: {
-            message: msg,
-          },
-        });
-        // should not be success
-        assert(false);
-      } catch (_e) {
-        // validate state after reject
-        assert(popupStub.calledTwice);
-      }
+      assert.rejects(
+        async () => {
+          await torusController.provider.sendAsync({
+            method: "send_transaction",
+            params: {
+              message: msg,
+            },
+          });
+        },
+        (_err) => {
+          // validate state after reject
+          assert(popupStub.calledTwice);
+          return true;
+        },
+        "Send Transaction Rejection does not throw error"
+      );
     });
+
     it("embed signTransaction flow", async () => {
       popupResult = { approve: true };
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
@@ -292,26 +345,34 @@ describe("TorusController", () => {
         },
       });
 
-      log.error(result);
+      // log.error(result);
+      tx.sign(sKeyPair[0]);
+      assert.equal(result, tx.serialize({ requireAllSignatures: false }).toString("hex"));
       // Reject Transaction
       popupResult = { approve: false };
-      try {
-        await torusController.provider.sendAsync({
-          method: "sign_transaction",
-          params: {
-            message: msg,
-          },
-        });
-        // should not be success
-        assert(false);
-      } catch (_e) {
-        assert(popupStub.calledTwice);
-      }
+      assert.rejects(
+        async () => {
+          await torusController.provider.sendAsync({
+            method: "sign_transaction",
+            params: {
+              message: msg,
+            },
+          });
+          // should not be success
+          assert(false);
+        },
+        (_e) => {
+          assert(popupStub.calledTwice);
+        }
+      );
     });
+
     it("embed signAllTransaction flow", async () => {
       popupResult = { approve: true };
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
-      const msg = [1, 2, 3, 4].map(() => tx.add(transferInstruction()).serialize({ requireAllSignatures: false }));
+      const txs = [1, 2, 3, 4].map(() => tx.add(transferInstruction()));
+      const msg = txs.map((item) => item.serialize({ requireAllSignatures: false }).toString("hex"));
+
       const result = await torusController.provider.sendAsync({
         method: "sign_all_transactions",
         params: {
@@ -319,22 +380,36 @@ describe("TorusController", () => {
         },
       });
 
+      // validate state
+      assert(popupStub.calledOnce);
+      assert.deepStrictEqual(
+        result,
+        txs.map((item) => {
+          item.sign(sKeyPair[0]);
+          return item.serialize({ requireAllSignatures: false }).toString("hex");
+        })
+      );
+      // validate txcontroller
+
       popupResult = { approve: false };
-      try {
-        await torusController.provider.sendAsync({
-          method: "sign_all_transactions",
-          params: {
-            message: msg,
-          },
-        });
-        // should not be success
-        assert(false);
-      } catch (_e) {
-        // validate state
-        assert(popupStub.calledTwice);
-      }
-      log.error(result);
+      assert.rejects(
+        async () => {
+          await torusController.provider.sendAsync({
+            method: "sign_all_transactions",
+            params: {
+              message: msg,
+            },
+          });
+          // should not be success
+          assert(false);
+        },
+        (_e) => {
+          // validate state
+          assert(popupStub.calledTwice);
+        }
+      );
     });
+
     it("embed signMessage flow", async () => {
       // mock msg popup handler
       popupResult = { approve: true };
@@ -345,17 +420,109 @@ describe("TorusController", () => {
           data: Buffer.from(msg, "utf8"),
         },
       });
-
-      log.error(result);
+      assert(nacl.sign.detached.verify(Buffer.from(msg, "utf8"), result as Buffer, sKeyPair[0].publicKey.toBuffer()));
       // reject
+
+      popupResult = { approve: false };
+      assert.rejects(
+        async () => {
+          await torusController.provider.sendAsync({
+            method: "sign_message",
+            params: {
+              data: Buffer.from(msg, "utf8"),
+            },
+          });
+          // should not be success
+          assert(false);
+        },
+        (_e) => {
+          // validate state
+          assert(popupStub.calledTwice);
+        }
+      );
     });
 
-    xit("gasless transaction (dapp as feepayer) flow", async () => {
-      torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    it("gasless transaction (dapp as feepayer) flow", async () => {
+      // no internal relayer for now, using dapp relayer's fee payer
+      const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[1].publicKey }); // Transaction.serialize
+      tx.add(transferInstruction()).sign(sKeyPair[1]);
+      const msg = tx.serialize({ requireAllSignatures: false }).toString("hex");
+
+      // validate state before
+      popupResult = { approve: true };
+      const result = await torusController.provider.sendAsync({
+        method: "send_transaction",
+        params: {
+          message: msg,
+        },
+      });
+      tx.partialSign(sKeyPair[0]);
+
+      // validate state after
+      assert(popupStub.called);
+      // log.error(base58.encode(tx.signature || [1]));
+      // log.error(result);
+      assert.equal(result, base58.encode(tx.signature || [1]));
+
+      // Reject Transaction
+      popupResult = { approve: false };
+      assert.rejects(
+        async () => {
+          await torusController.provider.sendAsync({
+            method: "send_transaction",
+            params: {
+              message: msg,
+            },
+          });
+        },
+        (_err) => {
+          // validate state after reject
+          assert(popupStub.calledTwice);
+          return true;
+        },
+        "Send Transaction Rejection does not throw error"
+      );
     });
 
-    xit("send multiInstruction flow", async () => {
-      torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    it("send multiInstruction flow", async () => {
+      const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
+      tx.add(transferInstruction());
+      tx.add(transferInstruction());
+      tx.add(transferInstruction());
+      const msg = tx.serialize({ requireAllSignatures: false }).toString("hex");
+
+      // validate state before
+      popupResult = { approve: true };
+      const result = await torusController.provider.sendAsync({
+        method: "send_transaction",
+        params: {
+          message: msg,
+        },
+      });
+      tx.partialSign(sKeyPair[0]);
+
+      // validate state after
+      assert(popupStub.called);
+      assert.equal(result, base58.encode(tx.signature || [1]));
+
+      // Reject Transaction
+      popupResult = { approve: false };
+      assert.rejects(
+        async () => {
+          await torusController.provider.sendAsync({
+            method: "send_transaction",
+            params: {
+              message: msg,
+            },
+          });
+        },
+        (_err) => {
+          // validate state after reject
+          assert(popupStub.calledTwice);
+          return true;
+        },
+        "Send Transaction Rejection does not throw error"
+      );
     });
 
     // xit("embed flow", async () => {
@@ -368,32 +535,67 @@ describe("TorusController", () => {
   describe("#Embeded Wallet Api", () => {
     //  "logout" is covered in login logout flow
 
-    xit("returns first address when dapp calls getAccounts", async () => {
-      // await torusController.addAccount(TestAccount.key, testAccount.address)
-      // await torusController.setSelectedAccount(testAccount.address)
+    it("returns first address when dapp calls getAccounts", async () => {
       // inject postasync
       const result = await torusController.provider.sendAsync({
         method: "getAccounts",
         params: [],
       });
-      log.error(result);
-      // assert.strictEqual(res.length, 1)
-      // assert.strictEqual(res[0], testAccount.address)
+
+      await torusController.triggerLogin({ loginProvider: "google" });
+      assert.deepStrictEqual(result, []);
+
+      const resultAfterLogin = await torusController.provider.sendAsync({
+        method: "getAccounts",
+        params: [],
+      });
+
+      assert.deepStrictEqual(resultAfterLogin, [sKeyPair[0].publicKey.toBase58()]);
     });
 
     // provider changed
-    xit("changed provider", async () => {
-      // mock provider popup handler
-      const result = torusController.communicationProvider.sendAsync({
+    it("changed provider", async () => {
+      const waitNetwork = () =>
+        new Promise<void>((resolve, reject) => {
+          torusController.once("networkDidChange", (_msg) => {
+            resolve();
+          });
+          setTimeout(() => reject(Error("no network emited")), 5000);
+        });
+      await waitNetwork();
+
+      // allow change network before login
+      // await torusController.triggerLogin({ loginProvider: "google" });
+      // verify initial state
+
+      popupResult = { approve: true };
+      const result = await torusController.communicationProvider.sendAsync({
         method: "set_provider",
         params: SUPPORTED_NETWORKS.testnet,
       });
-      // await mock popup called
+
       // validate state
-      // mock approve
+
+      // clock.tick(100);
+      const p1 = waitNetwork();
       await result;
+      await p1;
+
       // validate state
-      log.error(result);
+      assert.equal(torusController.state.NetworkControllerState.network, SUPPORTED_NETWORKS.testnet.displayName);
+      assert.rejects(
+        async () => {
+          popupResult = { approve: false };
+          await torusController.communicationProvider.sendAsync({
+            method: "set_provider",
+            params: SUPPORTED_NETWORKS.testnet,
+          });
+        },
+        (_err) => {
+          assert(true);
+          return true;
+        }
+      );
     });
   });
 

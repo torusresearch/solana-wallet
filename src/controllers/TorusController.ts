@@ -126,9 +126,11 @@ export const DEFAULT_STATE = {
     ticker: "sol",
   },
   NetworkControllerState: {
-    chainId: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK]?.chainId,
+    chainId: "loading",
     properties: {},
     providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
+    network: "loading",
+    isCustomNetwork: false,
   },
   PreferencesControllerState: {
     identities: {},
@@ -267,8 +269,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get connection(): Connection {
-    // return await getSolanaConnection(this.networkController._providerProxy);
-    return new Connection(this.networkController.getProviderConfig().rpcTarget);
+    return this.networkController.getConnection();
   }
 
   get blockExplorerUrl(): string {
@@ -378,6 +379,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
           chainId: this.networkController.state.chainId,
         },
       });
+      // emit event from toruscontroller, network controller is private
+      this.emit("networkDidChange", this.state.NetworkControllerState.network);
     });
 
     // TODO: this returns a promise
