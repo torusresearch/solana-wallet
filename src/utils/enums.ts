@@ -274,7 +274,3 @@ export const LOCALES = [
     value: LOCALE_ES,
   },
 ];
-
-export enum WALLET_COMMUNICATION {
-  AUTH_COMPLETE = "auth_complete_wallet",
-}

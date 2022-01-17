@@ -14,7 +14,6 @@ import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { addToast, app } from "@/modules/app";
-import { WALLET_COMMUNICATION } from "@/utils/enums";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -34,9 +33,6 @@ const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
-  ControllerModule.torus.once(WALLET_COMMUNICATION.AUTH_COMPLETE, () => {
-    isLoading.value = true;
-  });
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
