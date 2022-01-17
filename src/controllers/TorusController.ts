@@ -1107,7 +1107,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       const { privKey, userInfo } = result;
       const paddedKey = privKey.padStart(64, "0");
-      new TorusController.EventEmitter().emit(WALLET_COMMUNICATION.AUTH_COMPLETE, true);
+      this.emit(WALLET_COMMUNICATION.AUTH_COMPLETE, true);
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);

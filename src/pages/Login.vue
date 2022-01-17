@@ -13,7 +13,6 @@ import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
-import TorusController from "@/controllers/TorusController";
 import { addToast, app } from "@/modules/app";
 import { WALLET_COMMUNICATION } from "@/utils/enums";
 
@@ -35,7 +34,7 @@ const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
-  new TorusController.EventEmitter().on(WALLET_COMMUNICATION.AUTH_COMPLETE, () => {
+  ControllerModule.torus.once(WALLET_COMMUNICATION.AUTH_COMPLETE, () => {
     isLoading.value = true;
   });
 });
