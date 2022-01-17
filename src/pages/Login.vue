@@ -3,7 +3,6 @@ import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
-import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -15,7 +14,6 @@ import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { addToast, app } from "@/modules/app";
-import { WALLET_COMMUNICATION } from "@/utils/enums";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -35,9 +33,6 @@ const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
-  new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).onmessage = () => {
-    isLoading.value = true;
-  };
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -168,7 +163,10 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div v-if="isLoading" class="spinner"><Loader></Loader></div>
+    <div v-if="isLoading" class="spinner">
+      <Loader></Loader>
+      <p class="absolute bottom-12 text-white">{{ t("dappLogin.completeVerification") }}.</p>
+    </div>
   </div>
 </template>
 <style scoped>
