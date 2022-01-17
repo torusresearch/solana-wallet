@@ -2,11 +2,12 @@
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
 import { PopupWithBcHandler, TX_EVENTS } from "@toruslabs/base-controllers";
 import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
-import { NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
+import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
 
@@ -21,10 +22,32 @@ import { mockData, openloginFaker, sKeyPair } from "./mockData";
 describe("TorusController", () => {
   let torusController: TorusController;
   const sandbox = sinon.createSandbox();
-  // let clock: sinon.SinonFakeTimers;
+  const clock: sinon.SinonFakeTimers = sinon.useFakeTimers();
+
+  // clock = sinon.useFakeTimers();
   // const noop = () => {};
   let popupResult = { approve: true };
   let popupStub: sinon.SinonStub;
+
+  let spyAccountTracker: sinon.SinonSpy;
+
+  const waitNetwork = () =>
+    new Promise<void>((resolve, reject) => {
+      torusController.once("networkDidChange", (_msg) => {
+        resolve();
+      });
+      setTimeout(() => reject(Error("no network emited")), 5000);
+    });
+  const waitBlock = () =>
+    new Promise<void>((resolve, reject) => {
+      torusController.once("newBlock", (msg) => {
+        log.error(msg);
+        resolve();
+      });
+      // resolve();
+      setTimeout(() => reject(Error("no block emited")), 20000);
+    });
+
   beforeEach(async () => {
     nock.cleanAll();
     nock.enableNetConnect((host) => host.includes("localhost") || host.includes("mainnet.infura.io:443"));
@@ -121,18 +144,18 @@ describe("TorusController", () => {
     });
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
+    spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
 
     torusController = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
     torusController.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
 
     // spy transaction controller event
-    // clock = sinon.useFakeTimers();
   });
 
   afterEach(() => {
     nock.cleanAll();
     sandbox.restore();
-    // clock.restore();
+    clock.restore();
   });
 
   // Initialization
@@ -144,6 +167,7 @@ describe("TorusController", () => {
       assert.deepStrictEqual(torusController.state.AccountTrackerState.accounts, {});
       assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
 
+      // clock.tick(100);
       await torusController.triggerLogin({ loginProvider: "google" });
 
       // validate login state
@@ -262,14 +286,42 @@ describe("TorusController", () => {
 
   // on update
   describe("#On Update flow", () => {
-    xit("network changed trigger updates", async () => {
+    it("network changed trigger updates", async () => {
+      await waitNetwork();
+      await torusController.triggerLogin({ loginProvider: "google" });
+      assert(spyAccountTracker.calledOnce);
+      torusController.setNetwork(SUPPORTED_NETWORKS.testnet);
+      await waitNetwork();
+      assert(spyAccountTracker.calledTwice);
+
       // torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
     });
-    xit("selecteAddress wallet changed trigger updates", async () => {
-      // torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+
+    it("selecteAddress wallet changed trigger updates", async () => {
+      await waitNetwork();
+      await torusController.triggerLogin({ loginProvider: "google" });
+      assert(spyAccountTracker.calledOnce);
+
+      torusController.importExternalAccount(base58.encode(sKeyPair[3].secretKey), torusController.userInfo);
+      torusController.setSelectedAccount(sKeyPair[3].publicKey.toBase58());
+      assert(spyAccountTracker.calledTwice);
     });
+
     xit("onPollingBlock trigger updates", async () => {
-      // torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+      log.error(torusController.listenerCount("newBlock"));
+      await waitNetwork();
+      await torusController.triggerLogin({ loginProvider: "google" });
+
+      assert(spyAccountTracker.calledOnce);
+      log.error(spyAccountTracker.callCount);
+      const wb = waitBlock();
+
+      log.error(torusController.listenerCount("newBlock"));
+      clock.tick(20000);
+      await wb;
+      log.error("resolve");
+      log.error(spyAccountTracker.callCount);
+      assert(spyAccountTracker.calledTwice);
     });
   });
 
@@ -555,13 +607,6 @@ describe("TorusController", () => {
 
     // provider changed
     it("changed provider", async () => {
-      const waitNetwork = () =>
-        new Promise<void>((resolve, reject) => {
-          torusController.once("networkDidChange", (_msg) => {
-            resolve();
-          });
-          setTimeout(() => reject(Error("no network emited")), 5000);
-        });
       await waitNetwork();
 
       // allow change network before login

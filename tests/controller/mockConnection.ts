@@ -1,12 +1,15 @@
 import { AccountInfo, Commitment, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import base58 from "bs58";
-// import log from "loglevel";
+import log from "loglevel";
+
+let slotCounter = 23134;
 
 export const mockConnection: Partial<Connection> = {
   getRecentBlockhashAndContext: async () => {
-    // log.error("blockhash polled");
+    log.error("blockhash polled");
+    slotCounter += 1;
     return {
-      context: { slot: 23134 },
+      context: { slot: slotCounter },
       value: {
         blockhash: "",
         feeCalculator: { lamportsPerSignature: 5000 },
@@ -25,6 +28,12 @@ export const mockConnection: Partial<Connection> = {
   },
   getSignaturesForAddress: async () => {
     return [];
+  },
+  getSignatureStatus: async () => {
+    return {
+      context: { slot: slotCounter },
+      value: null,
+    };
   },
 };
 export const mockGetConnection = (): Connection => {

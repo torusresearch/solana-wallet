@@ -358,13 +358,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
     });
 
-    this.networkController._blockTrackerProxy.on("latest", () => {
+    this.networkController._blockTrackerProxy.on("latest", (block) => {
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.accountTracker.refresh();
         this.tokensTracker.updateSolanaTokens();
         this.preferencesController.updateDisplayActivities();
       }
+      this.emit("newBlock", block);
     });
 
     // ensure accountTracker updates balances after network change
