@@ -64,7 +64,6 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -1108,9 +1107,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       const { privKey, userInfo } = result;
       const paddedKey = privKey.padStart(64, "0");
-
-      new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).postMessage(true);
-
+      new TorusController.EventEmitter().emit(WALLET_COMMUNICATION.AUTH_COMPLETE, true);
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);
