@@ -51,6 +51,7 @@ const AsyncMessageModal = defineAsyncComponent({
 
 onMounted(() => {
   const { query } = route;
+  // Show mint if passed
   if (query.mint) {
     const el = [...tokens.value, ...nftTokens.value].find((x) => x.mintAddress === query.mint);
     selectedToken.value = el || tokens.value[0];
@@ -94,7 +95,8 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount;
+  let associatedAccount = new PublicKey(value);
+
   if (transferType.value.value === "sns") {
     try {
       associatedAccount = new PublicKey((await addressPromise()) as string);
@@ -102,11 +104,12 @@ const tokenAddressVerifier = async (value: string) => {
       // since our sns validator will return false anyway
       return true;
     }
-  } else associatedAccount = new PublicKey(value);
-  // try generate associatedAccount. if it failed, it might be token associatedAccount
-  // if succeed generate associatedAccount, it is valid main Sol Account.
+  }
+
+  // if succeeds, we assume that the account is account key is correct.
+  // Transfer in TorusController with derive the associated token adddress using the same function.
   try {
-    associatedAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
     return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
@@ -116,7 +119,7 @@ const tokenAddressVerifier = async (value: string) => {
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
-    if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
+    if (new PublicKey(data.parsed.info.mint) === mintAddress) {
       return true;
     }
   }
@@ -194,15 +197,18 @@ const closeModal = () => {
 
 const openModal = async () => {
   $v.value.$touch();
+  resolvedAddress.value = transferTo.value;
   if (!$v.value.$invalid) {
-    const address = await addressPromise();
-    if (address) {
-      resolvedAddress.value = address;
-      isOpen.value = true;
-    } else {
-      $v.value.$touch();
-      return;
+    if (transferType.value.value === "sns") {
+      const address = await addressPromise(); // doesn't throw
+      if (address) {
+        resolvedAddress.value = address;
+      } else {
+        return;
+      }
     }
+
+    isOpen.value = true;
   }
   const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
@@ -241,6 +247,7 @@ const confirmTransfer = async () => {
       messageStatus: STATUS.INFO,
     });
   } catch (error) {
+    log.error(error);
     showMessageModal({
       messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
       messageStatus: STATUS.ERROR,
@@ -301,9 +308,10 @@ watch(transferTo, () => {
               <TextField v-model="sendAmount" :label="t('dappTransfer.amount')" :errors="$v.sendAmount.$errors" type="number" />
             </div>
             <div class="flex">
-              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"
-                >{{ t("dappTransfer.transfer") }}<span class="text-base"></span
-              ></Button>
+              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
+                {{ t("dappTransfer.transfer") }}
+                <span class="text-base"></span>
+              </Button>
               <!-- :crypto-tx-fee="state.transactionFee" -->
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
