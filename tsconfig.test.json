@@ -5,9 +5,16 @@
     "moduleResolution": "node",
     "strict": true,
     "jsx": "preserve",
-    "esModuleInterop": true,
     "resolveJsonModule": true,
 
+
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true,
     "allowJs": true,
     "sourceMap": true,
     "baseUrl": ".",

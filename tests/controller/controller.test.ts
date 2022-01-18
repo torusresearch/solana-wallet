@@ -7,7 +7,6 @@ import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
-import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
 
@@ -44,7 +43,7 @@ describe("TorusController", () => {
   const waitBlock = () =>
     new Promise<void>((resolve, reject) => {
       torusController.once("newBlock", (_msg) => {
-        log.error("new block");
+        // log.error("new block");
         resolve();
       });
       // resolve();
@@ -223,8 +222,6 @@ describe("TorusController", () => {
       clock.tick(2000);
       await d;
 
-      log.error(checkIdentities.displayActivities);
-
       const logoutResult = await torusController.communicationProvider.sendAsync({
         method: "logout",
         params: [],
@@ -240,6 +237,7 @@ describe("TorusController", () => {
       await torusController.triggerLogin({ loginProvider: "google" });
 
       assert.equal(torusController.state.KeyringControllerState.wallets.length, 1);
+      assert(spyPrefIntializeDisp.calledOnce);
 
       torusController.importExternalAccount(base58.encode(sKeyPair[3].secretKey), torusController.userInfo);
 
@@ -250,6 +248,7 @@ describe("TorusController", () => {
       assert.equal(torusController.selectedAddress, sKeyPair[0].publicKey.toBase58());
 
       torusController.setSelectedAccount(sKeyPair[3].publicKey.toBase58());
+      assert(spyPrefIntializeDisp.calledTwice);
 
       assert.equal(torusController.selectedAddress, sKeyPair[3].publicKey.toBase58());
       // validate getusersolbalance
@@ -374,7 +373,7 @@ describe("TorusController", () => {
     it("embed sendTransaction flow", async () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
       const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false }).toString("hex");
-      log.error(spyPrefIntializeDisp.callCount);
+      // log.error(spyPrefIntializeDisp.callCount);
       // log.error(torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()]);
       assert(
         Object.keys(torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length === 0

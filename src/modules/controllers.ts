@@ -701,6 +701,6 @@ class ControllerModule extends VuexModule {
   }
 }
 
-const module = getModule(ControllerModule);
+const module1 = getModule(ControllerModule);
 
-export default module;
+export default module1;
