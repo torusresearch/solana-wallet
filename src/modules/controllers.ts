@@ -49,7 +49,10 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+  public torus = new TorusController({
+    _config: DEFAULT_CONFIG,
+    _state: cloneDeep(DEFAULT_STATE),
+  });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -83,12 +86,20 @@ class ControllerModule extends VuexModule {
         if (item.decimal === 0) {
           const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
           if (nftInfo) {
-            return { ...item, logoURI: nftInfo.offChainMetaData?.image, cryptoCurrency: nftInfo.symbol };
+            return {
+              ...item,
+              logoURI: nftInfo.offChainMetaData?.image,
+              cryptoCurrency: nftInfo.symbol,
+            };
           }
         } else {
           const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
           if (tokenInfo) {
-            return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
+            return {
+              ...item,
+              logoURI: tokenInfo.logoURI,
+              cryptoCurrency: tokenInfo.symbol,
+            };
           }
         }
       }
@@ -139,7 +150,13 @@ class ControllerModule extends VuexModule {
           ) {
             return acc;
           }
-          return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+          return [
+            ...acc,
+            {
+              ...current,
+              metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress],
+            },
+          ];
         }, [])
         .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
     return [];
@@ -178,7 +195,10 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+    this.torus = new TorusController({
+      _config: DEFAULT_CONFIG,
+      _state: cloneDeep(DEFAULT_STATE),
+    });
   }
 
   @Action
@@ -349,7 +369,9 @@ class ControllerModule extends VuexModule {
         if (openLoginInstance.state.support3PC) {
           // eslint-disable-next-line no-underscore-dangle
           openLoginInstance._syncState(await openLoginInstance._getData());
-          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+          await openLoginInstance.logout({
+            clientId: config.openLoginClientId,
+          });
         }
       } catch (error) {
         log.warn(error, "unable to logout with openlogin");
@@ -357,7 +379,10 @@ class ControllerModule extends VuexModule {
       }
     }
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+    this.torus.init({
+      _config: DEFAULT_CONFIG,
+      _state: cloneDeep(DEFAULT_STATE),
+    });
     this.torus.setOrigin(origin);
 
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
@@ -477,10 +502,10 @@ class ControllerModule extends VuexModule {
         res = this.torus.getGaslessPublicKey();
         break;
       case "getAccounts":
-        res = this.torus.state.PreferencesControllerState.selectedAddress ? [this.torus.state.PreferencesControllerState.selectedAddress] : [];
+        res = this.torus.state.PreferencesControllerState.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
         break;
       case "solana_requestAccounts":
-        res = this.torus.state.PreferencesControllerState.selectedAddress ? [this.torus.state.PreferencesControllerState.selectedAddress] : [];
+        res = this.torus.state.PreferencesControllerState.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
         break;
       case "nft_list":
         await delay(15000);
