@@ -9,14 +9,14 @@ import { onMounted, reactive, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { useRedirectFlow } from "@/utils/helpers";
+import { redirectToResult, useRedirectFlow } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
 import ControllerModule from "../modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
-const { isRedirectFlow, params, method, resolveRoute, redirectToResult } = useRedirectFlow();
+const { isRedirectFlow, params, method, resolveRoute } = useRedirectFlow();
 
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -50,27 +50,33 @@ const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 onMounted(async () => {
   try {
-    let txData: TransactionChannelDataType;
+    let txData: Partial<TransactionChannelDataType>;
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     } else if (method) {
-      txData = ControllerModule.torus.getTransactionData(method as string, params);
-    } else throw new Error("method not supplied");
+      txData = {
+        type: method,
+        message: params?.message,
+        signer: ControllerModule.selectedAddress,
+        origin: window.origin,
+        networkDetails: JSON.parse(JSON.stringify(ControllerModule.torus.state.NetworkControllerState.providerConfig)),
+      };
+    } else {
+      redirectToResult(method, { message: "method not supplied" }, resolveRoute);
+      return;
+    }
+    origin.value = txData.origin as string;
 
-    origin.value = txData.origin;
-
-    // TODO: currently, controllers does not support multi transaction fllow
+    // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
-      if (Array.isArray(txData.message)) {
-        txData.message.forEach((msg) => {
-          const tx2 = Transaction.from(Buffer.from(msg, "hex"));
-          tx2.instructions.forEach((inst) => {
-            decoded.push(decodeInstruction(inst));
-          });
+      (txData.message as string[]).forEach((msg) => {
+        const tx2 = Transaction.from(Buffer.from(msg, "hex"));
+        tx2.instructions.forEach((inst) => {
+          decoded.push(decodeInstruction(inst));
         });
-      }
+      });
       decodedInst.value = decoded;
       return;
     }
@@ -78,7 +84,7 @@ onMounted(async () => {
     const networkConfig = txData.networkDetails;
 
     tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
-    const conn = new Connection(networkConfig.rpcTarget);
+    const conn = new Connection(networkConfig?.rpcTarget as string);
     const block = await conn.getRecentBlockhash("finalized");
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
@@ -109,7 +115,7 @@ onMounted(async () => {
       finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
-      finalTxData.networkDisplayName = txData.networkDetails?.displayName;
+      finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
       finalTxData.isGasless = isGasless;
     } catch (e) {
       log.error(e);

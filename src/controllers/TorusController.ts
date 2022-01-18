@@ -1070,38 +1070,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  getTransactionData(method: string, params: { message: string }) {
-    return {
-      type: method,
-      message: params?.message || "",
-      signer: this.selectedAddress,
-      origin: window.origin,
-      balance: this.userSOLBalance,
-      selectedCurrency: this.currencyController.state.currentCurrency,
-      currencyRate: this.currencyController.state.conversionRate?.toString(),
-      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
-      network: this.networkController.state.providerConfig.displayName,
-      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
-    };
-  }
-
-  getMessageData(method: string, params: { data: Uint8Array; display?: string }): SignMessageChannelDataType {
-    return {
-      type: method,
-      data: Buffer.from(params?.data || []).toString("hex"),
-      display: params?.display,
-      message: Buffer.from(params?.data || []).toString(),
-      signer: this.selectedAddress,
-      origin: window.location.origin,
-      balance: this.userSOLBalance,
-      selectedCurrency: this.currencyController.state.currentCurrency,
-      currencyRate: this.currencyController.state.conversionRate?.toString(),
-      jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
-      network: this.networkController.state.providerConfig.displayName,
-      networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
-    };
-  }
-
   getWindowId = (): string => Math.random().toString(36).slice(2);
 
   async signMessage(

@@ -6,9 +6,9 @@ import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper"
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, useRedirectFlow } from "../utils/helpers";
+import { delay, redirectToResult, useRedirectFlow } from "../utils/helpers";
 
-const { params, method, resolveRoute, redirectToResult } = useRedirectFlow();
+const { params, method, resolveRoute } = useRedirectFlow();
 
 const transactionFee = ref(0);
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));

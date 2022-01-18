@@ -250,5 +250,5 @@ export const useRedirectFlow = (defaultParams?: unknown) => {
   const resolveRoute = queryParameters.get("resolveRoute");
   const redirect = checkRedirect();
   const isRedirectFlow = checkRedirectFlow();
-  return { params, method, resolveRoute, redirect, isRedirectFlow, redirectToResult };
+  return { params, method, resolveRoute, redirect, isRedirectFlow };
 };

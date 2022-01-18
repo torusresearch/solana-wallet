@@ -19,9 +19,9 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 
-import { useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/helpers";
 
-const { params, isRedirectFlow, method, resolveRoute, redirectToResult } = useRedirectFlow({
+const { params, isRedirectFlow, method, resolveRoute } = useRedirectFlow({
   blockExplorerUrl: "?cluster=mainnet",
   chainId: "0x1",
   displayName: "Solana Mainnet",

@@ -4,9 +4,9 @@ import { onMounted } from "vue";
 import BoxLoader from "@/components/common/BoxLoader.vue";
 
 import ControllerModule from "../modules/controllers";
-import { useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/helpers";
 
-const { params, method, resolveRoute, redirectToResult } = useRedirectFlow();
+const { params, method, resolveRoute } = useRedirectFlow();
 
 onMounted(async () => {
   let res: unknown;

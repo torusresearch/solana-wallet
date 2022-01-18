@@ -20,9 +20,9 @@ import { WALLET_COMMUNICATION } from "@/utils/enums";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
-import { useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/helpers";
 
-const { redirect, isRedirectFlow, method, resolveRoute, redirectToResult } = useRedirectFlow();
+const { redirect, isRedirectFlow, method, resolveRoute } = useRedirectFlow();
 
 const { t } = useI18n();
 const router = useRouter();
