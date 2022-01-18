@@ -22,8 +22,10 @@ onMounted(async () => {
 async function confirmTransfer() {
   await delay(500);
   try {
-    const res = await ControllerModule.torus.transferSpl(params.receiver_add, 1, `${selectedNft.value?.mintAddress?.toString()}`, 0);
-    redirectToResult(method, { signature: res }, resolveRoute);
+    if (selectedNft.value) {
+      const res = await ControllerModule.torus.transferSpl(params.receiver_add, 1, selectedNft.value);
+      redirectToResult(method, { signature: res }, resolveRoute);
+    } else throw new Error("SELECTED NFT NOT FOUND");
   } catch (error) {
     redirectToResult(method, { error, msg: "COULD NOT PROCESS TRANSACTION" }, resolveRoute);
   }

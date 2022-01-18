@@ -5,8 +5,8 @@ import { createApp } from "vue";
 import App from "@/App.vue";
 import router from "@/router";
 
-import { installSentry } from "../sentry";
 import i18nPlugin from "./plugins/i18nPlugin";
+import { installSentry } from "./sentry";
 import store from "./store";
 
 const vue = createApp(App);

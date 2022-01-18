@@ -12,6 +12,7 @@ const props = withDefaults(
     errors?: Array<ErrorObject>;
     type?: string;
     disabled?: boolean;
+    spellCheck?: boolean;
   }>(),
   {
     size: "medium",
@@ -22,6 +23,7 @@ const props = withDefaults(
     errors: () => [],
     type: "text",
     disabled: false,
+    spellCheck: false,
   }
 );
 
@@ -52,6 +54,7 @@ const value = computed({
         :placeholder="placeholder"
         :disabled="disabled"
         aria-label="text field"
+        :spellcheck="spellCheck"
       />
     </div>
     <div v-if="errors?.length" class="flex mt-1 px-1">

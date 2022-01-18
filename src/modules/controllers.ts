@@ -62,6 +62,14 @@ class ControllerModule extends VuexModule {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
   }
 
+  get allAddresses(): string[] {
+    return this.torusState.KeyringControllerState.wallets.map((x) => x.publicKey);
+  }
+
+  get allBalances() {
+    return this.torusState.AccountTrackerState.accounts;
+  }
+
   get selectedAccountPreferences(): ExtendedAddressPreferences {
     const preferences = this.torus.getAccountPreferences(this.selectedAddress);
     return (
@@ -114,6 +122,15 @@ class ControllerModule extends VuexModule {
     return lamports.div(LAMPORTS_PER_SOL);
   }
 
+  get conversionRate(): number {
+    return this.torus.conversionRate;
+  }
+
+  get currentCurrency(): string {
+    return this.torus.currentCurrency;
+  }
+
+  // user balance in equivalent selected currecny
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
@@ -222,6 +239,28 @@ class ControllerModule extends VuexModule {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS));
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
+    }
+  }
+
+  @Action
+  public async getSNSAddress({ type, address }: { type: string; address: string }): Promise<string | null> {
+    let filtered_address;
+    switch (type) {
+      case "sns":
+        filtered_address = address.replace(/\.sol$/, "");
+        break;
+      case "twitter":
+        filtered_address = address.replace(/^@/, "");
+        break;
+      default:
+        filtered_address = "";
+    }
+    let data;
+    try {
+      data = await this.torus.getSNSAccount(type, filtered_address);
+      return data ? data.owner.toBase58() : null;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -338,14 +377,12 @@ class ControllerModule extends VuexModule {
       name: "iframe_torus",
       target: "embed_torus",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
 
     const communicationStream = new BasePostMessageStream({
       name: "iframe_communication",
       target: "embed_communication",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
     this.torus.setupUnTrustedCommunication(torusStream, origin);
     this.torus.setupCommunicationChannel(communicationStream, origin);
@@ -378,11 +415,11 @@ class ControllerModule extends VuexModule {
         window.location.href = "/";
       }
     }
+    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    this.updateTorusState(initialState);
+
     const { origin } = this.torus;
-    this.torus.init({
-      _config: DEFAULT_CONFIG,
-      _state: cloneDeep(DEFAULT_STATE),
-    });
+    this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
     this.torus.setOrigin(origin);
 
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");

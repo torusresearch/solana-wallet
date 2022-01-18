@@ -23,6 +23,7 @@ const openModal = () => {
 function copyPrivKey() {
   copyText(key.value);
 }
+const refDiv = ref(null);
 </script>
 <template>
   <div
@@ -34,8 +35,8 @@ function copyPrivKey() {
     <div class="font-body">{{ t("walletSettings.accountDetails") }}</div>
   </div>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 

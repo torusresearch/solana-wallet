@@ -5,7 +5,7 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import BigNumber from "bignumber.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
@@ -20,9 +20,9 @@ const props = withDefaults(
   defineProps<{
     senderPubKey: string;
     receiverPubKey: string;
-    receiverVerifierId: string;
-    receiverVerifier: string;
-    cryptoAmount: number;
+    receiverVerifierId?: string;
+    receiverVerifier?: string;
+    cryptoAmount?: number;
     cryptoTxFee: number;
     tokenSymbol?: string;
     transferDisabled?: boolean;
@@ -70,11 +70,12 @@ const fiatTxFeeString = computed(() => {
 const explorerUrl = computed(() => {
   return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
 });
+const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 

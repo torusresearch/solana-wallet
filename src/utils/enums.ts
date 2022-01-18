@@ -113,6 +113,7 @@ export const DEFAULT_USER_INFO = {
 };
 
 export const SOL = "sol";
+export const SNS = "sns";
 export const ENS = "ens";
 export const GOOGLE = "google";
 export const REDDIT = "reddit";
@@ -130,17 +131,17 @@ export const ALLOWED_VERIFIERS: TransferType[] = [
     label: "Solana address",
     value: SOL,
   },
+  {
+    label: "SOL Domain",
+    value: SNS,
+  },
   // {
-  //   label: "ENS domain",
-  //   value: ENS,
+  //   label: "Twitter handle",
+  //   value: TWITTER,
   // },
   // {
   //   label: "Google account",
   //   value: GOOGLE,
-  // },
-  // {
-  //   label: "Twitter handle",
-  //   value: TWITTER,
   // },
   // {
   //   label: "Reddit username",
@@ -159,14 +160,18 @@ export const ALLOWED_VERIFIERS_ERRORS: Record<string, string> = {
   [DISCORD]: "walletSettings.invalidDiscord",
   [TWITTER]: "walletSettings.invalidTwitter",
   [GITHUB]: "walletSettings.invalidGithub",
-  [ENS]: "walletSettings.invalidEns",
+  [SNS]: "walletSettings.invalidSns",
 };
 
-export const STATUS_SUCCESS = "success";
-export const STATUS_WARNING = "warning";
-export const STATUS_ERROR = "error";
-export const STATUS_INFO = "info";
-export type STATUS_TYPE = typeof STATUS_SUCCESS | typeof STATUS_WARNING | typeof STATUS_ERROR | typeof STATUS_INFO;
+export const STATUS = {
+  SUCCESS: "success",
+  WARNING: "warning",
+  ERROR: "error",
+  INFO: "info",
+} as const;
+
+export type STATUS_TYPE = typeof STATUS[keyof typeof STATUS];
+
 // export type TX_TYPE = "Transfer" | "Deploy" | "Buy Crypto";
 
 export const BUTTON_POSITION = {
@@ -269,10 +274,6 @@ export const LOCALES = [
     value: LOCALE_ES,
   },
 ];
-
-export enum WALLET_COMMUNICATION {
-  AUTH_COMPLETE = "auth_complete_wallet",
-}
 
 export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } } = {
   logout: {

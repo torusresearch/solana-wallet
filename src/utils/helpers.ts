@@ -37,7 +37,7 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
   }
 
   if (selectedTypeOfLogin === TWITTER) {
-    return /^@(\w){1,15}$/.test(value);
+    return /^@?(\w){1,15}$/.test(value);
   }
 
   if (selectedTypeOfLogin === GITHUB) {
@@ -147,7 +147,11 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
     const collectionName = metaData?.collection?.family || metaData?.symbol || "unknown token";
     const elem = finalData[collectionName];
     if (elem) {
-      finalData[collectionName] = { ...elem, title: metaData?.symbol || "", count: elem.count + 1 };
+      finalData[collectionName] = {
+        ...elem,
+        title: metaData?.symbol || "",
+        count: elem.count + 1,
+      };
     } else {
       finalData[collectionName] = {
         title: metaData?.name || "",
@@ -251,4 +255,32 @@ export const useRedirectFlow = (defaultParams?: unknown) => {
   const redirect = checkRedirect();
   const isRedirectFlow = checkRedirectFlow();
   return { params, method, resolveRoute, redirect, isRedirectFlow };
+};
+
+export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => Promise<void>) => Promise<boolean>, delayAmount: number) => {
+  let currentTimer: NodeJS.Timeout | null = null;
+  let currentPromiseReject: {
+    (arg0: Error): void;
+    (reason?: unknown): void;
+  } | null = null;
+
+  function debounce() {
+    return new Promise<void>((resolve, reject) => {
+      currentTimer = setTimeout(() => {
+        currentTimer = null;
+        currentPromiseReject = null;
+        resolve();
+      }, delayAmount);
+      currentPromiseReject = reject;
+    });
+  }
+
+  return function callback(value: T): Promise<boolean> {
+    if (currentTimer) {
+      currentPromiseReject?.(new Error("replaced"));
+      clearTimeout(currentTimer);
+      currentTimer = null;
+    }
+    return validator(value, debounce);
+  };
 };
