@@ -2,7 +2,7 @@
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
 import { PopupWithBcHandler, TX_EVENTS } from "@toruslabs/base-controllers";
 import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
-import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
+import { AccountTrackerController, NetworkController, PreferencesController, SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
@@ -14,15 +14,17 @@ import sinon from "sinon";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
+import { delay } from "@/utils/helpers";
 
-// import { delay } from "@/utils/helpers";
 import { mockGetConnection } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
 
 describe("TorusController", () => {
+  const sandbox = sinon.createSandbox({
+    // useFakeTimers: true,
+  });
   let torusController: TorusController;
-  const sandbox = sinon.createSandbox();
-  const clock: sinon.SinonFakeTimers = sinon.useFakeTimers();
+  let clock: sinon.SinonFakeTimers; //=
 
   // clock = sinon.useFakeTimers();
   // const noop = () => {};
@@ -30,6 +32,7 @@ describe("TorusController", () => {
   let popupStub: sinon.SinonStub;
 
   let spyAccountTracker: sinon.SinonSpy;
+  let spyPrefIntializeDisp: sinon.SinonSpy;
 
   const waitNetwork = () =>
     new Promise<void>((resolve, reject) => {
@@ -40,12 +43,12 @@ describe("TorusController", () => {
     });
   const waitBlock = () =>
     new Promise<void>((resolve, reject) => {
-      torusController.once("newBlock", (msg) => {
-        log.error(msg);
+      torusController.once("newBlock", (_msg) => {
+        log.error("new block");
         resolve();
       });
       // resolve();
-      setTimeout(() => reject(Error("no block emited")), 20000);
+      setTimeout(() => reject(Error("no block emited")), 21000);
     });
 
   beforeEach(async () => {
@@ -145,10 +148,12 @@ describe("TorusController", () => {
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
+    spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
 
     torusController = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
     torusController.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
 
+    clock = sinon.useFakeTimers();
     // spy transaction controller event
   });
 
@@ -171,8 +176,6 @@ describe("TorusController", () => {
       await torusController.triggerLogin({ loginProvider: "google" });
 
       // validate login state
-      // log.error(torusController.state.PreferencesControllerState.identities);
-      // log.error(torusController.state.AccountTrackerState);
       const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
       assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
@@ -206,13 +209,22 @@ describe("TorusController", () => {
 
       // check return array of wallet public key
       assert.deepStrictEqual(result, [sKeyPair[0].publicKey.toBase58()]);
+
+      //  to validate state
       const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
       assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
       assert.equal(torusController.state.KeyringControllerState.wallets.length, 1);
-      // assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets[0].publicKey ===sKeyPair[0].publicKey.toBase58(), sKeyPair[0].secretKey);
+      assert.equal(torusController.state.KeyringControllerState.wallets[0].publicKey, sKeyPair[0].publicKey.toBase58());
+      assert.equal(torusController.state.KeyringControllerState.wallets[0].privateKey, base58.encode(sKeyPair[0].secretKey));
+      assert.equal(torusController.selectedAddress, sKeyPair[0].publicKey.toBase58());
 
-      //  to validate state
+      const d = delay(2000);
+      clock.tick(2000);
+      await d;
+
+      log.error(checkIdentities.displayActivities);
+
       const logoutResult = await torusController.communicationProvider.sendAsync({
         method: "logout",
         params: [],
@@ -235,7 +247,13 @@ describe("TorusController", () => {
       assert.equal(torusController.state.KeyringControllerState.wallets.length, 2);
       assert(torusController.state.KeyringControllerState.wallets.find((wallet) => wallet.address === sKeyPair[3].publicKey.toBase58()));
       assert(torusController.state.KeyringControllerState.wallets.find((wallet) => wallet.address === sKeyPair[0].publicKey.toBase58()));
-      assert(torusController.selectedAddress === sKeyPair[0].publicKey.toBase58());
+      assert.equal(torusController.selectedAddress, sKeyPair[0].publicKey.toBase58());
+
+      torusController.setSelectedAccount(sKeyPair[3].publicKey.toBase58());
+
+      assert.equal(torusController.selectedAddress, sKeyPair[3].publicKey.toBase58());
+      // validate getusersolbalance
+      // validate token
     });
   });
 
@@ -274,7 +292,6 @@ describe("TorusController", () => {
       });
       // tx = torusController.getSPLTransactions()
       // const results = await torusController.transfer(tx);
-      // log.error("transfer here");
       // log.error(results);
 
       torusController.removeAllListeners(TX_EVENTS.TX_UNAPPROVED);
@@ -290,11 +307,10 @@ describe("TorusController", () => {
       await waitNetwork();
       await torusController.triggerLogin({ loginProvider: "google" });
       assert(spyAccountTracker.calledOnce);
+
       torusController.setNetwork(SUPPORTED_NETWORKS.testnet);
       await waitNetwork();
       assert(spyAccountTracker.calledTwice);
-
-      // torusController.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
     });
 
     it("selecteAddress wallet changed trigger updates", async () => {
@@ -305,23 +321,32 @@ describe("TorusController", () => {
       torusController.importExternalAccount(base58.encode(sKeyPair[3].secretKey), torusController.userInfo);
       torusController.setSelectedAccount(sKeyPair[3].publicKey.toBase58());
       assert(spyAccountTracker.calledTwice);
+
+      torusController.setSelectedAccount(sKeyPair[2].publicKey.toBase58());
+      assert(spyAccountTracker.calledThrice);
     });
 
-    xit("onPollingBlock trigger updates", async () => {
-      log.error(torusController.listenerCount("newBlock"));
+    it("onPollingBlock trigger updates", async () => {
       await waitNetwork();
       await torusController.triggerLogin({ loginProvider: "google" });
 
       assert(spyAccountTracker.calledOnce);
-      log.error(spyAccountTracker.callCount);
-      const wb = waitBlock();
+      // log.error(spyAccountTracker.callCount);
 
-      log.error(torusController.listenerCount("newBlock"));
+      const wb = waitBlock();
+      const d = delay(2000);
       clock.tick(20000);
       await wb;
-      log.error("resolve");
-      log.error(spyAccountTracker.callCount);
+      await d;
+
+      // log.error(spyAccountTracker.callCount);
       assert(spyAccountTracker.calledTwice);
+
+      const wb1 = waitBlock();
+      clock.tick(20000);
+      await wb1;
+      // log.error(spyAccountTracker.callCount);
+      assert(spyAccountTracker.calledThrice);
     });
   });
 
@@ -349,7 +374,11 @@ describe("TorusController", () => {
     it("embed sendTransaction flow", async () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
       const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false }).toString("hex");
-
+      log.error(spyPrefIntializeDisp.callCount);
+      // log.error(torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()]);
+      assert(
+        Object.keys(torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length === 0
+      );
       // validate state before
       const result = await torusController.provider.sendAsync({
         method: "send_transaction",
@@ -357,12 +386,16 @@ describe("TorusController", () => {
           message: msg,
         },
       });
-      tx.sign(sKeyPair[0]);
 
       // validate state after
       assert(popupStub.called);
+      assert(
+        Object.keys(torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length === 1
+      );
+
       // log.error(base58.encode(tx.signature || [1]));
       // log.error(result);
+      tx.sign(sKeyPair[0]);
       assert.equal(result, base58.encode(tx.signature || [1]));
 
       // Reject Transaction
@@ -397,9 +430,14 @@ describe("TorusController", () => {
         },
       });
 
-      // log.error(result);
       tx.sign(sKeyPair[0]);
       assert.equal(result, tx.serialize({ requireAllSignatures: false }).toString("hex"));
+      // will not patch activities
+      assert(
+        Object.keys(torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length === 0
+      );
+      // validate controller
+
       // Reject Transaction
       popupResult = { approve: false };
       assert.rejects(
@@ -612,6 +650,7 @@ describe("TorusController", () => {
       // allow change network before login
       // await torusController.triggerLogin({ loginProvider: "google" });
       // verify initial state
+      assert.notEqual(torusController.state.NetworkControllerState.network, SUPPORTED_NETWORKS.testnet.displayName);
 
       popupResult = { approve: true };
       const result = await torusController.communicationProvider.sendAsync({
