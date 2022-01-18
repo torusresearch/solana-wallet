@@ -1,12 +1,11 @@
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
 import { PopupWithBcHandler } from "@toruslabs/base-controllers";
-import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
 import { AccountTrackerController, NetworkController, PreferencesController } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
-import log from "loglevel";
+// import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
 
@@ -20,6 +19,7 @@ import * as helper from "@/utils/helpers";
 
 import { mockGetConnection } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
+import nockRequest from "./nockRequest";
 
 describe("Controller Module", () => {
   const sandbox = sinon.createSandbox({
@@ -53,92 +53,12 @@ describe("Controller Module", () => {
   //   });
 
   beforeEach(async () => {
-    nock.cleanAll();
-    nock.enableNetConnect((host) => host.includes("localhost") || host.includes("mainnet.infura.io:443"));
-
-    nock("https://api.coingecko.com")
-      .get("/api/v3/simple/price?ids=usd-coin&vs_currencies=usd,aud,cad,eur,gbp,hkd,idr,inr,jpy,php,rub,sgd,uah")
-      .reply(200, (_uri, _body) => {
-        // log.error(uri);
-        // log.error(body);
-        return JSON.stringify(mockData.coingekco["usd-coin"]);
-      });
-
-    const nockBackend = nock("https://solana-api.tor.us").persist();
-    nockBackend
-      .get("/user")
-      .delay(100)
-      .query(true)
-      .reply(200, (_uri) => {
-        // log.error(uri);
-        return JSON.stringify(mockData.backend.user);
-      });
-
-    nockBackend.get("/currency?fsym=SOL&tsyms=USD").reply(200, () => JSON.stringify(mockData.backend.currency));
-
-    nockBackend.post("/auth/message").reply(200, () => JSON.stringify(mockData.backend.message));
-
-    nockBackend.post("/auth/verify").reply(200, () => JSON.stringify(mockData.backend.verify));
-
-    nockBackend.post("/user").reply(200, (_uri, _requestbody) => JSON.stringify(mockData.backend.user));
-
-    nockBackend.post("/user/recordLogin").reply(200, () => JSON.stringify(mockData.backend.recordLogin));
-
-    nockBackend.post("/transaction").reply(200, () => JSON.stringify(mockData.backend.transaction));
-
-    // api.mainnet-beta nock
-    nock("https://api.mainnet-beta.solana.com")
-      .persist()
-      .post("/")
-      .reply(200, (_uri, body: JRPCRequest<unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { method, params, ...others } = body;
-        // log.error(method);
-        if (method === "getHealth") {
-          const value = { ...others, result: "ok" };
-          // log.error(value);
-          return value;
-        }
-        throw new Error(`Unimplemented mock mainnet rpc method ${body.method}`);
-      });
-
-    // api.testnet nock
-    nock("https://api.testnet.solana.com")
-      .persist()
-      .post("/")
-      .reply(200, (_uri, body: JRPCRequest<unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { method, params, ...others } = body;
-        // log.error("testnet", method);
-        if (method === "getHealth") {
-          const value = { ...others, result: "ok" };
-          // log.error(value);
-          return value;
-        }
-        throw new Error(`Unimplemented mock testnet rpc method ${body.method}`);
-      });
-
-    // api.devnet nock
-    nock("https://api.devnet.solana.com")
-      .persist()
-      .post("/")
-      .reply(200, (_uri, body: JRPCRequest<unknown>) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { method, params, ...others } = body;
-        // log.error("devnet", method);
-        if (method === "getHealth") {
-          const value = { ...others, result: "ok" };
-          // log.error(value);
-          return value;
-        }
-        throw new Error(`Unimplemented mock devnet rpc method ${body.method}`);
-      });
+    nockRequest();
 
     // Stubing Openlogin
     sandbox.stub(config, "baseUrl").get(() => "http://localhost");
     sandbox.stub(config, "baseRoute").get(() => "http://localhost");
     sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
-      // log.error("sinon stub working");
       return mockData.openLoginHandler;
     });
 
@@ -151,9 +71,6 @@ describe("Controller Module", () => {
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
     spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
 
-    // controller = controllerModule({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
-    // const controller = controllerModule.modules ? controllerModule.modules : controllerModule;
-    sandbox.stub(helper, "isMain").get(() => false);
     controllerModule.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
     clock = sinon.useFakeTimers();
     // spy transaction controller event
@@ -236,12 +153,8 @@ describe("Controller Module", () => {
     };
 
     beforeEach(async () => {
-      // mock popup handler
-      // consume on new unapproved event
-      // controllerModule.torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
-      // controllerModule.torus.approveSignTransaction(txMeta.id);
-      // controllerModule.torus.handleTransactionPopup(txMeta.id, req);
-      // });
+      sandbox.stub(helper, "isMain").get(() => false);
+      controllerModule.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
     });
 
@@ -263,8 +176,8 @@ describe("Controller Module", () => {
         },
       });
 
-      log.error(result);
-      log.error(popupStub.callCount);
+      // log.error(result);
+      // log.error(popupStub.callCount);
       // validate state after
       assert(popupStub.called);
       assert(
@@ -273,7 +186,7 @@ describe("Controller Module", () => {
       );
 
       // log.error(base58.encode(tx.signature || [1]));
-      log.error(result);
+      // log.error(result);
       tx.sign(sKeyPair[0]);
       assert.equal(result, base58.encode(tx.signature || [1]));
 
