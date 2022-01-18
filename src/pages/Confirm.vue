@@ -132,16 +132,20 @@ const approveTxn = async (): Promise<void> => {
       data: { type: POPUP_RESULT, approve: true },
     });
     bc.close();
-  } else if (tx.value) {
-    let res: string | Transaction;
+  } else {
+    let res: string | string[] | Transaction | undefined;
     try {
-      if (method === "send_transaction") {
+      if (method === "send_transaction" && tx.value) {
         res = await ControllerModule.torus.transfer(tx.value, params);
         redirectToResult(method, res, resolveRoute);
-      } else if (method === "sign_transaction") {
+      } else if (method === "sign_transaction" && tx.value) {
         res = ControllerModule.torus.signTransaction(tx.value);
         redirectToResult(method, res, resolveRoute);
-      }
+      } else if (method === "sign_all_transactions") {
+        log.info(params.message);
+        res = await ControllerModule.torus.signAllTransaction({ params } as any, true);
+        redirectToResult(method, res, resolveRoute);
+      } else throw new Error();
     } catch (e) {
       redirectToResult(method, `failed to execute ${method} : ${e}`, resolveRoute);
     }
@@ -158,7 +162,6 @@ const rejectTxn = async () => {
   if (!isRedirectFlow) {
     closeModal();
   } else {
-    // send res to deeplink and  close window
     redirectToResult(method, { success: false }, resolveRoute);
   }
 };

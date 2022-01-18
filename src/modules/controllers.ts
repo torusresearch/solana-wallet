@@ -36,7 +36,7 @@ import i18nPlugin from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, normalizeJson } from "@/utils/helpers";
+import { delay, isMain, normalizeJson, useRedirectFlow } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -514,7 +514,7 @@ class ControllerModule extends VuexModule {
     let res;
     switch (method) {
       case "topup":
-        await this.torus.handleTopUp(params.params, undefined, true);
+        await this.torus.handleTopUp(params.params, undefined, true, useRedirectFlow().resolveRoute as string);
         break;
       case "wallet_instance_id":
         res = "";
@@ -533,16 +533,16 @@ class ControllerModule extends VuexModule {
         };
         break;
       case "user_info":
-        res = normalizeJson<UserInfo>(this.torus.userInfo); // send response to deeplink, then close window
+        res = normalizeJson<UserInfo>(this.torus.userInfo);
         break;
       case "get_gasless_public_key":
         res = this.torus.getGaslessPublicKey();
         break;
-      case "getAccounts":
-        res = this.torus.state.PreferencesControllerState.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+      case "get_accounts":
+        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
         break;
-      case "solana_requestAccounts":
-        res = this.torus.state.PreferencesControllerState.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+      case "solana_request_accounts":
+        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
         break;
       case "nft_list":
         await delay(15000);

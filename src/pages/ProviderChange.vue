@@ -72,7 +72,6 @@ const approveProviderChange = async (): Promise<void> => {
     bc.close();
   } else {
     ControllerModule.torus.setNetwork(params as unknown as ProviderConfig);
-    // redirect with result true to deeplink and close
     redirectToResult(method, { success: true }, resolveRoute);
   }
 };
@@ -82,7 +81,6 @@ const denyProviderChange = async () => {
     await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
     bc.close();
   } else {
-    // redirect with result false to deeplink and close
     redirectToResult(method, { success: false }, resolveRoute);
   }
 };

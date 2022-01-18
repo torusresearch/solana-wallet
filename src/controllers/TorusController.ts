@@ -1038,7 +1038,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.handleTopUp(params, windowId);
   }
 
-  async handleTopUp(params: PaymentParams, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
+  async handleTopUp(params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
       const parameters = {
@@ -1054,7 +1054,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success${redirectFlow ? "&useRedirectFlow=true" : ""}`, // redirect url
+        finalUrl: redirectFlow
+          ? `${config.baseRoute}redirect?topup=success&useRedirectFlow=true&resolveRoute=${redirectURL}`
+          : `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
@@ -1150,6 +1152,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return relayPublicKey;
   }
 
+  async signAllTransaction(req: Ihandler<{ message: string[] | undefined }>, redirectFlow = false) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+
+    let approved: boolean;
+    // send to popup with all transaction
+    if (!redirectFlow) approved = await this.handleTransactionPopup("", req);
+    else approved = true;
+    // throw error on reject
+    if (!approved) throw new Error("User Rejected the Transaction");
+
+    // sign all transaction
+    const allTransactions = req.params?.message?.map((msg) => {
+      let tx = Transaction.from(Buffer.from(msg, "hex"));
+      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      return signedMessage;
+    });
+    return allTransactions;
+  }
+
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
     const accounts = await this.requestAccounts(req);
     this.engine?.emit("notification", {
@@ -1188,25 +1210,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
     }
     return signed_tx;
-  }
-
-  private async signAllTransaction(req: Ihandler<{ message: string[] | undefined }>) {
-    if (!this.selectedAddress) throw new Error("Not logged in");
-
-    // send to popup with all transaction
-    const approved = await this.handleTransactionPopup("", req);
-
-    // throw error on reject
-    if (!approved) throw new Error("User Rejected the Transaction");
-
-    // sign all transaction
-    const allTransactions = req.params?.message?.map((msg) => {
-      let tx = Transaction.from(Buffer.from(msg, "hex"));
-      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
-      return signedMessage;
-    });
-    return allTransactions;
   }
 
   private async sendTransaction(req: JRPCRequest<any>) {

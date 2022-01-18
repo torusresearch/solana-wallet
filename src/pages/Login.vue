@@ -48,7 +48,6 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     });
     if (redirect) router.push(`${redirect}&useRedirectFlow=true&resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
-      // send response to deeplink and close
       redirectToResult(method, { success: true }, resolveRoute);
     } else if (ControllerModule.torus.selectedAddress) {
       isLoading.value = false;
@@ -57,7 +56,6 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
   } catch (error) {
     log.error(error);
     if (isRedirectFlow) {
-      // send response to deeplink and close
       redirectToResult(method, { success: false }, resolveRoute);
     }
     addToast({

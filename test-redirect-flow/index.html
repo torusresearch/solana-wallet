@@ -7,9 +7,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Redirect Flow</title>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.1.8/lib/index.iife.js"
+        integrity="sha256-EKTEm0ROqj/PnDso+ZKsU7O4/35Cx49TtR2Br2NVSw8=" crossorigin="anonymous"></script>
 </head>
 
 <script>
+    const generateSPLTransaction = async () => {
+        const target_network = {
+            blockExplorerUrl: "https://explorer.solana.com",
+            chainId: "0x1",
+            displayName: "Solana Mainnet",
+            logo: "solana.svg",
+            rpcTarget: solanaWeb3.clusterApiUrl("mainnet-beta"),
+            ticker: "SOL",
+            tickerName: "Solana Token",
+        };
+        const conn = new solanaWeb3.Connection(target_network.rpcTarget);
+        const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+        const publicKey = "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW";
+
+        // usdc mint account on mainnet
+        const destinationTokenAccount = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID,
+            new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"), new solanaWeb3.PublicKey("5ToWXBQJPWFYzckSuGQC64J5GBUhFsyxKLygsww36RZe")); // Phantom account for testing, it already has a associated account
+
+        const transferInstructions = splToken.Token.createTransferCheckedInstruction(
+            splToken.TOKEN_PROGRAM_ID,
+            new solanaWeb3.PublicKey("3k3od93Qvc6Wwy7tyWHxBQJCFbB8Jq2MFHY8oFc7ppKc"), // usdc token account address for public key
+            new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"), // usdc token address
+            destinationTokenAccount,
+            new solanaWeb3.PublicKey(publicKey),
+            [],
+            1,
+            6
+        );
+
+        // fida mint account on mainet
+        // const sourceTokenAccount = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID,
+        //     new solanaWeb3.PublicKey("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp"), new solanaWeb3.PublicKey(publicKey));
+
+        // const destinationTokenAccount2 = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID,
+        //     new solanaWeb3.PublicKey("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp"), new solanaWeb3.PublicKey("D2LtZtYTj6Aep84DGmFiUiNCgcz2J8HvhV4qortTx3mM"));
+
+        // const transferInstructions2 = splToken.Token.createTransferCheckedInstruction(
+        //     splToken.TOKEN_PROGRAM_ID,
+        //     sourceTokenAccount,
+        //     new solanaWeb3.PublicKey("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp"),
+        //     destinationTokenAccount2,
+        //     new solanaWeb3.PublicKey(publicKey),
+        //     [],
+        //     0.1,
+        //     6
+        // );
+
+        const transaction = new solanaWeb3.Transaction({ recentBlockhash: blockhash, feePayer: new solanaWeb3.PublicKey(publicKey) }).add(transferInstructions) //.add(transferInstructions2);
+        return transaction.serialize({requireAllSignatures: false, verifySignatures: false}).toString("hex");
+    }
     const generateTransaction = async () => {
         const target_network = {
             blockExplorerUrl: "https://explorer.solana.com",
@@ -29,7 +81,7 @@
             toPubkey: new solanaWeb3.PublicKey(
                 "32Qy5pNBpQVdPDu458PoEtMC85nm5HEsCe4eAtUH2xfF"
             ),
-            lamports: 0.0001 * 1000000000,
+            lamports: 0.001 * Math.random() * 1000000000,
         });
         let transaction = new solanaWeb3.Transaction({
             recentBlockhash: blockhash,
@@ -74,9 +126,19 @@
                     message: await generateTransaction(),
                 };
                 break;
+            case "send_spl_transaction":
+                params = {
+                    message: await generateSPLTransaction(),
+                };
+                break;
             case "sign_transaction":
                 params = {
                     message: await generateTransaction(),
+                };
+                break;
+            case "sign_all_transactions":
+                params = {
+                    message: [await generateTransaction(), await generateTransaction(), await generateTransaction()],
                 };
                 break;
             case "sign_message":
@@ -94,7 +156,8 @@
             default:
         }
         let queryParams = new URLSearchParams();
-        queryParams.set("method", method);
+        if(method == "send_spl_transaction") queryParams.set("method", "send_transaction");
+        else queryParams.set("method", method);
         let encodedParams = btoa(JSON.stringify(params));
         let useParams = true;
         if (typeof params === "object" && Object.keys(params).length === 0)
@@ -174,7 +237,7 @@
                 <button onclick="openurl('logout')">Logout</button>
             </div>
             <div class="flexwrapper">
-                <h1>Same as CommunicationProvider stuff in embed</h1>
+                <h1>Informational Routes</h1>
                 <button onclick="openurl('user_info')">Get user info</button>
                 <button onclick="openurl('set_provider')">Change Provider</button>
                 <button onclick="openurl('get_provider_state')">
@@ -184,11 +247,18 @@
                     Get Wallet Provider State
                 </button>
                 <button onclick="openurl('topup')">Top Up</button>
+                <button onclick="openurl('get_accounts')">Get Accounts</button>
+                <button onclick="openurl('solana_request_accounts')">
+                    Solana Request Accounts
+                </button>
             </div>
             <div class="flexwrapper">
                 <h1>Wallet Routes</h1>
                 <button onclick="openurl('send_transaction')">
                     Send Transaction
+                </button>
+                <button onclick="openurl('send_spl_transaction')">
+                    Send SPL Transaction
                 </button>
                 <button onclick="openurl('get_gasless_public_key and send_transaction')" disabled>
                     Send Gasless Transaction
@@ -196,7 +266,7 @@
                 <button onclick="openurl('sign_transaction')">
                     Sign Transaction
                 </button>
-                <button onclick="openurl('get_gasless_public_key and sign_transaction*n')" disabled>
+                <button onclick="openurl('sign_all_transactions')">
                     Sign All Transactions
                 </button>
                 <button onclick="openurl('sign_message')">Sign Message</button>
@@ -205,13 +275,6 @@
                 </button>
                 <button onclick="openurl('nft_list')">Get NFTs</button>
                 <button onclick="openurl('nft_transfer')">Transfer nft</button>
-            </div>
-            <div class="flexwrapper">
-                <h1>Are these allowed?</h1>
-                <button onclick="openurl('getAccounts')">Get Accounts</button>
-                <button onclick="openurl('solana_requestAccounts')">
-                    Solana Request Accounts
-                </button>
             </div>
         </div>
         <div id="console" contenteditable="true"></div>

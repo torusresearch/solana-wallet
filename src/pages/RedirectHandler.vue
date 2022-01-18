@@ -27,8 +27,10 @@ const checkTopupSuccess = async () => {
 };
 onMounted(async () => {
   checkTopupSuccess();
-  const redirectHandler = new RedirectHandler();
-  await redirectHandler.handle();
+  if (!isRedirectFlow) {
+    const redirectHandler = new RedirectHandler();
+    await redirectHandler.handle();
+  }
 });
 </script>
 

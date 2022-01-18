@@ -321,7 +321,7 @@ export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; re
     requiresLogin: true,
     shouldRedirect: true,
   },
-  sign_all_transaction: {
+  sign_all_transactions: {
     redirectPath: "/confirm",
     requiresLogin: true,
     shouldRedirect: true,
@@ -346,12 +346,12 @@ export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; re
     requiresLogin: true,
     shouldRedirect: false,
   },
-  getAccounts: {
+  get_accounts: {
     redirectPath: "/",
     requiresLogin: true,
     shouldRedirect: false,
   },
-  solana_requestAccounts: {
+  solana_request_accounts: {
     redirectPath: "/",
     requiresLogin: true,
     shouldRedirect: false,
