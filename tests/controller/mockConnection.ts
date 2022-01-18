@@ -1,10 +1,36 @@
 import { AccountInfo, Commitment, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import base58 from "bs58";
+
+import { sKeyPair } from "./mockData";
 // import log from "loglevel";
 
 let slotCounter = 23134;
 
-const tokenInfo: { pubkey: PublicKey; account: AccountInfo<any> }[] = [
+export const accountInfo: Record<string, AccountInfo<Buffer>> = {
+  oczAiRTdUFsmEKq5LBwLp1fAqF43B6AAHouKR7JxutG: {
+    data: Buffer.from("", "base64"),
+    executable: false,
+    lamports: 5616720,
+    owner: new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
+    rentEpoch: 275,
+  },
+  x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL: {
+    data: Buffer.from("", "base64"),
+    executable: false,
+    lamports: 595644320,
+    owner: new PublicKey("11111111111111111111111111111111"),
+    rentEpoch: 275,
+  },
+  [sKeyPair[0].publicKey.toBase58()]: {
+    data: Buffer.from("", "base64"),
+    executable: false,
+    lamports: 595644320,
+    owner: new PublicKey("11111111111111111111111111111111"),
+    rentEpoch: 275,
+  },
+};
+
+const tokenOwnedInfo: { pubkey: PublicKey; account: AccountInfo<any> }[] = [
   {
     account: {
       data: {
@@ -116,25 +142,28 @@ export const mockConnection: Partial<Connection> = {
       },
     };
   },
-  getMultipleAccountsInfo: async (_publicKeys: PublicKey[], _commitment?: Commitment | undefined): Promise<(AccountInfo<Buffer> | null)[]> => {
-    // log.error(publicKeys[0].toBase58());
-    return [null];
+  getMultipleAccountsInfo: async (publicKeys: PublicKey[], _commitment?: Commitment | undefined): Promise<(AccountInfo<Buffer> | null)[]> => {
+    return publicKeys.map((item) => accountInfo[item.toBase58()]);
   },
+
   sendRawTransaction: async (rawTranaction) => {
     // log.error(rawTranaction)
     const tx = Transaction.from(rawTranaction);
     tx.verifySignatures();
     return base58.encode(tx.signature || []);
   },
+
   getSignaturesForAddress: async () => {
     return [];
   },
+
   getSignatureStatus: async (_signatures) => {
     return {
       context: { slot: slotCounter },
       value: null,
     };
   },
+
   getConfirmedSignaturesForAddress2: async (_address) => {
     // const tx = transaction.map( (item)=> item. === )
     const signatures = ["asdfasdf", "asdfasdf"];
@@ -142,8 +171,9 @@ export const mockConnection: Partial<Connection> = {
       return generateSignatureStatus(signature);
     });
   },
+
   getTokenAccountsByOwner: async (ownerAddress, _filter) => {
-    const tokenOwned = tokenInfo.filter((item) => {
+    const tokenOwned = tokenOwnedInfo.filter((item) => {
       return item.account.data.owner.toBase58() === ownerAddress;
     });
 
@@ -153,6 +183,7 @@ export const mockConnection: Partial<Connection> = {
     };
   },
 };
+
 export const mockGetConnection = (): Connection => {
   return mockConnection as unknown as Connection;
 };

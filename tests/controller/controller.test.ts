@@ -6,6 +6,7 @@ import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
+import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
 
@@ -14,7 +15,7 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import { delay } from "@/utils/helpers";
 
-import { mockGetConnection } from "./mockConnection";
+import { accountInfo, mockGetConnection } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
 import nockRequest from "./nockRequest";
 
@@ -98,6 +99,9 @@ describe("TorusController", () => {
       const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
       assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
+
+      log.info(torusController.userSOLBalance);
+      assert.equal(torusController.userSOLBalance, accountInfo[sKeyPair[0].publicKey.toBase58()].lamports / LAMPORTS_PER_SOL);
 
       // logout flow
       await torusController.handleLogout();
