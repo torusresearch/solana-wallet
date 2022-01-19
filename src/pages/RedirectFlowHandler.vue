@@ -9,9 +9,10 @@ import { redirectToResult, useRedirectFlow } from "../utils/helpers";
 const { params, method, resolveRoute } = useRedirectFlow();
 
 onMounted(async () => {
-  let res: unknown;
-  if (method) res = await ControllerModule.handleRedirectFlow({ method, params });
-  if (method !== "topup") redirectToResult(method, res, resolveRoute);
+  if (method) {
+    const res = await ControllerModule.handleRedirectFlow({ method, params });
+    redirectToResult(method, res, resolveRoute);
+  }
 });
 </script>
 

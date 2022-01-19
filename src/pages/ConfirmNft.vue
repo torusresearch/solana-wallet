@@ -12,13 +12,16 @@ const { params, method, resolveRoute } = useRedirectFlow();
 
 const transactionFee = ref(0);
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));
+
 onMounted(async () => {
+  // This can't be guaranteed
   const { fee } = await ControllerModule.torus.calculateTxFee();
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   setTimeout(() => {
     if (selectedNft.value === undefined) redirectToResult(method, { msg: "SELECTED NFT NOT FOUND" }, resolveRoute);
   }, 10_000);
 });
+
 async function confirmTransfer() {
   await delay(500);
   try {
@@ -30,6 +33,7 @@ async function confirmTransfer() {
     redirectToResult(method, { error, msg: "COULD NOT PROCESS TRANSACTION" }, resolveRoute);
   }
 }
+
 async function cancelTransfer() {
   redirectToResult(method, { msg: "TRANSACTION CANCELLED" }, resolveRoute);
 }

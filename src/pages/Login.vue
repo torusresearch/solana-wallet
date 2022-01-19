@@ -59,7 +59,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       redirectToResult(method, { success: false }, resolveRoute);
     }
     addToast({
-      message: "Something went wrong, please try again.",
+      message: t("login.loginError"),
       type: "error",
     });
   } finally {
