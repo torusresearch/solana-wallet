@@ -244,6 +244,7 @@ export const redirectToResult = (method: string | null | undefined, result: any,
     // elem.click();
     elem.classList.add("back-nav");
     document.getElementById("app")?.appendChild(elem);
+    elem.addEventListener("click", timeoutWindowClose);
   }
 };
 
