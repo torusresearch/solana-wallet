@@ -16,6 +16,8 @@ import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
+import LanguageSelector from "./LanguageSelector.vue";
+
 const { t } = useI18n();
 const props = defineProps<{
   user: UserInfo;
@@ -55,9 +57,12 @@ const setSelected = async (address: string) => {
 const currentAccount = computed(() => ControllerModule.selectedAddress);
 
 const getWalletBalance = (address: string): string => {
-  const solBal = new BigNumber(ControllerModule.torusState.AccountTrackerState.accounts[address]?.balance || 0).div(LAMPORTS_PER_SOL);
-  const pricePerToken = ControllerModule.torusState.CurrencyControllerState.conversionRate;
-  const selectedCurrency = ControllerModule.torusState.CurrencyControllerState.currentCurrency;
+  const { allBalances } = ControllerModule;
+  const lamports = new BigNumber(allBalances[address]?.balance || 0);
+  const solBal = lamports.div(LAMPORTS_PER_SOL);
+
+  const pricePerToken = ControllerModule.conversionRate;
+  const selectedCurrency = ControllerModule.currentCurrency;
   const value = solBal.times(new BigNumber(pricePerToken));
   return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString();
 };
@@ -71,14 +76,14 @@ const getWalletBalance = (address: string): string => {
     </div>
     <div class="px-3 pb-3">
       <div
-        v-for="(wallet, index) in ControllerModule.torusState.KeyringControllerState.wallets"
-        :key="wallet.address"
+        v-for="(wallet, index) in ControllerModule.allAddresses"
+        :key="wallet"
         class="hover:shadow dark:hover:shadow-dark2 rounded-md py-2 px-3 cursor-pointer"
         :class="{
-          'shadow dark:shadow-dark2': currentAccount === wallet.address,
+          'shadow dark:shadow-dark2': currentAccount === wallet,
         }"
-        @click="() => setSelected(wallet.address)"
-        @keydown="() => setSelected(wallet.address)"
+        @click="() => setSelected(wallet)"
+        @keydown="() => setSelected(wallet)"
       >
         <div class="flex">
           <div class="flex items-center">
@@ -88,16 +93,16 @@ const getWalletBalance = (address: string): string => {
             </div>
           </div>
           <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">
-            {{ getWalletBalance(wallet.address) }} {{ currency }}
+            {{ getWalletBalance(wallet) }} {{ currency }}
           </div>
         </div>
         <div class="flex">
           <div class="font-body text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
-            {{ wallet.address }}
+            {{ wallet }}
           </div>
           <div class="ml-auto flex space-x-1">
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-              <CopyIcon class="w-4 h-4" @click.stop="() => copySelectedAddress(wallet.address)" />
+              <CopyIcon class="w-4 h-4" @click.stop="() => copySelectedAddress(wallet)" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
               <QrcodeIcon class="w-4 h-4" />
@@ -112,21 +117,7 @@ const getWalletBalance = (address: string): string => {
       </div>
     </div>
     <div
-      class="
-        flex
-        cursor-pointer
-        items-center
-        border-t border-b
-        sm:border-b-0
-        w-full
-        text-left
-        px-4
-        py-4
-        text-sm
-        font-bold
-        text-app-text-600
-        dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
-      "
+      class="flex cursor-pointer items-center border-t border-b md:border-b-0 w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
       @click="openImportModal"
       @keydown="openImportModal"
     >
@@ -140,23 +131,15 @@ const getWalletBalance = (address: string): string => {
       v-for="nav in pageNavigation"
       :key="nav.route"
       :to="`/wallet/${nav.route}`"
-      class="
-        flex
-        cursor-pointer
-        sm:hidden
-        items-center
-        w-full
-        text-left
-        px-4
-        py-4
-        text-sm
-        font-bold
-        text-app-text-600
-        dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400
-      "
+      class="flex cursor-pointer md:hidden items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
     >
-      <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ t(nav.name) }}</router-link
+      <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ t(nav.name) }}
+    </router-link>
+    <div
+      class="flex cursor-pointer items-center md:hidden border-t w-full text-left py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
     >
+      <LanguageSelector />
+    </div>
 
     <!-- <div
     class="

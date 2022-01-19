@@ -14,10 +14,15 @@ defineProps<{
 
 const router = useRouter();
 const currency = computed(() => ControllerModule.torus.currentCurrency);
-const token = computed(() => ControllerModule.torus.nativeCurrency);
-const conversionRate = computed(() => ControllerModule.torus.conversionRate);
-
-const formattedBalance = computed(() => ControllerModule.userBalance);
+const token = computed(() => {
+  return ControllerModule.torus.nativeCurrency;
+});
+const conversionRate = computed(() => {
+  return ControllerModule.torus.conversionRate;
+});
+const formattedBalance = computed(() => {
+  return ControllerModule.userBalance;
+});
 const updateCurrency = (newCurrency: string) => {
   ControllerModule.setCurrency(newCurrency);
 };
@@ -25,7 +30,9 @@ const updateCurrency = (newCurrency: string) => {
 <template>
   <Card :height="showButtons ? '164px' : undefined">
     <div class="flex">
-      <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletHome.totalValue") }}</div>
+      <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
+        {{ t("walletHome.totalValue") }}
+      </div>
       <div class="ml-auto"><NetworkDisplay /></div>
     </div>
     <div class="flex">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
@@ -41,7 +42,10 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
+    if (ControllerModule.torus.selectedAddress) {
+      isLoading.value = false;
+      router.push("/wallet/home");
+    }
   } catch (error) {
     log.error(error);
     addToast({
@@ -62,13 +66,15 @@ const onEmailLogin = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3">
-    <div class="col-span-6 md:col-span-4 lg:col-span-3 min-h-screen flex items-center">
+  <div class="height-full bg-white dark:bg-app-gray-800 grid grid-cols-6 py-3" :class="[isLoading ? 'overflow-hidden' : '']">
+    <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
           <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
           <div class="flex items-center border-b w-56 pb-4 mb-9">
-            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">{{ t("dappLogin.buildOn") }}</div>
+            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">
+              {{ t("dappLogin.buildOn") }}
+            </div>
             <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </div>
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4" :style="{ maxWidth: '360px' }">
@@ -119,7 +125,9 @@ const onEmailLogin = () => {
             </form>
           </div>
           <div class="mt-8 mb-2 w-full">
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">{{ t("dappLogin.note") }}</div>
+            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">
+              {{ t("dappLogin.note") }}
+            </div>
             <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
               {{ t("login.dataPrivacy") }}
             </div>
@@ -144,14 +152,34 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div class="col-span-6 md:col-span-2 lg:col-span-3 min-h-screen flex items-center">
+    <div class="col-span-6 md:col-span-2 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <img :src="Landing" alt="" />
-          <div class="font-header text-xl mb-2">{{ t("dappLogin.sendReceive") }}</div>
+          <div class="font-header text-xl mb-2">
+            {{ t("dappLogin.sendReceive") }}
+          </div>
           <div class="font-body text-base">{{ t("dappLogin.transactEasy") }} <br />{{ t("login.slide1Subtitle2") }}</div>
         </div>
       </div>
     </div>
+    <div v-if="isLoading" class="spinner">
+      <Loader></Loader>
+      <p class="absolute bottom-12 text-white">{{ t("dappLogin.completeVerification") }}.</p>
+    </div>
   </div>
 </template>
+<style scoped>
+.spinner {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.884);
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+</style>

@@ -12,7 +12,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :class="{ dark: ControllerModule.isDarkMode }">
+  <div :class="{ dark: ControllerModule.isDarkMode }" class="height-full font-body">
     <router-view />
     <Toast />
   </div>

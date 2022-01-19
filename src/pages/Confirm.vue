@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -49,8 +49,23 @@ onMounted(async () => {
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     const networkConfig = txData.networkDetails;
 
-    const msg = Message.from(Buffer.from(txData.message || "", "hex"));
-    const tx = Transaction.populate(msg);
+    origin.value = txData.origin;
+
+    // TODO: currently, controllers does not support multi transaction fllow
+    if (txData.type === "sign_all_transactions") {
+      const decoded: DecodedDataType[] = [];
+      (txData.message as string[]).forEach((msg) => {
+        const tx = Transaction.from(Buffer.from(msg, "hex"));
+        tx.instructions.forEach((inst) => {
+          decoded.push(decodeInstruction(inst));
+        });
+      });
+
+      decodedInst.value = decoded;
+      return;
+    }
+
+    const tx = Transaction.from(Buffer.from(txData.message as string, "hex"));
     let conn = new Connection(networkConfig.rpcTarget);
     let block;
     try {
@@ -72,7 +87,6 @@ onMounted(async () => {
     decodedInst.value = tx.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
-    origin.value = txData.origin;
 
     try {
       if (tx.instructions.length > 1) return;

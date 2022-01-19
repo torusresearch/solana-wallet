@@ -11,6 +11,8 @@ const props = withDefaults(
     modelValue?: string | number;
     errors?: Array<ErrorObject>;
     type?: string;
+    spellCheck?: boolean;
+    postfixText?: string;
   }>(),
   {
     size: "medium",
@@ -20,10 +22,12 @@ const props = withDefaults(
     modelValue: "",
     errors: () => [],
     type: "text",
+    spellCheck: false,
+    postfixText: "",
   }
 );
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "update:postfixTextClicked"]);
 
 const value = computed({
   get: () => props.modelValue,
@@ -33,9 +37,17 @@ const value = computed({
 
 <template>
   <div class="relative w-full items-stretch">
-    <div v-if="label" class="label-container mb-1">
+    <div v-if="label" class="flex flex-row justify-between w-full mb-1">
       <div class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
         {{ label }}
+      </div>
+      <div
+        v-if="postfixText?.length"
+        class="text-sm font-body text-app-text-accent cursor-pointer"
+        @click="emits(`update:postfixTextClicked`)"
+        @keydown="emits(`update:postfixTextClicked`)"
+      >
+        {{ postfixText }}
       </div>
     </div>
     <div
@@ -49,6 +61,7 @@ const value = computed({
         :type="type"
         :placeholder="placeholder"
         aria-label="text field"
+        :spellcheck="spellCheck"
       />
     </div>
     <div v-if="errors?.length" class="flex mt-1 px-1">

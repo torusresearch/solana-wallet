@@ -86,7 +86,7 @@ const importExternalAccount = async () => {
 <template>
   <div
     v-if="props.isOpen"
-    class="overflow-hidden h-full w-full inset-0 fixed z-40 fade-in flex items-center justify-center"
+    class="overflow-hidden h-full w-full inset-0 fixed z-40 fade-in flex items-center justify-center px-2"
     @mousedown.self.stop="closeModal"
   >
     <div class="flex flex-col px-8 py-4 max-w-2xl bg-white dark:bg-app-gray-700 relative z-50 rounded-md importModal scale-in">

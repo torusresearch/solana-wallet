@@ -8,7 +8,6 @@ import FallbackNft from "@/assets/nft.png";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import solicon from "@/assets/solana-mascot.svg";
-import { app } from "@/modules/app";
 import { getClubbedNfts, setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -35,7 +34,7 @@ watch(localToken, () => {
 <template>
   <Listbox v-model="localToken" as="div">
     <ListboxLabel class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
-    <div class="mt-1 relative" :class="{ dark: app.isDarkMode }">
+    <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
           <img
@@ -55,30 +54,14 @@ watch(localToken, () => {
 
       <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
         <ListboxOptions
-          class="
-            absolute
-            z-20
-            mt-1
-            w-full
-            bg-white
-            dark:bg-app-gray-800
-            shadow-lg
-            max-h-56
-            rounded-md
-            py-1
-            text-base
-            ring-1 ring-app-gray-400
-            dark:ring-transparent
-            overflow-auto
-            outline-none
-            focus:outline-none
-            sm:text-sm
-          "
+          class="absolute z-20 mt-1 w-full bg-white dark:bg-app-gray-800 shadow-lg max-h-56 rounded-md py-1 text-base ring-1 ring-app-gray-400 dark:ring-transparent overflow-auto outline-none focus:outline-none sm:text-sm"
         >
           <ListboxOption :key="'tokenstring'" as="template" :value="null" :disabled="true">
             <li class="option-separator">
               <img class="block h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
-              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">{{ t("walletTransfer.tokens") }}</p>
+              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">
+                {{ t("walletTransfer.tokens") }}
+              </p>
             </li>
           </ListboxOption>
           <ListboxOption v-for="item in tokens" v-slot="{ active, selected }" :key="item.name" as="template" :value="item">
@@ -92,7 +75,9 @@ watch(localToken, () => {
                 <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" @error="setFallbackImg($event.target, solicon)" />
                 <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
                   <p>{{ item?.name }} ({{ item?.symbol }})</p>
-                  <p class="text-app-gray-500">{{ item?.symbol === "SOL" ? "" : "SPL" }}</p></span
+                  <p class="text-app-gray-500">
+                    {{ item?.symbol === "SOL" ? "" : "SPL" }}
+                  </p></span
                 >
               </div>
             </li>
@@ -146,7 +131,7 @@ watch(localToken, () => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: start;
+  justify-content: flex-start;
   margin-left: 13px;
   height: 45px;
 }
