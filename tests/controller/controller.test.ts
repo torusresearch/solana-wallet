@@ -101,7 +101,8 @@ describe("TorusController", () => {
       assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
 
       log.info(torusController.userSOLBalance);
-      assert.equal(torusController.userSOLBalance, accountInfo[sKeyPair[0].publicKey.toBase58()].lamports / LAMPORTS_PER_SOL);
+      const account = await accountInfo;
+      assert.equal(torusController.userSOLBalance, account[sKeyPair[0].publicKey.toBase58()].lamports / LAMPORTS_PER_SOL);
 
       // logout flow
       await torusController.handleLogout();

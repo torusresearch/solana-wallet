@@ -1,3 +1,4 @@
+import * as bors from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
 import axios from "axios";
 import copyToClipboard from "copy-to-clipboard";
@@ -209,3 +210,14 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
 
 export const backendStatePromise = promiseCreator();
 export const getRandomWindowId = () => Math.random().toString(36).slice(2);
+
+// Layout
+export const MintLayout = bors.struct([
+  bors.u32("mintAuthorityOption"),
+  bors.publicKey("mintAuthority"),
+  bors.u64("supply"),
+  bors.u8("decimals"),
+  bors.u8("isInitialized"),
+  bors.u32("freezeAuthorityOption"),
+  bors.publicKey("freezeAuthority"),
+]);
