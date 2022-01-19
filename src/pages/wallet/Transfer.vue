@@ -28,6 +28,7 @@ const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
+const isSendAllActive = ref(false);
 
 const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
@@ -271,6 +272,26 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   selectedToken.value = $event;
 }
 
+async function setTokenAmount(type = "max") {
+  switch (type) {
+    case "max":
+      isSendAllActive.value = true;
+      if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
+        const fee = 5000; // static fee model
+        sendAmount.value = getTokenBalance() - fee / LAMPORTS_PER_SOL;
+        break;
+      }
+      sendAmount.value = getTokenBalance();
+      break;
+    case "reset":
+      isSendAllActive.value = false;
+      sendAmount.value = 0;
+      break;
+    default:
+      break;
+  }
+}
+
 // reset transfer token to solana if tokens no longer has current token
 watch([tokens, nftTokens], () => {
   if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
@@ -305,7 +326,14 @@ watch(transferTo, () => {
             </div>
 
             <div v-if="showAmountField" class="mb-6">
-              <TextField v-model="sendAmount" :label="t('dappTransfer.amount')" :errors="$v.sendAmount.$errors" type="number" />
+              <TextField
+                v-model="sendAmount"
+                :label="t('dappTransfer.amount')"
+                :errors="$v.sendAmount.$errors"
+                :postfix-text="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
+                type="number"
+                @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
+              />
             </div>
             <div class="flex">
               <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
