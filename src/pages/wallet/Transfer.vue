@@ -277,8 +277,7 @@ async function setTokenAmount(type = "max") {
     case "max":
       isSendAllActive.value = true;
       if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
-        // deduct the network fees
-        const { fee } = await ControllerModule.torus.calculateTxFee();
+        const fee = 5000; // static fee model
         sendAmount.value = getTokenBalance() - fee / LAMPORTS_PER_SOL;
         break;
       }

@@ -37,7 +37,7 @@ const value = computed({
 
 <template>
   <div class="relative w-full items-stretch">
-    <div v-if="label" class="mb-1 flex flex-row justify-between items-center w-full">
+    <div v-if="label" class="flex flex-row justify-between w-full mb-1">
       <div class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
         {{ label }}
       </div>
