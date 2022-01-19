@@ -18,9 +18,9 @@ import { addToast, app } from "@/modules/app";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
-const { redirect, isRedirectFlow, method, resolveRoute } = useRedirectFlow();
+const { isRedirectFlow, method, resolveRoute } = useRedirectFlow();
 
 const { t } = useI18n();
 const router = useRouter();
@@ -46,7 +46,8 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (redirect) router.push(`${redirect}&useRedirectFlow=true&resolveRoute=${resolveRoute}${window.location.hash}`);
+    const redirect = new URLSearchParams(window.location.search).get("redirectTo");
+    if (redirect) router.push(`${redirect}&resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
       redirectToResult(method, { success: true }, resolveRoute);
     } else if (ControllerModule.torus.selectedAddress) {

@@ -275,95 +275,77 @@ export const LOCALES = [
   },
 ];
 
-export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } } = {
+export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean } } = {
   logout: {
     redirectPath: "/logout",
     requiresLogin: false,
-    shouldRedirect: true,
   },
   login: {
     redirectPath: "/login",
     requiresLogin: false,
-    shouldRedirect: true,
   },
   wallet_instance_id: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   set_provider: {
     redirectPath: "/providerchange",
     requiresLogin: true,
-    shouldRedirect: true,
   },
   topup: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   get_provider_state: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   wallet_get_provider_state: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   send_transaction: {
     redirectPath: "/confirm",
     requiresLogin: true,
-    shouldRedirect: true,
   },
   sign_transaction: {
     redirectPath: "/confirm",
     requiresLogin: true,
-    shouldRedirect: true,
   },
   sign_all_transactions: {
     redirectPath: "/confirm",
     requiresLogin: true,
-    shouldRedirect: true,
   },
   sign_message: {
     redirectPath: "/confirm_message",
     requiresLogin: true,
-    shouldRedirect: true,
   },
   connect: {
     redirectPath: "/",
     requiresLogin: false,
-    shouldRedirect: false,
   },
   user_info: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   get_gasless_public_key: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   get_accounts: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   solana_request_accounts: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   nft_list: {
     redirectPath: "/",
     requiresLogin: true,
-    shouldRedirect: false,
   },
   nft_transfer: {
     redirectPath: "/confirm_nft",
     requiresLogin: true,
-    shouldRedirect: true,
   },
 };

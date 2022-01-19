@@ -3,7 +3,7 @@ import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordNam
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 
-import { getRedirectConfig } from "./utils/helpers";
+import { getRedirectConfig } from "./utils/redirectflow_helpers";
 
 const enum AuthStates {
   AUTHENTICATED = "auth",
@@ -83,13 +83,13 @@ const router = createRouter({
         },
       ],
     },
+    // AUTH STATE INDEPENDENT ROUTES
     {
       name: "logout",
       path: "/logout",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),
       meta: { title: "Logout" },
     },
-    // AUTH STATE INDEPENDENT ROUTES
     {
       name: "start",
       path: "/start",
@@ -132,19 +132,14 @@ const router = createRouter({
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
       meta: { title: "redirecting" },
       beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
-        const { method, resolveRoute } = to.query;
-        const useRedirectFlow = "useRedirectFlow=true";
-        const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method as string | undefined);
-        if (!ControllerModule.selectedAddress && requiresLogin) {
-          return next(
-            `/login?${useRedirectFlow}&redirectTo=${
-              shouldRedirect ? redirectPath : "/redirectflow"
-            }?method=${method}&${useRedirectFlow}&resolveRoute=${resolveRoute}${to.hash}`
-          );
-        }
-        if (shouldRedirect) {
-          return next(`${redirectPath}?method=${method}&${useRedirectFlow}&resolveRoute=${resolveRoute}${to.hash}`);
-        }
+        const method = (to.query.method as string) || "";
+        const resolveRoute = (to.query.resolveRoute as string) || "";
+        const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
+
+        if (!resolveRoute || !method) return next({ name: "404", query: to.query });
+        if (!ControllerModule.selectedAddress && requiresLogin)
+          return next(`/login?redirectTo=${shouldRedirect ? redirectPath : "/redirectflow"}?method=${method}&resolveRoute=${resolveRoute}${to.hash}`);
+        if (shouldRedirect) return next(`${redirectPath}?method=${method}&resolveRoute=${resolveRoute}${to.hash}`);
         return next();
       },
     },
@@ -159,6 +154,12 @@ const router = createRouter({
       path: "/frame",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
       meta: { title: "Frame" },
+    },
+    {
+      name: "404",
+      path: "/404",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "404" */ "@/pages/404.vue"),
+      meta: { title: "404" },
     },
   ],
 });
@@ -185,12 +186,13 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 router.beforeEach((to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
-  const isRedirectFlow = to.query.useRedirectFlow === "true";
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) {
-    next("/login");
-  } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) {
-    next("/");
-  } else next();
+  const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
+  if (to.name === "404") return next(); // to prevent 404 redirecting to 404
+  if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
+  if (isRedirectFlow && (!to.query.method || !to.query.resolveRoute)) return next({ name: "404", query: to.query });
+  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
+  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+  return next();
 });
 
 export default router;

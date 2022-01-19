@@ -1055,7 +1055,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
         finalUrl: redirectFlow
-          ? `${config.baseRoute}redirect?topup=success&useRedirectFlow=true&resolveRoute=${redirectURL}`
+          ? `${config.baseRoute}redirect?topup=success&method=topup&resolveRoute=${redirectURL}`
           : `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
       };
 

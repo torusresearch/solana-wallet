@@ -4,15 +4,13 @@ import { onMounted } from "vue";
 import BoxLoader from "@/components/common/BoxLoader.vue";
 
 import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, method, resolveRoute } = useRedirectFlow();
 
 onMounted(async () => {
-  if (method) {
-    const res = await ControllerModule.handleRedirectFlow({ method, params });
-    redirectToResult(method, res, resolveRoute);
-  }
+  const res = await ControllerModule.handleRedirectFlow({ method, params, resolveRoute });
+  redirectToResult(method, res, resolveRoute);
 });
 </script>
 

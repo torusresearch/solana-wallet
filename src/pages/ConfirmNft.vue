@@ -6,7 +6,8 @@ import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper"
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, redirectToResult, useRedirectFlow } from "../utils/helpers";
+import { delay } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, method, resolveRoute } = useRedirectFlow();
 
@@ -17,9 +18,10 @@ onMounted(async () => {
   // This can't be guaranteed
   const { fee } = await ControllerModule.torus.calculateTxFee();
   transactionFee.value = fee / LAMPORTS_PER_SOL;
+  if (!params?.mint_add) redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
   setTimeout(() => {
-    if (selectedNft.value === undefined) redirectToResult(method, { msg: "SELECTED NFT NOT FOUND" }, resolveRoute);
-  }, 10_000);
+    if (selectedNft.value === undefined) redirectToResult(method, { message: "SELECTED NFT NOT FOUND" }, resolveRoute);
+  }, 20_000);
 });
 
 async function confirmTransfer() {
@@ -30,12 +32,12 @@ async function confirmTransfer() {
       redirectToResult(method, { signature: res }, resolveRoute);
     } else throw new Error("SELECTED NFT NOT FOUND");
   } catch (error) {
-    redirectToResult(method, { error, msg: "COULD NOT PROCESS TRANSACTION" }, resolveRoute);
+    redirectToResult(method, { error, message: "COULD NOT PROCESS TRANSACTION" }, resolveRoute);
   }
 }
 
 async function cancelTransfer() {
-  redirectToResult(method, { msg: "TRANSACTION CANCELLED" }, resolveRoute);
+  redirectToResult(method, { message: "TRANSACTION CANCELLED" }, resolveRoute);
 }
 </script>
 

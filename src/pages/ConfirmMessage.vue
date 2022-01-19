@@ -8,7 +8,7 @@ import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
 import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { isRedirectFlow, params, method, resolveRoute } = useRedirectFlow();
 
@@ -25,21 +25,20 @@ const msg_data = reactive<MsgData>({
 });
 
 onMounted(async () => {
-  log.info(params);
-  if (Object.keys(params).length) params.data = Uint8Array.from(Object.values(params.data));
+  if (Object.keys(params).length) params.data = Uint8Array.from(Object.values(params?.data));
   let channel_msg: Partial<SignMessageChannelDataType>;
   try {
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       channel_msg = await bcHandler.getMessageFromChannel<SignMessageChannelDataType>();
-    } else if (params.data)
+    } else if (params?.data)
       channel_msg = {
         data: Buffer.from(params?.data || []).toString("hex"),
         message: Buffer.from(params?.data || []).toString(),
         origin: window.location.origin,
       };
     else {
-      redirectToResult(method, { message: "Incorrect Params" }, resolveRoute);
+      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
       return;
     }
     msg_data.data = Buffer.from(channel_msg.data as string, "hex");

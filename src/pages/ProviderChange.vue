@@ -11,14 +11,13 @@ import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted, reactive } from "vue";
-// import log from "loglevel";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 
-import { redirectToResult, useRedirectFlow } from "../utils/helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, isRedirectFlow, method, resolveRoute } = useRedirectFlow({
   blockExplorerUrl: "?cluster=mainnet",
@@ -71,7 +70,7 @@ const approveProviderChange = async (): Promise<void> => {
     });
     bc.close();
   } else {
-    ControllerModule.torus.setNetwork(params as unknown as ProviderConfig);
+    ControllerModule.torus.setNetwork(params as ProviderConfig);
     redirectToResult(method, { success: true }, resolveRoute);
   }
 };

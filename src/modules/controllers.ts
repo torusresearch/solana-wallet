@@ -36,7 +36,7 @@ import i18nPlugin from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, normalizeJson, useRedirectFlow } from "@/utils/helpers";
+import { delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -510,11 +510,16 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async handleRedirectFlow({ method, params }: { method: string; params: { [keyof: string]: any } }) {
+  async handleRedirectFlow({ method, params, resolveRoute }: { method: string; params: { [keyof: string]: any }; resolveRoute: string }) {
     let res;
     switch (method) {
       case "topup":
-        await this.torus.handleTopUp(params.params, undefined, true, useRedirectFlow().resolveRoute as string);
+        await this.torus.handleTopUp(
+          params.params ? params.params : { selectedAddress: this.selectedAddress },
+          undefined,
+          true,
+          resolveRoute as string
+        );
         break;
       case "wallet_instance_id":
         res = "";

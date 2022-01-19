@@ -9,8 +9,8 @@ import { onMounted, reactive, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { redirectToResult, useRedirectFlow } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
 import ControllerModule from "../modules/controllers";
 
@@ -54,7 +54,7 @@ onMounted(async () => {
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
-    } else if (method) {
+    } else if (params?.message) {
       txData = {
         type: method,
         message: params?.message,
@@ -63,7 +63,7 @@ onMounted(async () => {
         networkDetails: JSON.parse(JSON.stringify(ControllerModule.torus.state.NetworkControllerState.providerConfig)),
       };
     } else {
-      redirectToResult(method, { message: "method not supplied" }, resolveRoute);
+      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
       return;
     }
     origin.value = txData.origin as string;
