@@ -29,6 +29,11 @@ const blockhash = ref("");
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
+const isCurrencyFiat = ref(false);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
+const solConversionRate = computed(() => {
+  return ControllerModule.torus.conversionRate;
+});
 
 const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
@@ -152,6 +157,15 @@ const getErrorMessage = () => {
   return t(ALLOWED_VERIFIERS_ERRORS[selectedType]);
 };
 
+function convertCryptoToFiat(cryptoValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return cryptoValue * solConversionRate.value;
+  }
+  return cryptoValue * (selectedToken.value?.price?.[selectedFiat] || 0);
+}
+
 const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
@@ -165,8 +179,11 @@ const rules = computed(() => {
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
-      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(0.0001)),
-      lessThanBalance: helpers.withMessage(t("walletTransfer.insufficientBalance"), maxValue(getTokenBalance())),
+      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(isCurrencyFiat.value ? convertCryptoToFiat(0.0001) : 0.0001)),
+      lessThanBalance: helpers.withMessage(
+        t("walletTransfer.insufficientBalance"),
+        maxValue(isCurrencyFiat.value ? convertCryptoToFiat(getTokenBalance()) : getTokenBalance())
+      ),
       nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
   };
@@ -217,7 +234,17 @@ const openModal = async () => {
   transferDisabled.value = false;
 };
 
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
 const confirmTransfer = async () => {
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
@@ -225,7 +252,7 @@ const confirmTransfer = async () => {
       // SPL TRANSFER
       await ControllerModule.torus.transferSpl(
         resolvedAddress.value,
-        sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
+        amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken.value as SolAndSplToken
       );
     } else {
@@ -233,7 +260,7 @@ const confirmTransfer = async () => {
       const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllerModule.selectedAddress),
         toPubkey: new PublicKey(resolvedAddress.value),
-        lamports: sendAmount.value * LAMPORTS_PER_SOL,
+        lamports: amount * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({
         recentBlockhash: blockhash.value,
@@ -256,6 +283,44 @@ const confirmTransfer = async () => {
   }
 };
 
+async function setTokenAmount(type = "max") {
+  let amount = 0;
+  switch (type) {
+    case "max":
+      isSendAllActive.value = true;
+      if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
+        // deduct the network fees
+        const fee = 5000;
+        amount = getTokenBalance() - fee / LAMPORTS_PER_SOL;
+      } else {
+        amount = getTokenBalance();
+      }
+      sendAmount.value = isCurrencyFiat.value ? convertCryptoToFiat(amount) : amount;
+      break;
+    case "reset":
+      isSendAllActive.value = false;
+      isCurrencyFiat.value = false;
+      sendAmount.value = 0;
+      break;
+    default:
+      break;
+  }
+}
+
+function setAmountCurrency(selectFiat = true) {
+  // select crypto as amount currency
+  if (!selectFiat && isCurrencyFiat.value) {
+    isCurrencyFiat.value = false;
+    sendAmount.value = convertFiatToCrypto(sendAmount.value);
+  }
+
+  // select fiat as amount currency
+  else if (selectFiat && !isCurrencyFiat.value) {
+    isCurrencyFiat.value = true;
+    sendAmount.value = convertCryptoToFiat(sendAmount.value);
+  }
+}
+
 function updateSelectedToken($event: Partial<SolAndSplToken>) {
   if ($event.isFungible === false) {
     // new token selected is NFT
@@ -264,32 +329,15 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   } else {
     // new token selected is SPL
     showAmountField.value = true;
+    // last selected token was NFT
     if (!selectedToken.value.isFungible) {
-      // last selected token was NFT
-      sendAmount.value = 0;
+      setTokenAmount("reset");
+    } else {
+      setAmountCurrency(false);
+      isSendAllActive.value = false;
     }
   }
   selectedToken.value = $event;
-}
-
-async function setTokenAmount(type = "max") {
-  switch (type) {
-    case "max":
-      isSendAllActive.value = true;
-      if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
-        const fee = 5000; // static fee model
-        sendAmount.value = getTokenBalance() - fee / LAMPORTS_PER_SOL;
-        break;
-      }
-      sendAmount.value = getTokenBalance();
-      break;
-    case "reset":
-      isSendAllActive.value = false;
-      sendAmount.value = 0;
-      break;
-    default:
-      break;
-  }
 }
 
 // reset transfer token to solana if tokens no longer has current token
@@ -330,10 +378,29 @@ watch(transferTo, () => {
                 v-model="sendAmount"
                 :label="t('dappTransfer.amount')"
                 :errors="$v.sendAmount.$errors"
-                :postfix-text="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
+                :postfix-text-top="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
                 type="number"
-                @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
-              />
+                @update:postfix-text-top-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
+              >
+                <div class="flex flex-row items-center justify-around h-full select-none">
+                  <div
+                    class="currency-selector mr-1"
+                    :class="[!isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
+                    @click="setAmountCurrency(false)"
+                    @keydown="setAmountCurrency(false)"
+                  >
+                    {{ selectedToken.symbol }}
+                  </div>
+                  <div
+                    class="currency-selector"
+                    :class="[isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
+                    @click="setAmountCurrency(true)"
+                    @keydown="setAmountCurrency(true)"
+                  >
+                    {{ currency }}
+                  </div>
+                </div>
+              </TextField>
             </div>
             <div class="flex">
               <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
@@ -345,7 +412,7 @@ watch(transferTo, () => {
               <AsyncTransferConfirm
                 :sender-pub-key="ControllerModule.selectedAddress"
                 :receiver-pub-key="resolvedAddress"
-                :crypto-amount="sendAmount"
+                :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="resolvedAddress"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
@@ -384,3 +451,11 @@ watch(transferTo, () => {
     />
   </div>
 </template>
+<style scoped>
+.active-currency {
+  @apply dark:bg-app-gray-700;
+}
+.currency-selector {
+  @apply font-body py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+}
+</style>
