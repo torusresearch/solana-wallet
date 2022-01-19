@@ -5,7 +5,7 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import BigNumber from "bignumber.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
@@ -70,11 +70,12 @@ const fiatTxFeeString = computed(() => {
 const explorerUrl = computed(() => {
   return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
 });
+const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
@@ -90,23 +91,7 @@ const explorerUrl = computed(() => {
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="
-                inline-block
-                w-full
-                max-w-sm
-                my-8
-                overflow-hidden
-                text-left
-                align-middle
-                transition-all
-                transform
-                bg-white
-                dark:bg-app-gray-700
-                shadow-xl
-                rounded-md
-                px-4
-                font-body
-              "
+              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4 font-body"
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
@@ -154,18 +139,7 @@ const explorerUrl = computed(() => {
                 </div>
               </div>
               <div
-                class="
-                  border-b border-gray-700
-                  text-app-text-500
-                  dark:text-app-text-dark-500
-                  text-xs
-                  font-light
-                  flex flex-row
-                  justify-start
-                  items-center
-                  pb-8
-                  pt-2
-                "
+                class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-row justify-start items-center pb-8 pt-2"
               >
                 <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
                 <p>{{ props.cryptoTxFee }} SOL</p>

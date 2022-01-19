@@ -3,7 +3,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { BigNumber } from "bignumber.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
@@ -97,11 +97,12 @@ const totalCryptoCostString = computed(() => {
 const fiatTxFeeString = computed(() => {
   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
 });
+const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
-      <div class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
@@ -117,21 +118,7 @@ const fiatTxFeeString = computed(() => {
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="
-                inline-block
-                w-full
-                max-w-sm
-                my-8
-                overflow-hidden
-                text-left
-                align-middle
-                transition-all
-                transform
-                bg-white
-                dark:bg-app-gray-700
-                shadow-xl
-                rounded-md
-              "
+              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>

@@ -2,7 +2,7 @@
 import { PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
-  timeout: 250000,
+  timeout: 30_000,
   projects: [
     {
       name: "Chrome Stable",

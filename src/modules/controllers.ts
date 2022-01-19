@@ -29,6 +29,7 @@ import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
+import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import i18nPlugin from "@/plugins/i18nPlugin";
@@ -54,10 +55,7 @@ interface JwtToken {
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({
-    _config: DEFAULT_CONFIG,
-    _state: DEFAULT_STATE,
-  });
+  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -65,6 +63,14 @@ class ControllerModule extends VuexModule {
 
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
+  }
+
+  get allAddresses(): string[] {
+    return this.torusState.KeyringControllerState.wallets.map((x) => x.publicKey);
+  }
+
+  get allBalances() {
+    return this.torusState.AccountTrackerState.accounts;
   }
 
   get selectedAccountPreferences(): ExtendedAddressPreferences {
@@ -111,6 +117,15 @@ class ControllerModule extends VuexModule {
     return lamports.div(LAMPORTS_PER_SOL);
   }
 
+  get conversionRate(): number {
+    return this.torus.conversionRate;
+  }
+
+  get currentCurrency(): string {
+    return this.torus.currentCurrency;
+  }
+
+  // user balance in equivalent selected currecny
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
@@ -186,10 +201,7 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({
-      _config: DEFAULT_CONFIG,
-      _state: DEFAULT_STATE,
-    });
+    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
   }
 
   @Action
@@ -213,6 +225,28 @@ class ControllerModule extends VuexModule {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS));
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
+    }
+  }
+
+  @Action
+  public async getSNSAddress({ type, address }: { type: string; address: string }): Promise<string | null> {
+    let filtered_address;
+    switch (type) {
+      case "sns":
+        filtered_address = address.replace(/\.sol$/, "");
+        break;
+      case "twitter":
+        filtered_address = address.replace(/^@/, "");
+        break;
+      default:
+        filtered_address = "";
+    }
+    let data;
+    try {
+      data = await this.torus.getSNSAccount(type, filtered_address);
+      return data ? data.owner.toBase58() : null;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -341,14 +375,12 @@ class ControllerModule extends VuexModule {
       name: "iframe_torus",
       target: "embed_torus",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
 
     const communicationStream = new BasePostMessageStream({
       name: "iframe_communication",
       target: "embed_communication",
       targetWindow: window.parent,
-      targetOrigin: origin,
     });
     this.torus.setupUnTrustedCommunication(torusStream, origin);
     this.torus.setupCommunicationChannel(communicationStream, origin);
@@ -365,11 +397,27 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  logout(): void {
-    this.updateTorusState(cloneDeep(DEFAULT_STATE));
+  async logout(): Promise<void> {
+    if (isMain && this.selectedAddress) {
+      try {
+        const openLoginInstance = await OpenLoginFactory.getInstance();
+        if (openLoginInstance.state.support3PC) {
+          // eslint-disable-next-line no-underscore-dangle
+          openLoginInstance._syncState(await openLoginInstance._getData());
+          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+        }
+      } catch (error) {
+        log.warn(error, "unable to logout with openlogin");
+        window.location.href = "/";
+      }
+    }
+    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    this.updateTorusState(initialState);
+
     const { origin } = this.torus;
-    this.torus.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
+    this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
     this.torus.setOrigin(origin);
+
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(

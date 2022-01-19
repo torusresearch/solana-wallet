@@ -51,7 +51,7 @@ export default {
   torusNetwork: VUE_APP_TORUS_NETWORK as OPENLOGIN_NETWORK_TYPE,
   openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE",
   openLoginWhiteLabel: {
-    dark: true,
+    dark: false,
     name: "Solana Wallet",
     theme: {
       primary: "#9945ff",

@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import axios from "axios";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -36,7 +37,7 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
   }
 
   if (selectedTypeOfLogin === TWITTER) {
-    return /^@(\w){1,15}$/.test(value);
+    return /^@?(\w){1,15}$/.test(value);
   }
 
   if (selectedTypeOfLogin === GITHUB) {
@@ -90,8 +91,8 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
 }
 
 export const supportedCurrencies = (ticker: string): string[] => {
-  const returnArr = ["SOL", ...config.supportedCurrencies];
-  if (ticker !== "SOL") returnArr.unshift(ticker);
+  const returnArr = [...config.supportedCurrencies];
+  returnArr.unshift(ticker);
   return returnArr;
 };
 
@@ -146,7 +147,11 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
     const collectionName = metaData?.collection?.family || metaData?.symbol || "unknown token";
     const elem = finalData[collectionName];
     if (elem) {
-      finalData[collectionName] = { ...elem, title: metaData?.symbol || "", count: elem.count + 1 };
+      finalData[collectionName] = {
+        ...elem,
+        title: metaData?.symbol || "",
+        count: elem.count + 1,
+      };
     } else {
       finalData[collectionName] = {
         title: metaData?.name || "",
@@ -167,3 +172,40 @@ export function setFallbackImg(target: any, src: string) {
   // eslint-disable-next-line no-param-reassign
   (target as { src: string }).src = src;
 }
+
+export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
+  try {
+    const { data } = await axios.get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
+    return data?.[outputCurrencySymbol.toUpperCase()];
+  } catch (e) {
+    return 0;
+  }
+}
+
+export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => Promise<void>) => Promise<boolean>, delayAmount: number) => {
+  let currentTimer: NodeJS.Timeout | null = null;
+  let currentPromiseReject: {
+    (arg0: Error): void;
+    (reason?: unknown): void;
+  } | null = null;
+
+  function debounce() {
+    return new Promise<void>((resolve, reject) => {
+      currentTimer = setTimeout(() => {
+        currentTimer = null;
+        currentPromiseReject = null;
+        resolve();
+      }, delayAmount);
+      currentPromiseReject = reject;
+    });
+  }
+
+  return function callback(value: T): Promise<boolean> {
+    if (currentTimer) {
+      currentPromiseReject?.(new Error("replaced"));
+      clearTimeout(currentTimer);
+      currentTimer = null;
+    }
+    return validator(value, debounce);
+  };
+};
