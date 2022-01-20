@@ -52,7 +52,7 @@
     duration-150;
     border: 1px solid #f3f3f4;
     border-radius: 6px;
-    box-shadow: -5px -5px 10px #fafbff, 5px 5px 10px #dee5ff;
+    /* box-shadow: -5px -5px 10px #fafbff, 5px 5px 10px #dee5ff; */
   }
 
   .t-btn-outline {
@@ -72,7 +72,7 @@
     duration-150;
   }
   .dark .t-btn-tertiary {
-    box-shadow: -5px -5px 10px #37383c, 5px 5px 10px #242529;
+    /* box-shadow: -5px -5px 10px #37383c, 5px 5px 10px #242529; */
   }
 
   .t-btn-text {

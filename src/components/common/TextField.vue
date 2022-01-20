@@ -51,7 +51,7 @@ const value = computed({
       </div>
     </div>
     <div
-      class="input-container flex shadow-inner dark:shadow-none bg-white rounded-md relative h-14 flex-row justify-between items-center"
+      class="flex flex-row justify-between items-center shadow-inner dark:shadow-none bg-white rounded-md h-14"
       :class="[`size-${size}`, variant === 'dark-bg' ? 'dark:bg-app-gray-700' : 'dark:bg-app-gray-800']"
     >
       <input
