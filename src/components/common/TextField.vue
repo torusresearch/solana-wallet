@@ -51,7 +51,7 @@ const value = computed({
       </div>
     </div>
     <div
-      class="input-container flex shadow-inner dark:shadow-none bg-white rounded-md relative h-14"
+      class="input-container flex shadow-inner dark:shadow-none bg-white rounded-md relative h-14 flex-row justify-between items-center"
       :class="[`size-${size}`, variant === 'dark-bg' ? 'dark:bg-app-gray-700' : 'dark:bg-app-gray-800']"
     >
       <input
@@ -64,7 +64,7 @@ const value = computed({
         :spellcheck="spellCheck"
       />
 
-      <div class="absolute right-2 p-1 h-full"><slot></slot></div>
+      <div class="p-1 h-full"><slot></slot></div>
     </div>
     <div class="flex mt-1 px-1">
       <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
