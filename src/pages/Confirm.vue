@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { AccountMeta, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -7,6 +7,7 @@ import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
+import PermissionsInvalid from "@/components/permissionsInvalid/PermissionsInvalid.vue";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
@@ -52,6 +53,7 @@ const origin = ref("");
 const network = ref("");
 
 const signTxOnly = ref(false);
+const signatureNotRequired = ref(false);
 onMounted(async () => {
   try {
     let txData: Partial<TransactionChannelDataType>;
@@ -82,6 +84,7 @@ onMounted(async () => {
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
+      const signer: AccountMeta[] = [];
       (txData.message as string[]).forEach((msg) => {
         let tx2: Transaction;
         if (txData.messageOnly) {
@@ -91,12 +94,18 @@ onMounted(async () => {
         }
         tx2.instructions.forEach((inst) => {
           decoded.push(decodeInstruction(inst));
+          signer.push(
+            inst.keys.filter((k) => {
+              return k.isSigner && k.pubkey.toBase58() === txData.signer;
+            })
+          );
         });
         // TODO use latest rpc api to get Fee from message
         // Waiting for web3js for now
         // finalTxData.totalNetworkFee += 0
       });
 
+      signatureNotRequired.value = signer.length === 0;
       // Could not estimate balance for multiple Transactions
       hasEstimationError.value = "Unable estimate changes";
       decodedInst.value = decoded;
@@ -108,6 +117,14 @@ onMounted(async () => {
     } else {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
+
+    signatureNotRequired.value =
+      tx.value.instructions.filter((inst) => {
+        return inst.keys.filter((k) => {
+          return k.pubkey.toBase58() === txData.signer && k.isSigner;
+        }).length;
+      }).length === 0;
+    if (signatureNotRequired.value) return;
 
     try {
       hasEstimationError.value = "";
@@ -223,34 +240,37 @@ const rejectTxn = async () => {
 </script>
 
 <template>
-  <PaymentConfirm
-    v-if="finalTxData.totalSolAmount"
-    :is-open="true"
-    :sender-pub-key="finalTxData.slicedSenderAddress"
-    :receiver-pub-key="finalTxData.slicedReceiverAddress"
-    :crypto-amount="finalTxData.totalSolAmount"
-    :crypto-tx-fee="finalTxData.totalNetworkFee"
-    :is-gasless="finalTxData.isGasless"
-    :decoded-inst="decodedInst || []"
-    :network="network"
-    :estimated-balance-change="estimatedBalanceChange"
-    :has-estimation-error="hasEstimationError"
-    @on-close-modal="rejectTxn()"
-    @transfer-confirm="approveTxn()"
-    @transfer-cancel="rejectTxn()"
-  />
-  <PermissionsTx
-    v-else-if="decodedInst"
-    :decoded-inst="decodedInst || []"
-    :origin="origin"
-    :network="network"
-    :estimated-balance-change="estimatedBalanceChange"
-    :has-estimation-error="hasEstimationError"
-    :sign-tx-only="signTxOnly"
-    :tx-fee="finalTxData.totalNetworkFee"
-    :is-gasless="finalTxData.isGasless"
-    @on-close-modal="rejectTxn()"
-    @on-approved="approveTxn()"
-    @on-cancel="rejectTxn()"
-  />
+  <div
+    :class="{ dark: ControllerModule.isDarkMode }"
+    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
+  >
+    <PermissionsInvalid v-if="signatureNotRequired" :origin="origin" @on-close-modal="rejectTxn()" />
+    <PaymentConfirm
+      v-else-if="finalTxData.totalSolAmount"
+      :is-open="true"
+      :sender-pub-key="finalTxData.slicedSenderAddress"
+      :receiver-pub-key="finalTxData.slicedReceiverAddress"
+      :crypto-amount="finalTxData.totalSolAmount"
+      :crypto-tx-fee="finalTxData.totalNetworkFee"
+      :is-gasless="finalTxData.isGasless"
+      :decoded-inst="decodedInst || []"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
+      @on-close-modal="rejectTxn()"
+      @transfer-confirm="approveTxn()"
+      @transfer-cancel="rejectTxn()"
+    />
+    <PermissionsTx
+      v-else-if="decodedInst"
+      :decoded-inst="decodedInst || []"
+      :origin="origin"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
+      :sign-tx-only="signTxOnly"
+      :tx-fee="finalTxData.totalNetworkFee"
+      :is-gasless="finalTxData.isGasless"
+      @on-close-modal="rejectTxn()"
+      @on-approved="approveTxn()"
+    />
+  </div>
 </template>

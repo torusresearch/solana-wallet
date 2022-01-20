@@ -95,16 +95,11 @@ const totalFiatCostString = computed(() => {
 });
 </script>
 <template>
-  <div
-    :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
-  >
-    <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-between relative">
-      <div class="shadow dark:shadow-dark text-center py-6">
-        <img class="h-7 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
-        <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
-          {{ t("walletSettings.paymentConfirmation") }}
-        </p>
+  <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between relative">
+    <div class="shadow dark:shadow-dark text-center py-6" tabindex="0">
+      <img class="h-7 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
+      <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+        {{ t("walletSettings.paymentConfirmation") }}
       </div>
       <div class="mt-4 px-6">
         <div class="flex flex-col">
@@ -114,48 +109,49 @@ const totalFiatCostString = computed(() => {
           </p>
         </div>
       </div>
-      <hr class="m-5" />
-      <div class="mt-4 px-6 items-center no-scrollbar overflow-y-auto">
-        <div class="flex flex-col justify-start items-start">
-          <span class="flex flex-row justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
-            <p>{{ t("walletTopUp.youSend") }}</p>
-            <p>{{ props.cryptoAmount }} {{ props.token }}</p>
-          </span>
+    </div>
+    <hr class="m-5" />
+    <div class="mt-4 px-6 items-center scrollbar">
+      <div class="flex flex-col justify-start items-start">
+        <span class="flex flex-row justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
+          <p>{{ t("walletTopUp.youSend") }}</p>
+          <p>{{ props.cryptoAmount }} {{ props.token }}</p>
+        </span>
 
-          <span class="mt-3 w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-            <EstimateChanges
-              :has-estimation-error="props.hasEstimationError"
-              :estimated-balance-change="props.estimatedBalanceChange"
-              :is-expand="true"
-            />
-          </span>
-          <span class="flex flex-row mt-3 justify-between items-center w-full text-sm font-body text-app-text-500 dark:text-app-text-dark-500">
-            <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
-            <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
-          </span>
+        <span class="mt-3 w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
+          <EstimateChanges
+            :has-estimation-error="props.hasEstimationError"
+            :estimated-balance-change="props.estimatedBalanceChange"
+            :is-expand="true"
+          />
+        </span>
+        <span class="flex flex-row mt-3 justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
+          <p>Estimated Network Fee <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
+          <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
+        </span>
 
-          <p
-            class="text-right mt-4 text-sm cursor-pointer ml-auto text-app-text-accent"
-            @click="() => (expand_inst = !expand_inst)"
-            @keydown.enter="() => (expand_inst = !expand_inst)"
-          >
-            {{ expand_inst ? "Hide details" : "View more details" }}
-          </p>
-          <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
-        </div>
+        <p
+          class="text-right mt-4 text-sm cursor-pointer view-details text-app-text-accent"
+          @click="() => (expand_inst = !expand_inst)"
+          @keydown="() => (expand_inst = !expand_inst)"
+        >
+          {{ expand_inst ? "Hide details" : "View more details" }}
+        </p>
+        <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
       </div>
-      <hr class="m-5" />
-      <div class="flex px-6">
-        <p class="text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</p>
-        <div class="ml-auto text-right">
-          <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</p>
-          <p class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</p>
-        </div>
+    </div>
+    <hr class="m-5" />
+    <div class="flex px-6">
+      <div class="text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
+      <div class="ml-auto text-right">
+        <div class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
+        <div class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
       </div>
-      <div class="flex flex-row items-center my-4 mx-4">
-        <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
-        <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.confirm") }}</Button>
-      </div>
+    </div>
+
+    <div class="flex flex-row items-center my-4 mx-4">
+      <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+      <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.confirm") }}</Button>
     </div>
   </div>
 </template>

@@ -56,6 +56,13 @@ function getSolCost(): number {
   }
   return props.cryptoTxFee + props.cryptoAmount;
 }
+function getTokenChanges(): number {
+  if (!props.hasEstimationError) {
+    const tokenChanges = props.estimatedBalanceChange.find((item) => item.symbol !== "SOL");
+    if (tokenChanges) return Math.abs(tokenChanges.changes);
+  }
+  return props.cryptoAmount;
+}
 
 const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
 
@@ -86,14 +93,14 @@ const fiatAmountString = computed(() => {
 // Total cost
 const totalFiatCostString = computed(() => {
   let totalCost = getSolCost() * ControllerModule.torus.conversionRate;
-  if (isSPLToken()) totalCost += props.cryptoAmount * (props.token?.price?.[currency.value.toLowerCase()] || 0);
+  if (isSPLToken()) totalCost += getTokenChanges() * (props.token?.price?.[currency.value.toLowerCase()] || 0);
   const totalFee = significantDigits(totalCost, false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
 });
 
 const totalCryptoCostString = computed(() => {
   if (isSPLToken()) {
-    return `${props.cryptoAmount} ${props.tokenSymbol} + ${getSolCost()} SOL`;
+    return `${getTokenChanges()} ${props.tokenSymbol} + ${getSolCost()} SOL`;
   }
   const totalCost = significantDigits(getSolCost(), false, 2);
   return `${totalCost.toString(10)} ${props.tokenSymbol}`;
