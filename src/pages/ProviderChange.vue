@@ -14,7 +14,6 @@ import { onMounted, reactive } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
@@ -86,9 +85,9 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <div class="h-full w-full bg-white dark:bg-app-gray-700 flex justify-center items-center">
-    <div class="content-box h-full bg-white dark:bg-app-gray-700 flex flex-col justify-between shadow dark:shadow-dark">
-      <div class="shadow w-full dark:shadow-dark text-center py-6 relative" tabindex="0">
+  <div class="h-full w-full bg-white dark:bg-app-gray-600 flex justify-center items-center" :class="{ dark: ControllerModule.isDarkMode }">
+    <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
+      <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
         <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="SolanaLogoURL" alt="Solana Logo" />
         <div class="font-header w-full text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
           {{ `${t("dappTransfer.confirm")} ${t("dappTransfer.permission")}` }}
@@ -107,16 +106,24 @@ const denyProviderChange = async () => {
             <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">
               {{ `${t("dappPermission.currentNetwork")}:` }}
             </div>
-            <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3">
+              <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
+                <span class="text-sm font-body text-app-text-600 dark:text-white">{{ finalProviderData.fromNetwork }}</span>
+              </div>
+            </div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("dappPermission.requestNew") }}</div>
-            <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("dappPermission.requestNew") }}</div>
+            <div class="col-span-3">
+              <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
+                <span class="text-sm font-body text-app-text-600 dark:text-white">{{ finalProviderData.toNetwork }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="grid grid-cols-2 gap-3 m-6">
+      <div class="spacer"></div>
+      <div class="grid grid-cols-2 gap-3 m-6 rounded-md my-8">
         <div>
           <Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">{{ t("dappProvider.cancel") }}</Button>
         </div>
@@ -133,5 +140,8 @@ const denyProviderChange = async () => {
     max-width: 400px;
     max-height: 600px;
   }
+}
+.spacer {
+  flex: 1 1 auto;
 }
 </style>
