@@ -2,6 +2,8 @@ import { Keypair } from "@solana/web3.js";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { ec as EC } from "elliptic";
 
+export const OffChainMetaplexUri = "https://metaplex.data";
+
 const ec = new EC("secp256k1");
 
 const secp256 = [

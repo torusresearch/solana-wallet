@@ -1,63 +1,54 @@
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
 import { PopupWithBcHandler } from "@toruslabs/base-controllers";
+import OpenLogin from "@toruslabs/openlogin";
 import { AccountTrackerController, NetworkController, PreferencesController } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
-// import log from "loglevel";
+import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
+import { DEFAULT_STATE } from "@/controllers/TorusController";
 import controllerModule from "@/modules/controllers";
 import { BUTTON_POSITION } from "@/utils/enums";
-// import { delay } from "@/utils/helpers";
 import * as helper from "@/utils/helpers";
 
-import { mockGetConnection } from "./mockConnection";
+import { accountInfoPromise, mockGetConnection } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
 import nockRequest from "./nockRequest";
 
 describe("Controller Module", () => {
-  const sandbox = sinon.createSandbox({
-    // useFakeTimers: true,
-  });
+  const sandbox = sinon.createSandbox();
   let clock: sinon.SinonFakeTimers; //=
 
-  // clock = sinon.useFakeTimers();
-  // const noop = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const noopAsync = async () => {};
   let popupResult = { approve: true };
   let popupStub: sinon.SinonStub;
 
   let spyAccountTracker: sinon.SinonSpy;
   let spyPrefIntializeDisp: sinon.SinonSpy;
 
-  // const waitNetwork = () =>
-  //   new Promise<void>((resolve, reject) => {
-  //     controllerModule.torus.once("networkDidChange", (_msg) => {
-  //       resolve();
-  //     });
-  //     setTimeout(() => reject(Error("no network emited")), 5000);
-  //   });
-  // const waitBlock = () =>
-  //   new Promise<void>((resolve, reject) => {
-  //     controllerModule.torus.once("newBlock", (_msg) => {
-  //       // log.error("new block");
-  //       resolve();
-  //     });
-  //     resolve();
-  //     setTimeout(() => reject(Error("no block emited")), 21000);
-  //   });
-
+  // init once only
+  controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost" });
   beforeEach(async () => {
     nockRequest();
 
     // Stubing Openlogin
     sandbox.stub(config, "baseUrl").get(() => "http://localhost");
     sandbox.stub(config, "baseRoute").get(() => "http://localhost");
+    sandbox.stub(config, "torusNetwork").get(() => "mainnet");
+    sandbox.stub(OpenLogin.prototype, "init").callsFake(noopAsync);
+    sandbox.stub(OpenLogin.prototype, "logout").callsFake(noopAsync);
+    sandbox.stub(OpenLogin.prototype, "_syncState").callsFake(noopAsync);
+    sandbox.stub(OpenLogin.prototype, "_getData").callsFake(async () => {
+      return {};
+    });
+
     sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
       return mockData.openLoginHandler;
     });
@@ -66,14 +57,17 @@ describe("Controller Module", () => {
     popupStub = sandbox.stub(PopupWithBcHandler.prototype, "handleWithHandshake").callsFake(async (_payload: unknown) => {
       return popupResult;
     });
+
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
     spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
 
-    controllerModule.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
+    // init
+    // controllerModule.torus = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
+    // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost" });
+    controllerModule.logout();
     clock = sinon.useFakeTimers();
-    // spy transaction controller event
   });
 
   afterEach(() => {
@@ -81,40 +75,46 @@ describe("Controller Module", () => {
     sandbox.restore();
     clock.restore();
   });
+
   // Initialization
   describe("#Initialization, login logout flow", () => {
     it("trigger login flow", async () => {
-      // log.error(torusController);
+      const account = await accountInfoPromise;
       sandbox.stub(mockData, "openLoginHandler").get(() => openloginFaker[0]);
 
-      // assert.deepStrictEqual(torusController.state.AccountTrackerState.accounts, {});
-      // assert.deepStrictEqual(torusController.state.KeyringControllerState.wallets, []);
+      assert.deepStrictEqual(controllerModule.torusState.AccountTrackerState.accounts, {});
+      assert.deepStrictEqual(controllerModule.torusState.KeyringControllerState.wallets, []);
 
-      // clock.tick(100);
       await controllerModule.triggerLogin({ loginProvider: "google" });
 
       assert(spyPrefIntializeDisp.calledOnce);
       assert(spyAccountTracker.calledOnce);
+
       // validate login state
-      // const checkIdentities = torusController.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
-      // assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
-      // assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
+      const checkIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
+      assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
+      checkIdentities.contacts.forEach((item, idx) => {
+        assert.deepStrictEqual(item, mockData.backend.user.data.contacts[idx]);
+      });
+
+      assert.equal(controllerModule.solBalance, account[sKeyPair[0].publicKey.toBase58()].lamports / LAMPORTS_PER_SOL);
 
       // logout flow
       await controllerModule.logout();
       // validate logout state
-      assert.deepStrictEqual(controllerModule.torus.state.AccountTrackerState.accounts, {});
-      assert.deepStrictEqual(controllerModule.torus.state.KeyringControllerState.wallets, []);
+      assert.deepStrictEqual(controllerModule.torusState.AccountTrackerState.accounts, {});
+      assert.deepStrictEqual(controllerModule.torusState.KeyringControllerState.wallets, []);
     });
   });
 
-  describe("#Embeded Solana API flow", () => {
+  describe("#Embeded Login Logout flow", () => {
     const initParams = {
       buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
       apiKey: "adsf",
     };
     const dappOrigin = "localhost";
-    it("login via embed", () => {
+    it("login via embed", async () => {
+      const accountInfo = await accountInfoPromise;
       controllerModule.init({
         state: {
           EmbedControllerState: {
@@ -125,21 +125,102 @@ describe("Controller Module", () => {
             loginInProgress: false,
             dappMetadata: { name: "", icon: "" },
           },
-          //   ...(initParams.network && {
-          //     NetworkControllerState: {
-          //       chainId: initParams.network.chainId,
-          //       properties: {},
-          //       providerConfig: initParams.network,
-          //     },
-          //   }),
         },
         origin: dappOrigin,
       });
       controllerModule.setupCommunication(dappOrigin);
 
-      //   log.error(controllerModule.torusState);
-      //   controllerModule.torus.loginFromWidgetButton();
+      assert.equal(Object.keys(controllerModule.torusState.AccountTrackerState.accounts).length, 0);
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 0);
+
+      const loginResult = controllerModule.torus.provider.sendAsync({
+        method: "solana_requestAccounts",
+        params: [],
+      });
+
+      // Frame.vue on click login
+      await controllerModule.triggerLogin({ loginProvider: "google" });
+      // wait for login complete
+      const result = await loginResult;
+
+      // check return array of wallet public key
+      assert.deepStrictEqual(result, [sKeyPair[0].publicKey.toBase58()]);
+
+      //  to validate state
+      const checkIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
+      assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
+      // assert.deepStrictEqual(checkIdentities.contacts, mockData.backend.user.data.contacts);
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 1);
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets[0].publicKey, sKeyPair[0].publicKey.toBase58());
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets[0].privateKey, base58.encode(sKeyPair[0].secretKey));
+      assert.equal(controllerModule.selectedAddress, sKeyPair[0].publicKey.toBase58());
+      assert.equal(controllerModule.solBalance, accountInfo[sKeyPair[0].publicKey.toBase58()].lamports / LAMPORTS_PER_SOL);
+
+      const logoutResult = await controllerModule.torus.communicationProvider.sendAsync({
+        method: "logout",
+        params: [],
+      });
+      // expect return true
+      assert(logoutResult);
+      assert.deepStrictEqual(controllerModule.torusState.AccountTrackerState.accounts, {});
+      assert.deepStrictEqual(controllerModule.torusState.KeyringControllerState.wallets, []);
     });
+
+    // add account
+    it("add newAccount flow", async () => {
+      await controllerModule.triggerLogin({ loginProvider: "google" });
+
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 1);
+      assert(spyPrefIntializeDisp.calledOnce);
+
+      controllerModule.importExternalAccount(base58.encode(sKeyPair[3].secretKey));
+
+      // validate state
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 2);
+      assert(controllerModule.torusState.KeyringControllerState.wallets.find((wallet) => wallet.address === sKeyPair[3].publicKey.toBase58()));
+      assert(controllerModule.torusState.KeyringControllerState.wallets.find((wallet) => wallet.address === sKeyPair[0].publicKey.toBase58()));
+      assert.equal(controllerModule.selectedAddress, sKeyPair[0].publicKey.toBase58());
+
+      controllerModule.setSelectedAccount(sKeyPair[3].publicKey.toBase58());
+      assert(spyPrefIntializeDisp.calledTwice);
+
+      assert.equal(controllerModule.selectedAddress, sKeyPair[3].publicKey.toBase58());
+      // validate getusersolbalance
+      // validate token
+    });
+  });
+
+  // transfer flow
+  describe("#Transfer flow", () => {
+    const transferInstruction = () => {
+      return SystemProgram.transfer({
+        fromPubkey: sKeyPair[0].publicKey,
+        toPubkey: sKeyPair[1].publicKey,
+        lamports: Math.random() * LAMPORTS_PER_SOL,
+      });
+    };
+    beforeEach(async () => {
+      await controllerModule.triggerLogin({ loginProvider: "google" });
+    });
+    it("SOL Transfer", async () => {
+      const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
+      tx.add(transferInstruction());
+      const results = await controllerModule.torus.transfer(tx);
+      tx.sign(sKeyPair[0]);
+
+      // verify
+      assert.equal(results, base58.encode(tx.signature || [1]));
+      // check state
+    });
+    xit("Spl Transfer", async () => {
+      // torusController.transferSpl()
+      // torusController.transfer();
+      // tx = torusController.getSPLTransactions()
+      // const results = await torusController.transfer(tx);
+      // check state
+    });
+    // opportunistic update on activities and balance for sol token nft transfer
+    // check transaction controller flow
   });
 
   // Embed API call
@@ -154,7 +235,9 @@ describe("Controller Module", () => {
 
     beforeEach(async () => {
       sandbox.stub(helper, "isMain").get(() => false);
-      controllerModule.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
+      // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https//localhost" });
+      // controllerModule.resetTorusController();
+      // log.error(controllerModule.torusState);
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
     });
 
@@ -163,9 +246,8 @@ describe("Controller Module", () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
       const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false }).toString("hex");
       // log.error(spyPrefIntializeDisp.callCount);
-      // log.error(controllerModule.torus.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()]);
       assert(
-        Object.keys(controllerModule.torus.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
+        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
           0
       );
       // validate state before
@@ -176,20 +258,18 @@ describe("Controller Module", () => {
         },
       });
 
-      // log.error(result);
-      // log.error(popupStub.callCount);
       // validate state after
       assert(popupStub.called);
       assert(
-        Object.keys(controllerModule.torus.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
+        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
           1
       );
 
-      // log.error(base58.encode(tx.signature || [1]));
       // log.error(result);
       tx.sign(sKeyPair[0]);
       assert.equal(result, base58.encode(tx.signature || [1]));
 
+      assert(popupStub.calledOnce);
       // Reject Transaction
       popupResult = { approve: false };
       assert.rejects(
@@ -215,6 +295,7 @@ describe("Controller Module", () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
       const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false });
 
+      assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
       const result = await controllerModule.torus.provider.sendAsync({
         method: "sign_transaction",
         params: {
@@ -225,11 +306,13 @@ describe("Controller Module", () => {
       tx.sign(sKeyPair[0]);
       assert.equal(result, tx.serialize({ requireAllSignatures: false }).toString("hex"));
       // will not patch activities
+      // validate controller
+      assert(popupStub.calledOnce);
       assert(
-        Object.keys(controllerModule.torus.state.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
+        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
           0
       );
-      // validate controller
+      assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 1);
 
       // Reject Transaction
       popupResult = { approve: false };
@@ -303,9 +386,10 @@ describe("Controller Module", () => {
           data: Buffer.from(msg, "utf8"),
         },
       });
+      assert(popupStub.calledOnce);
       assert(nacl.sign.detached.verify(Buffer.from(msg, "utf8"), result as Buffer, sKeyPair[0].publicKey.toBuffer()));
-      // reject
 
+      // reject
       popupResult = { approve: false };
       assert.rejects(
         async () => {
@@ -343,8 +427,8 @@ describe("Controller Module", () => {
 
       // validate state after
       assert(popupStub.called);
-      // log.error(base58.encode(tx.signature || [1]));
-      // log.error(result);
+
+      log.info(result);
       assert.equal(result, base58.encode(tx.signature || [1]));
 
       // Reject Transaction
@@ -407,9 +491,5 @@ describe("Controller Module", () => {
         "Send Transaction Rejection does not throw error"
       );
     });
-
-    // xit("embed flow", async () => {
-    //   controllerModule.torus.init({ _config: DEFAULT_CONFIG, _state: DEFAULT_STATE });
-    // });
   });
 });

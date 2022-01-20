@@ -1,14 +1,34 @@
 import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
+import log from "loglevel";
 import nock from "nock";
 
-import { mockData } from "./mockData";
+import { mockData, OffChainMetaplexUri } from "./mockData";
 
 export default () => {
   nock.cleanAll();
   nock.enableNetConnect((host) => host.includes("localhost") || host.includes("mainnet.infura.io:443"));
 
+  nock(OffChainMetaplexUri)
+    .persist()
+    .defaultReplyHeaders({
+      "access-control-allow-origin": "*",
+      "access-control-allow-credentials": "true",
+    })
+    .get("/")
+    .reply(200, () => {
+      return {
+        collection: {},
+      };
+    });
+
   nock("https://api.coingecko.com")
-    .get("/api/v3/simple/price?ids=usd-coin&vs_currencies=usd,aud,cad,eur,gbp,hkd,idr,inr,jpy,php,rub,sgd,uah")
+    .persist()
+    .defaultReplyHeaders({
+      "access-control-allow-origin": "*",
+      "access-control-allow-credentials": "true",
+    })
+    .get("/api/v3/simple/price")
+    .query(true)
     .reply(200, (_uri, _body) => {
       // log.error(uri);
       // log.error(body);
@@ -21,7 +41,7 @@ export default () => {
     .delay(100)
     .query(true)
     .reply(200, (_uri) => {
-      // log.error(uri);
+      log.info(_uri);
       return JSON.stringify(mockData.backend.user);
     });
 

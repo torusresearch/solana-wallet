@@ -1,5 +1,5 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
-import { MintInfo } from "@solana/spl-token";
+import { MintInfo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AccountInfo, Commitment, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import BN from "bn.js";
 import base58 from "bs58";
@@ -7,7 +7,7 @@ import log from "loglevel";
 
 import { MintLayout } from "@/utils/helpers";
 
-import { sKeyPair } from "./mockData";
+import { OffChainMetaplexUri, sKeyPair } from "./mockData";
 // import log from "loglevel";
 
 let slotCounter = 23134;
@@ -33,33 +33,34 @@ const genAccountInfo = async () => {
   const buf = genMintLayout({
     mintAuthority: sKeyPair[0].publicKey,
     freezeAuthority: sKeyPair[0].publicKey,
-    decimals: 6,
+    decimals: 0,
     supply: new BN(1000000000),
     isInitialized: true,
   });
   const decodeMintInfo: MintInfo = MintLayout.decode(buf);
 
-  log.error(decodeMintInfo.supply.toNumber());
-  log.error(decodeMintInfo.isInitialized);
+  log.info(decodeMintInfo.supply.toNumber());
+  log.info(decodeMintInfo.isInitialized);
 
-  // Metadata Layout
-  const mdpda = await Metadata.getPDA(sKeyPair[0].publicKey);
-  log.error(mdpda);
+  // Metaplex data Layout
+  const mint1Address = "2sTumM2oVLdurFrXWKVLpipdfwwY3D9ZspLh4Yo5zK6o";
+  const mdpda = await Metadata.getPDA(new PublicKey(mint1Address));
+
   const creator = new Creator({ address: sKeyPair[0].publicKey.toBase58(), verified: true, share: 1 });
-  const mdd = new MetadataDataData({ name: "nft", symbol: "BSH", uri: "https", sellerFeeBasisPoints: 0, creators: [creator] });
+  const mdd = new MetadataDataData({ name: "nft", symbol: "BSH", uri: OffChainMetaplexUri, sellerFeeBasisPoints: 0, creators: [creator] });
   const md = new MetadataData({
     updateAuthority: creator.address,
     data: mdd,
-    mint: creator.address,
+    mint: mint1Address,
     primarySaleHappened: false,
     isMutable: false,
     editionNonce: 0,
   });
 
   const mds = MetadataData.serialize(md);
-  log.error(mds);
-  const dsmd = MetadataData.deserialize(mds);
-  log.error(dsmd);
+  // log.error(mds);
+  // const dsmd = MetadataData.deserialize(mds);
+  // log.error(dsmd);
 
   // export const accountInfo: Record<string, AccountInfo<Buffer>> = {
   const account = {
@@ -99,21 +100,33 @@ const genAccountInfo = async () => {
       rentEpoch: 275,
     },
     // Mint AccountInfo
-    oczAiRTdUFsmEKq5LBwLp1fAqF43B6AAHouKR7JxutG: {
-      // data: Buffer.from("", "base64"),
+    CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp: {
       data: buf,
       executable: false,
       lamports: 5616720,
-      owner: new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
+      owner: TOKEN_PROGRAM_ID,
+      rentEpoch: 275,
+    },
+    [mint1Address]: {
+      data: buf,
+      executable: false,
+      lamports: 5616720,
+      owner: TOKEN_PROGRAM_ID,
       rentEpoch: 275,
     },
     // Metaplex AccountInfo
-    // []
+    [mdpda.toBase58()]: {
+      data: mds,
+      executable: false,
+      lamports: 5616790,
+      owner: new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"),
+      rentEpoch: 275,
+    },
     // TokenAccountInfo
   };
   return account;
 };
-export const accountInfo = genAccountInfo();
+export const accountInfoPromise = genAccountInfo();
 
 const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<any> }[] = [
   {
@@ -123,7 +136,8 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<any> }[]
           info: {
             isNative: false,
             mint: "2sTumM2oVLdurFrXWKVLpipdfwwY3D9ZspLh4Yo5zK6o",
-            owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
+            // owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
+            owner: sKeyPair[0].publicKey.toBase58(),
             state: "initialized",
             tokenAmount: {
               amount: "0",
@@ -152,6 +166,7 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<any> }[]
             isNative: false,
             mint: "CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp",
             owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
+            // owner: sKeyPair[0].publicKey.toBase58(),
             state: "initialized",
             tokenAmount: {
               amount: "699000",
@@ -228,8 +243,13 @@ export const mockConnection: Partial<Connection> = {
     };
   },
   getMultipleAccountsInfo: async (publicKeys: PublicKey[], _commitment?: Commitment | undefined): Promise<(AccountInfo<Buffer> | null)[]> => {
-    const account = await accountInfo;
-    return publicKeys.map((item) => account[item.toBase58()]);
+    const account = await accountInfoPromise;
+    const returnResult = publicKeys.map((item) => {
+      // log.error(item.toBase58());
+      return account[item.toBase58()];
+    });
+    // log.error(returnResult);
+    return returnResult;
   },
 
   sendRawTransaction: async (rawTranaction) => {
@@ -258,9 +278,9 @@ export const mockConnection: Partial<Connection> = {
     });
   },
 
-  getTokenAccountsByOwner: async (ownerAddress, _filter) => {
+  getParsedTokenAccountsByOwner: async (ownerAddress, _filter) => {
     const tokenOwned = parsedTokenAccountInfo.filter((item) => {
-      return item.account.data.owner.toBase58() === ownerAddress;
+      return item.account.data.parsed.info.owner === ownerAddress.toBase58();
     });
 
     return {
