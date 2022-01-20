@@ -64,7 +64,7 @@ const value = computed({
         :spellcheck="spellCheck"
       />
 
-      <div class="absolute right-2 z-10 p-1 h-full"><slot></slot></div>
+      <div class="absolute right-2 p-1 h-full"><slot></slot></div>
     </div>
     <div class="flex mt-1 px-1">
       <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
