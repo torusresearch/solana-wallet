@@ -14,7 +14,7 @@ import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { DEFAULT_STATE } from "@/controllers/TorusController";
 import controllerModule from "@/modules/controllers";
-import { BUTTON_POSITION } from "@/utils/enums";
+// import { BUTTON_POSITION } from "@/utils/enums";
 import * as helper from "@/utils/helpers";
 
 import { accountInfoPromise, mockGetConnection } from "./mockConnection";
@@ -108,27 +108,27 @@ describe("Controller Module", () => {
   });
 
   describe("#Embeded Login Logout flow", () => {
-    const initParams = {
-      buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
-      apiKey: "adsf",
-    };
-    const dappOrigin = "localhost";
+    // const initParams = {
+    //   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
+    //   apiKey: "adsf",
+    // };
+    // const dappOrigin = "localhost";
     it("login via embed", async () => {
       const accountInfo = await accountInfoPromise;
-      controllerModule.init({
-        state: {
-          EmbedControllerState: {
-            buttonPosition: initParams.buttonPosition,
-            isIFrameFullScreen: true,
-            apiKey: initParams.apiKey,
-            oauthModalVisibility: false,
-            loginInProgress: false,
-            dappMetadata: { name: "", icon: "" },
-          },
-        },
-        origin: dappOrigin,
-      });
-      controllerModule.setupCommunication(dappOrigin);
+      // controllerModule.init({
+      //   state: {
+      //     EmbedControllerState: {
+      //       buttonPosition: initParams.buttonPosition,
+      //       isIFrameFullScreen: true,
+      //       apiKey: initParams.apiKey,
+      //       oauthModalVisibility: false,
+      //       loginInProgress: false,
+      //       dappMetadata: { name: "", icon: "" },
+      //     },
+      //   },
+      //   origin: dappOrigin,
+      // });
+      // controllerModule.setupCommunication(dappOrigin);
 
       assert.equal(Object.keys(controllerModule.torusState.AccountTrackerState.accounts).length, 0);
       assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 0);
@@ -245,10 +245,9 @@ describe("Controller Module", () => {
     it("embed sendTransaction flow", async () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
       const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false }).toString("hex");
-      // log.error(spyPrefIntializeDisp.callCount);
-      assert(
-        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
-          0
+      assert.equal(
+        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length,
+        0
       );
       // validate state before
       const result = await controllerModule.torus.provider.sendAsync({
@@ -259,17 +258,16 @@ describe("Controller Module", () => {
       });
 
       // validate state after
-      assert(popupStub.called);
-      assert(
-        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length ===
-          1
+      assert.equal(
+        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length,
+        1
       );
 
       // log.error(result);
       tx.sign(sKeyPair[0]);
       assert.equal(result, base58.encode(tx.signature || [1]));
-
       assert(popupStub.calledOnce);
+
       // Reject Transaction
       popupResult = { approve: false };
       assert.rejects(

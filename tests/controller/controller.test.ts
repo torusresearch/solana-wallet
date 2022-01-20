@@ -123,12 +123,11 @@ describe("TorusController", () => {
       await wbPromise;
       await delayPromise;
 
-      log.error(torusController.state.TokensTrackerState.tokens);
+      log.info(torusController.state.TokensTrackerState.tokens);
       // log.error(spyAccountTracker.callCount);
       assert(spyAccountTracker.calledTwice);
       assert(spyTokenInfo.calledTwice);
 
-      log.error(Date.now());
       const wbPromise1 = waitBlock();
 
       // const delayPromise1 = delay(2000);
@@ -138,16 +137,15 @@ describe("TorusController", () => {
       // log.error(spyAccountTracker.callCount);
       assert(spyAccountTracker.calledThrice);
 
-      log.error(Date.now());
       // alter mock data to simulate update
       const wbPromise2 = waitBlock();
       clock.tick(20000);
       await wbPromise2;
       await delayPromise;
-      log.error(torusController.state.TokensTrackerState.tokens);
-      log.error(torusController.state.TokenInfoState);
-      log.error(torusController.state.TokensTrackerState);
-      log.error(torusController.state.AccountTrackerState);
+      // log.error(torusController.state.TokensTrackerState.tokens);
+      // log.error(torusController.state.TokenInfoState);
+      // log.error(torusController.state.TokensTrackerState);
+      // log.error(torusController.state.AccountTrackerState);
     });
   });
 
