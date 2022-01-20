@@ -3,6 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TokenInfo } from "@solana/spl-token-registry";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -63,6 +64,7 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
@@ -391,6 +393,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
+      this.updateTokenInfoMap();
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -415,6 +418,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.updateRelayMap();
+    this.updateTokenInfoMap();
   }
 
   updateRelayMap = async (): Promise<void> => {
@@ -439,6 +443,23 @@ export default class TorusController extends BaseController<TorusControllerConfi
       RelayMap: relayMap,
       RelayKeyHostMap: relayKeyHost,
     });
+  };
+
+  // TODO: shift to TokenInfo controller if possible
+  updateTokenInfoMap = async (): Promise<void> => {
+    let tokenInfoMap: { [mintAddress: string]: TokenInfo } = {};
+    try {
+      tokenInfoMap = (
+        await axios.post(`${config.api}/tokeninfo`, {
+          mint_addresses: this.tokens[this.selectedAddress].map((e) => e.mintAddress),
+        })
+      ).data;
+      this.tokenInfoController.update({
+        tokenInfoMap,
+      });
+    } catch (e) {
+      log.error(e);
+    }
   };
 
   setOrigin(origin: string): void {

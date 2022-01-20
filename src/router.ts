@@ -111,8 +111,14 @@ const router = createRouter({
     {
       name: "confirm_nft",
       path: "/confirm_nft",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/ConfirmNft.vue"),
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/ConfirmNft.vue"),
       meta: { title: "Confirm Nft" },
+    },
+    {
+      name: "confirm_spl",
+      path: "/confirm_spl",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/ConfirmSpl.vue"),
+      meta: { title: "Confirm Spl" },
     },
     {
       name: "confirm_message",

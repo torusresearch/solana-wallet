@@ -12,56 +12,6 @@
 </head>
 
 <script>
-    const generateSPLTransaction = async () => {
-        const target_network = {
-            blockExplorerUrl: "https://explorer.solana.com",
-            chainId: "0x1",
-            displayName: "Solana Mainnet",
-            logo: "solana.svg",
-            rpcTarget: solanaWeb3.clusterApiUrl("mainnet-beta"),
-            ticker: "SOL",
-            tickerName: "Solana Token",
-        };
-        const conn = new solanaWeb3.Connection(target_network.rpcTarget);
-        const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
-        const publicKey = "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW";
-
-        // usdc mint account on mainnet
-        const destinationTokenAccount = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID,
-            new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"), new solanaWeb3.PublicKey("5ToWXBQJPWFYzckSuGQC64J5GBUhFsyxKLygsww36RZe")); // Phantom account for testing, it already has a associated account
-
-        const transferInstructions = splToken.Token.createTransferCheckedInstruction(
-            splToken.TOKEN_PROGRAM_ID,
-            new solanaWeb3.PublicKey("3k3od93Qvc6Wwy7tyWHxBQJCFbB8Jq2MFHY8oFc7ppKc"), // usdc token account address for public key
-            new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"), // usdc token address
-            destinationTokenAccount,
-            new solanaWeb3.PublicKey(publicKey),
-            [],
-            1,
-            6
-        );
-
-        // fida mint account on mainet
-        // const sourceTokenAccount = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID,
-        //     new solanaWeb3.PublicKey("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp"), new solanaWeb3.PublicKey(publicKey));
-
-        // const destinationTokenAccount2 = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID,
-        //     new solanaWeb3.PublicKey("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp"), new solanaWeb3.PublicKey("D2LtZtYTj6Aep84DGmFiUiNCgcz2J8HvhV4qortTx3mM"));
-
-        // const transferInstructions2 = splToken.Token.createTransferCheckedInstruction(
-        //     splToken.TOKEN_PROGRAM_ID,
-        //     sourceTokenAccount,
-        //     new solanaWeb3.PublicKey("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp"),
-        //     destinationTokenAccount2,
-        //     new solanaWeb3.PublicKey(publicKey),
-        //     [],
-        //     0.1,
-        //     6
-        // );
-
-        const transaction = new solanaWeb3.Transaction({ recentBlockhash: blockhash, feePayer: new solanaWeb3.PublicKey(publicKey) }).add(transferInstructions) //.add(transferInstructions2);
-        return transaction.serialize({requireAllSignatures: false, verifySignatures: false}).toString("hex");
-    }
     const generateTransaction = async () => {
         const target_network = {
             blockExplorerUrl: "https://explorer.solana.com",
@@ -146,18 +96,23 @@
                     data: (new TextEncoder()).encode("Example Message"),
                 };
                 break;
+            case "spl_transfer":
+                params = {
+                    mint_add: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                    receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                    amount: 0.1,
+                }
+                break;
             case "nft_transfer":
                 params = {
                     mint_add: "BAYYCCY31SRrexQKwGqDRonVzMiB2Y2HagNZQv6cNWk7",
                     receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
-                    sender_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"
                 };
                 break;
             default:
         }
         let queryParams = new URLSearchParams();
-        if(method == "send_spl_transaction") queryParams.set("method", "send_transaction");
-        else queryParams.set("method", method);
+        queryParams.set("method", method);
         let encodedParams = btoa(JSON.stringify(params));
         let useParams = true;
         if (typeof params === "object" && Object.keys(params).length === 0)
@@ -257,7 +212,7 @@
                 <button onclick="openurl('send_transaction')">
                     Send Transaction
                 </button>
-                <button onclick="openurl('send_spl_transaction')">
+                <button onclick="openurl('spl_transfer')">
                     Send SPL Transaction
                 </button>
                 <button onclick="openurl('get_gasless_public_key and send_transaction')" disabled>

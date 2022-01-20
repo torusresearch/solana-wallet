@@ -8,7 +8,7 @@ import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import FallbackNft from "@/assets/nft.png";
+import FallbackSPL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { setFallbackImg } from "@/utils/helpers";
@@ -34,7 +34,7 @@ const props = withDefaults(
     receiverPubKey: "",
     receiverVerifierId: "",
     receiverVerifier: "solana",
-    cryptoAmount: 0,
+    cryptoAmount: 1,
     cryptoTxFee: 0,
     tokenSymbol: "SOL",
     transferDisabled: false,
@@ -62,9 +62,12 @@ const onConfirm = () => {
   emits("transferConfirm");
   closeModal();
 };
-// Transaction fee
-const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+// Total fee
+const totalCostString = computed(() => {
+  return `${new BigNumber(props.cryptoTxFee)
+    .multipliedBy(pricePerToken.value)
+    .plus(new BigNumber(props.cryptoAmount).multipliedBy(props.token?.price?.[currency.value] || 0))
+    .toFixed(5)} ${currency.value}`;
 });
 
 const explorerUrl = computed(() => {
@@ -112,29 +115,24 @@ const refDiv = ref(null);
               <div class="flex flex-row justify-start items-center py-6">
                 <div class="img_preview img-loader-container">
                   <img
-                    :src="props.token.metaplexData?.offChainMetaData?.image"
+                    :src="props.token.iconURL"
+                    class="img_preview bg-white dark:bg-app-gray-700"
                     alt="TOKEN IMAGE"
-                    class="img_preview"
-                    @error="setFallbackImg($event.target, FallbackNft)"
+                    @error="setFallbackImg($event.target, FallbackSPL)"
                   />
                 </div>
                 <div class="flex flex-col justify-center items-start h-full w-full ml-6">
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftName") }}</p>
-                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.name }}</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("homeToken.name") }}</p>
+                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token?.name }}</p>
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto py-5 w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftSymbol") }}</p>
-                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.symbol }}</p>
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("homeToken.symbol") }}</p>
+                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token?.symbol }}</p>
                   </div>
                   <div class="flex flex-col justify-center items-start flex-auto w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.viewNFT") }}</p>
-                    <a
-                      class="property-value text-app-text-500 dark:text-app-text-dark-500"
-                      :href="`https://solscan.io/token/${props.token.mintAddress}`"
-                      target="_blank"
-                      >{{ props.token.metaplexData?.name }}</a
-                    >
+                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.sendAmount") }}</p>
+                    <a class="property-value text-app-text-500 dark:text-app-text-dark-500" target="_blank">{{ props.cryptoAmount }}</a>
                   </div>
                 </div>
               </div>
@@ -147,8 +145,10 @@ const refDiv = ref(null);
               <div class="flex flex-row items- justify-start w-full mt-8">
                 <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
-                  <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ props.cryptoTxFee }} SOL</p>
-                  <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
+                  <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">
+                    {{ `${props.cryptoAmount} ${props.token.symbol} +  ${props.cryptoTxFee} SOL` }}
+                  </p>
+                  <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ totalCostString }}</p>
                 </div>
               </div>
               <div class="flex flex-row justify-around items-center m-6">

@@ -572,7 +572,8 @@ installStorePlugin({
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
     const data = requiredState;
-    (data.controllerModule as any).torusState.TokenInfoState.tokenInfoMap = {};
+    if (Object.keys((data.controllerModule as any).torusState.TokenInfoState.tokenInfoMap).length > 2000)
+      (data.controllerModule as any).torusState.TokenInfoState.tokenInfoMap = {};
     storage?.setItem(key, JSON.stringify(data));
   },
   restoreState: (key: string, storage?: Storage) => {

@@ -340,6 +340,10 @@ export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; re
     redirectPath: "/",
     requiresLogin: true,
   },
+  spl_transfer: {
+    redirectPath: "/confirm_spl",
+    requiresLogin: true,
+  },
   nft_list: {
     redirectPath: "/",
     requiresLogin: true,
