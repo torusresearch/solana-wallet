@@ -465,7 +465,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
     const b_hash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
-    const fee = (await this.connection.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+    const fee = 5000;
     return { b_hash, fee };
   }
 

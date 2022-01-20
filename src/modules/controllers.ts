@@ -118,7 +118,7 @@ class ControllerModule extends VuexModule {
     return this.torus.currentCurrency;
   }
 
-  // user balance in equivalent selected currecny
+  // user balance in equivalent selected currency
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
