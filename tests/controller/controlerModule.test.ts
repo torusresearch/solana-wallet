@@ -16,8 +16,9 @@ import { DEFAULT_STATE } from "@/controllers/TorusController";
 import controllerModule from "@/modules/controllers";
 // import { BUTTON_POSITION } from "@/utils/enums";
 import * as helper from "@/utils/helpers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
-import { accountInfoPromise, mockGetConnection } from "./mockConnection";
+import { accountInfoPromise, mockGetConnection, mockMintAddress, mockMintInfo } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
 import nockRequest from "./nockRequest";
 
@@ -203,6 +204,8 @@ describe("Controller Module", () => {
       await controllerModule.triggerLogin({ loginProvider: "google" });
     });
     it("SOL Transfer", async () => {
+      assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
+      assert.equal(controllerModule.selectedNetworkTransactions.length, 0);
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
       tx.add(transferInstruction());
       const results = await controllerModule.torus.transfer(tx);
@@ -210,14 +213,26 @@ describe("Controller Module", () => {
 
       // verify
       assert.equal(results, base58.encode(tx.signature || [1]));
+      assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 1);
+      assert.equal(controllerModule.selectedNetworkTransactions.length, 1);
       // check state
     });
-    xit("Spl Transfer", async () => {
-      // torusController.transferSpl()
-      // torusController.transfer();
-      // tx = torusController.getSPLTransactions()
-      // const results = await torusController.transfer(tx);
-      // check state
+    it("Spl Transfer", async () => {
+      assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
+      assert.equal(controllerModule.selectedNetworkTransactions.length, 0);
+      const selectedToken: SolAndSplToken = {
+        mintAddress: mockMintAddress[1],
+        name: "",
+        iconURL: "",
+        symbol: "",
+        tokenAddress: "",
+        isFungible: false,
+        balance: { decimals: mockMintInfo[mockMintAddress[1]].decimals, amount: "0", uiAmount: 0, uiAmountString: "0" },
+      };
+      const result = await controllerModule.torus.transferSpl(sKeyPair[0].publicKey.toBase58(), 0, selectedToken);
+      assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 1);
+      assert.equal(controllerModule.selectedNetworkTransactions.length, 1);
+      log.info(result);
     });
     // opportunistic update on activities and balance for sol token nft transfer
     // check transaction controller flow

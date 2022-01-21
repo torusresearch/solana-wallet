@@ -3,6 +3,7 @@ import { MintInfo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AccountInfo, Commitment, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import BN from "bn.js";
 import base58 from "bs58";
+import crypto from "crypto";
 import log from "loglevel";
 
 import { MintLayout } from "@/utils/helpers";
@@ -11,6 +12,24 @@ import { OffChainMetaplexUri, sKeyPair } from "./mockData";
 // import log from "loglevel";
 
 let slotCounter = 23134;
+
+export const mockMintAddress = ["CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp", "2sTumM2oVLdurFrXWKVLpipdfwwY3D9ZspLh4Yo5zK6o"];
+export const mockMintInfo: Record<string, MintInfo> = {
+  [mockMintAddress[0]]: {
+    mintAuthority: sKeyPair[0].publicKey,
+    freezeAuthority: sKeyPair[0].publicKey,
+    decimals: 6,
+    supply: new BN(1000000000),
+    isInitialized: true,
+  },
+  [mockMintAddress[1]]: {
+    mintAuthority: sKeyPair[0].publicKey,
+    freezeAuthority: sKeyPair[0].publicKey,
+    decimals: 0,
+    supply: new BN(1000000000),
+    isInitialized: true,
+  },
+};
 
 const genAccountInfo = async () => {
   // mint buf len 82
@@ -30,28 +49,29 @@ const genAccountInfo = async () => {
     return buf;
   };
 
-  const buf = genMintLayout({
-    mintAuthority: sKeyPair[0].publicKey,
-    freezeAuthority: sKeyPair[0].publicKey,
-    decimals: 0,
-    supply: new BN(1000000000),
-    isInitialized: true,
-  });
+  const buf = genMintLayout(mockMintInfo[mockMintAddress[0]]);
+  // const buf = genMintLayout({
+  //   mintAuthority: sKeyPair[0].publicKey,
+  //   freezeAuthority: sKeyPair[0].publicKey,
+  //   decimals: 0,
+  //   supply: new BN(1000000000),
+  //   isInitialized: true,
+  // });
+
   const decodeMintInfo: MintInfo = MintLayout.decode(buf);
 
   log.info(decodeMintInfo.supply.toNumber());
   log.info(decodeMintInfo.isInitialized);
 
   // Metaplex data Layout
-  const mint1Address = "2sTumM2oVLdurFrXWKVLpipdfwwY3D9ZspLh4Yo5zK6o";
-  const mdpda = await Metadata.getPDA(new PublicKey(mint1Address));
+  const mdpda = await Metadata.getPDA(new PublicKey(mockMintAddress[1]));
 
   const creator = new Creator({ address: sKeyPair[0].publicKey.toBase58(), verified: true, share: 1 });
   const mdd = new MetadataDataData({ name: "nft", symbol: "BSH", uri: OffChainMetaplexUri, sellerFeeBasisPoints: 0, creators: [creator] });
   const md = new MetadataData({
     updateAuthority: creator.address,
     data: mdd,
-    mint: mint1Address,
+    mint: mockMintAddress[1],
     primarySaleHappened: false,
     isMutable: false,
     editionNonce: 0,
@@ -100,14 +120,14 @@ const genAccountInfo = async () => {
       rentEpoch: 275,
     },
     // Mint AccountInfo
-    CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp: {
+    [mockMintAddress[0]]: {
       data: buf,
       executable: false,
       lamports: 5616720,
       owner: TOKEN_PROGRAM_ID,
       rentEpoch: 275,
     },
-    [mint1Address]: {
+    [mockMintAddress[1]]: {
       data: buf,
       executable: false,
       lamports: 5616720,
@@ -230,6 +250,12 @@ const generateSignatureStatus = (signature: string, status = "finalized", signSl
 };
 
 export const mockConnection: Partial<Connection> = {
+  getRecentBlockhash: async () => {
+    return {
+      blockhash: base58.encode(crypto.createHash("sha256").update(slotCounter.toString()).digest()),
+      feeCalculator: { lamportsPerSignature: 5000 },
+    };
+  },
   getRecentBlockhashAndContext: async () => {
     // log.error(Date.now());
     // log.error("blockhash polled");
@@ -252,6 +278,10 @@ export const mockConnection: Partial<Connection> = {
     return returnResult;
   },
 
+  getAccountInfo: async (publickey) => {
+    const accountInfo = await accountInfoPromise;
+    return accountInfo[publickey.toBase58()] || null;
+  },
   sendRawTransaction: async (rawTranaction) => {
     // log.error(rawTranaction)
     const tx = Transaction.from(rawTranaction);
