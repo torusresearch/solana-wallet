@@ -32,7 +32,7 @@ const refDiv = ref(null);
     @keydown="openModal"
   >
     <KeyIcon class="w-5 h-5 mr-5" />
-    <div class="font-body">{{ t("walletSettings.accountDetails") }}</div>
+    <div>{{ t("walletSettings.accountDetails") }}</div>
   </div>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
@@ -63,7 +63,7 @@ const refDiv = ref(null);
               <div class="mt-5 flex items-center">
                 <div class="flex items-center text-app-text-400 dark:text-app-text-dark-500">
                   <KeyIcon class="w-5 h-5 mr-3" />
-                  <div class="font-body font-medium">{{ t("walletSettings.showPrivateKey") }}</div>
+                  <div class="font-medium">{{ t("walletSettings.showPrivateKey") }}</div>
                 </div>
                 <div class="ml-auto">
                   <Button variant="text" @click="isKeyShown = !isKeyShown">
@@ -73,7 +73,7 @@ const refDiv = ref(null);
                 </div>
               </div>
               <div v-if="isKeyShown" class="pl-8 flex items-center mt-2">
-                <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2 priv-key">{{ key }}</div>
+                <div class="text-xs text-app-text-500 dark:text-app-text-dark-600 mr-2 priv-key">{{ key }}</div>
                 <Button variant="text" @click="copyPrivKey()">
                   <CopyIcon class="w-4 h-4 mr-1" />
                   {{ t("walletSettings.clickCopy") }}

@@ -41,7 +41,7 @@ const amountIsVisible = computed(() => {
   >
     <!-- date -->
     <div class="col-span-8 order-3 pl-9 flex items-center justify-start sm:order-1 sm:col-span-2 sm:border-r sm:pl-0 xl:col-span-1">
-      <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
+      <div class="text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
         {{ dateFormat(new Date(activity.updatedAt || 0), "dS mmm, yyyy") }}
         <br />
         at {{ dateFormat(new Date(activity.updatedAt || 0), "H:MM:ss") }}
@@ -57,26 +57,25 @@ const amountIsVisible = computed(() => {
           <img class="block h-7 w-auto" :src="activity.logoURI || SolanaLogoURL" alt="Solana Logo" />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
-          <div v-if="activity.type === 'unknown'" class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
+          <div v-if="activity.type === 'unknown'" class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
             {{ t("walletActivity.unknown") }}
           </div>
           <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
-            <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
+            <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
               {{ activity.send ? t("walletActivity.sent") : t("walletActivity.received") }} {{ " " }} {{ Number(activity.totalAmountString) }}
               {{ activity.cryptoCurrency }}
 
-              <span v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600"
+              <span v-if="activity.cryptoCurrency === 'SOL'" class="text-xxs text-app-text-400 dark:text-app-text-dark-600"
                 >{{ activity.send ? t("walletActivity.to") : t("walletActivity.from") }} {{ " " }}</span
               >
             </div>
-            <div v-if="activity.cryptoCurrency === 'SOL'" class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
+            <div v-if="activity.cryptoCurrency === 'SOL'" class="text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
               {{ activity.send ? activity.to : activity.from }}
             </div>
           </div>
-          <!-- <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">Slot {{ activity.slot }}</div> -->
           <div
             v-if="!(activity.type === 'transfer' || activity.type === 'transferChecked')"
-            class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all"
+            class="text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all"
           >
             {{ activity.signature }}
           </div>
@@ -89,10 +88,10 @@ const amountIsVisible = computed(() => {
       class="col-span-4 order-2 text-right sm:col-span-2 sm:order-3 sm:text-left sm:flex sm:items-center sm:justify-center xl:col-span-2"
     >
       <div>
-        <div class="font-body text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
+        <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
           {{ Number(activity.totalAmountString) }}
         </div>
-        <div class="font-body text-xxs text-app-text-400 dark:text-app-text-dark-600">
+        <div class="text-xxs text-app-text-400 dark:text-app-text-dark-600">
           {{ activity.cryptoCurrency }}
         </div>
       </div>

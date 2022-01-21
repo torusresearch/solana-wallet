@@ -372,7 +372,7 @@ watch(transferTo, () => {
   <div class="py-2">
     <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <Card class="order-2 sm:order-1">
-        <form action="#" method="POST">
+        <form action="#" method="POST" class="w-full">
           <div>
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
@@ -384,7 +384,7 @@ watch(transferTo, () => {
                   :items="contacts"
                 />
               </div>
-              <div class="col-span-3 sm:col-span-1">
+              <div class="col-span-3 sm:col-span-1 mt-auto">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>

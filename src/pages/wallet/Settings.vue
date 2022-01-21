@@ -60,12 +60,6 @@ const deleteContact = async (contactId: number): Promise<void> => {
               <template #leftIcon><OptionsIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>
             </Panel>
           </div>
-          <!--          <div class="mb-4">-->
-          <!--            <Panel :title="t('walletSettings.accountManagement')" disabled>-->
-          <!--              <AccountManagement />-->
-          <!--              <template #leftIcon><UserIcon class="w-5 h-5 mr-2 text-app-text-600 dark:text-app-text-dark-500" /></template>-->
-          <!--            </Panel>-->
-          <!--          </div>-->
         </div>
       </div>
     </div>

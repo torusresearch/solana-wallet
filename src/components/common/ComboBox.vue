@@ -48,15 +48,20 @@ const onBlur = () => {
 </script>
 
 <template>
-  <div class="combo-container flex flex-col">
+  <div class="flex flex-col">
     <div v-show="filteredItems.length > 0 && isListOpen" class="absolute inset-0 z-0" @click="isListOpen = false" @keydown="isListOpen = false"></div>
 
-    <div class="text-sm mb-1 font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("walletActivity.sendTo") }}</div>
-    <input v-model="value" type="text" class="combo-input-field" aria-label="Select field" @focus="isListOpen = true" @blur="onBlur" />
+    <div class="text-sm mb-1 text-app-text-600 dark:text-app-text-dark-500">{{ t("walletActivity.sendTo") }}</div>
+    <input
+      v-model="value"
+      type="text"
+      class="h-54 z-10 dark:bg-app-gray-800 shadow-inner dark:shadow-none bg-white rounded-md border-0 text-app-text-500 dark:text-app-text-dark-500"
+      aria-label="Select field"
+      @focus="isListOpen = true"
+      @blur="onBlur"
+    />
 
-    <div v-if="errors?.length" class="flex mt-1 px-1">
-      <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
-    </div>
+    <div v-if="errors.length" class="mt-1 px-1 text-app-error text-xs">{{ errors[0].$message }}</div>
     <div v-show="filteredItems.length > 0 && isListOpen" class="z-10">
       <ul class="lt-sm:w-72 w-full absolute bg-white dark:bg-app-gray-700 rounded-md shadow dark:shadow-dark overflow-hidden">
         <li
@@ -74,8 +79,7 @@ const onBlur = () => {
 </template>
 
 <style scoped>
-.combo-input-field {
-  @apply z-10 dark:bg-app-gray-800 shadow-inner dark:shadow-none bg-white rounded-md border-0 text-app-text-500 dark:text-app-text-dark-500;
+.h-54 {
   height: 54px;
 }
 </style>

@@ -20,7 +20,7 @@ const props = withDefaults(
 
 const classList = computed(() => {
   let sizeClass = "";
-  const fontClasses = ["font-body"];
+  const fontClasses = [""];
   if (props.variant === "text") {
     fontClasses.push("text-xs");
   } else {
@@ -45,15 +45,15 @@ const classList = computed(() => {
 
 <style scoped>
 .size-small {
-  height: 40px;
+  @apply h-10;
 }
 .size-medium {
-  height: 48px;
+  @apply h-12;
 }
 .size-large {
   height: 60px;
 }
 .block {
-  width: 100%;
+  @apply w-full;
 }
 </style>

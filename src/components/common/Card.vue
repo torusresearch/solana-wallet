@@ -11,25 +11,24 @@ withDefaults(
 
 <template>
   <div
-    class="card-container bg-white dark:bg-app-gray-700 border border-solid border-app-gray-200 dark:border-transparent rounded-md shadow dark:shadow-dark px-6 py-4"
+    class="bg-white dark:bg-app-gray-700 border border-solid border-app-gray-300 dark:border-transparent rounded-md shadow dark:shadow-dark px-6 py-4 flex flex-row items-start justify-between"
     :style="{ height }"
   >
-    <slot></slot>
-    <div class="footer">
+    <div class="flex flex-col items-start justify-between flex-grow flex-shrink h-full pr-2">
+      <div class="flex-grow w-full flex flex-row justify-start items-start">
+        <div id="card-content-parent" class="flex flex-col justify-start items-start h-full lt-sm:justify-center w-full">
+          <slot></slot>
+        </div>
+        <span class="gt-sm:hidden h-full flex justify-center items-center"><slot name="right-content"></slot></span>
+      </div>
       <slot name="footer"></slot>
     </div>
+    <span class="lt-sm:hidden block h-full flex justify-center items-center"> <slot name="right-content"></slot> </span>
   </div>
 </template>
 
 <style scoped>
-.card-container {
-  position: relative;
-}
 .footer {
-  position: absolute;
-  width: calc(100% - 48px);
-  bottom: 16px;
-  right: 24px;
-  left: 24px;
+  /*width: calc(100% - 48px);*/
 }
 </style>

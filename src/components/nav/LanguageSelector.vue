@@ -33,7 +33,7 @@ const value = customRef((track, trigger) => {
       <Listbox v-model="value" as="div">
         <ListboxButton class="flex items-center text-app-text-600 dark:text-app-text-dark-500 w-full md:w-auto px-4 md:px-0">
           <GlobeIcon class="h-4 w-4 mr-2" aria-hidden="true" />
-          <span class="font-body font-bold text-sm md:text-xs">{{ value.name }}</span>
+          <span class="font-bold text-sm md:text-xs">{{ value.name }}</span>
           <ChevronBottomIcon class="h-3 w-3 ml-1" aria-hidden="true" />
         </ListboxButton>
         <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
