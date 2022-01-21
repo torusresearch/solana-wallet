@@ -36,57 +36,6 @@
     transition-all
     duration-150;
   }
-
-  .t-btn-tertiary {
-    @apply bg-transparent
-    hover:bg-app-gray-300
-    active:bg-app-secondary2
-    disabled:bg-app-gray-300
-    disabled:text-app-gray-500
-    rounded-md
-    px-8
-    font-body
-    text-app-primary-500
-    ease-linear
-    transition-all
-    duration-150;
-    border: 1px solid #6F717A;
-    border-radius: 6px;
-    /* box-shadow: -5px -5px 10px #fafbff, 5px 5px 10px #dee5ff; */
-  }
-
-  .t-btn-outline {
-    @apply bg-transparent
-    active:bg-app-secondary2
-    disabled:bg-app-gray-300
-    disabled:text-app-gray-500
-    border
-    border-solid
-    border-app-primary-500
-    rounded-md
-    px-8
-    font-body
-    text-app-primary-500
-    ease-linear
-    transition-all
-    duration-150;
-  }
-  .dark .t-btn-tertiary {
-    /* box-shadow: -5px -5px 10px #37383c, 5px 5px 10px #242529; */
-  }
-
-  .t-btn-text {
-    @apply disabled:text-app-gray-500
-    hover:text-app-secondary
-    active:text-app-secondary2
-    text-app-primary-500
-    ease-linear
-    transition-all
-    duration-150;
-  }
-  .img-loader-container {
-    background-color: rgb(156, 156, 156);
-  }
 }
 
 html,
@@ -111,4 +60,65 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+.t-btn-tertiary {
+  @apply bg-transparent
+  hover:bg-app-gray-300
+  active:bg-app-secondary2
+  disabled:bg-app-gray-300
+  disabled:text-app-gray-500
+  rounded-md
+  px-8
+  font-body
+  text-app-primary-500
+  ease-linear
+  transition-all
+  duration-150;
+  border: 1px solid #6F717A;
+  border-radius: 6px;
+  /* box-shadow: -5px -5px 10px #fafbff, 5px 5px 10px #dee5ff; */
+}
+
+.t-btn-outline {
+  @apply bg-transparent
+  active:bg-app-secondary2
+  disabled:bg-app-gray-300
+  disabled:text-app-gray-500
+  border
+  border-solid
+  border-app-primary-500
+  rounded-md
+  px-8
+  font-body
+  text-app-primary-500
+  ease-linear
+  transition-all
+  duration-150;
+}
+.dark .t-btn-tertiary {
+  /* box-shadow: -5px -5px 10px #37383c, 5px 5px 10px #242529; */
+}
+
+.t-btn-text {
+  @apply disabled:text-app-gray-500
+  hover:text-app-secondary
+  active:text-app-secondary2
+  text-app-primary-500
+  ease-linear
+  transition-all
+  duration-150;
+}
+.img-loader-container {
+  background-color: rgb(156, 156, 156);
+}
+
+.size-small {
+  height: 36px;
+}
+.size-medium {
+  height: 54px;
+}
+.size-large {
+  height: 60px;
 }

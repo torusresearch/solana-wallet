@@ -384,7 +384,7 @@ watch(transferTo, () => {
                   :items="contacts"
                 />
               </div>
-              <div class="col-span-3 sm:col-span-1 mt-auto">
+              <div class="col-span-3 sm:col-span-1 mt-6 lt-sm:mt-2">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>

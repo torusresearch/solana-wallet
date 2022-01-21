@@ -42,18 +42,3 @@ const classList = computed(() => {
     <slot v-else></slot>
   </button>
 </template>
-
-<style scoped>
-.size-small {
-  @apply h-10;
-}
-.size-medium {
-  @apply h-12;
-}
-.size-large {
-  height: 60px;
-}
-.block {
-  @apply w-full;
-}
-</style>

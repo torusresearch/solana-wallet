@@ -11,14 +11,22 @@ const { t } = useI18n();
     <div class="text-sm mb-2 text-app-text-600 dark:text-app-text-dark-500">{{ t("walletSettings.selectTheme") }}</div>
     <div class="grid grid-cols-2 space-x-3">
       <div>
-        <Button :variant="ControllerModule.isDarkMode ? 'tertiary' : 'primary'" :block="true" @click="ControllerModule.setTheme('light')">{{
-          t("walletSettings.light")
-        }}</Button>
+        <Button
+          class="w-full"
+          :variant="ControllerModule.isDarkMode ? 'tertiary' : 'primary'"
+          :block="true"
+          @click="ControllerModule.setTheme('light')"
+          >{{ t("walletSettings.light") }}</Button
+        >
       </div>
       <div>
-        <Button :variant="ControllerModule.isDarkMode ? 'primary' : 'tertiary'" :block="true" @click="ControllerModule.setTheme('dark')">{{
-          t("walletSettings.dark")
-        }}</Button>
+        <Button
+          :variant="ControllerModule.isDarkMode ? 'primary' : 'tertiary'"
+          :block="true"
+          class="w-full"
+          @click="ControllerModule.setTheme('dark')"
+          >{{ t("walletSettings.dark") }}</Button
+        >
       </div>
     </div>
   </div>

@@ -69,15 +69,3 @@ const value = computed({
     <div v-if="errors.length" class="text-app-error text-xs">{{ errors[0].$message }}</div>
   </div>
 </template>
-
-<style scoped>
-.size-small {
-  height: 36px;
-}
-.size-medium {
-  height: 54px;
-}
-.size-large {
-  height: 60px;
-}
-</style>
