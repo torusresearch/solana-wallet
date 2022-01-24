@@ -3,7 +3,7 @@ import { Payload } from "vuex";
 
 import config from "@/config";
 import store from "@/store";
-import { LOCAL_STORAGE_KEY, STORAGE_TYPE } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, STORAGE_TYPE } from "@/utils/enums";
 import { getStorage } from "@/utils/helpers";
 
 import VuexPersistence, { ModulePersistOptions } from "./vuexPersist";
@@ -22,8 +22,14 @@ export default function installStorePlugin({
 }: {
   key: string;
   storage?: STORAGE_TYPE;
-  saveState?: (key2: string, state: Record<string, unknown>, storage2?: Storage) => void;
-  restoreState?: (key2: string, storage2?: Storage) => unknown;
+  saveState?: (key2: string, state: Record<string, unknown>, storage2?: Storage) => Promise<void>;
+  restoreState?: (
+    key2: string,
+    storage2?: Storage
+  ) => Promise<{
+    [CONTROLLER_MODULE_KEY]: KeyState;
+    state: unknown;
+  }>;
   filter?: (mutation: Payload) => boolean;
   moduleKey?: string;
 }): void {
@@ -31,7 +37,7 @@ export default function installStorePlugin({
   const finalModuleKey = moduleKey || key;
   const storageRef = getStorage(finalStorage);
   if (!storageRef) return;
-  const pluginOptions: ModulePersistOptions<unknown> = {
+  const pluginOptions: ModulePersistOptions = {
     key,
     storage: storageRef,
     moduleName: finalModuleKey,

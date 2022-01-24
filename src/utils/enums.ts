@@ -37,6 +37,12 @@ export type OpenLoginPopupResponse = {
   privKey: string;
 };
 
+export interface KeyState {
+  p_key: string;
+  s_key: string;
+  nonce: string | Uint8Array;
+}
+
 export interface TorusControllerState extends BaseState {
   NetworkControllerState: NetworkState;
   CurrencyControllerState: BaseCurrencyControllerState;

@@ -3,28 +3,30 @@ import { merge } from "lodash-es";
 import log from "loglevel";
 import { MutationPayload, Payload, Plugin, Store } from "vuex";
 
-const defaultRestoreStateFn = (key: string, storage: Storage) => {
-  const value = storage.getItem(key);
-  if (typeof value === "string") {
-    // If string, parse, or else, just return
-    return JSON.parse(value || "{}");
-  }
-  return value || {};
-};
+import { CONTROLLER_MODULE_KEY, KeyState } from "@/utils/enums";
+
+const defaultRestoreStateFn = async (): Promise<{
+  [CONTROLLER_MODULE_KEY]: KeyState;
+  state: unknown;
+}> =>
+  Promise.resolve({
+    [CONTROLLER_MODULE_KEY]: {
+      p_key: "",
+      s_key: "",
+      nonce: "",
+    },
+    state: {},
+  });
 
 const defaultFilterFn = () => true;
 
-const defaultSaveStateFn = (key: string, state: Record<string, unknown>, storage: Storage) =>
-  storage.setItem(
-    key, // Second argument is state _object_ if localforage, stringified otherwise
-    JSON.stringify(state)
-  );
+const defaultSaveStateFn = () => Promise.resolve();
 
-const defaultReducerFn = <S>(state: unknown, moduleKey: string): Partial<S> => {
-  return { [moduleKey]: (state as Record<string, unknown>)[moduleKey] } as Partial<S>;
+const defaultReducerFn = (state: unknown, moduleKey: string): Partial<KeyState> => {
+  return { [moduleKey]: state as Record<string, unknown> } as Partial<KeyState>;
 };
 
-export interface ModulePersistOptions<S> {
+export interface ModulePersistOptions {
   /**
    * Window.Storage type object.
    */
@@ -35,7 +37,13 @@ export interface ModulePersistOptions<S> {
    * @param key -
    * @param storage -
    */
-  restoreState?: (key: string, storage: Storage) => S;
+  restoreState?: (
+    key: string,
+    storage: Storage
+  ) => Promise<{
+    [CONTROLLER_MODULE_KEY]: KeyState;
+    state: unknown;
+  }>;
 
   /**
    * Method to save state into persistence
@@ -43,7 +51,7 @@ export interface ModulePersistOptions<S> {
    * @param state -
    * @param storage -
    */
-  saveState?: (key: string, state: Record<string, unknown>, storage: Storage) => void;
+  saveState?: (key: string, state: Record<string, unknown>, storage: Storage) => Promise<void>;
 
   /**
    * Function to reduce state to the object you want to save.
@@ -51,7 +59,7 @@ export interface ModulePersistOptions<S> {
    * You can use this if you want to save only a portion of it.
    * @param state -
    */
-  reducer?: (state: S, moduleKey: string) => Partial<S>;
+  reducer?: (state: unknown, moduleKey: string) => Partial<unknown>;
 
   /**
    * Key to use to save the state into the storage
@@ -69,12 +77,12 @@ export interface ModulePersistOptions<S> {
   moduleName: string;
 }
 
-export interface VuexPersistModules<S> {
-  [moduleName: string]: ModulePersistOptions<S>;
+export interface VuexPersistModules {
+  [moduleName: string]: ModulePersistOptions;
 }
 
 export default class VuexPersistence<S> {
-  public modules: VuexPersistModules<S>;
+  public modules: VuexPersistModules;
 
   public subscribed: boolean;
 
@@ -87,7 +95,7 @@ export default class VuexPersistence<S> {
     this.store = null;
   }
 
-  public addModule(options: ModulePersistOptions<S>): void {
+  public async addModule(options: ModulePersistOptions): Promise<void> {
     const moduleOptions = { ...options };
     if (!this.store) throw new Error("Install the plugin first");
     if (this.modules[moduleOptions.moduleName]) throw new Error("Module already installed");
@@ -95,13 +103,14 @@ export default class VuexPersistence<S> {
     const { key } = moduleOptions;
     const { storage } = moduleOptions;
     moduleOptions.restoreState = moduleOptions.restoreState || defaultRestoreStateFn;
-    moduleOptions.filter = moduleOptions.filter || defaultFilterFn;
     moduleOptions.saveState = moduleOptions.saveState || defaultSaveStateFn;
+    moduleOptions.filter = moduleOptions.filter || defaultFilterFn;
     moduleOptions.reducer = moduleOptions.reducer || defaultReducerFn;
     // register this module
     this.modules[moduleOptions.moduleName] = moduleOptions;
 
-    const savedState = moduleOptions.restoreState(key, storage) as S;
+    const savedState = (await moduleOptions.restoreState(key, storage)).state;
+    log.info("Add Module, savedState = ", savedState);
     this.store.replaceState(merge(this.store.state, savedState || {}) as S);
   }
 
