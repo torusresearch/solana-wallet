@@ -58,7 +58,7 @@ const refDiv = ref(null);
                 <XIcon class="w-6 h-6 absolute top-3 right-3 text-app-text-500 cursor-pointer" @click="closeModal" />
               </DialogTitle>
 
-              <div class="mt-4 mx-8 mb-8">
+              <div class="mt-4 mx-8 mb-8 flex flex-col justify-around items-center">
                 <div class="text-center font-header text-md font-bold text-app-text-500 dark:text-app-text-dark-500">{{ title }}</div>
                 <div v-if="description" class="text-center mt-3 text-base text-app-text-500 dark:text-app-text-dark-500">
                   {{ description }}
