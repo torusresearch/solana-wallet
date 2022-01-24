@@ -38,10 +38,10 @@ const value = computed({
 </script>
 
 <template>
-  <div v-if="label" class="text-sm text-app-text-600 dark:text-app-text-dark-500">
+  <div v-if="label" class="text-sm text-app-text-600 dark:text-app-text-dark-500 w-full">
     {{ label }}
   </div>
-  <div class="relative" :class="[`${label && 'mt-2.5'}`, `size-${size}`]">
+  <div class="relative w-full" :class="[`${label && 'mt-2.5'}`, `size-${size}`]">
     <Listbox v-model="value" as="div">
       <ListboxButton
         class="shadow-inner dark:shadow-none dark:bg-app-gray-800 rounded-md w-full px-3 flex justify-end items-center"

@@ -130,8 +130,8 @@ onMounted(() => {
               {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }}
             </p>
           </div>
-          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1">
-            <SelectField id="ramp_fiat_select" v-model="selectedCurrency" class="sm:mt-6" :items="selectedProvider.validCurrencies" />
+          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1 gt-sm:pt-6">
+            <SelectField id="ramp_fiat_select" v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
         <div v-if="!isLoadingQuote" class="flex flex-col items-end mb-5">

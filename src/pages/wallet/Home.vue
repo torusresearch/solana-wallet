@@ -25,7 +25,7 @@ const { t } = useI18n();
     <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <asyncWalletBalance :show-buttons="true" />
       <Card :height="'164px'">
-        <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us for Solana breakpoint</div>
+        <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500 lt-sm:pr-2">Join us for Solana breakpoint</div>
         <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">7 Nov 2021 @ Lisbon</div>
         <template #footer>
           <Button :block="false" variant="tertiary" class="w-7/12 lt-sm:w-full">{{ t("walletHome.moreInformation") }}</Button>

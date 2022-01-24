@@ -56,7 +56,7 @@ const value = computed({
     <input
       v-model="value"
       class="border-0 bg-transparent focus:outline-none focus:ring-0 text-app-text-500 dark:text-app-text-dark-500 w-7/12"
-      :class="[`size === 'small' ? 'text-xs' : 'text-base'`, $slots.default ? 'w-7/12' : 'w-full']"
+      :class="[size === 'small' ? 'text-xs' : 'text-base', $slots.default ? 'w-7/12' : 'w-full']"
       :type="type"
       :placeholder="placeholder"
       aria-label="text field"
