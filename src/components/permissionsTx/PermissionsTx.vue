@@ -59,10 +59,10 @@ function openLink() {
       <div class="mt-4 px-6 items-center px-4 scrollbar">
         <div class="flex flex-col justify-start items-start mt-6">
           <NetworkDisplay />
-          <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
+          <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
 
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.origin" target="_blank" class="text-sm font-body text-app-text-accent dark:text-app-text-accent">{{
+            <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent dark:text-app-text-accent">{{
               getDomainFromUrl(props.origin)
             }}</a>
             <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
@@ -72,12 +72,12 @@ function openLink() {
         <div class="flex flex-col justify-start items-start mt-8 mb-12">
           <div class="w-full flex flex-row justify-start items-center">
             <img :src="SubtractURL" alt="Message Info" class="mr-2" />
-            <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
+            <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">
               {{ decodedInst.length }} {{ t("walletSettings.transactionInstructions") }}
             </p>
           </div>
           <p
-            class="text-right mt-4 text-sm font-body cursor-pointer view-details text-app-text-accent"
+            class="text-right mt-4 text-sm cursor-pointer view-details text-app-text-accent"
             @click="() => (expand_inst = !expand_inst)"
             @keydown="() => (expand_inst = !expand_inst)"
           >
