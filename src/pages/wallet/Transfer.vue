@@ -43,7 +43,7 @@ const router = useRouter();
 const route = useRoute();
 
 const AsyncTokenBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokenBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),

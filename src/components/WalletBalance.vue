@@ -29,25 +29,25 @@ const updateCurrency = (newCurrency: string) => {
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">
-    <div class="flex w-full flex-row justify-between items-center">
+    <div class="flex w-full justify-between items-center">
       <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
         {{ t("walletHome.totalValue") }}
       </div>
       <NetworkDisplay />
     </div>
-    <div class="flex w-full flex-row justify-between items-center">
+    <div class="flex w-full justify-between items-center">
       <div class="amount-container">
         <span class="mr-2 font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />
       </div>
-      <div class="ml-auto mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">
+      <div class="mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">
         1 {{ token }} =
         <span id="conversionRate">{{ conversionRate }}</span>
         {{ currency }}
       </div>
     </div>
     <template v-if="showButtons" #footer>
-      <div class="flex flex-row justify-between items-center w-full">
+      <div class="flex w-full justify-between items-center">
         <Button :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
         <Button :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
       </div>

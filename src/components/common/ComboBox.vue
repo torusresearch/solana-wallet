@@ -55,7 +55,7 @@ const onBlur = () => {
     <input
       v-model="value"
       type="text"
-      class="h-54 z-10 dark:bg-app-gray-800 shadow-inner dark:shadow-none bg-white rounded-md border-0 text-app-text-500 dark:text-app-text-dark-500"
+      class="combo-input-field h-54 z-10 dark:bg-app-gray-800 shadow-inner dark:shadow-none bg-white rounded-md border-0 text-app-text-500 dark:text-app-text-dark-500"
       aria-label="Select field"
       @focus="isListOpen = true"
       @blur="onBlur"
