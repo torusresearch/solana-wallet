@@ -218,13 +218,27 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
+/**
+ * converts the fiatValue from selected fiat currency to selected crypto currency
+ * @param fiatValue - amount of fiat
+ */
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
 async function generateTransaction(): Promise<Transaction> {
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   let tx: Transaction;
   if (selectedToken?.value?.mintAddress) {
     // SPL TRANSFER OR NFT TRANSFER
     tx = await ControllerModule.torus.getTransferSplTransaction(
       resolvedAddress.value,
-      sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
+      amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
       selectedToken.value as SolAndSplToken
     );
   } else {
@@ -232,7 +246,7 @@ async function generateTransaction(): Promise<Transaction> {
     const instuctions = SystemProgram.transfer({
       fromPubkey: new PublicKey(ControllerModule.selectedAddress),
       toPubkey: new PublicKey(resolvedAddress.value),
-      lamports: sendAmount.value * LAMPORTS_PER_SOL,
+      lamports: amount * LAMPORTS_PER_SOL,
     });
     tx = new Transaction({ recentBlockhash: blockhash.value, feePayer: new PublicKey(ControllerModule.selectedAddress) }).add(instuctions);
   }
@@ -256,6 +270,7 @@ const openModal = async () => {
     isOpen.value = true;
     try {
       estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(await generateTransaction());
+      hasEstimationError.value = "";
     } catch (e) {
       hasEstimationError.value = "Unable estimate balance changes";
       log.info("Error in transaction simulation", e);
@@ -269,21 +284,7 @@ const openModal = async () => {
   transferDisabled.value = false;
 };
 
-/**
- * converts the fiatValue from selected fiat currency to selected crypto currency
- * @param fiatValue - amount of fiat
- */
-function convertFiatToCrypto(fiatValue = 1) {
-  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
-  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
-  if (selectedCrypto === "sol") {
-    return fiatValue / solConversionRate.value;
-  }
-  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
-}
-
 const confirmTransfer = async () => {
-  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
