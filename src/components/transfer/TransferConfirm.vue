@@ -190,7 +190,7 @@ const refDiv = ref(null);
                     <div class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
                   </div>
                 </div>
-                <template v-if="isSPLToken()">
+                <div v-if="isSPLToken()">
                   <hr class="mt-3 mb-5" />
                   <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500 mb-2">
                     <EstimateChanges
@@ -199,7 +199,7 @@ const refDiv = ref(null);
                       :is-expand="true"
                     />
                   </div>
-                </template>
+                </div>
                 <div class="flex">
                   <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
                   <div class="ml-auto text-right">
