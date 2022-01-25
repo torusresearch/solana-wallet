@@ -652,7 +652,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const mintTokenAddress: string[] = [];
     const postTokenDetails: TokenAccount[] = [];
     result.accounts?.forEach((item, idx) => {
-      if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner))) {
+      // there is possibility the account is a mintAccount which is also owned by TOKEN PROGRAM. Check data length to filter out
+      if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner)) && item.data[0].length > 128) {
         const tokenDetail = new TokenAccount(accountKeys[idx], {
           ...item,
           owner: new PublicKey(item.owner),
