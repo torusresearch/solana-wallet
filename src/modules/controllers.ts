@@ -27,8 +27,9 @@ import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
-import { cloneDeep, merge } from "lodash-es";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
+import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
@@ -496,22 +497,18 @@ class ControllerModule extends VuexModule {
 }
 
 const module = getModule(ControllerModule);
-const nonce = Buffer.from(
-  new Uint8Array([81, 34, 197, 12, 58, 79, 212, 21, 96, 213, 253, 138, 195, 155, 247, 207, 111, 204, 237, 135, 229, 162, 32, 164])
-).toString("hex"); //  nacl.randomBytes(24)
 
 installStorePlugin({
   key: CONTROLLER_MODULE_KEY,
   storage: LOCAL_STORAGE_KEY,
   saveState: async (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const value = storage?.getItem(key);
-    const currentKeyState =
+    const currentKeyState: KeyState =
       typeof value === "string"
         ? JSON.parse(value)
         : {
             p_key: "",
             s_key: "",
-            nonce,
           };
 
     const selectedWallet = (state?.controllerModule as any)?.controllerModule?.torusState?.KeyringControllerState?.wallets?.find(
@@ -522,23 +519,20 @@ installStorePlugin({
     const keyState: KeyState = {
       p_key: currentKeyState?.p_key || selectedWallet?.publicKey || "",
       s_key: currentKeyState?.s_key || selectedWallet?.privateKey || "",
-      nonce,
     };
-    storage?.setItem(key, JSON.stringify(keyState));
-    keyState.nonce = new Uint8Array(Buffer.from(keyState.nonce as string, "hex"));
+    storage?.setItem(key, stringify(keyState));
     try {
       if (selectedWallet?.publicKey && selectedWallet?.privateKey) {
-        const enc = new TextEncoder();
-        const stateString = JSON.stringify((state?.controllerModule as any)?.controllerModule?.torusState); // string
-        const stateByteArray = enc.encode(stateString); // Uint8Array
-        const privKey = new Uint8Array(base58.decode(keyState.s_key)); // Uint8Array
+        const nonce = nacl.randomBytes(24);
+        const stateString = stringify(omit((state.controllerModule as any).controllerModule, [`${CONTROLLER_MODULE_KEY}.torus`]));
+        const stateByteArray = Buffer.from(stateString, "utf-8");
+        const privKey = base58.decode(keyState.s_key);
 
-        const encryptedState = nacl.secretbox(stateByteArray, keyState.nonce, privKey.slice(0, 32)); // Uint8Array
-        const timestamp = parseInt(`${Date.now() / 1000}`, 10); // integer
-        const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp }; // {data: hexString, timestamp: integer}
-
-        const signature = nacl.sign.detached(enc.encode(JSON.stringify(setData)), privKey); // Uint8Array
-        const signatureString = Buffer.from(signature).toString("hex"); // hexString
+        const encryptedState = nacl.secretbox(stateByteArray, nonce, privKey.slice(0, 32));
+        const timestamp = parseInt(`${Date.now() / 1000}`, 10);
+        const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
+        const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), privKey);
+        const signatureString = Buffer.from(signature).toString("hex");
 
         await axios.post("http://localhost:4021/set", { pub_key: keyState.p_key, signature: signatureString, set_data: setData });
       }
@@ -554,23 +548,33 @@ installStorePlugin({
         : {
             p_key: "",
             s_key: "",
-            nonce,
           };
-    keyState.nonce = new Uint8Array(Buffer.from(keyState.nonce as string, "hex"));
     try {
-      const encryptedState = (await axios.post("http://localhost:4021/get", { pub_key: keyState.p_key })).data.message;
-      const privKey = new Uint8Array(base58.decode(keyState.s_key));
-      const encryptedStateArray = new Uint8Array(Buffer.from(encryptedState, "hex"));
-      log.info(encryptedStateArray, typeof encryptedStateArray, keyState.nonce, typeof keyState.nonce, privKey, typeof privKey);
-      const decryptedStateArray = nacl.secretbox.open(encryptedStateArray, keyState.nonce, privKey.slice(0, 32));
-      const dec = new TextDecoder();
-      const decryptedStateString = dec.decode(decryptedStateArray as Uint8Array);
-      const decryptedState = JSON.parse(decryptedStateString);
-      log.info("Decrypted State = ", decryptedState);
-      return {
-        [CONTROLLER_MODULE_KEY]: keyState,
-        state: decryptedState,
-      };
+      if (keyState.p_key && keyState.s_key) {
+        const res = (await axios.post("http://localhost:4021/get", { pub_key: keyState.p_key })).data;
+        if (Object.keys(res).length && res.state && res.nonce) {
+          const encryptedState = res.state;
+          const nonce = Buffer.from(res.nonce, "hex");
+          const privKey = base58.decode(keyState.s_key);
+          const encryptedStateArray = Buffer.from(encryptedState, "hex");
+          const decryptedStateArray = nacl.secretbox.open(encryptedStateArray, nonce, privKey.slice(0, 32));
+          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state");
+          const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
+          const decryptedState = JSON.parse(decryptedStateString);
+          return {
+            [CONTROLLER_MODULE_KEY]: keyState,
+            state: {
+              [CONTROLLER_MODULE_KEY]: {
+                torus: new TorusController({
+                  _config: DEFAULT_CONFIG,
+                  _state: DEFAULT_STATE,
+                }),
+                ...decryptedState,
+              },
+            },
+          };
+        }
+      }
     } catch (error) {
       log.error("Error restoring state!", error);
     }

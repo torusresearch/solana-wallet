@@ -4,7 +4,7 @@ import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
@@ -31,6 +31,8 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
+const isLoggedIn = computed(() => ControllerModule.selectedAddress);
+
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
 });
@@ -56,6 +58,10 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     isLoading.value = false;
   }
 };
+
+watch([isLoggedIn], (cur, _) => {
+  if (cur) router.push("/wallet/home");
+});
 
 const onEmailLogin = () => {
   $v.value.$touch();
