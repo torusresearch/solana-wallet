@@ -611,7 +611,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   // TODO: Try take this function out of toruscontroller
-  async getEstimateBalanceChange(tx: Transaction, _signer = this.selectedAddress): Promise<AccountEstimation[]> {
+  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<AccountEstimation[]> {
     const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
       // get writeable accounts from all instruction
@@ -624,6 +624,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         return prev;
       }, new Map<string, PublicKey>());
+
+      // add selected Account incase signer is just fee payer (instruction will not track fee payer)
+      accounts.set(signer, new PublicKey(signer));
 
       // Simulate Transaction with Accounts
       const result = await connection.simulateTransaction(tx, undefined, Array.from(accounts.values()));
