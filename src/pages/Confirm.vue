@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AccountMeta, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, SignaturePubkeyPair, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -84,7 +84,7 @@ onMounted(async () => {
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
-      const signer: AccountMeta[] = [];
+      const signer: SignaturePubkeyPair[] = [];
       (txData.message as string[]).forEach((msg) => {
         let tx2: Transaction;
         if (txData.messageOnly) {
@@ -94,12 +94,12 @@ onMounted(async () => {
         }
         tx2.instructions.forEach((inst) => {
           decoded.push(decodeInstruction(inst));
-          signer.push(
-            inst.keys.filter((k) => {
-              return k.isSigner && k.pubkey.toBase58() === txData.signer;
-            })
-          );
         });
+        signer.push(
+          ...tx.value.signatures.filter((signPair) => {
+            return signPair.publicKey?.toBase58() === txData.signer;
+          })
+        );
         // TODO use latest rpc api to get Fee from message
         // Waiting for web3js for now
         // finalTxData.totalNetworkFee += 0
