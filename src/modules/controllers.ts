@@ -416,6 +416,8 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
+    window.localStorage?.removeItem("controllerModule");
+    window.sessionStorage?.removeItem("stateFetched");
   }
 
   @Action
@@ -541,6 +543,7 @@ installStorePlugin({
     }
   },
   restoreState: async (key: string, storage?: Storage) => {
+    window.sessionStorage?.setItem("stateFetched", "false");
     const value = storage?.getItem(key);
     const keyState =
       typeof value === "string"
@@ -561,6 +564,7 @@ installStorePlugin({
           if (decryptedStateArray === null) throw new Error("Couldn't decrypt state");
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
           const decryptedState = JSON.parse(decryptedStateString);
+          window.sessionStorage?.setItem("stateFetched", "true");
           return {
             [CONTROLLER_MODULE_KEY]: keyState,
             state: {
@@ -577,6 +581,8 @@ installStorePlugin({
       }
     } catch (error) {
       log.error("Error restoring state!", error);
+    } finally {
+      window.sessionStorage?.setItem("stateFetched", "true");
     }
     return {
       [CONTROLLER_MODULE_KEY]: keyState,

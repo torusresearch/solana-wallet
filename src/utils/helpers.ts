@@ -209,3 +209,13 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
     return validator(value, debounce);
   };
 };
+
+export const waitForState = () => {
+  return new Promise<void>((resolve, reject) => {
+    setTimeout(reject, 30_000);
+    setInterval(() => {
+      if (window.sessionStorage?.getItem("stateFetched") === "true") resolve();
+      else if (window.sessionStorage?.getItem("stateFetched") === null) resolve();
+    }, 100);
+  });
+};
