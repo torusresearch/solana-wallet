@@ -503,7 +503,7 @@ const module = getModule(ControllerModule);
 installStorePlugin({
   key: CONTROLLER_MODULE_KEY,
   storage: LOCAL_STORAGE_KEY,
-  saveState: async (key: string, state: Record<string, unknown>, storage?: Storage) => {
+  saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const value = storage?.getItem(key);
     const currentKeyState: KeyState =
       typeof value === "string"
@@ -512,7 +512,7 @@ installStorePlugin({
             p_key: "",
             s_key: "",
           };
-
+    log.info("Saving State to Backend: ", state);
     const selectedWallet = (state?.controllerModule as any)?.controllerModule?.torusState?.KeyringControllerState?.wallets?.find(
       (wallet: { publicKey: string; privateKey: string; address: string }) =>
         wallet.publicKey === (state?.controllerModule as any)?.controllerModule?.torusState?.PreferencesControllerState?.selectedAddress
@@ -536,7 +536,7 @@ installStorePlugin({
         const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), privKey);
         const signatureString = Buffer.from(signature).toString("hex");
 
-        await axios.post("http://localhost:4021/set", { pub_key: keyState.p_key, signature: signatureString, set_data: setData });
+        axios.post("http://localhost:4021/set", { pub_key: keyState.p_key, signature: signatureString, set_data: setData });
       }
     } catch (error) {
       log.error("Error saving state!", error);

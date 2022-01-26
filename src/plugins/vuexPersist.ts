@@ -20,7 +20,8 @@ const defaultRestoreStateFn = async (): Promise<{
 
 const defaultFilterFn = () => true;
 
-const defaultSaveStateFn = () => Promise.resolve();
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const defaultSaveStateFn = () => {};
 
 const defaultReducerFn = (state: unknown, moduleKey: string): Partial<KeyState> => {
   return { [moduleKey]: state as Record<string, unknown> } as Partial<KeyState>;
@@ -51,7 +52,7 @@ export interface ModulePersistOptions {
    * @param state -
    * @param storage -
    */
-  saveState?: (key: string, state: Record<string, unknown>, storage: Storage) => Promise<void>;
+  saveState?: (key: string, state: Record<string, unknown>, storage: Storage) => void;
 
   /**
    * Function to reduce state to the object you want to save.
@@ -110,7 +111,7 @@ export default class VuexPersistence<S> {
     this.modules[moduleOptions.moduleName] = moduleOptions;
 
     const savedState = (await moduleOptions.restoreState(key, storage)).state;
-    log.info("Add Module, savedState = ", savedState);
+    log.info("Add Module, restoring state = ", savedState);
     this.store.replaceState(merge(this.store.state, savedState || {}) as S);
   }
 

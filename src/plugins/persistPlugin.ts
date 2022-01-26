@@ -22,7 +22,7 @@ export default function installStorePlugin({
 }: {
   key: string;
   storage?: STORAGE_TYPE;
-  saveState?: (key2: string, state: Record<string, unknown>, storage2?: Storage) => Promise<void>;
+  saveState?: (key2: string, state: Record<string, unknown>, storage2?: Storage) => void;
   restoreState?: (
     key2: string,
     storage2?: Storage
