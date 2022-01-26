@@ -124,6 +124,8 @@ onMounted(async () => {
           return k.pubkey.toBase58() === txData.signer && k.isSigner;
         }).length;
       }).length === 0;
+    signatureNotRequired.value ||= tx.instructions.length === 0;
+
     if (signatureNotRequired.value) return;
 
     try {

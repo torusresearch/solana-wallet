@@ -55,8 +55,8 @@ function openLink() {
     </div>
     <div class="spacer"></div>
     <hr class="mx-6" />
-    <div class="grid grid-cols-1 gap-3 m-6 px-4 rounded-md my-8">
-      <div><Button class="ml-auto" :block="true" variant="primary" @click="onCancel">Ok, got it</Button></div>
+    <div class="grid gap-3 m-6 px-4 rounded-md my-8">
+      <Button class="w-full ml-auto" :block="true" variant="primary" @click="onCancel">Ok, got it</Button>
     </div>
   </div>
 </template>
