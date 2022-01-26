@@ -38,8 +38,7 @@ export type OpenLoginPopupResponse = {
 };
 
 export interface KeyState {
-  p_key: string;
-  s_key: string;
+  priv_key: string;
 }
 
 export interface TorusControllerState extends BaseState {

@@ -34,7 +34,7 @@ const $v = useVuelidate(rules, { userEmail });
 const isLoggedIn = computed(() => ControllerModule.selectedAddress);
 
 onMounted(() => {
-  if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
+  if (isLoggedIn.value) router.push("/wallet/home");
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -44,7 +44,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (ControllerModule.torus.selectedAddress) {
+    if (isLoggedIn.value) {
       isLoading.value = false;
       router.push("/wallet/home");
     }

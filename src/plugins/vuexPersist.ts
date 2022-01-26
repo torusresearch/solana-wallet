@@ -11,9 +11,7 @@ const defaultRestoreStateFn = async (): Promise<{
 }> =>
   Promise.resolve({
     [CONTROLLER_MODULE_KEY]: {
-      p_key: "",
-      s_key: "",
-      nonce: "",
+      priv_key: "",
     },
     state: {},
   });

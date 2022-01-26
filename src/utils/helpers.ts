@@ -212,10 +212,32 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
 
 export const waitForState = () => {
   return new Promise<void>((resolve, reject) => {
-    setTimeout(reject, 30_000);
-    setInterval(() => {
-      if (window.sessionStorage?.getItem("stateFetched") === "true") resolve();
-      else if (window.sessionStorage?.getItem("stateFetched") === null) resolve();
+    let timeout: NodeJS.Timeout;
+    let interval: NodeJS.Timeout;
+    // eslint-disable-next-line prefer-const
+    timeout = setTimeout(() => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+      reject();
+    }, 10_000);
+    interval = setInterval(() => {
+      const localKeyState = window.localStorage?.getItem("controllerModule");
+      // state fetched === false indicates that state is being fetched, true indicates state has been fetched.
+      const stateFetched = window.sessionStorage?.getItem("stateFetched");
+
+      if (stateFetched === "true") {
+        clearInterval(interval);
+        clearTimeout(timeout);
+        resolve();
+      }
+
+      // if local key state is not set resolve or is empty resolve to route
+      if (!localKeyState || !JSON.parse(localKeyState)?.priv_key) {
+        log.info("true");
+        clearInterval(interval);
+        clearTimeout(timeout);
+        resolve();
+      }
     }, 100);
   });
 };

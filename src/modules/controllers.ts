@@ -19,6 +19,7 @@ import {
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
@@ -27,7 +28,8 @@ import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
-import { cloneDeep, merge, omit } from "lodash-es";
+import { cloneDeep, merge } from "lodash-es";
+// import { omit } from "lodash-es";
 import log from "loglevel";
 import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -36,9 +38,10 @@ import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import i18nPlugin from "@/plugins/i18nPlugin";
-import installStorePlugin from "@/plugins/persistPlugin";
+// import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
+// import { LOCAL_STORAGE_KEY } from "@/utils/enums";
 import { isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -340,6 +343,7 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
+    this.restoreFromBackend();
 
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
@@ -373,7 +377,8 @@ class ControllerModule extends VuexModule {
 
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
-    await this.torus.triggerLogin({ loginProvider, login_hint });
+    const res = await this.torus.triggerLogin({ loginProvider, login_hint });
+    await this.saveToBackend({ private_key: res.privKey, saveState: res.userInfo });
   }
 
   @Action
@@ -416,7 +421,7 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
-    window.localStorage?.removeItem("controllerModule");
+    window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
     window.sessionStorage?.removeItem("stateFetched");
   }
 
@@ -496,87 +501,66 @@ class ControllerModule extends VuexModule {
   openWalletPopup(path: string) {
     this.torus.showWalletPopup(path, this.instanceId);
   }
-}
 
-const module = getModule(ControllerModule);
-
-installStorePlugin({
-  key: CONTROLLER_MODULE_KEY,
-  storage: LOCAL_STORAGE_KEY,
-  saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
-    const value = storage?.getItem(key);
-    const currentKeyState: KeyState =
-      typeof value === "string"
-        ? JSON.parse(value)
-        : {
-            p_key: "",
-            s_key: "",
-          };
-    log.info("Saving State to Backend: ", state);
-    const selectedWallet = (state?.controllerModule as any)?.controllerModule?.torusState?.KeyringControllerState?.wallets?.find(
-      (wallet: { publicKey: string; privateKey: string; address: string }) =>
-        wallet.publicKey === (state?.controllerModule as any)?.controllerModule?.torusState?.PreferencesControllerState?.selectedAddress
-    );
-
+  @Action
+  async saveToBackend({ private_key = "", saveState = {} }) {
+    window.sessionStorage.setItem("stateFetched", "false");
+    const { pk, sk } = getED25519Key(private_key.padStart(64, "0"));
+    // create object from provided private key
     const keyState: KeyState = {
-      p_key: currentKeyState?.p_key || selectedWallet?.publicKey || "",
-      s_key: currentKeyState?.s_key || selectedWallet?.privateKey || "",
+      priv_key: base58.encode(sk),
     };
-    storage?.setItem(key, stringify(keyState));
+    // set private key in local storage for persistance
+    window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
     try {
-      if (selectedWallet?.publicKey && selectedWallet?.privateKey) {
-        const nonce = nacl.randomBytes(24);
-        const stateString = stringify(omit((state.controllerModule as any).controllerModule, [`${CONTROLLER_MODULE_KEY}.torus`]));
-        const stateByteArray = Buffer.from(stateString, "utf-8");
-        const privKey = base58.decode(keyState.s_key);
-
-        const encryptedState = nacl.secretbox(stateByteArray, nonce, privKey.slice(0, 32));
-        const timestamp = parseInt(`${Date.now() / 1000}`, 10);
-        const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
-        const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), privKey);
-        const signatureString = Buffer.from(signature).toString("hex");
-
-        axios.post("http://localhost:4021/set", { pub_key: keyState.p_key, signature: signatureString, set_data: setData });
-      }
+      const nonce = nacl.randomBytes(24);
+      const stateString = stringify(saveState);
+      const stateByteArray = Buffer.from(stateString, "utf-8");
+      const pubKey = base58.encode(pk);
+      const encryptedState = nacl.secretbox(stateByteArray, nonce, sk.slice(0, 32));
+      const timestamp = Date.now();
+      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
+      const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
+      const signatureString = Buffer.from(signature).toString("hex");
+      // update backend db with current (openlogin)state
+      axios.post("http://localhost:4021/set", { pub_key: pubKey, signature: signatureString, set_data: setData });
     } catch (error) {
       log.error("Error saving state!", error);
+    } finally {
+      window.sessionStorage.setItem("stateFetched", "true");
     }
-  },
-  restoreState: async (key: string, storage?: Storage) => {
-    window.sessionStorage?.setItem("stateFetched", "false");
-    const value = storage?.getItem(key);
-    const keyState =
+  }
+
+  @Action
+  async restoreFromBackend() {
+    window.sessionStorage.setItem("stateFetched", "false");
+    // read private key from local storage
+    const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
+    // parse local storage string
+    const keyState: KeyState =
       typeof value === "string"
         ? JSON.parse(value)
         : {
-            p_key: "",
-            s_key: "",
+            priv_key: "",
           };
     try {
-      if (keyState.p_key && keyState.s_key) {
-        const res = (await axios.post("http://localhost:4021/get", { pub_key: keyState.p_key })).data;
+      // if private key was found, get encrypted openlogin state, nonce
+      if (keyState.priv_key) {
+        const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
+        const res = (await axios.post("http://localhost:4021/get", { pub_key: pubKey })).data;
         if (Object.keys(res).length && res.state && res.nonce) {
           const encryptedState = res.state;
           const nonce = Buffer.from(res.nonce, "hex");
-          const privKey = base58.decode(keyState.s_key);
+          const privKey = base58.decode(keyState.priv_key);
           const encryptedStateArray = Buffer.from(encryptedState, "hex");
           const decryptedStateArray = nacl.secretbox.open(encryptedStateArray, nonce, privKey.slice(0, 32));
           if (decryptedStateArray === null) throw new Error("Couldn't decrypt state");
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
           const decryptedState = JSON.parse(decryptedStateString);
-          window.sessionStorage?.setItem("stateFetched", "true");
-          return {
-            [CONTROLLER_MODULE_KEY]: keyState,
-            state: {
-              [CONTROLLER_MODULE_KEY]: {
-                torus: new TorusController({
-                  _config: DEFAULT_CONFIG,
-                  _state: DEFAULT_STATE,
-                }),
-                ...decryptedState,
-              },
-            },
-          };
+
+          // add decrypted userinfo, private key account
+          const address = await this.torus.addAccount(privKey.toString("hex").slice(0, 64), decryptedState);
+          this.torus.setSelectedAccount(address);
         }
       }
     } catch (error) {
@@ -584,11 +568,9 @@ installStorePlugin({
     } finally {
       window.sessionStorage?.setItem("stateFetched", "true");
     }
-    return {
-      [CONTROLLER_MODULE_KEY]: keyState,
-      state: {},
-    };
-  },
-});
+  }
+}
+
+const module = getModule(ControllerModule);
 
 export default module;

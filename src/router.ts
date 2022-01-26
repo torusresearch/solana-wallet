@@ -1,4 +1,3 @@
-import log from "loglevel";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
@@ -151,7 +150,6 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 });
 
 router.beforeEach(async (to, _, next) => {
-  log.info(to.fullPath, _.fullPath);
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
   await waitForState();
