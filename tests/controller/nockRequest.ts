@@ -2,6 +2,8 @@ import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
 import log from "loglevel";
 import nock from "nock";
 
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
+
 import { mockData, OffChainMetaplexUri } from "./mockData";
 
 export default () => {
@@ -58,7 +60,8 @@ export default () => {
   nockBackend.post("/transaction").reply(200, () => JSON.stringify(mockData.backend.transaction));
 
   // api.mainnet-beta nock
-  nock("https://api.mainnet-beta.solana.com")
+  // nock("https://api.mainnet-beta.solana.com")
+  nock(WALLET_SUPPORTED_NETWORKS.mainnet.rpcTarget)
     .persist()
     .post("/")
     .reply(200, (_uri, body: JRPCRequest<unknown>) => {
@@ -74,7 +77,8 @@ export default () => {
     });
 
   // api.testnet nock
-  nock("https://api.testnet.solana.com")
+  // nock("https://api.testnet.solana.com")
+  nock(WALLET_SUPPORTED_NETWORKS.testnet.rpcTarget)
     .persist()
     .post("/")
     .reply(200, (_uri, body: JRPCRequest<unknown>) => {
@@ -90,7 +94,8 @@ export default () => {
     });
 
   // api.devnet nock
-  nock("https://api.devnet.solana.com")
+  // nock("https://api.devnet.solana.com")
+  nock(WALLET_SUPPORTED_NETWORKS.devnet.rpcTarget)
     .persist()
     .post("/")
     .reply(200, (_uri, body: JRPCRequest<unknown>) => {
