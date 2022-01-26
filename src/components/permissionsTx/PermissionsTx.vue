@@ -51,25 +51,25 @@ function openLink() {
   >
     <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
       <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
-        <img class="h-7 mx-auto w-auto mb-1 mr-5 absolute left-5" :src="props.logoUrl" alt="Dapp Logo" />
-        <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+        <img class="h-7 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
+        <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 w-full">
           {{ `${t("dappProvider.confirm")} ${t("dappProvider.permission")}` }}
         </p>
       </div>
-      <div class="mt-4 px-6 items-center px-4 scrollbar">
-        <div class="flex flex-col justify-start items-start mt-6">
+      <div class="mt-4 px-6 items-center px-4 flex flex-col justify-start items-start h-full">
+        <div class="flex flex-col justify-start items-start w-full mt-4 mb-6">
           <NetworkDisplay />
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
 
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent dark:text-app-text-accent">{{
-              getDomainFromUrl(props.origin)
-            }}</a>
-            <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
+            <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent">{{ getDomainFromUrl(props.origin) }}</a>
+            <div class="h-6 w-6 flex items-center justify-center rounded-md cursor-pointer" @click="openLink" @keydown="openLink">
+              <img :src="GoToLinkLogo" alt="GoToLink" />
+            </div>
           </div>
         </div>
 
-        <div class="flex flex-col justify-start items-start mt-8 mb-12">
+        <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
             <img :src="SubtractURL" alt="Message Info" class="mr-2" />
             <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">
@@ -77,62 +77,28 @@ function openLink() {
             </p>
           </div>
           <p
-            class="text-right mt-4 text-sm cursor-pointer view-details text-app-text-accent"
+            class="text-right mt-4 text-sm cursor-pointer text-app-text-accent w-full"
             @click="() => (expand_inst = !expand_inst)"
             @keydown="() => (expand_inst = !expand_inst)"
           >
             {{ expand_inst ? t("dappPermission.hideDetails") : t("dappPermission.viewMoreDetails") }}
           </p>
-          <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
+          <div class="max-h-36 no-scrollbar overflow-y-auto w-full">
+            <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
+          </div>
         </div>
       </div>
-      <div class="spacer"></div>
-      <hr class="mx-6" />
-      <div class="grid grid-cols-2 gap-3 m-6 px-4 rounded-md my-8">
-        <div>
-          <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
-        </div>
-        <div>
-          <Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
-        </div>
+      <hr class="mx-6 mt-auto" />
+      <div class="flex flex-row justify-around items-center my-4">
+        <Button :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+        <Button :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
       </div>
     </div>
   </div>
 </template>
 <style scoped>
-.title-box {
-  flex: 1 1 auto;
-}
-.open-link {
-  height: 24px;
-  width: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(0deg, #575d69, #575d69), #ffffff;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.spacer {
-  flex: 1 1 auto;
-}
 hr {
   border-color: #555555;
-}
-.approval-msg {
-  overflow: auto;
-  height: 100%;
-  max-height: 180px !important;
-}
-
-.scrollbar {
-  max-height: 65vh;
-  overflow: scroll;
-  scrollbar-width: none;
-}
-.scrollbar::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
 }
 
 @screen gt-xs {
