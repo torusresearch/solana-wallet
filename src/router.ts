@@ -3,6 +3,8 @@ import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordNam
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 
+import { waitForState } from "./utils/helpers";
+
 const enum AuthStates {
   AUTHENTICATED = "auth",
   NON_AUTHENTICATED = "un-auth",
@@ -147,9 +149,10 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   return next();
 });
 
-router.beforeEach((to, _, next) => {
+router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
+  if (to.name !== "frame") await waitForState(ControllerModule);
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn()) {
     next("/login");
   } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn()) {

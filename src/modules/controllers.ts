@@ -19,22 +19,26 @@ import {
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import nacl from "@toruslabs/tweetnacl-js";
+import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
-import { cloneDeep, merge, omit } from "lodash-es";
+import base58 from "bs58";
+import { cloneDeep, merge } from "lodash-es";
 import log from "loglevel";
+import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import i18nPlugin from "@/plugins/i18nPlugin";
-import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
 import { isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -336,6 +340,7 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
+    this.restoreFromBackend();
 
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
@@ -369,7 +374,8 @@ class ControllerModule extends VuexModule {
 
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
-    await this.torus.triggerLogin({ loginProvider, login_hint });
+    const res = await this.torus.triggerLogin({ loginProvider, login_hint });
+    this.saveToBackend({ private_key: res.privKey, saveState: res.userInfo });
   }
 
   @Action
@@ -412,6 +418,7 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
+    window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
   }
 
   @Action
@@ -490,34 +497,64 @@ class ControllerModule extends VuexModule {
   openWalletPopup(path: string) {
     this.torus.showWalletPopup(path, this.instanceId);
   }
+
+  @Action
+  async saveToBackend({ private_key = "", saveState = {} }) {
+    const { pk, sk } = getED25519Key(private_key.padStart(64, "0"));
+    const keyState: KeyState = {
+      priv_key: base58.encode(sk),
+    };
+    window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
+    try {
+      const nonce = nacl.randomBytes(24);
+      const stateString = stringify(saveState);
+      const stateByteArray = Buffer.from(stateString, "utf-8");
+      const pubKey = base58.encode(pk);
+      const encryptedState = nacl.secretbox(stateByteArray, nonce, sk.slice(0, 32));
+      const timestamp = Date.now();
+      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
+      const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
+      const signatureString = Buffer.from(signature).toString("hex");
+      await axios.post(`${config.openloginStateAPI}/set`, { pub_key: pubKey, signature: signatureString, set_data: setData });
+    } catch (error) {
+      log.error("Error saving state!", error);
+    }
+  }
+
+  @Action
+  async restoreFromBackend() {
+    const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
+    const keyState: KeyState =
+      typeof value === "string"
+        ? JSON.parse(value)
+        : {
+            priv_key: "",
+          };
+    try {
+      if (keyState.priv_key) {
+        const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
+        const res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+        if (Object.keys(res).length && res.state && res.nonce) {
+          const encryptedState = res.state;
+          const nonce = Buffer.from(res.nonce, "hex");
+          const privKey = base58.decode(keyState.priv_key);
+          const encryptedStateArray = Buffer.from(encryptedState, "hex");
+          const decryptedStateArray = nacl.secretbox.open(encryptedStateArray, nonce, privKey.slice(0, 32));
+          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state");
+          const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
+          const decryptedState = JSON.parse(decryptedStateString);
+
+          const address = await this.torus.addAccount(privKey.toString("hex").slice(0, 64), decryptedState);
+          this.torus.setSelectedAccount(address);
+        }
+      }
+    } catch (error) {
+      window.localStorage.removeItem(CONTROLLER_MODULE_KEY);
+      log.error("Error restoring state!", error);
+    }
+  }
 }
 
 const module = getModule(ControllerModule);
-
-installStorePlugin({
-  key: CONTROLLER_MODULE_KEY,
-  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
-  saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
-    const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
-    storage?.setItem(key, JSON.stringify(requiredState));
-  },
-  restoreState: (key: string, storage?: Storage) => {
-    const value = storage?.getItem(key);
-    if (typeof value === "string") {
-      // If string, parse, or else, just return
-      const parsedValue = JSON.parse(value || "{}");
-      return {
-        [CONTROLLER_MODULE_KEY]: {
-          torus: new TorusController({
-            _config: DEFAULT_CONFIG,
-            _state: DEFAULT_STATE,
-          }),
-          ...(parsedValue[CONTROLLER_MODULE_KEY] || {}),
-        },
-      };
-    }
-    return value || {};
-  },
-});
 
 export default module;
