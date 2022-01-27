@@ -25,21 +25,19 @@ const { t } = useI18n();
     <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <asyncWalletBalance :show-buttons="true" />
       <Card :height="'164px'">
-        <div class="grid grid-cols-3">
-          <div class="col-span-2">
-            <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500">Join us for Solana breakpoint</div>
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">7 Nov 2021 @ Lisbon</div>
+        <div class="flex">
+          <div class="flex flex-col w-full h-full">
+            <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500 lt-sm:pr-2">Meet us at Singapore hacker house</div>
+            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">15th Feb - 20th Feb</div>
           </div>
-          <div class="col-span-1 sol_logo">
-            <img class="float-right h-2/4 lt-sm:h-16 sol_logo_image" alt="Solana Mascot" :src="SolanaMascot" />
-          </div>
+          <img class="h-2/4 lt-sm:h-12 m-auto gt-sm:absolute top-1/4 right-6" alt="Solana Mascot" :src="SolanaMascot" />
         </div>
+
         <template #footer>
-          <div class="flex sm:grid grid-cols-2 gap-3 mt-3">
-            <div class="w-full sm:w-auto">
-              <Button :block="true" variant="tertiary">{{ t("walletHome.moreInformation") }}</Button>
-            </div>
-          </div>
+          <Button :block="false" variant="tertiary" class="w-7/12 lt-sm:w-full">{{ t("walletHome.moreInformation") }}</Button>
+        </template>
+        <template #right-content>
+          <img class="h-2/4 lt-sm:h-12 m-auto" alt="Solana Mascot" :src="SolanaMascot" />
         </template>
       </Card>
     </div>
@@ -48,13 +46,3 @@ const { t } = useI18n();
     </div>
   </div>
 </template>
-
-<style scoped>
-.sol_logo {
-  display: flex;
-}
-
-.sol_logo_image {
-  margin: auto 23px auto auto;
-}
-</style>

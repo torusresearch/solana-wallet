@@ -45,9 +45,7 @@ const refDiv = ref(null);
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div
-              class="inline-block gt-sm:w-96 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 rounded-md"
-            >
+            <div class="inline-block gt-sm:w-96 align-middle transition-all transform bg-white dark:bg-app-gray-700 rounded-md">
               <DialogTitle
                 as="div"
                 class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md flex justify-center py-8 relative"
@@ -60,9 +58,9 @@ const refDiv = ref(null);
                 <XIcon class="w-6 h-6 absolute top-3 right-3 text-app-text-500 cursor-pointer" @click="closeModal" />
               </DialogTitle>
 
-              <div class="mt-4 mx-8 mb-8">
+              <div class="mt-4 mx-8 mb-8 flex flex-col justify-around items-center">
                 <div class="text-center font-header text-md font-bold text-app-text-500 dark:text-app-text-dark-500">{{ title }}</div>
-                <div v-if="description" class="text-center mt-3 font-body text-base text-app-text-500 dark:text-app-text-dark-500">
+                <div v-if="description" class="text-center mt-3 text-base text-app-text-500 dark:text-app-text-dark-500">
                   {{ description }}
                 </div>
                 <Button class="mt-5" :block="true" variant="tertiary" @click="closeModal">Close</Button>

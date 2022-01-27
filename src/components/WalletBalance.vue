@@ -29,33 +29,27 @@ const updateCurrency = (newCurrency: string) => {
 </script>
 <template>
   <Card :height="showButtons ? '164px' : undefined">
-    <div class="flex">
+    <div class="flex w-full justify-between items-center">
       <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
         {{ t("walletHome.totalValue") }}
       </div>
-      <div class="ml-auto"><NetworkDisplay /></div>
+      <NetworkDisplay />
     </div>
-    <div class="flex">
+    <div class="flex w-full justify-between items-center">
       <div class="amount-container">
-        <span class="mr-2 font-body font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
+        <span class="mr-2 font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />
-
-        <!--        <span class="font-body uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ currency }}</span>-->
       </div>
-      <div class="ml-auto font-body uppercase text-xs self-end text-app-text-400 dark:text-app-text-dark-600">
+      <div class="mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">
         1 {{ token }} =
         <span id="conversionRate">{{ conversionRate }}</span>
         {{ currency }}
       </div>
     </div>
     <template v-if="showButtons" #footer>
-      <div class="grid grid-cols-2 gap-3 mt-3">
-        <div>
-          <Button :block="true" variant="tertiary" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
-        </div>
-        <div>
-          <Button :block="true" variant="tertiary" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
-        </div>
+      <div class="flex w-full justify-between items-center">
+        <Button :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
+        <Button :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
       </div>
     </template>
   </Card>

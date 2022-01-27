@@ -174,17 +174,17 @@ const refDiv = ref(null);
                 </div>
                 <hr class="mt-3 mb-5" />
                 <div class="flex mb-5">
-                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
+                  <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
                   <div class="ml-auto text-right">
-                    <div class="font-body text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
-                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
+                    <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
+                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
                   </div>
                 </div>
                 <div class="flex">
-                  <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
+                  <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
                   <div class="ml-auto text-right">
-                    <div class="font-body text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ fiatTxFeeString }}</div>
-                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600">
+                    <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ fiatTxFeeString }}</div>
+                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-600">
                       (In &lt; {{ t("walletTransfer.fee-edit-time-sec", { time: "30" }) }})
                     </div>
                   </div>
@@ -192,10 +192,10 @@ const refDiv = ref(null);
                 <hr class="my-5" />
 
                 <div class="flex">
-                  <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
+                  <div class="text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
                   <div class="ml-auto text-right">
-                    <div class="font-body text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
-                    <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
+                    <div class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
+                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
                   </div>
                 </div>
               </div>

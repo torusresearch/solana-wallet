@@ -29,7 +29,6 @@ function closeClicked() {
 
 <template>
   <div
-    class="font-body"
     :class="
       mode !== NFT_CARD_MODE.SUMMARY
         ? `flex items-center justify-start`

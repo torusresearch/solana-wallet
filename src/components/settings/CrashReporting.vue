@@ -10,7 +10,7 @@ const enabled = computed(() => ControllerModule.crashReport);
 </script>
 <template>
   <div class="pb-4">
-    <div class="font-body text-sm mb-4 text-app-text-600 dark:text-app-text-dark-500">
+    <div class="text-sm mb-4 text-app-text-600 dark:text-app-text-dark-500 whitespace-normals">
       {{ t("walletSettings.explainCrashReport") }}
     </div>
     <div class="flex items-center">
@@ -26,7 +26,7 @@ const enabled = computed(() => ControllerModule.crashReport);
           class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
         />
       </Switch>
-      <div class="font-body text-app-text-500 dark:text-app-text-dark-500 text-sm">
+      <div class="text-app-text-500 dark:text-app-text-dark-500 text-sm">
         {{ enabled ? t("walletSettings.crashReportIsEnabled") : t("walletSettings.crashReportIsDisabled") }}
       </div>
     </div>

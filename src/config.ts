@@ -37,6 +37,7 @@ export default {
   commonApiHost: "https://common-api.tor.us",
   metadataHost: "https://metadata.tor.us",
   api: "https://solana-api.tor.us",
+  openloginStateAPI: "https://solana-openlogin-state.tor.us",
   redirect_uri: redirectURI,
   dappStorageKey,
 

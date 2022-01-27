@@ -28,6 +28,12 @@ const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
+const isSendAllActive = ref(false);
+const isCurrencyFiat = ref(false);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
+const solConversionRate = computed(() => {
+  return ControllerModule.torus.conversionRate;
+});
 
 const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
@@ -37,7 +43,7 @@ const router = useRouter();
 const route = useRoute();
 
 const AsyncTokenBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokenBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
@@ -89,13 +95,12 @@ const addressPromise = () => {
 };
 
 const tokenAddressVerifier = async (value: string) => {
-  // if not selected token, It is possible transfering sol, skip token address check
   if (!selectedToken?.value?.mintAddress) {
     return true;
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount = new PublicKey(value);
+  let associatedAccount;
 
   if (transferType.value.value === "sns") {
     try {
@@ -108,6 +113,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   // if succeeds, we assume that the account is account key is correct.
   // Transfer in TorusController with derive the associated token adddress using the same function.
+  associatedAccount = !associatedAccount ? new PublicKey(value) : associatedAccount;
   try {
     await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
     return true;
@@ -151,6 +157,19 @@ const getErrorMessage = () => {
   return t(ALLOWED_VERIFIERS_ERRORS[selectedType]);
 };
 
+/**
+ * converts the cryptoValue from selected crypto currency to selected fiat currency
+ * @param cryptoValue - amount of crypto
+ */
+function convertCryptoToFiat(cryptoValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return cryptoValue * solConversionRate.value;
+  }
+  return cryptoValue * (selectedToken.value?.price?.[selectedFiat] || 0);
+}
+
 const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
@@ -164,8 +183,11 @@ const rules = computed(() => {
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
-      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(0.0001)),
-      lessThanBalance: helpers.withMessage(t("walletTransfer.insufficientBalance"), maxValue(getTokenBalance())),
+      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(isCurrencyFiat.value ? convertCryptoToFiat(0.0001) : 0.0001)),
+      lessThanBalance: helpers.withMessage(
+        t("walletTransfer.insufficientBalance"),
+        maxValue(isCurrencyFiat.value ? convertCryptoToFiat(getTokenBalance()) : getTokenBalance())
+      ),
       nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
   };
@@ -218,7 +240,21 @@ const openModal = async () => {
   transferDisabled.value = false;
 };
 
+/**
+ * converts the fiatValue from selected fiat currency to selected crypto currency
+ * @param fiatValue - amount of fiat
+ */
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
 const confirmTransfer = async () => {
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
@@ -226,15 +262,15 @@ const confirmTransfer = async () => {
       // SPL TRANSFER
       await ControllerModule.torus.transferSpl(
         resolvedAddress.value,
-        sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken.value
+        amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
+        selectedToken.value as SolAndSplToken
       );
     } else {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllerModule.selectedAddress),
         toPubkey: new PublicKey(resolvedAddress.value),
-        lamports: sendAmount.value * LAMPORTS_PER_SOL,
+        lamports: amount * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({
         recentBlockhash: blockhash.value,
@@ -257,6 +293,52 @@ const confirmTransfer = async () => {
   }
 };
 
+/**
+ * usage: change the sendTo amount to a certain value based on selected option
+ * @param type - "max" | "reset", decides what will be the final value, max: set to max possible, reset: set to 0
+ */
+async function setTokenAmount(type = "max") {
+  let amount = 0;
+  switch (type) {
+    case "max":
+      isSendAllActive.value = true;
+      if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
+        // deduct the network fees
+        const fee = 5000;
+        amount = getTokenBalance() - fee / LAMPORTS_PER_SOL;
+      } else {
+        amount = getTokenBalance();
+      }
+      sendAmount.value = isCurrencyFiat.value ? convertCryptoToFiat(amount) : amount;
+      break;
+    case "reset":
+      isSendAllActive.value = false;
+      isCurrencyFiat.value = false;
+      sendAmount.value = 0;
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ * usage : change the sendAmount between crypto and its equivalent fiat
+ * @param selectFiat - is the selected option is crypto , or fiat currency?
+ */
+function setAmountCurrency(selectFiat = true) {
+  // select crypto as amount currency
+  if (!selectFiat && isCurrencyFiat.value) {
+    isCurrencyFiat.value = false;
+    sendAmount.value = convertFiatToCrypto(sendAmount.value);
+  }
+
+  // select fiat as amount currency
+  else if (selectFiat && !isCurrencyFiat.value) {
+    isCurrencyFiat.value = true;
+    sendAmount.value = convertCryptoToFiat(sendAmount.value);
+  }
+}
+
 function updateSelectedToken($event: Partial<SolAndSplToken>) {
   if ($event.isFungible === false) {
     // new token selected is NFT
@@ -265,9 +347,12 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   } else {
     // new token selected is SPL
     showAmountField.value = true;
+    // last selected token was NFT
     if (!selectedToken.value.isFungible) {
-      // last selected token was NFT
-      sendAmount.value = 0;
+      setTokenAmount("reset");
+    } else {
+      setAmountCurrency(false);
+      isSendAllActive.value = false;
     }
   }
   selectedToken.value = $event;
@@ -289,7 +374,7 @@ watch(transferTo, () => {
   <div class="py-2">
     <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <Card class="order-2 sm:order-1">
-        <form action="#" method="POST">
+        <form action="#" method="POST" class="w-full">
           <div>
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
@@ -301,13 +386,39 @@ watch(transferTo, () => {
                   :items="contacts"
                 />
               </div>
-              <div class="col-span-3 sm:col-span-1">
+              <div class="col-span-3 sm:col-span-1 mt-6 lt-sm:mt-2">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>
 
             <div v-if="showAmountField" class="mb-6">
-              <TextField v-model="sendAmount" :label="t('dappTransfer.amount')" :errors="$v.sendAmount.$errors" type="number" />
+              <TextField
+                v-model="sendAmount"
+                :label="t('dappTransfer.amount')"
+                :errors="$v.sendAmount.$errors"
+                :postfix-text="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
+                type="number"
+                @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
+              >
+                <div class="flex flex-row items-center justify-around h-full select-none">
+                  <div
+                    class="currency-selector mr-1"
+                    :class="[!isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
+                    @click="setAmountCurrency(false)"
+                    @keydown="setAmountCurrency(false)"
+                  >
+                    {{ selectedToken.symbol }}
+                  </div>
+                  <div
+                    class="currency-selector"
+                    :class="[isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
+                    @click="setAmountCurrency(true)"
+                    @keydown="setAmountCurrency(true)"
+                  >
+                    {{ currency }}
+                  </div>
+                </div>
+              </TextField>
             </div>
             <div class="flex">
               <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
@@ -319,7 +430,7 @@ watch(transferTo, () => {
               <AsyncTransferConfirm
                 :sender-pub-key="ControllerModule.selectedAddress"
                 :receiver-pub-key="resolvedAddress"
-                :crypto-amount="sendAmount"
+                :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
                 :receiver-verifier="selectedVerifier"
                 :receiver-verifier-id="resolvedAddress"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
@@ -358,3 +469,11 @@ watch(transferTo, () => {
     />
   </div>
 </template>
+<style scoped>
+.active-currency {
+  @apply dark:bg-app-gray-700;
+}
+.currency-selector {
+  @apply font-body py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+}
+</style>
