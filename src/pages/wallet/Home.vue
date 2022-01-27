@@ -27,8 +27,8 @@ const { t } = useI18n();
       <Card :height="'164px'">
         <div class="flex">
           <div class="flex flex-col w-full h-full">
-            <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500 lt-sm:pr-2">Join us for Solana breakpoint</div>
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">7 Nov 2021 @ Lisbon</div>
+            <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500 lt-sm:pr-2">Meet us at Singapore hacker house</div>
+            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">15th Feb - 20th Feb</div>
           </div>
           <img class="h-2/4 lt-sm:h-12 m-auto gt-sm:absolute top-1/4 right-6" alt="Solana Mascot" :src="SolanaMascot" />
         </div>
