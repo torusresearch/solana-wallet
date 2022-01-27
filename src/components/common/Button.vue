@@ -20,7 +20,7 @@ const props = withDefaults(
 
 const classList = computed(() => {
   let sizeClass = "";
-  const fontClasses = ["font-body"];
+  const fontClasses = [""];
   if (props.variant === "text") {
     fontClasses.push("text-xs");
   } else {
@@ -42,18 +42,3 @@ const classList = computed(() => {
     <slot v-else></slot>
   </button>
 </template>
-
-<style scoped>
-.size-small {
-  height: 40px;
-}
-.size-medium {
-  height: 48px;
-}
-.size-large {
-  height: 60px;
-}
-.block {
-  width: 100%;
-}
-</style>

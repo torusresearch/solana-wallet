@@ -8,7 +8,7 @@ const spinnerStyle = () => {
 };
 </script>
 <template>
-  <div class="box-loader inline-block relative">
+  <div class="box-loader inline-block">
     <div
       v-for="n in 9"
       :key="n"

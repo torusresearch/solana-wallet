@@ -26,7 +26,7 @@ const selectedNetwork = computed({
   <div class="pb-4">
     <div class="mb-4">
       <SelectField v-if="selectedNetwork" id="networkSelect" v-model="selectedNetwork" :label="t('walletSettings.selectNetwork')" :items="networks" />
-      <div v-else class="block text-sm font-body text-app-text-600 dark:text-app-text-dark-500 mb-16">
+      <div v-else class="block text-sm text-app-text-600 dark:text-app-text-dark-500 mb-16">
         {{ `${t("walletActivity.loading")} ${t("walletActivity.network")}...` }}
       </div>
     </div>

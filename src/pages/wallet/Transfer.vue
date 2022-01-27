@@ -43,7 +43,7 @@ const router = useRouter();
 const route = useRoute();
 
 const AsyncTokenBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokenBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
@@ -95,13 +95,12 @@ const addressPromise = () => {
 };
 
 const tokenAddressVerifier = async (value: string) => {
-  // if not selected token, It is possible transfering sol, skip token address check
   if (!selectedToken?.value?.mintAddress) {
     return true;
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount = new PublicKey(value);
+  let associatedAccount;
 
   if (transferType.value.value === "sns") {
     try {
@@ -114,6 +113,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   // if succeeds, we assume that the account is account key is correct.
   // Transfer in TorusController with derive the associated token adddress using the same function.
+  associatedAccount = !associatedAccount ? new PublicKey(value) : associatedAccount;
   try {
     await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
     return true;
@@ -372,7 +372,7 @@ watch(transferTo, () => {
   <div class="py-2">
     <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <Card class="order-2 sm:order-1">
-        <form action="#" method="POST">
+        <form action="#" method="POST" class="w-full">
           <div>
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
@@ -384,7 +384,7 @@ watch(transferTo, () => {
                   :items="contacts"
                 />
               </div>
-              <div class="col-span-3 sm:col-span-1">
+              <div class="col-span-3 sm:col-span-1 mt-6 lt-sm:mt-2">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>

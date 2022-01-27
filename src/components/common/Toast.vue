@@ -9,7 +9,7 @@ import { STATUS } from "@/utils/enums";
     <div
       v-for="(toast, idx) in app.toastMessages"
       :key="idx"
-      class="relative mx-auto mt-2 font-body font-bold text-sm text-app-text-500 dark:text-white py-4 rounded-md w-80 sm:w-96 px-10"
+      class="relative mx-auto mt-2 font-bold text-sm text-app-text-500 dark:text-white py-4 rounded-md w-80 sm:w-96 px-10"
       :class="{
         'bg-app-success': toast.type === STATUS.SUCCESS,
         'bg-app-warning': toast.type === STATUS.WARNING,

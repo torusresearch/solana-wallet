@@ -72,7 +72,7 @@ const getWalletBalance = (address: string): string => {
   <div>
     <div class="flex items-center p-4">
       <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
-      <div class="font-body font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
+      <div class="font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
     </div>
     <div class="px-3 pb-3">
       <div
@@ -88,16 +88,14 @@ const getWalletBalance = (address: string): string => {
         <div class="flex">
           <div class="flex items-center">
             <WalletIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
-            <div class="font-body font-bold text-sm text-app-text-600 dark:text-app-text-dark-500">
+            <div class="font-bold text-sm text-app-text-600 dark:text-app-text-dark-500">
               {{ index ? `Imported Account ${index}` : user.email }}
             </div>
           </div>
-          <div class="ml-auto text-xs font-body text-app-text-500 dark:text-app-text-dark-500 uppercase">
-            {{ getWalletBalance(wallet) }} {{ currency }}
-          </div>
+          <div class="ml-auto text-xs text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ getWalletBalance(wallet) }} {{ currency }}</div>
         </div>
         <div class="flex">
-          <div class="font-body text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
+          <div class="text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
             {{ wallet }}
           </div>
           <div class="ml-auto flex space-x-1">

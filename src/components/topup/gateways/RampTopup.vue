@@ -114,9 +114,7 @@ onMounted(() => {
     <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 sm:rounded-md sm:overflow-hidden">
       <div class="py-6 px-4 space-y-6 sm:p-6">
         <div>
-          <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500">
-            {{ selectedProvider.description }}
-          </p>
+          <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">{{ selectedProvider.description }}.</p>
         </div>
 
         <div class="grid grid-cols-3">
@@ -132,8 +130,8 @@ onMounted(() => {
               {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }}
             </p>
           </div>
-          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1">
-            <SelectField id="ramp_fiat_select" v-model="selectedCurrency" class="sm:mt-6" :items="selectedProvider.validCurrencies" />
+          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1 gt-sm:pt-6">
+            <SelectField id="ramp_fiat_select" v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
         <div v-if="!isLoadingQuote" class="flex flex-col items-end mb-5">

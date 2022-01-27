@@ -118,7 +118,7 @@ const onDelete = (contactId: number) => {
 <template>
   <div class="py-4">
     <div class="grid grid-cols-3 items-center mb-4">
-      <div class="col-span-3 sm:col-span-1 font-body text-sm text-app-text-600 dark:text-app-text-dark-500">
+      <div class="col-span-3 sm:col-span-1 text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">
         {{ t("walletSettings.listContacts") }}
       </div>
       <div class="col-span-3 sm:col-span-2 flex gap-2">
@@ -127,14 +127,14 @@ const onDelete = (contactId: number) => {
       </div>
     </div>
     <ul class="border dark:border-gray-900 rounded-md divide-y dark:divide-gray-900 shadow dark:shadow-dark mb-4">
-      <li v-for="contact in contacts" :key="contact.id" class="flex items-center py-3 px-4 break-all">
-        <div class="flex items-center">
+      <li v-for="contact in contacts" :key="contact.id" class="flex items-center py-3 px-4 break-all justify-end">
+        <div class="flex items-center mr-2 truncate">
           <div class="bg-app-gray-400 text-app-text-500 rounded-full flex justify-center items-center w-4 h-4 text-xs mr-2">
             <GithubIcon class="w-3 h-3" />
           </div>
-          <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">
+          <div class="text-xs text-app-text-600 dark:text-app-text-dark-500">
             {{ contact.display_name }} -
-            <span class="text-app-text-500 dark:text-app-text-dark-500">{{ contact.contact_verifier_id }}</span>
+            <span class="text-app-text-500 dark:text-app-text-dark-500 whitespace-normal">{{ contact.contact_verifier_id }}</span>
           </div>
         </div>
         <div class="ml-auto">
@@ -142,7 +142,7 @@ const onDelete = (contactId: number) => {
         </div>
       </li>
     </ul>
-    <div class="font-body text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("walletSettings.addNewContact") }}</div>
+    <div class="text-sm text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("walletSettings.addNewContact") }}</div>
     <form @submit.prevent="onSave">
       <div class="mb-4 grid grid-cols-3 gap-2">
         <div class="col-span-3 sm:col-span-2">
