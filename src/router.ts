@@ -152,7 +152,7 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
-  await waitForState();
+  if (to.name !== "frame") await waitForState();
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn()) {
     next("/login");
   } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn()) {

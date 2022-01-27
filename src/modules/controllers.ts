@@ -564,6 +564,7 @@ class ControllerModule extends VuexModule {
         }
       }
     } catch (error) {
+      window.localStorage.removeItem(CONTROLLER_MODULE_KEY);
       log.error("Error restoring state!", error);
     } finally {
       window.sessionStorage?.setItem("stateFetched", "true");

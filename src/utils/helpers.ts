@@ -219,7 +219,7 @@ export const waitForState = () => {
       clearInterval(interval);
       clearTimeout(timeout);
       reject();
-    }, 10_000);
+    }, 30_000);
     interval = setInterval(() => {
       const localKeyState = window.localStorage?.getItem("controllerModule");
       // state fetched === false indicates that state is being fetched, true indicates state has been fetched.
@@ -231,9 +231,8 @@ export const waitForState = () => {
         resolve();
       }
 
-      // if local key state is not set resolve or is empty resolve to route
+      // if local key state is not set or is empty, resolve
       if (!localKeyState || !JSON.parse(localKeyState)?.priv_key) {
-        log.info("true");
         clearInterval(interval);
         clearTimeout(timeout);
         resolve();
