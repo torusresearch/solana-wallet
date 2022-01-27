@@ -42,7 +42,7 @@ onMounted(() => {
                 </div>
                 <img :src="provider.logo()" :alt="provider.name" class="w-24" />
               </div>
-              <RadioGroupDescription as="div" class="col-span-1">
+              <RadioGroupDescription as="div" class="col-span-1 whitespace-pre-wrap">
                 <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
                   {{ `${t("walletTopUp.paywith")} ${provider.paymentMethod}` }}
                 </div>

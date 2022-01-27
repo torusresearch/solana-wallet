@@ -3,7 +3,6 @@ import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
-import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -15,7 +14,6 @@ import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { addToast, app } from "@/modules/app";
-import { WALLET_COMMUNICATION } from "@/utils/enums";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -35,9 +33,6 @@ const $v = useVuelidate(rules, { userEmail });
 
 onMounted(() => {
   if (ControllerModule.torus.selectedAddress) router.push("/wallet/home");
-  new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).onmessage = () => {
-    isLoading.value = true;
-  };
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -87,24 +82,24 @@ const onEmailLogin = () => {
           </div>
           <div class="grid grid-cols-3 gap-2 w-full">
             <div class="col-span-3">
-              <Button variant="tertiary" :block="true" @click="onLogin('google')"
+              <Button variant="tertiary" :block="true" class="w-full" @click="onLogin('google')"
                 ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />{{
                   t("dappLogin.continue", { verifier: "Google" })
                 }}</Button
               >
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon :block="true" @click="onLogin('facebook')">
+              <Button variant="tertiary" icon :block="true" class="w-full" @click="onLogin('facebook')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon :block="true" @click="onLogin('twitter')">
+              <Button variant="tertiary" icon :block="true" class="w-full" @click="onLogin('twitter')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon :block="true" @click="onLogin('discord')">
+              <Button variant="tertiary" icon :block="true" class="w-full" @click="onLogin('discord')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-discord.8a29d113.svg" alt="" />
               </Button>
             </div>
@@ -126,7 +121,9 @@ const onEmailLogin = () => {
                 :placeholder="t('login.enterYourEmail')"
                 :errors="$v.userEmail.$errors"
               />
-              <Button variant="tertiary" :block="true" type="submit">{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}</Button>
+              <Button variant="tertiary" :block="true" type="submit" class="w-full mt-2">{{
+                t("dappLogin.continue", { verifier: t("loginCountry.email") })
+              }}</Button>
             </form>
           </div>
           <div class="mt-8 mb-2 w-full">
@@ -168,7 +165,10 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div v-if="isLoading" class="spinner"><Loader></Loader></div>
+    <div v-if="isLoading" class="spinner">
+      <Loader></Loader>
+      <p class="absolute bottom-12 text-white text-center">{{ t("dappLogin.completeVerification") }}.</p>
+    </div>
   </div>
 </template>
 <style scoped>

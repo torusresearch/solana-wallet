@@ -54,9 +54,9 @@ function openLink() {
       </div>
       <div class="mt-4 px-6 items-center px-4">
         <div class="flex flex-col justify-start items-start mt-12">
-          <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">{{ `${t("dappInfo.requestFrom")}:` }}</p>
+          <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ `${t("dappInfo.requestFrom")}:` }}</p>
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.requestedFrom" target="_blank" class="text-sm font-body text-app-text-accent dark:text-app-text-accent">{{
+            <a :href="props.requestedFrom" target="_blank" class="text-sm text-app-text-accent dark:text-app-text-accent">{{
               getDomainFromUrl(props.requestedFrom)
             }}</a>
             <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
@@ -66,12 +66,12 @@ function openLink() {
         <div class="flex flex-col justify-start items-start mt-8">
           <div class="w-full flex flex-row justify-start items-center">
             <img :src="SubtractURL" alt="Message Info" class="mr-2" />
-            <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
+            <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("dappTransfer.data")} ${t("dappTransfer.to")} ${t("dappTransfer.approve")}` }}
             </p>
           </div>
           <div class="w-full bg-white dark:bg-app-gray-700 h-12 mt-3 rounded-md approval-msg">
-            <p class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500 m-4">{{ props.approvalMessage }}</p>
+            <p class="text-sm text-app-text-600 dark:text-app-text-dark-500 m-4">{{ props.approvalMessage }}</p>
           </div>
         </div>
       </div>

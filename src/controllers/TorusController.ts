@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
+import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import {
@@ -63,7 +64,6 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -80,7 +80,6 @@ import {
   TorusControllerConfig,
   TorusControllerState,
   TransactionChannelDataType,
-  WALLET_COMMUNICATION,
 } from "@/utils/enums";
 import { getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
@@ -89,11 +88,19 @@ import { SolAndSplToken } from "@/utils/interfaces";
 import { PKG } from "../const";
 
 const TARGET_NETWORK = "mainnet";
+const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
 export const DEFAULT_CONFIG = {
   CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
-  NetworkControllerConfig: { providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK] },
-  PreferencesControllerConfig: { pollInterval: 180_000, api: config.api, signInPrefix: "Solana Signin", commonApiHost: config.commonApiHost },
+  NetworkControllerConfig: {
+    providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
+  },
+  PreferencesControllerConfig: {
+    pollInterval: 180_000,
+    api: config.api,
+    signInPrefix: "Solana Signin",
+    commonApiHost: config.commonApiHost,
+  },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
     torus: "https://solana-relayer.tor.us/relayer",
@@ -264,9 +271,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.initialize();
     this.configure(_config, true, true);
     this.update(_state, true);
-    this.networkController = new NetworkController({ config: this.config.NetworkControllerConfig, state: this.state.NetworkControllerState });
+    this.networkController = new NetworkController({
+      config: this.config.NetworkControllerConfig,
+      state: this.state.NetworkControllerState,
+    });
     this.initializeProvider();
-    this.embedController = new BaseEmbedController({ config: {}, state: this.state.EmbedControllerState });
+    this.embedController = new BaseEmbedController({
+      config: {},
+      state: this.state.EmbedControllerState,
+    });
     this.initializeCommunicationProvider();
 
     this.tokenInfoController = new TokenInfoController({
@@ -432,10 +445,27 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController.setIframeOrigin(origin);
   }
 
+  async getInputKey(input: string) {
+    const hashedInputName = await getHashedName(input);
+    const inputDomainKey = await getNameAccountKey(hashedInputName, undefined, SOL_TLD_AUTHORITY);
+    return { inputDomainKey, hashedInputName };
+  }
+
+  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null> {
+    const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
+    switch (type) {
+      case "sns":
+        return NameRegistryState.retrieve(this.connection, inputDomainKey);
+      case "twitter":
+        return getTwitterRegistry(this.connection, address);
+      default:
+        return null;
+    }
+  }
+
   async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
-    const conn = new Connection(this.state.NetworkControllerState.providerConfig.rpcTarget);
-    const b_hash = (await conn.getRecentBlockhash("finalized")).blockhash;
-    const fee = (await conn.getFeeCalculatorForBlockhash(b_hash)).value?.lamportsPerSignature || 0;
+    const b_hash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
+    const fee = 5000;
     return { b_hash, fee };
   }
 
@@ -448,7 +478,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
-    const conn = new Connection(this.networkController.state.providerConfig.rpcTarget);
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     await signedTransaction.result;
     try {
@@ -460,7 +489,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       }
 
       // submit onchain
-      const signature = await conn.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
 
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
@@ -475,7 +504,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
-    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+    const { connection } = this;
     const transaction = new Transaction();
     const tokenMintAddress = selectedToken.mintAddress;
     const decimals = selectedToken.balance?.decimals || 0;
@@ -620,7 +649,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
     await this.currencyController.updateConversionRate();
-    return this.preferencesController.setSelectedCurrency({ selectedCurrency: currency });
+    return this.preferencesController.setSelectedCurrency({
+      selectedCurrency: currency,
+    });
   }
 
   async setLocale(locale: string): Promise<boolean> {
@@ -725,7 +756,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         this.communicationEngine?.emit("notification", {
           method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+          params: {
+            currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          },
         });
       }
     });
@@ -819,7 +852,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // break violently
     const senderUrl = new URL(sender);
 
-    const engine = this.setupCommunicationProviderEngine({ origin: senderUrl.origin });
+    const engine = this.setupCommunicationProviderEngine({
+      origin: senderUrl.origin,
+    });
     this.communicationEngine = engine;
     // setup connection
     const engineStream = createEngineStream({ engine });
@@ -868,7 +903,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async changeProvider<T>(req: JRPCRequest<T>): Promise<boolean> {
-    const { windowId } = req.params as unknown as ProviderConfig & { windowId: string };
+    const { windowId } = req.params as unknown as ProviderConfig & {
+      windowId: string;
+    };
     const channelName = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${windowId}`;
     const finalUrl = new URL(`${config.baseRoute}providerchange?integrity=true&instanceId=${windowId}`);
     const providerChangeWindow = new PopupWithBcHandler({
@@ -947,7 +984,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async handleSignMessagePopup(
-    req: JRPCRequest<{ data: Uint8Array; display?: string; message?: string }> & { origin?: string; windowId?: string }
+    req: JRPCRequest<{
+      data: Uint8Array;
+      display?: string;
+      message?: string;
+    }> & { origin?: string; windowId?: string }
   ): Promise<boolean> {
     try {
       const { windowId } = req;
@@ -1000,6 +1041,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
     try {
       const instanceId = windowId || this.getWindowId();
+      const instanceState = encodeURIComponent(
+        window.btoa(
+          JSON.stringify({
+            instanceId,
+            provider: "RAMP_NETWORK",
+          })
+        )
+      );
       const parameters = {
         userAddress: params.selectedAddress || this.selectedAddress || undefined,
         userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
@@ -1013,7 +1062,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
         hostAppName: "Torus",
         hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
+        finalUrl: `${config.baseRoute}redirect?state=${instanceState}`, // redirect url
       };
 
       // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
@@ -1065,9 +1114,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       const { privKey, userInfo } = result;
       const paddedKey = privKey.padStart(64, "0");
-
-      new BroadcastChannel<boolean>(WALLET_COMMUNICATION.AUTH_COMPLETE).postMessage(true);
-
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);
@@ -1095,7 +1141,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         });
         this.communicationEngine?.emit("notification", {
           method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-          params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+          params: {
+            currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          },
         });
         return accounts;
       },
@@ -1198,10 +1246,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
         } else {
           // To login with the requested provider
           // On Embed, we have a window waiting... we need to tell it to login
-          this.embedController.update({ loginInProgress: true, oauthModalVisibility: false });
-          this.triggerLogin({ loginProvider: requestedLoginProvider as LOGIN_PROVIDER_TYPE, login_hint });
+          this.embedController.update({
+            loginInProgress: true,
+            oauthModalVisibility: false,
+          });
+          this.triggerLogin({
+            loginProvider: requestedLoginProvider as LOGIN_PROVIDER_TYPE,
+            login_hint,
+          });
           this.once("LOGIN_RESPONSE", (error: string, address: string) => {
-            this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
+            this.embedController.update({
+              loginInProgress: false,
+              oauthModalVisibility: false,
+            });
             if (error) reject(new Error(error));
             else resolve([address]);
           });
@@ -1209,9 +1266,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else if (this.selectedAddress) resolve([this.selectedAddress]);
       else {
         // We show the modal to login
-        this.embedController.update({ loginInProgress: true, oauthModalVisibility: true });
+        this.embedController.update({
+          loginInProgress: true,
+          oauthModalVisibility: true,
+        });
         this.once("LOGIN_RESPONSE", (error: string, address: string) => {
-          this.embedController.update({ loginInProgress: false, oauthModalVisibility: false });
+          this.embedController.update({
+            loginInProgress: false,
+            oauthModalVisibility: false,
+          });
           if (error) reject(new Error(error));
           else resolve([address]);
         });

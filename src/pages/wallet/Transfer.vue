@@ -13,21 +13,27 @@ import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, ruleVerifierId } from "@/utils/helpers";
+import { debounceAsyncValidator, delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
-// const ensError = ref("");
+const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTo = ref("");
+const transferTo = ref<string>("");
+const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
-const transferId = ref("");
 const transactionFee = ref(0);
 const blockhash = ref("");
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
+const isSendAllActive = ref(false);
+const isCurrencyFiat = ref(false);
+const currency = computed(() => ControllerModule.torus.currentCurrency);
+const solConversionRate = computed(() => {
+  return ControllerModule.torus.conversionRate;
+});
 
 const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
@@ -37,7 +43,7 @@ const router = useRouter();
 const route = useRoute();
 
 const AsyncTokenBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/TokenBalance.vue"),
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokenBalance" */ "@/components/TokenBalance.vue"),
 });
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
@@ -51,6 +57,7 @@ const AsyncMessageModal = defineAsyncComponent({
 
 onMounted(() => {
   const { query } = route;
+  // Show mint if passed
   if (query.mint) {
     const el = [...tokens.value, ...nftTokens.value].find((x) => x.mintAddress === query.mint);
     selectedToken.value = el || tokens.value[0];
@@ -80,19 +87,35 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
+const addressPromise = () => {
+  return ControllerModule.getSNSAddress({
+    type: transferType.value.value,
+    address: transferTo.value,
+  });
+};
 
 const tokenAddressVerifier = async (value: string) => {
-  // if not selected token, It is possible transfering sol, skip token address check
   if (!selectedToken?.value?.mintAddress) {
     return true;
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount = new PublicKey(value);
-  // try generate associatedAccount. if it failed, it might be token associatedAccount
-  // if succeed generate associatedAccount, it is valid main Sol Account.
+  let associatedAccount;
+
+  if (transferType.value.value === "sns") {
+    try {
+      associatedAccount = new PublicKey((await addressPromise()) as string);
+    } catch (e) {
+      // since our sns validator will return false anyway
+      return true;
+    }
+  }
+
+  // if succeeds, we assume that the account is account key is correct.
+  // Transfer in TorusController with derive the associated token adddress using the same function.
+  associatedAccount = !associatedAccount ? new PublicKey(value) : associatedAccount;
   try {
-    associatedAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
     return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
@@ -102,7 +125,7 @@ const tokenAddressVerifier = async (value: string) => {
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
-    if (new PublicKey(data.parsed.info.mint).toBase58() === mintAddress.toBase58()) {
+    if (new PublicKey(data.parsed.info.mint) === mintAddress) {
       return true;
     }
   }
@@ -116,11 +139,36 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
+async function snsRule(value: string, debounce: () => Promise<void>): Promise<boolean> {
+  if (!value) return true;
+  if (transferType.value.value !== "sns") return true;
+  try {
+    await debounce();
+    const address = await addressPromise();
+    return address !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
 const getErrorMessage = () => {
   const selectedType = transferType.value?.value || "";
   if (!selectedType) return "";
   return t(ALLOWED_VERIFIERS_ERRORS[selectedType]);
 };
+
+/**
+ * converts the cryptoValue from selected crypto currency to selected fiat currency
+ * @param cryptoValue - amount of crypto
+ */
+function convertCryptoToFiat(cryptoValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return cryptoValue * solConversionRate.value;
+  }
+  return cryptoValue * (selectedToken.value?.price?.[selectedFiat] || 0);
+}
 
 const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
@@ -130,24 +178,22 @@ const rules = computed(() => {
   return {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
-      // ensRule: helpers.withMessage(ensError.value, ensRule),
       required: helpers.withMessage(t("walletTransfer.required"), required),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator<string>(snsRule, 500))),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
-      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(0.0001)),
-      lessThanBalance: helpers.withMessage(t("walletTransfer.insufficientBalance"), maxValue(getTokenBalance())),
+      greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(isCurrencyFiat.value ? convertCryptoToFiat(0.0001) : 0.0001)),
+      lessThanBalance: helpers.withMessage(
+        t("walletTransfer.insufficientBalance"),
+        maxValue(isCurrencyFiat.value ? convertCryptoToFiat(getTokenBalance()) : getTokenBalance())
+      ),
       nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
   };
 });
 
-const $v = useVuelidate(rules, {
-  transferTo,
-  transferId,
-  sendAmount,
-  transactionFee,
-});
+const $v = useVuelidate(rules, { transferTo, sendAmount });
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -173,31 +219,56 @@ const closeModal = () => {
 
 const openModal = async () => {
   $v.value.$touch();
-  if (!$v.value.$invalid) isOpen.value = true;
+  resolvedAddress.value = transferTo.value;
+  if (!$v.value.$invalid) {
+    if (transferType.value.value === "sns") {
+      const address = await addressPromise(); // doesn't throw
+      if (address) {
+        resolvedAddress.value = address;
+      } else {
+        return;
+      }
+    }
 
+    isOpen.value = true;
+  }
   const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = b_hash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
 
+/**
+ * converts the fiatValue from selected fiat currency to selected crypto currency
+ * @param fiatValue - amount of fiat
+ */
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
 const confirmTransfer = async () => {
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
     if (selectedToken?.value?.mintAddress) {
       // SPL TRANSFER
       await ControllerModule.torus.transferSpl(
-        transferTo.value,
-        sendAmount.value * 10 ** (selectedToken?.value?.data?.decimals || 0),
+        resolvedAddress.value,
+        amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
         selectedToken.value as SolAndSplToken
       );
     } else {
       // SOL TRANSFER
       const instuctions = SystemProgram.transfer({
         fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(transferTo.value),
-        lamports: sendAmount.value * LAMPORTS_PER_SOL,
+        toPubkey: new PublicKey(resolvedAddress.value),
+        lamports: amount * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({
         recentBlockhash: blockhash.value,
@@ -212,12 +283,59 @@ const confirmTransfer = async () => {
       messageStatus: STATUS.INFO,
     });
   } catch (error) {
+    log.error(error);
     showMessageModal({
       messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
       messageStatus: STATUS.ERROR,
     });
   }
 };
+
+/**
+ * usage: change the sendTo amount to a certain value based on selected option
+ * @param type - "max" | "reset", decides what will be the final value, max: set to max possible, reset: set to 0
+ */
+async function setTokenAmount(type = "max") {
+  let amount = 0;
+  switch (type) {
+    case "max":
+      isSendAllActive.value = true;
+      if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
+        // deduct the network fees
+        const fee = 5000;
+        amount = getTokenBalance() - fee / LAMPORTS_PER_SOL;
+      } else {
+        amount = getTokenBalance();
+      }
+      sendAmount.value = isCurrencyFiat.value ? convertCryptoToFiat(amount) : amount;
+      break;
+    case "reset":
+      isSendAllActive.value = false;
+      isCurrencyFiat.value = false;
+      sendAmount.value = 0;
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ * usage : change the sendAmount between crypto and its equivalent fiat
+ * @param selectFiat - is the selected option is crypto , or fiat currency?
+ */
+function setAmountCurrency(selectFiat = true) {
+  // select crypto as amount currency
+  if (!selectFiat && isCurrencyFiat.value) {
+    isCurrencyFiat.value = false;
+    sendAmount.value = convertFiatToCrypto(sendAmount.value);
+  }
+
+  // select fiat as amount currency
+  else if (selectFiat && !isCurrencyFiat.value) {
+    isCurrencyFiat.value = true;
+    sendAmount.value = convertCryptoToFiat(sendAmount.value);
+  }
+}
 
 function updateSelectedToken($event: Partial<SolAndSplToken>) {
   if ($event.isFungible === false) {
@@ -227,9 +345,12 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   } else {
     // new token selected is SPL
     showAmountField.value = true;
+    // last selected token was NFT
     if (!selectedToken.value.isFungible) {
-      // last selected token was NFT
-      sendAmount.value = 0;
+      setTokenAmount("reset");
+    } else {
+      setAmountCurrency(false);
+      isSendAllActive.value = false;
     }
   }
   selectedToken.value = $event;
@@ -241,39 +362,75 @@ watch([tokens, nftTokens], () => {
     updateSelectedToken(tokens.value[0]);
   }
 });
+watch(transferTo, () => {
+  // eslint-disable-next-line prefer-destructuring
+  if (/\.sol$/g.test(transferTo.value)) transferType.value = ALLOWED_VERIFIERS[1];
+});
 </script>
 
 <template>
   <div class="py-2">
     <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
       <Card class="order-2 sm:order-1">
-        <form action="#" method="POST">
+        <form action="#" method="POST" class="w-full">
           <div>
             <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
             <div class="grid grid-cols-3 gap-3 mb-6">
               <div class="col-span-3 sm:col-span-2">
-                <ComboBox v-model="transferTo" :label="t('walletActivity.sendTo')" :errors="$v.transferTo.$errors" :items="contacts" />
+                <ComboBox
+                  v-model="transferTo"
+                  :label="t('walletActivity.sendTo')"
+                  :errors="isOpen ? undefined : $v.transferTo.$errors"
+                  :items="contacts"
+                />
               </div>
-              <div class="col-span-3 sm:col-span-1">
+              <div class="col-span-3 sm:col-span-1 mt-6 lt-sm:mt-2">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>
 
             <div v-if="showAmountField" class="mb-6">
-              <TextField v-model="sendAmount" :label="t('dappTransfer.amount')" :errors="$v.sendAmount.$errors" type="number" />
+              <TextField
+                v-model="sendAmount"
+                :label="t('dappTransfer.amount')"
+                :errors="$v.sendAmount.$errors"
+                :postfix-text="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
+                type="number"
+                @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
+              >
+                <div class="flex flex-row items-center justify-around h-full select-none">
+                  <div
+                    class="currency-selector mr-1"
+                    :class="[!isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
+                    @click="setAmountCurrency(false)"
+                    @keydown="setAmountCurrency(false)"
+                  >
+                    {{ selectedToken.symbol }}
+                  </div>
+                  <div
+                    class="currency-selector"
+                    :class="[isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
+                    @click="setAmountCurrency(true)"
+                    @keydown="setAmountCurrency(true)"
+                  >
+                    {{ currency }}
+                  </div>
+                </div>
+              </TextField>
             </div>
             <div class="flex">
-              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal"
-                >{{ t("dappTransfer.transfer") }}<span class="text-base"></span
-              ></Button>
+              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
+                {{ t("dappTransfer.transfer") }}
+                <span class="text-base"></span>
+              </Button>
               <!-- :crypto-tx-fee="state.transactionFee" -->
               <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
               <AsyncTransferConfirm
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="transferTo"
-                :crypto-amount="sendAmount"
+                :receiver-pub-key="resolvedAddress"
+                :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
                 :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="transferTo"
+                :receiver-verifier-id="resolvedAddress"
                 :token-symbol="selectedToken?.data?.symbol || 'SOL'"
                 :token="selectedToken"
                 :is-open="isOpen && selectedToken.isFungible"
@@ -284,10 +441,10 @@ watch([tokens, nftTokens], () => {
               />
               <TransferNFT
                 :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="transferTo"
+                :receiver-pub-key="resolvedAddress"
                 :crypto-amount="sendAmount"
                 :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="transferTo"
+                :receiver-verifier-id="resolvedAddress"
                 :is-open="isOpen && !selectedToken.isFungible"
                 :token="selectedToken"
                 :crypto-tx-fee="transactionFee"
@@ -310,3 +467,11 @@ watch([tokens, nftTokens], () => {
     />
   </div>
 </template>
+<style scoped>
+.active-currency {
+  @apply dark:bg-app-gray-700;
+}
+.currency-selector {
+  @apply font-body py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+}
+</style>

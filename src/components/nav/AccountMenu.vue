@@ -16,7 +16,7 @@ const { t } = useI18n();
       <MenuButton class="max-w-xs flex items-center text-sm outline-focus" tabindex="0">
         <span class="sr-only">{{ t("navBar.userMenu") }}</span>
         <div class="flex items-center">
-          <span class="font-body text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user?.name }}</span>
+          <span class="text-app-text-600 dark:text-app-text-dark-500 text-sm font-bold mr-1">{{ user?.name }}</span>
           <ChevronBottomIcon class="text-app-text-600 dark:text-app-text-dark-500 w-4" />
         </div>
       </MenuButton>

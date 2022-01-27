@@ -11,6 +11,8 @@ const props = withDefaults(
     modelValue?: string | number;
     errors?: Array<ErrorObject>;
     type?: string;
+    spellCheck?: boolean;
+    postfixText?: string;
   }>(),
   {
     size: "medium",
@@ -20,10 +22,12 @@ const props = withDefaults(
     modelValue: "",
     errors: () => [],
     type: "text",
+    spellCheck: false,
+    postfixText: "",
   }
 );
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "update:postfixTextClicked"]);
 
 const value = computed({
   get: () => props.modelValue,
@@ -32,39 +36,36 @@ const value = computed({
 </script>
 
 <template>
-  <div class="relative w-full items-stretch">
-    <div v-if="label" class="label-container mb-1">
-      <div class="text-sm font-body text-app-text-600 dark:text-app-text-dark-500">
-        {{ label }}
-      </div>
+  <div v-if="label" class="flex flex-row justify-between items-center w-full mb-1">
+    <div class="text-sm text-app-text-600 dark:text-app-text-dark-500">
+      {{ label }}
     </div>
     <div
-      class="input-container flex shadow-inner dark:shadow-none bg-white rounded-md"
-      :class="[`size-${size}`, variant === 'dark-bg' ? 'dark:bg-app-gray-700' : 'dark:bg-app-gray-800']"
+      v-if="postfixText?.length"
+      class="text-sm text-app-text-accent cursor-pointer select-none ml-2"
+      @click="emits(`update:postfixTextClicked`)"
+      @keydown="emits(`update:postfixTextClicked`)"
     >
-      <input
-        v-model="value"
-        class="w-full font-body border-0 bg-transparent focus:outline-none focus:ring-0 text-app-text-500 dark:text-app-text-dark-500"
-        :class="size === 'small' ? 'text-xs' : 'text-base'"
-        :type="type"
-        :placeholder="placeholder"
-        aria-label="text field"
-      />
-    </div>
-    <div v-if="errors?.length" class="flex mt-1 px-1">
-      <div v-if="errors.length" class="text-app-error text-xs font-body">{{ errors[0].$message }}</div>
+      {{ postfixText }}
     </div>
   </div>
-</template>
+  <div
+    class="flex flex-row justify-between items-center shadow-inner dark:shadow-none bg-white rounded-md"
+    :class="[`size-${size}`, variant === 'dark-bg' ? 'dark:bg-app-gray-700' : 'dark:bg-app-gray-800']"
+  >
+    <input
+      v-model="value"
+      class="border-0 bg-transparent focus:outline-none focus:ring-0 text-app-text-500 dark:text-app-text-dark-500 w-7/12"
+      :class="[size === 'small' ? 'text-xs' : 'text-base', $slots.default ? 'w-7/12' : 'w-full']"
+      :type="type"
+      :placeholder="placeholder"
+      aria-label="text field"
+      :spellcheck="spellCheck"
+    />
 
-<style scoped>
-.size-small {
-  height: 32px;
-}
-.size-medium {
-  height: 54px;
-}
-.size-large {
-  height: 60px;
-}
-</style>
+    <div class="p-1 h-full"><slot></slot></div>
+  </div>
+  <div class="flex mt-1 px-1">
+    <div v-if="errors.length" class="text-app-error text-xs">{{ errors[0].$message }}</div>
+  </div>
+</template>

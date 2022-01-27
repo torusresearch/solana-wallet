@@ -118,7 +118,7 @@ class ControllerModule extends VuexModule {
     return this.torus.currentCurrency;
   }
 
-  // user balance in equivalent selected currecny
+  // user balance in equivalent selected currency
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
@@ -218,6 +218,28 @@ class ControllerModule extends VuexModule {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS));
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
+    }
+  }
+
+  @Action
+  public async getSNSAddress({ type, address }: { type: string; address: string }): Promise<string | null> {
+    let filtered_address;
+    switch (type) {
+      case "sns":
+        filtered_address = address.replace(/\.sol$/, "");
+        break;
+      case "twitter":
+        filtered_address = address.replace(/^@/, "");
+        break;
+      default:
+        filtered_address = "";
+    }
+    let data;
+    try {
+      data = await this.torus.getSNSAccount(type, filtered_address);
+      return data ? data.owner.toBase58() : null;
+    } catch (e) {
+      return null;
     }
   }
 
