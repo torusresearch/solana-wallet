@@ -223,13 +223,11 @@ export const waitForState = (ControllerModule: any) => {
     interval = setInterval(() => {
       const localKeyState = window.localStorage?.getItem("controllerModule");
 
-      // if logged in and state set, resolve
       if (ControllerModule.torus.selectedAddress) {
         clearInterval(interval);
         clearTimeout(timeout);
         resolve();
       }
-      // if local key state is not set or is empty, resolve
       if (!(localKeyState && JSON.parse(localKeyState)?.priv_key)) {
         clearInterval(interval);
         clearTimeout(timeout);

@@ -3,29 +3,28 @@ import { merge } from "lodash-es";
 import log from "loglevel";
 import { MutationPayload, Payload, Plugin, Store } from "vuex";
 
-import { CONTROLLER_MODULE_KEY, KeyState } from "@/utils/enums";
-
-const defaultRestoreStateFn = async (): Promise<{
-  [CONTROLLER_MODULE_KEY]: KeyState;
-  state: unknown;
-}> =>
-  Promise.resolve({
-    [CONTROLLER_MODULE_KEY]: {
-      priv_key: "",
-    },
-    state: {},
-  });
+const defaultRestoreStateFn = (key: string, storage: Storage) => {
+  const value = storage.getItem(key);
+  if (typeof value === "string") {
+    // If string, parse, or else, just return
+    return JSON.parse(value || "{}");
+  }
+  return value || {};
+};
 
 const defaultFilterFn = () => true;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const defaultSaveStateFn = () => {};
+const defaultSaveStateFn = (key: string, state: Record<string, unknown>, storage: Storage) =>
+  storage.setItem(
+    key, // Second argument is state _object_ if localforage, stringified otherwise
+    JSON.stringify(state)
+  );
 
-const defaultReducerFn = (state: unknown, moduleKey: string): Partial<KeyState> => {
-  return { [moduleKey]: state as Record<string, unknown> } as Partial<KeyState>;
+const defaultReducerFn = <S>(state: unknown, moduleKey: string): Partial<S> => {
+  return { [moduleKey]: (state as Record<string, unknown>)[moduleKey] } as Partial<S>;
 };
 
-export interface ModulePersistOptions {
+export interface ModulePersistOptions<S> {
   /**
    * Window.Storage type object.
    */
@@ -36,13 +35,7 @@ export interface ModulePersistOptions {
    * @param key -
    * @param storage -
    */
-  restoreState?: (
-    key: string,
-    storage: Storage
-  ) => Promise<{
-    [CONTROLLER_MODULE_KEY]: KeyState;
-    state: unknown;
-  }>;
+  restoreState?: (key: string, storage: Storage) => S;
 
   /**
    * Method to save state into persistence
@@ -58,7 +51,7 @@ export interface ModulePersistOptions {
    * You can use this if you want to save only a portion of it.
    * @param state -
    */
-  reducer?: (state: unknown, moduleKey: string) => Partial<unknown>;
+  reducer?: (state: S, moduleKey: string) => Partial<S>;
 
   /**
    * Key to use to save the state into the storage
@@ -76,12 +69,12 @@ export interface ModulePersistOptions {
   moduleName: string;
 }
 
-export interface VuexPersistModules {
-  [moduleName: string]: ModulePersistOptions;
+export interface VuexPersistModules<S> {
+  [moduleName: string]: ModulePersistOptions<S>;
 }
 
 export default class VuexPersistence<S> {
-  public modules: VuexPersistModules;
+  public modules: VuexPersistModules<S>;
 
   public subscribed: boolean;
 
@@ -94,7 +87,7 @@ export default class VuexPersistence<S> {
     this.store = null;
   }
 
-  public async addModule(options: ModulePersistOptions): Promise<void> {
+  public addModule(options: ModulePersistOptions<S>): void {
     const moduleOptions = { ...options };
     if (!this.store) throw new Error("Install the plugin first");
     if (this.modules[moduleOptions.moduleName]) throw new Error("Module already installed");
@@ -102,14 +95,13 @@ export default class VuexPersistence<S> {
     const { key } = moduleOptions;
     const { storage } = moduleOptions;
     moduleOptions.restoreState = moduleOptions.restoreState || defaultRestoreStateFn;
-    moduleOptions.saveState = moduleOptions.saveState || defaultSaveStateFn;
     moduleOptions.filter = moduleOptions.filter || defaultFilterFn;
+    moduleOptions.saveState = moduleOptions.saveState || defaultSaveStateFn;
     moduleOptions.reducer = moduleOptions.reducer || defaultReducerFn;
     // register this module
     this.modules[moduleOptions.moduleName] = moduleOptions;
 
-    const savedState = (await moduleOptions.restoreState(key, storage)).state;
-    log.info("Add Module, restoring state = ", savedState);
+    const savedState = moduleOptions.restoreState(key, storage) as S;
     this.store.replaceState(merge(this.store.state, savedState || {}) as S);
   }
 

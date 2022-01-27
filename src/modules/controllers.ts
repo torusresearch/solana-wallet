@@ -29,7 +29,6 @@ import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
 import { cloneDeep, merge } from "lodash-es";
-// import { omit } from "lodash-es";
 import log from "loglevel";
 import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -38,10 +37,8 @@ import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import i18nPlugin from "@/plugins/i18nPlugin";
-// import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
-// import { LOCAL_STORAGE_KEY } from "@/utils/enums";
 import { isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -504,11 +501,9 @@ class ControllerModule extends VuexModule {
   @Action
   async saveToBackend({ private_key = "", saveState = {} }) {
     const { pk, sk } = getED25519Key(private_key.padStart(64, "0"));
-    // create object from provided private key
     const keyState: KeyState = {
       priv_key: base58.encode(sk),
     };
-    // set private key in local storage for persistance
     window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
     try {
       const nonce = nacl.randomBytes(24);
@@ -520,7 +515,6 @@ class ControllerModule extends VuexModule {
       const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
       const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
       const signatureString = Buffer.from(signature).toString("hex");
-      // update backend db with current (openlogin)state
       await axios.post(`${config.openloginStateAPI}/set`, { pub_key: pubKey, signature: signatureString, set_data: setData });
     } catch (error) {
       log.error("Error saving state!", error);
@@ -529,9 +523,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async restoreFromBackend() {
-    // read private key from local storage
     const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
-    // parse local storage string
     const keyState: KeyState =
       typeof value === "string"
         ? JSON.parse(value)
@@ -539,7 +531,6 @@ class ControllerModule extends VuexModule {
             priv_key: "",
           };
     try {
-      // if private key was found, get encrypted openlogin state, nonce
       if (keyState.priv_key) {
         const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
         const res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
@@ -553,7 +544,6 @@ class ControllerModule extends VuexModule {
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
           const decryptedState = JSON.parse(decryptedStateString);
 
-          // add decrypted userinfo, private key account
           const address = await this.torus.addAccount(privKey.toString("hex").slice(0, 64), decryptedState);
           this.torus.setSelectedAccount(address);
         }
