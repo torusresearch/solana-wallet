@@ -521,7 +521,7 @@ class ControllerModule extends VuexModule {
       const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
       const signatureString = Buffer.from(signature).toString("hex");
       // update backend db with current (openlogin)state
-      await axios.post("http://localhost:4021/set", { pub_key: pubKey, signature: signatureString, set_data: setData });
+      await axios.post(`${config.openloginStateAPI}/set`, { pub_key: pubKey, signature: signatureString, set_data: setData });
     } catch (error) {
       log.error("Error saving state!", error);
     }
@@ -542,7 +542,7 @@ class ControllerModule extends VuexModule {
       // if private key was found, get encrypted openlogin state, nonce
       if (keyState.priv_key) {
         const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
-        const res = (await axios.post("http://localhost:4021/get", { pub_key: pubKey })).data;
+        const res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
         if (Object.keys(res).length && res.state && res.nonce) {
           const encryptedState = res.state;
           const nonce = Buffer.from(res.nonce, "hex");
