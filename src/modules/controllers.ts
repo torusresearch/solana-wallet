@@ -378,7 +378,7 @@ class ControllerModule extends VuexModule {
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
-    await this.saveToBackend({ private_key: res.privKey, saveState: res.userInfo });
+    this.saveToBackend({ private_key: res.privKey, saveState: res.userInfo });
   }
 
   @Action
@@ -422,7 +422,6 @@ class ControllerModule extends VuexModule {
       logoutChannel.close();
     }
     window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
-    window.sessionStorage?.removeItem("stateFetched");
   }
 
   @Action
@@ -504,7 +503,6 @@ class ControllerModule extends VuexModule {
 
   @Action
   async saveToBackend({ private_key = "", saveState = {} }) {
-    window.sessionStorage.setItem("stateFetched", "false");
     const { pk, sk } = getED25519Key(private_key.padStart(64, "0"));
     // create object from provided private key
     const keyState: KeyState = {
@@ -523,17 +521,14 @@ class ControllerModule extends VuexModule {
       const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
       const signatureString = Buffer.from(signature).toString("hex");
       // update backend db with current (openlogin)state
-      axios.post("http://localhost:4021/set", { pub_key: pubKey, signature: signatureString, set_data: setData });
+      await axios.post("http://localhost:4021/set", { pub_key: pubKey, signature: signatureString, set_data: setData });
     } catch (error) {
       log.error("Error saving state!", error);
-    } finally {
-      window.sessionStorage.setItem("stateFetched", "true");
     }
   }
 
   @Action
   async restoreFromBackend() {
-    window.sessionStorage.setItem("stateFetched", "false");
     // read private key from local storage
     const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
     // parse local storage string
@@ -566,8 +561,6 @@ class ControllerModule extends VuexModule {
     } catch (error) {
       window.localStorage.removeItem(CONTROLLER_MODULE_KEY);
       log.error("Error restoring state!", error);
-    } finally {
-      window.sessionStorage?.setItem("stateFetched", "true");
     }
   }
 }

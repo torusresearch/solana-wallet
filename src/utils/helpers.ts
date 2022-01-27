@@ -210,7 +210,7 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
   };
 };
 
-export const waitForState = () => {
+export const waitForState = (ControllerModule: any) => {
   return new Promise<void>((resolve, reject) => {
     let timeout: NodeJS.Timeout;
     let interval: NodeJS.Timeout;
@@ -222,17 +222,15 @@ export const waitForState = () => {
     }, 30_000);
     interval = setInterval(() => {
       const localKeyState = window.localStorage?.getItem("controllerModule");
-      // state fetched === false indicates that state is being fetched, true indicates state has been fetched.
-      const stateFetched = window.sessionStorage?.getItem("stateFetched");
 
-      if (stateFetched === "true") {
+      // if logged in and state set, resolve
+      if (ControllerModule.torus.selectedAddress) {
         clearInterval(interval);
         clearTimeout(timeout);
         resolve();
       }
-
       // if local key state is not set or is empty, resolve
-      if (!localKeyState || !JSON.parse(localKeyState)?.priv_key) {
+      if (!(localKeyState && JSON.parse(localKeyState)?.priv_key)) {
         clearInterval(interval);
         clearTimeout(timeout);
         resolve();

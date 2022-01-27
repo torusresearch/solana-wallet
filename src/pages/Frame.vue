@@ -97,7 +97,7 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
-    await waitForState();
+    await waitForState(ControllerModule);
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
   }
