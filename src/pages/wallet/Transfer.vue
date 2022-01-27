@@ -95,13 +95,12 @@ const addressPromise = () => {
 };
 
 const tokenAddressVerifier = async (value: string) => {
-  // if not selected token, It is possible transfering sol, skip token address check
   if (!selectedToken?.value?.mintAddress) {
     return true;
   }
 
   const mintAddress = new PublicKey(selectedToken.value.mintAddress || "");
-  let associatedAccount = new PublicKey(value);
+  let associatedAccount;
 
   if (transferType.value.value === "sns") {
     try {
@@ -114,6 +113,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   // if succeeds, we assume that the account is account key is correct.
   // Transfer in TorusController with derive the associated token adddress using the same function.
+  associatedAccount = !associatedAccount ? new PublicKey(value) : associatedAccount;
   try {
     await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
     return true;
