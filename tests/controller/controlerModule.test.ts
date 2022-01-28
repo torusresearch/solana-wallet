@@ -10,6 +10,7 @@ import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
 
+import OpenLoginFactory from "@/auth/OpenLogin";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { DEFAULT_STATE } from "@/controllers/TorusController";
@@ -50,6 +51,9 @@ describe("Controller Module", () => {
       return {};
     });
 
+    sandbox.stub(OpenLoginFactory, "getInstance").callsFake(async () => {
+      return { state: {} } as OpenLogin;
+    });
     sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
       return mockData.openLoginHandler;
     });

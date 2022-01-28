@@ -77,8 +77,22 @@ export default () => {
     });
 
   // api.testnet nock
-  // nock("https://api.testnet.solana.com")
   nock(WALLET_SUPPORTED_NETWORKS.testnet.rpcTarget)
+    .persist()
+    .post("/")
+    .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { method, params, ...others } = body;
+      // log.error("testnet", method);
+      if (method === "getHealth") {
+        const value = { ...others, result: "ok" };
+        // log.error(value);
+        return value;
+      }
+      throw new Error(`Unimplemented mock testnet rpc method ${body.method}`);
+    });
+
+  nock("https://api.testnet.solana.com")
     .persist()
     .post("/")
     .reply(200, (_uri, body: JRPCRequest<unknown>) => {
@@ -109,4 +123,6 @@ export default () => {
       }
       throw new Error(`Unimplemented mock devnet rpc method ${body.method}`);
     });
+
+  nock("https://solana-openlogin-state.tor.us").persist().post("/set").reply(200);
 };

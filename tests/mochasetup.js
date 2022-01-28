@@ -2,7 +2,9 @@ const path = require("path");
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const fetch = require("node-fetch");
-require("jsdom-global")();
+require("jsdom-global")("", {
+  url: "https://solana.tor.us",
+});
 
 const tsConfigPath = path.resolve(".", "tsconfig.test.json");
 // eslint-disable-next-line import/no-extraneous-dependencies
