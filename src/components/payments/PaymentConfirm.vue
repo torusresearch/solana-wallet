@@ -99,7 +99,7 @@ const totalFiatCostString = computed(() => {
         </div>
       </div>
       <hr class="m-5" />
-      <div class="mt-4 px-6 items-center">
+      <div class="mt-4 px-6 items-center no-scrollbar overflow-y-auto">
         <div class="flex flex-col justify-start items-start">
           <span class="flex flex-row justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
             <p>{{ t("walletTopUp.youSend") }}</p>
@@ -118,9 +118,7 @@ const totalFiatCostString = computed(() => {
           >
             {{ expand_inst ? "Hide details" : "View more details" }}
           </p>
-          <div class="max-h-20 no-scrollbar overflow-y-auto w-full">
-            <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
-          </div>
+          <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
         </div>
       </div>
       <hr class="m-5" />
@@ -131,9 +129,9 @@ const totalFiatCostString = computed(() => {
           <p class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</p>
         </div>
       </div>
-      <div class="flex flex-row justify-around items-center my-4">
-        <Button :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
-        <Button :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.confirm") }}</Button>
+      <div class="flex flex-row items-center my-4 mx-4">
+        <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+        <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.confirm") }}</Button>
       </div>
     </div>
   </div>

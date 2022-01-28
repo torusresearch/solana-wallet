@@ -76,9 +76,9 @@ function openLink() {
         </div>
       </div>
       <hr class="mx-6 mt-auto" />
-      <div class="flex flex-row justify-around items-center my-4">
-        <Button :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
-        <Button :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
+      <div class="flex flex-row items-center my-4 mx-4">
+        <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+        <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
       </div>
     </div>
   </div>

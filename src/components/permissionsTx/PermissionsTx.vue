@@ -56,7 +56,7 @@ function openLink() {
           {{ `${t("dappProvider.confirm")} ${t("dappProvider.permission")}` }}
         </p>
       </div>
-      <div class="mt-4 items-center px-4 flex flex-col justify-start items-start h-full">
+      <div class="mt-4 items-center px-4 flex flex-col justify-start items-start h-full no-scrollbar overflow-y-auto">
         <div class="flex flex-col justify-start items-start w-full mt-4 mb-6">
           <NetworkDisplay />
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
@@ -83,15 +83,13 @@ function openLink() {
           >
             {{ expand_inst ? t("dappPermission.hideDetails") : t("dappPermission.viewMoreDetails") }}
           </p>
-          <div class="max-h-36 no-scrollbar overflow-y-auto w-full">
-            <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
-          </div>
+          <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
         </div>
       </div>
       <hr class="mx-6 mt-auto" />
-      <div class="flex flex-row justify-around items-center my-4">
-        <Button :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
-        <Button :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
+      <div class="flex flex-row items-center my-4 mx-4">
+        <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+        <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
       </div>
     </div>
   </div>
