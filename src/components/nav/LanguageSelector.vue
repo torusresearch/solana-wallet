@@ -3,23 +3,20 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { GlobeIcon } from "@toruslabs/vue-icons/basic";
 import { customRef } from "vue";
-import { useI18n } from "vue-i18n";
 
 import ControllersModule from "@/modules/controllers";
+import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { LOCALES } from "@/utils/enums";
 
-const { locale } = useI18n({ useScope: "global" });
-
 const value = customRef((track, trigger) => {
-  let value2 = LOCALES.find((x) => x.value === locale.value) || LOCALES[0];
   return {
     get() {
       track();
-      return value2 || locale.value;
+      const value2 = LOCALES.find((x) => x.value === i18n.global.locale) || LOCALES[0];
+      return value2;
     },
     set(input: typeof LOCALES[0]) {
-      value2 = input;
-      locale.value = input.value;
+      setLocale(i18n, input.value);
       ControllersModule.setLocale(input.value);
       trigger();
     },

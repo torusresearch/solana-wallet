@@ -85,7 +85,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
@@ -216,6 +216,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   get userInfo(): UserInfo {
     return this.preferencesController.state.identities[this.selectedAddress]?.userInfo || cloneDeep(DEFAULT_PREFERENCES.userInfo);
+  }
+
+  get locale(): string {
+    return this.getAccountPreferences(this.selectedAddress)?.locale?.split("-")[0] || getUserLanguage();
   }
 
   get communicationProvider(): SafeEventEmitterProvider {

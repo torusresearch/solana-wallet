@@ -1,14 +1,52 @@
-import { createI18n } from "vue-i18n";
+import { nextTick } from "vue";
+import { createI18n, I18n } from "vue-i18n";
 
 import { LOCALE_EN } from "@/utils/enums";
 import { getUserLanguage } from "@/utils/helpers";
 
-import locales from "./locales";
+export const localeTarget = getUserLanguage() || LOCALE_EN;
+export const languageMap: Record<string, string> = {
+  en: "english",
+  de: "german",
+  ja: "japanese",
+  ko: "korean",
+  zh: "mandarin",
+  es: "spanish",
+};
 
-export default createI18n({
-  legacy: false,
-  locale: getUserLanguage() || LOCALE_EN,
-  fallbackLocale: LOCALE_EN,
-  messages: locales,
-  missing: (locale, key) => key,
-});
+export function setI18nLanguage(i18n: I18n, locale: string) {
+  // eslint-disable-next-line no-param-reassign
+  i18n.global.locale = locale;
+}
+
+export function setupI18n(locale = LOCALE_EN) {
+  const i18n = createI18n({
+    globalInjection: true,
+    locale,
+    fallbackLocale: locale,
+  }) as I18n;
+  setI18nLanguage(i18n, locale);
+  return i18n;
+}
+
+export async function loadLocaleMessages(i18n: I18n, locale: string) {
+  // load locale messages with dynamic import
+  const messages = await import(/* webpackChunkName: "locale-[request]" */ `./i18n/${languageMap[locale]}.json`);
+
+  // set locale and locale message
+  i18n.global.setLocaleMessage(locale, messages.default);
+
+  return nextTick();
+}
+
+export const setLocale = async (i18n: I18n, lang: string) => {
+  // load locale messages
+  if (!i18n.global.availableLocales.includes(lang)) {
+    await loadLocaleMessages(i18n, lang);
+  }
+  // set i18n language
+  setI18nLanguage(i18n, lang);
+};
+
+export const i18n = setupI18n();
+loadLocaleMessages(i18n, localeTarget);
