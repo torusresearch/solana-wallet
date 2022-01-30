@@ -472,6 +472,6 @@ watch(transferTo, () => {
   @apply dark:bg-app-gray-700;
 }
 .currency-selector {
-  @apply font-body py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+  @apply py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
 }
 </style>
