@@ -40,7 +40,6 @@ module.exports = {
           },
           secondary: "#47B2FD",
           secondary2: "#DAF0FF",
-          secondary3: "#f3f3f4",
           text: {
             400: "#A2A5B5",
             500: "#5C6C7F",
