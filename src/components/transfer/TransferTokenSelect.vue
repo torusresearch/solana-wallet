@@ -33,21 +33,16 @@ watch(localToken, () => {
 </script>
 <template>
   <Listbox v-model="localToken" as="div">
-    <ListboxLabel class="block text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
+    <ListboxLabel class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
-          <img
-            :src="selectedToken.iconURL"
-            alt="selected token"
-            class="flex-shrink-0 h-6 w-6 rounded-full"
-            @error="setFallbackImg($event.target, solicon)"
-          />
-          <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
+          <img :src="selectedToken.iconURL" alt="selected token" class="h-6 w-6 rounded-full" @error="setFallbackImg($event.target, solicon)" />
+          <span class="ml-3 truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedToken.name || selectedToken?.metaplexData?.offChainMetaData?.name }}
           </span>
         </span>
-        <span class="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+        <span class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
           <ChevronBottomIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
         </span>
       </ListboxButton>
@@ -58,7 +53,7 @@ watch(localToken, () => {
         >
           <ListboxOption :key="'tokenstring'" as="template" :value="null" :disabled="true">
             <li class="option-separator">
-              <img class="block h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
+              <img class="h-4 w-auto" :src="SolTokenLogo" alt="Tokens" />
               <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">
                 {{ t("walletTransfer.tokens") }}
               </p>
@@ -68,12 +63,12 @@ watch(localToken, () => {
             <li
               :class="[
                 active ? 'bg-app-gray-200' : '',
-                'cursor-pointer select-none relative py-2 pl-9 pr-9 text-app-text-600 dark:text-app-text-dark-500  dark:hover:text-app-text-600',
+                'cursor-pointer select-none relative py-2 px-9 text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600',
               ]"
             >
               <div class="flex items-center">
-                <img :src="item?.iconURL" class="flex-shrink-0 h-6 w-6 rounded-full" alt="iconURI" @error="setFallbackImg($event.target, solicon)" />
-                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
+                <img :src="item?.iconURL" class="h-6 w-6 rounded-full" alt="iconURI" @error="setFallbackImg($event.target, solicon)" />
+                <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 truncate']" class="token-name">
                   <p>{{ item?.name }} ({{ item?.symbol }})</p>
                   <p class="text-app-gray-500">
                     {{ item?.symbol === "SOL" ? "" : "SPL" }}
@@ -83,12 +78,12 @@ watch(localToken, () => {
             </li>
           </ListboxOption>
           <li class="option-separator">
-            <img class="block h-4 w-auto" :src="NftLogo" alt="Tokens" />
+            <img class="h-4" :src="NftLogo" alt="Tokens" />
             <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">NFTS</p>
           </li>
           <template v-for="item in getClubbedNfts(nftTokens)" :key="item.title">
-            <li class="option-separator ml-2 pl-1 nft-group">
-              <p class="ml-2 text-sm text-app-text-400 dark:text-app-text-dark-400">{{ item.title }} ({{ item.count }})</p>
+            <li class="py-2 px-9">
+              <p class="text-sm text-app-text-400 dark:text-app-text-dark-400">{{ item.title }} ({{ item.count }})</p>
             </li>
             <ListboxOption
               v-for="mintAddress in item.mints"
@@ -100,17 +95,17 @@ watch(localToken, () => {
               <li
                 :class="[
                   active ? 'bg-app-gray-200' : '',
-                  'cursor-pointer select-none relative py-2 pl-9 pr-9 text-app-text-600 dark:text-app-text-dark-500  dark:hover:text-app-text-600 ml-4',
+                  'cursor-pointer select-none relative py-2 pl-9 pr-9 text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 ml-4',
                 ]"
               >
                 <div class="flex items-center">
                   <img
                     :src="getTokenFromMint(nftTokens, mintAddress)?.iconURL"
-                    class="flex-shrink-0 h-6 w-6 rounded-full"
+                    class="h-6 w-6 rounded-full"
                     alt="iconURI"
                     @error="setFallbackImg($event.target, FallbackNft)"
                   />
-                  <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="coin-name">
+                  <span :class="[selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate']" class="token-name">
                     <p>{{ getTokenFromMint(nftTokens, mintAddress)?.name }} ({{ getTokenFromMint(nftTokens, mintAddress)?.symbol }})</p>
                   </span>
                 </div>
@@ -128,20 +123,9 @@ watch(localToken, () => {
   height: 54px;
 }
 .option-separator {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  margin-left: 13px;
-  height: 45px;
+  @apply flex flex-row items-center justify-start ml-3 h-12;
 }
-.coin-name {
-  display: flex;
-  width: 100%;
-  flex-direction: row;
-  justify-content: space-between;
-}
-.nft-group {
-  margin-left: 22px;
+.token-name {
+  @apply flex w-full flex-row justify-between;
 }
 </style>

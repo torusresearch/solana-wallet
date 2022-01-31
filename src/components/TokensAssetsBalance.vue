@@ -19,7 +19,6 @@ const enum TOKEN_TAB_TYPES {
 }
 
 const selectedTab = ref<TOKEN_TAB_TYPES>(TOKEN_TAB_TYPES.TOKEN_TAB);
-// const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 const nonFungibleTokens = computed(() => ControllerModule.nonFungibleTokens);
 const fungibleTokens = computed(() => ControllerModule.fungibleTokens);
 
