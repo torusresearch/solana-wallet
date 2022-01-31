@@ -152,7 +152,7 @@ const refDiv = ref(null);
                 <div class="flex mt-1">
                   <div class="flex-none w-20 text-center">
                     <!-- <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">tom@gmail.com</div> -->
-                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
+                    <div class="truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
                       {{ addressSlicer(senderPubKey) }}
                     </div>
                   </div>
@@ -160,13 +160,10 @@ const refDiv = ref(null);
                     <WiFiIcon class="w-3 h-3 mr-1" /> {{ `Solana ${t("walletActivity.network")}` }}
                   </div>
                   <div class="flex-none w-20 text-center">
-                    <div
-                      v-if="receiverVerifier !== 'solana'"
-                      class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500"
-                    >
+                    <div v-if="receiverVerifier !== 'solana'" class="truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
                       {{ receiverVerifierId }}
                     </div>
-                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
+                    <div class="truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
                       {{ addressSlicer(receiverPubKey) }}
                     </div>
                   </div>

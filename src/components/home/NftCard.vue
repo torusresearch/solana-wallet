@@ -42,7 +42,7 @@ function closeClicked() {
           <img :src="props.summaryData.img" class="nft-face" alt="NFT LOGO" @error="setFallbackImg($event.target, FallbackNft)" />
         </div>
         <div class="flex flex-col justify-center align-center flex-1">
-          <p class="token-name">{{ props.summaryData.collectionName }}</p>
+          <p class="token-name truncate w-24">{{ props.summaryData.collectionName }}</p>
           <p class="token-desc whitespace-no-wrap">{{ `${props.summaryData.count || 1} Assets` }}</p>
         </div>
       </div>
@@ -50,7 +50,7 @@ function closeClicked() {
 
     <div
       v-if="mode !== NFT_CARD_MODE.SUMMARY && nftToken"
-      class="large-card mb-10 p-4 pr-6 cursor-pointer my-3 px-3 shadow dark:shadow-dark border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
+      class="large-card mb-10 py-4 pr-6 cursor-pointer mt-3 pl-3 shadow dark:shadow-dark border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
     >
       <div class="flex flex-col justify-start align-start">
         <div class="nft-face-large" style="background-color: rgb(156, 156, 156)">
@@ -63,7 +63,7 @@ function closeClicked() {
         </div>
         <div class="flex flex-col">
           <p class="token-name">{{ nftToken.metaplexData?.offChainMetaData?.name }}</p>
-          <p class="token-family mt-1 text-app-text-600 dark:text-app-text-dark-500">
+          <p class="token-family text-app-text-600 dark:text-app-text-dark-500">
             {{ nftToken.metaplexData?.offChainMetaData?.collection?.name }}
           </p>
         </div>
@@ -75,7 +75,7 @@ function closeClicked() {
 
           <div v-if="nftToken.metaplexData?.offChainMetaData?.attributes?.length" class="flex flex-col justify-center align-center mt-4">
             <p class="field-title">Attributes</p>
-            <p v-for="attribute in nftToken.metaplexData?.offChainMetaData.attributes" :key="`${attribute.value}`" class="token-desc mt-1 ml-2">
+            <p v-for="attribute in nftToken.metaplexData?.offChainMetaData.attributes" :key="`${attribute.value}`" class="token-desc ml-2">
               {{ attribute.trait_type }}: {{ attribute.value }}
             </p>
           </div>

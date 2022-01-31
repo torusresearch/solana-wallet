@@ -29,20 +29,20 @@ function splClicked() {
   >
     <div class="flex flex-row justify-between items-center flex-auto shadow dark:shadow-dark px-3">
       <span class="flex flex-row justify-start items-center">
-        <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3 mt-1" :src="splToken.data?.logoURI" alt="TOKEN Logo" />
-        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 mt-1">{{ splToken.data?.name }}</p></span
+        <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken.data?.logoURI" alt="TOKEN Logo" />
+        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken.data?.name }}</p></span
       >
-      <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1">
-        ~ {{ splToken.balance?.uiAmountString }} {{ splToken.data?.symbol }}
+      <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
+        ~ {{ (+splToken.balance?.uiAmountString).toFixed(3) }} {{ splToken.data?.symbol }}
       </p>
     </div>
     <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-3">
       <p>
-        1 {{ splToken.data?.symbol }} ≈ {{ splToken.price?.[currency === "sol" ? "usd" : currency] || 0 }}
+        1 {{ splToken.data?.symbol }} ≈ {{ (splToken.price?.[currency === "sol" ? "usd" : currency] || 0).toFixed(3) }}
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
       <p>
-        ~{{ getUiTokenValue(splToken.price?.[currency === "sol" ? "usd" : currency] || 0, splToken.balance?.uiAmount || 0) }}
+        ~{{ getUiTokenValue(splToken.price?.[currency === "sol" ? "usd" : currency] || 0, splToken.balance?.uiAmount || 0, 3) }}
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
     </div>
