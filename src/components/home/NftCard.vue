@@ -50,9 +50,9 @@ function closeClicked() {
 
     <div
       v-if="mode !== NFT_CARD_MODE.SUMMARY && nftToken"
-      class="large-card mb-10 py-4 pr-6 cursor-pointer mt-3 pl-3 shadow dark:shadow-dark border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
+      class="py-3 large-card mb-10 cursor-pointer mt-3 shadow dark:shadow-dark border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
     >
-      <div class="flex flex-col justify-start align-start">
+      <div class="flex flex-col justify-start items-start w-min mx-auto">
         <div class="nft-face-large" style="background-color: rgb(156, 156, 156)">
           <img
             :src="nftToken?.metaplexData?.offChainMetaData?.image"
@@ -75,12 +75,16 @@ function closeClicked() {
 
           <div v-if="nftToken.metaplexData?.offChainMetaData?.attributes?.length" class="flex flex-col justify-center align-center mt-4">
             <p class="field-title">Attributes</p>
-            <p v-for="attribute in nftToken.metaplexData?.offChainMetaData.attributes" :key="`${attribute.value}`" class="token-desc ml-2">
+            <p v-for="attribute in nftToken.metaplexData?.offChainMetaData.attributes" :key="`${attribute.value}`" class="token-desc ml-2 mt-1">
               {{ attribute.trait_type }}: {{ attribute.value }}
             </p>
           </div>
-          <Button variant="outline" :block="true" class="mt-5" size="small" @click="transferClicked()">Transfer</Button>
-          <p class="cursor-pointer text-center mt-5 text-app-text-500 dark:text-app-text-dark-500" @click="closeClicked()" @keydown="closeClicked()">
+          <Button variant="outline" :block="true" class="mt-5 mx-auto" size="small" @click="transferClicked()">Transfer</Button>
+          <p
+            class="cursor-pointer text-center mt-5 text-app-text-500 dark:text-app-text-dark-500 w-full"
+            @click="closeClicked()"
+            @keydown="closeClicked()"
+          >
             Close
           </p>
         </template>
@@ -105,10 +109,9 @@ function closeClicked() {
   width: 185px;
 }
 .nft-face-large {
-  @apply object-cover rounded-md;
+  @apply object-cover rounded-md mb-4;
   width: 160px;
   height: 160px;
-  margin: 0 auto 16px auto;
 }
 
 .field-title {
