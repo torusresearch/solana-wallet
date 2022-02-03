@@ -30,13 +30,7 @@ export const redirectToResult = (method: string, result: unknown, resolveRoute: 
   } else if (resolveRoute.startsWith("http")) {
     window.location.href = `${resolveRoute}?method=${method}#result=${res}`;
   } else {
-    const elem = document.createElement("a");
-    elem.href = `${resolveRoute}?method=${method}&result=${res}`;
-    elem.innerHTML = "Click here to return back to app!";
-    // elem.click();
-    elem.classList.add("back-nav");
-    document.getElementById("app")?.appendChild(elem);
-    elem.addEventListener("click", timeoutWindowClose);
+    window.location.replace(`${resolveRoute}?method=${method}&result=${res}`);
   }
 };
 
