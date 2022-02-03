@@ -48,7 +48,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    const redirect = new URLSearchParams(window.location.search).get("redirectTo");
+    const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     if (redirect) router.push(`${redirect}&resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
       redirectToResult(method, { success: true }, resolveRoute);

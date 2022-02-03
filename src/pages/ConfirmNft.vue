@@ -15,7 +15,7 @@ const transactionFee = ref(0);
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));
 
 onMounted(async () => {
-  // This can't be guaranteed
+  // TODO: This can't be guaranteed
   const { fee } = await ControllerModule.torus.calculateTxFee();
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   if (!params?.mint_add || !params.receiver_add) redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);

@@ -41,6 +41,8 @@ onMounted(async () => {
       redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
       return;
     }
+
+    // TODO: add support to sign array of messages
     msg_data.data = Buffer.from(channel_msg.data as string, "hex");
     msg_data.message = (channel_msg.message as string) || "";
     msg_data.origin = channel_msg.origin as string;

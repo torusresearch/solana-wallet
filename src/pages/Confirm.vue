@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -60,7 +60,6 @@ onMounted(async () => {
         message: params?.message,
         signer: ControllerModule.selectedAddress,
         origin: window.origin,
-        networkDetails: JSON.parse(JSON.stringify(ControllerModule.torus.state.NetworkControllerState.providerConfig)),
       };
     } else {
       redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
@@ -81,11 +80,8 @@ onMounted(async () => {
       return;
     }
 
-    const networkConfig = txData.networkDetails;
-
     tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
-    const conn = new Connection(networkConfig?.rpcTarget as string);
-    const block = await conn.getRecentBlockhash("finalized");
+    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
