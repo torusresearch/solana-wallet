@@ -22,13 +22,13 @@ const { t } = useI18n();
 
 <template>
   <div class="py-2">
-    <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-      <asyncWalletBalance :show-buttons="true" />
-      <Card :height="'164px'">
+    <div class="mt-4 flex flex-row justify-around items-center lt-sm:flex-col lt-sm:justify-start lt-sm:items-center gt-sm:space-x-5 lt-sm:space-y-4">
+      <asyncWalletBalance :show-buttons="true" class="w-full" />
+      <Card :height="'164px'" class="w-full">
         <div class="flex">
-          <div class="flex flex-col w-full h-full">
-            <div class="font-body font-bold text-app-text-600 dark:text-app-text-dark-500 lt-sm:pr-2">Meet us at Singapore hacker house</div>
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500">15th Feb - 20th Feb</div>
+          <div class="flex flex-col w-full h-full text-app-text-600 dark:text-app-text-dark-500">
+            <div class="font-bold lt-sm:pr-2">Meet us at Singapore hacker house</div>
+            <div class="text-xs">15th Feb - 20th Feb</div>
           </div>
           <img class="h-2/4 lt-sm:h-12 m-auto gt-sm:absolute top-1/4 right-6" alt="Solana Mascot" :src="SolanaMascot" />
         </div>
