@@ -85,7 +85,7 @@ const onEmailLogin = () => {
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
           <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
           <div class="flex items-center border-b w-56 pb-4 mb-9">
-            <div class="mr-2 font-body text-base text-app-text-500 dark:text-app-text-dark-500">
+            <div class="mr-2 text-base text-app-text-500 dark:text-app-text-dark-500">
               {{ t("dappLogin.buildOn") }}
             </div>
             <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
@@ -140,13 +140,13 @@ const onEmailLogin = () => {
             </form>
           </div>
           <div class="mt-8 mb-2 w-full">
-            <div class="font-body text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">
+            <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">
               {{ t("dappLogin.note") }}
             </div>
-            <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
+            <div class="text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
               {{ t("login.dataPrivacy") }}
             </div>
-            <div class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
+            <div class="text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
               {{ `${t("dappLogin.termsAuth01")} ${t("dappLogin.termsAuth02")}` }}
             </div>
           </div>
@@ -156,13 +156,13 @@ const onEmailLogin = () => {
           </div>
 
           <div class="space-x-3">
-            <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">{{
+            <a class="text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">{{
               t("dappLogin.termsConditions")
             }}</a>
-            <a class="font-body text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">{{
+            <a class="text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">{{
               t("dappLogin.privacyPolicy")
             }}</a>
-            <a class="font-body text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">{{ t("dappLogin.contactUs") }}</a>
+            <a class="text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">{{ t("dappLogin.contactUs") }}</a>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@ const onEmailLogin = () => {
           <div class="font-header text-xl mb-2">
             {{ t("dappLogin.sendReceive") }}
           </div>
-          <div class="font-body text-base">{{ t("dappLogin.transactEasy") }} <br />{{ t("login.slide1Subtitle2") }}</div>
+          <div class="text-base">{{ t("dappLogin.transactEasy") }} <br />{{ t("login.slide1Subtitle2") }}</div>
         </div>
       </div>
     </div>

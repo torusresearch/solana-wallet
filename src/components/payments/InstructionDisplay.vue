@@ -22,7 +22,7 @@ const breakJoin = (src: string): string => {
 <template>
   <div v-if="isExpand" class="w-full">
     <div v-for="inst in decodedInst" :key="JSON.stringify(inst)" class="w-full text-app-text-500 dark:text-app-text-dark-500">
-      <p>{{ breakJoin(inst.type) }}</p>
+      <p class="mb-1">{{ breakJoin(inst.type) }}</p>
       <div v-for="el in Object.keys(inst.data)" :key="el">
         <DecodedDisplay :data="inst.data[el]" :el="el" />
       </div>
