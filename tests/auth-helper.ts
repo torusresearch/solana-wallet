@@ -36,7 +36,7 @@ async function getJWT(): Promise<{ success: boolean; token: string }> {
 
 export async function login(context: BrowserContext): Promise<Page> {
   const { token } = await getJWT();
-  const stateFunction = `window.sessionStorage.setItem(
+  const stateFunction = `window.localStorage.setItem(
     "controllerModule",
     JSON.stringify({
       controllerModule: {

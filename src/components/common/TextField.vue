@@ -11,6 +11,7 @@ const props = withDefaults(
     modelValue?: string | number;
     errors?: Array<ErrorObject>;
     type?: string;
+    disabled?: boolean;
     spellCheck?: boolean;
     postfixText?: string;
   }>(),
@@ -22,6 +23,7 @@ const props = withDefaults(
     modelValue: "",
     errors: () => [],
     type: "text",
+    disabled: false,
     spellCheck: false,
     postfixText: "",
   }

@@ -2,9 +2,23 @@
 import { RedirectHandler } from "@toruslabs/base-controllers";
 import { onMounted } from "vue";
 
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+
+const { isRedirectFlow, method, resolveRoute } = useRedirectFlow();
+
+const checkTopupSuccess = async () => {
+  const queryParameters = new URLSearchParams(window.location.search);
+  const topupResult = queryParameters.get("topup");
+  if (isRedirectFlow && topupResult) {
+    redirectToResult(method, topupResult, resolveRoute);
+  }
+};
 onMounted(async () => {
-  const redirectHandler = new RedirectHandler();
-  await redirectHandler.handle();
+  checkTopupSuccess();
+  if (!isRedirectFlow) {
+    const redirectHandler = new RedirectHandler();
+    await redirectHandler.handle();
+  }
 });
 </script>
 

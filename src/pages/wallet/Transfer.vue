@@ -232,8 +232,10 @@ const openModal = async () => {
 
     isOpen.value = true;
   }
-  const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
-  blockhash.value = b_hash;
+
+  // This can't be guarantee
+  const { blockHash, fee } = await ControllerModule.torus.calculateTxFee();
+  blockhash.value = blockHash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };

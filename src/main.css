@@ -50,6 +50,20 @@ body {
   overflow: auto;
 }
 
+.back-nav {
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #000000e0;
+  z-index: 100;
+  color: white;
+  font-size: 20px;
+  text-decoration: underline;
+  text-align: center;
+  line-height: 100vh;
+}
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

@@ -17,6 +17,7 @@ import {
   SelectedAddresssChangeChannelData,
   THEME,
   TX_EVENTS,
+  UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
@@ -39,7 +40,7 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/To
 import i18nPlugin from "@/plugins/i18nPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
-import { isMain } from "@/utils/helpers";
+import { delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -52,7 +53,10 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+  public torus = new TorusController({
+    _config: DEFAULT_CONFIG,
+    _state: cloneDeep(DEFAULT_STATE),
+  });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -94,12 +98,20 @@ class ControllerModule extends VuexModule {
         if (item.decimal === 0) {
           const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
           if (nftInfo) {
-            return { ...item, logoURI: nftInfo.offChainMetaData?.image, cryptoCurrency: nftInfo.symbol };
+            return {
+              ...item,
+              logoURI: nftInfo.offChainMetaData?.image,
+              cryptoCurrency: nftInfo.symbol,
+            };
           }
         } else {
           const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
           if (tokenInfo) {
-            return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
+            return {
+              ...item,
+              logoURI: tokenInfo.logoURI,
+              cryptoCurrency: tokenInfo.symbol,
+            };
           }
         }
       }
@@ -159,7 +171,13 @@ class ControllerModule extends VuexModule {
           ) {
             return acc;
           }
-          return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+          return [
+            ...acc,
+            {
+              ...current,
+              metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress],
+            },
+          ];
         }, [])
         .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
     return [];
@@ -198,7 +216,10 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+    this.torus = new TorusController({
+      _config: DEFAULT_CONFIG,
+      _state: cloneDeep(DEFAULT_STATE),
+    });
   }
 
   @Action
@@ -391,7 +412,9 @@ class ControllerModule extends VuexModule {
         if (openLoginInstance.state.support3PC) {
           // eslint-disable-next-line no-underscore-dangle
           openLoginInstance._syncState(await openLoginInstance._getData());
-          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+          await openLoginInstance.logout({
+            clientId: config.openLoginClientId,
+          });
         }
       } catch (error) {
         log.warn(error, "unable to logout with openlogin");
@@ -491,6 +514,55 @@ class ControllerModule extends VuexModule {
       });
       selectedAddressChannel.close();
     }
+  }
+
+  @Action
+  async handleRedirectFlow({ method, params, resolveRoute }: { method: string; params: { [keyof: string]: any }; resolveRoute: string }) {
+    let res;
+    switch (method) {
+      case "topup":
+        await this.torus.handleTopUp(
+          params.params ? params.params : { selectedAddress: this.selectedAddress },
+          undefined,
+          true,
+          resolveRoute as string
+        );
+        break;
+      case "wallet_instance_id":
+        res = "";
+        break;
+      case "get_provider_state":
+        res = {
+          currentLoginProvider: this.torus.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          isLoggedIn: !!this.selectedAddress,
+        };
+        break;
+      case "wallet_get_provider_state":
+        res = {
+          accounts: this.torus.state.KeyringControllerState.wallets.map((e) => e.publicKey),
+          chainId: this.torus.state.NetworkControllerState.chainId,
+          isUnlocked: !!this.selectedAddress,
+        };
+        break;
+      case "user_info":
+        res = normalizeJson<UserInfo>(this.torus.userInfo);
+        break;
+      case "get_gasless_public_key":
+        res = this.torus.getGaslessPublicKey();
+        break;
+      case "get_accounts":
+        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        break;
+      case "solana_request_accounts":
+        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        break;
+      case "nft_list":
+        await delay(15000);
+        res = this.nonFungibleTokens || [];
+        break;
+      default:
+    }
+    return res;
   }
 
   @Action

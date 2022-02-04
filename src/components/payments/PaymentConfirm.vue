@@ -40,14 +40,14 @@ const props = withDefaults(
 );
 
 const expand_inst = ref(false);
-const emits = defineEmits(["transferConfirm", "onCloseModal"]);
+const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
 
 const closeModal = () => {
   emits("onCloseModal");
 };
 
 const onCancel = () => {
-  closeModal();
+  emits("transferCancel");
 };
 
 const onConfirm = () => {

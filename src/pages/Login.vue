@@ -18,6 +18,9 @@ import { addToast, app } from "@/modules/app";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+
+const { isRedirectFlow, method, resolveRoute } = useRedirectFlow();
 
 const { t } = useI18n();
 const router = useRouter();
@@ -34,7 +37,8 @@ const $v = useVuelidate(rules, { userEmail });
 const isLoggedIn = computed(() => ControllerModule.selectedAddress);
 
 onMounted(() => {
-  if (isLoggedIn.value) router.push("/wallet/home");
+  if (isLoggedIn.value && isRedirectFlow) redirectToResult(method, { success: true }, resolveRoute);
+  if (isLoggedIn.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -44,12 +48,19 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
       loginProvider,
       login_hint: emailString,
     });
-    if (isLoggedIn.value) {
+    const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
+    if (redirect) router.push(`${redirect}&resolveRoute=${resolveRoute}${window.location.hash}`);
+    else if (isRedirectFlow) {
+      redirectToResult(method, { success: true }, resolveRoute);
+    } else if (isLoggedIn.value) {
       isLoading.value = false;
       router.push("/wallet/home");
     }
   } catch (error) {
     log.error(error);
+    if (isRedirectFlow) {
+      redirectToResult(method, { success: false }, resolveRoute);
+    }
     addToast({
       message: t("login.loginError"),
       type: "error",

@@ -1,15 +1,33 @@
 <script setup lang="ts">
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT, PopupWhitelabelData } from "@toruslabs/base-controllers";
+import {
+  BROADCAST_CHANNELS,
+  BroadcastChannelHandler,
+  broadcastChannelOptions,
+  POPUP_RESULT,
+  PopupWhitelabelData,
+  ProviderConfig,
+} from "@toruslabs/base-controllers";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted, reactive } from "vue";
-// import log from "loglevel";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+
+const { params, isRedirectFlow, method, resolveRoute } = useRedirectFlow({
+  blockExplorerUrl: "?cluster=mainnet",
+  chainId: "0x1",
+  displayName: "Solana Mainnet",
+  logo: "solana.svg",
+  rpcTarget: "https://api.mainnet-beta.solana.com",
+  ticker: "SOL",
+  tickerName: "Solana Token",
+});
 
 const { t } = useI18n();
 
@@ -21,6 +39,7 @@ interface FinalTxData {
   fromNetwork: string;
   whitelabelData: PopupWhitelabelData;
 }
+
 const finalProviderData = reactive<FinalTxData>({
   origin: "",
   toNetwork: "",
@@ -29,25 +48,40 @@ const finalProviderData = reactive<FinalTxData>({
     theme: "light",
   },
 });
+
 onMounted(async () => {
-  const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
-  const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
-  finalProviderData.origin = providerData.origin;
-  finalProviderData.toNetwork = providerData.newNetwork.displayName;
-  finalProviderData.fromNetwork = providerData.currentNetwork;
-  finalProviderData.whitelabelData = providerData.whitelabelData;
+  if (!isRedirectFlow) {
+    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
+    const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
+    finalProviderData.origin = providerData.origin;
+    finalProviderData.toNetwork = providerData.newNetwork.displayName;
+    finalProviderData.fromNetwork = providerData.currentNetwork;
+    finalProviderData.whitelabelData = providerData.whitelabelData;
+  } else {
+    finalProviderData.toNetwork = params.displayName;
+    finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+  }
 });
 const approveProviderChange = async (): Promise<void> => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({
-    data: { type: POPUP_RESULT, approve: true },
-  });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({
+      data: { type: POPUP_RESULT, approve: true },
+    });
+    bc.close();
+  } else {
+    ControllerModule.torus.setNetwork(params as ProviderConfig);
+    redirectToResult(method, { success: true }, resolveRoute);
+  }
 };
 const denyProviderChange = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+    bc.close();
+  } else {
+    redirectToResult(method, { success: false }, resolveRoute);
+  }
 };
 </script>
 

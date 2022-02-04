@@ -278,3 +278,82 @@ export const LOCALES = [
     value: LOCALE_ES,
   },
 ];
+
+export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean } } = {
+  logout: {
+    redirectPath: "/logout",
+    requiresLogin: false,
+  },
+  login: {
+    redirectPath: "/login",
+    requiresLogin: false,
+  },
+  wallet_instance_id: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  set_provider: {
+    redirectPath: "/providerchange",
+    requiresLogin: true,
+  },
+  topup: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  get_provider_state: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  wallet_get_provider_state: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  send_transaction: {
+    redirectPath: "/confirm",
+    requiresLogin: true,
+  },
+  sign_transaction: {
+    redirectPath: "/confirm",
+    requiresLogin: true,
+  },
+  sign_all_transactions: {
+    redirectPath: "/confirm",
+    requiresLogin: true,
+  },
+  sign_message: {
+    redirectPath: "/confirm_message",
+    requiresLogin: true,
+  },
+  connect: {
+    redirectPath: "/",
+    requiresLogin: false,
+  },
+  user_info: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  get_gasless_public_key: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  get_accounts: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  solana_request_accounts: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  spl_transfer: {
+    redirectPath: "/confirm_spl",
+    requiresLogin: true,
+  },
+  nft_list: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  nft_transfer: {
+    redirectPath: "/confirm_nft",
+    requiresLogin: true,
+  },
+};
