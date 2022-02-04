@@ -47,23 +47,23 @@ function openLink() {
   >
     <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
       <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
-        <img class="h-7 mx-auto w-auto mb-1 mr-5 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
-        <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
+        <img class="h-7 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
+        <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 w-full">
           {{ t("dappTransfer.permission") }}
         </p>
       </div>
-      <div class="mt-4 px-6 items-center px-4">
-        <div class="flex flex-col justify-start items-start mt-12">
+      <div class="mt-4 items-center px-4 flex flex-col justify-start items-start w-full">
+        <div class="flex flex-col justify-start items-start mt-4 mb-8 w-full">
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ `${t("dappInfo.requestFrom")}:` }}</p>
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.requestedFrom" target="_blank" class="text-sm text-app-text-accent dark:text-app-text-accent">{{
-              getDomainFromUrl(props.requestedFrom)
-            }}</a>
-            <div class="open-link" @click="openLink" @keydown="openLink"><img :src="GoToLinkLogo" alt="GoToLink" /></div>
+            <a :href="props.requestedFrom" target="_blank" class="text-sm text-app-text-accent">{{ getDomainFromUrl(props.requestedFrom) }}</a>
+            <div class="h-6 w-6 flex items-center justify-center rounded-md cursor-pointer" @click="openLink" @keydown="openLink">
+              <img :src="GoToLinkLogo" alt="GoToLink" />
+            </div>
           </div>
         </div>
 
-        <div class="flex flex-col justify-start items-start mt-8">
+        <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
             <img :src="SubtractURL" alt="Message Info" class="mr-2" />
             <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">
@@ -75,36 +75,15 @@ function openLink() {
           </div>
         </div>
       </div>
-      <div class="spacer"></div>
-      <hr class="mx-6" />
-      <div class="grid grid-cols-2 gap-3 m-6 px-4 rounded-md my-8">
-        <div>
-          <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
-        </div>
-        <div>
-          <Button class="ml-auto" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
-        </div>
+      <hr class="mx-6 mt-auto" />
+      <div class="flex flex-row items-center my-4 mx-4">
+        <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="onCancel">{{ t("dappTransfer.cancel") }}</Button>
+        <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
       </div>
     </div>
   </div>
 </template>
 <style scoped>
-.title-box {
-  flex: 1 1 auto;
-}
-.open-link {
-  height: 24px;
-  width: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(0deg, #575d69, #575d69), #ffffff;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.spacer {
-  flex: 1 1 auto;
-}
 hr {
   border-color: #555555;
 }
