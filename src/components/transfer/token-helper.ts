@@ -1,4 +1,3 @@
-import log from "loglevel";
 import { computed } from "vue";
 
 import solicon from "@/assets/solana-mascot.svg";
@@ -35,6 +34,5 @@ export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
 
 export function getTokenFromMint(tokenList: Partial<SolAndSplToken>[], mint: string): Partial<SolAndSplToken> | undefined {
   const token = tokenList.find((el) => el.mintAddress === mint);
-  log.info(token);
   return token;
 }

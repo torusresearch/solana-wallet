@@ -351,8 +351,6 @@ class ControllerModule extends VuexModule {
       if (isMain) {
         this.torus.approveSignTransaction(txMeta.id);
       } else {
-        log.info(txMeta);
-        log.info(req);
         await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });

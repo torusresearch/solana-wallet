@@ -138,7 +138,6 @@ const approveTxn = async (): Promise<void> => {
         res = ControllerModule.torus.signTransaction(tx.value);
         redirectToResult(method, res, resolveRoute);
       } else if (method === "sign_all_transactions") {
-        log.info(params.message);
         res = await ControllerModule.torus.signAllTransaction({ params } as any, true);
         redirectToResult(method, res, resolveRoute);
       } else throw new Error();

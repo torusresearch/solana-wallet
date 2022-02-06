@@ -1,7 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import axios from "axios";
 import copyToClipboard from "copy-to-clipboard";
-import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
@@ -111,7 +110,6 @@ export function getDomainFromUrl(url: string): string {
 }
 
 export const getRelaySigned = async (gaslessHost: string, signedTx: string, blockhash: string): Promise<string> => {
-  log.info(gaslessHost);
   const resp = await fetch(gaslessHost, {
     headers: {
       Accept: "application/json",
@@ -124,7 +122,6 @@ export const getRelaySigned = async (gaslessHost: string, signedTx: string, bloc
     }),
   });
   const resJson = await resp.json();
-  log.info(resJson);
   return resJson.transaction;
 };
 

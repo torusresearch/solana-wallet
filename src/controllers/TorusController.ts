@@ -447,6 +447,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   // TODO: shift to TokenInfo controller if possible
   updateTokenInfoMap = async (): Promise<void> => {
+    if (!this.tokens[this.selectedAddress]) return;
     let tokenInfoMap: { [mintAddress: string]: TokenInfo } = {};
     try {
       tokenInfoMap = (
@@ -1222,8 +1223,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const tx = Transaction.from(Buffer.from(message, "hex"));
 
     const ret_signed = await this.txController.addSignTransaction(tx, req);
-    const result = await ret_signed.result;
-    log.info(result);
 
     let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
     const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
