@@ -25,20 +25,20 @@ const msg_data = reactive<MsgData>({
 });
 
 onMounted(async () => {
-  if (Object.keys(params).length) params.data = Uint8Array.from(Object.values(params?.data));
+  if (Object.keys(params).length) params.message = Uint8Array.from(Object.values(params?.message));
   let channel_msg: Partial<SignMessageChannelDataType>;
   try {
     if (!isRedirectFlow) {
       const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
       channel_msg = await bcHandler.getMessageFromChannel<SignMessageChannelDataType>();
-    } else if (params?.data)
+    } else if (params?.message)
       channel_msg = {
-        data: Buffer.from(params?.data || []).toString("hex"),
-        message: Buffer.from(params?.data || []).toString(),
+        data: Buffer.from(params?.message || []).toString("hex"),
+        message: Buffer.from(params?.message || []).toString(),
         origin: window.location.origin,
       };
     else {
-      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
+      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute, false);
       return;
     }
 
@@ -69,7 +69,7 @@ const rejectTxn = async () => {
     await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
     bc.close();
   } else {
-    redirectToResult(method, { success: false }, resolveRoute);
+    redirectToResult(method, { success: false }, resolveRoute, false);
   }
 };
 </script>

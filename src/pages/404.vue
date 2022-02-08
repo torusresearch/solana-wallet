@@ -12,7 +12,7 @@ onMounted(() => {
   else if (!resolveRoute) errorText.value = "Invalid or Missing ResolveRoute!";
 });
 const closeAndRedirect = () => {
-  redirectToResult(method, { message: errorText.value }, resolveRoute);
+  redirectToResult(method, { message: errorText.value }, resolveRoute, false);
 };
 </script>
 <template>

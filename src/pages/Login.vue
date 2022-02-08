@@ -34,11 +34,11 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
-const isLoggedIn = computed(() => ControllerModule.selectedAddress);
+const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
 onMounted(() => {
-  if (isLoggedIn.value && isRedirectFlow) redirectToResult(method, { success: true }, resolveRoute);
-  if (isLoggedIn.value && !isRedirectFlow) router.push("/wallet/home");
+  if (selectedAddress.value && isRedirectFlow) redirectToResult(method, { success: true, selectedAddress: selectedAddress.value }, resolveRoute);
+  if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
@@ -51,15 +51,15 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     if (redirect) router.push(`${redirect}&resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
-      redirectToResult(method, { success: true }, resolveRoute);
-    } else if (isLoggedIn.value) {
+      redirectToResult(method, { success: true, selectedAddress: selectedAddress.value }, resolveRoute);
+    } else if (selectedAddress.value) {
       isLoading.value = false;
       router.push("/wallet/home");
     }
   } catch (error) {
     log.error(error);
     if (isRedirectFlow) {
-      redirectToResult(method, { success: false }, resolveRoute);
+      redirectToResult(method, { success: false }, resolveRoute, false);
     }
     addToast({
       message: t("login.loginError"),

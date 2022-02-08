@@ -62,7 +62,7 @@ onMounted(async () => {
         origin: window.origin,
       };
     } else {
-      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
+      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute, false);
       return;
     }
     origin.value = txData.origin as string;
@@ -142,7 +142,7 @@ const approveTxn = async (): Promise<void> => {
         redirectToResult(method, res, resolveRoute);
       } else throw new Error();
     } catch (e) {
-      redirectToResult(method, `failed to execute ${method} : ${e}`, resolveRoute);
+      redirectToResult(method, `failed to execute ${method} : ${e}`, resolveRoute, false);
     }
   }
 };
@@ -157,7 +157,7 @@ const rejectTxn = async () => {
   if (!isRedirectFlow) {
     closeModal();
   } else {
-    redirectToResult(method, { success: false }, resolveRoute);
+    redirectToResult(method, { success: false }, resolveRoute, false);
   }
 };
 </script>

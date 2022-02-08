@@ -22,15 +22,15 @@ export const timeoutWindowClose = (): void => {
   setTimeout(window.close, 0);
 };
 
-export const redirectToResult = (method: string, result: unknown, resolveRoute: string): void => {
+export const redirectToResult = (method: string, result: unknown, resolveRoute: string, isComplete = true): void => {
   const res = Buffer.from(JSON.stringify(result)).toString("base64");
   if (!resolveRoute) {
     if (window.opener === null) window.location.href = window.location.origin;
     else window.close();
   } else if (resolveRoute.startsWith("http")) {
-    window.location.href = `${resolveRoute}?method=${method}#result=${res}`;
+    window.location.href = `${resolveRoute}?method=${method}&isComplete=${isComplete}#result=${res}`;
   } else {
-    window.location.replace(`${resolveRoute}?method=${method}&result=${res}`);
+    window.location.replace(`${resolveRoute}?method=${method}&result=${res}&isComplete=${isComplete}`);
   }
 };
 

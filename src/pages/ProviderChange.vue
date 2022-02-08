@@ -80,7 +80,7 @@ const denyProviderChange = async () => {
     await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
     bc.close();
   } else {
-    redirectToResult(method, { success: false }, resolveRoute);
+    redirectToResult(method, { success: false }, resolveRoute, false);
   }
 };
 </script>

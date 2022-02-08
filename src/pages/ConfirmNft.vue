@@ -18,9 +18,9 @@ onMounted(async () => {
   // TODO: This can't be guaranteed
   const { fee } = await ControllerModule.torus.calculateTxFee();
   transactionFee.value = fee / LAMPORTS_PER_SOL;
-  if (!params?.mint_add || !params.receiver_add) redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
+  if (!params?.mint_add || !params.receiver_add) redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute, false);
   setTimeout(() => {
-    if (selectedNft.value === undefined) redirectToResult(method, { message: "SELECTED NFT NOT FOUND" }, resolveRoute);
+    if (selectedNft.value === undefined) redirectToResult(method, { message: "SELECTED NFT NOT FOUND" }, resolveRoute, false);
   }, 20_000);
 });
 
@@ -32,12 +32,12 @@ async function confirmTransfer() {
       redirectToResult(method, { signature: res }, resolveRoute);
     } else throw new Error("SELECTED NFT NOT FOUND");
   } catch (error) {
-    redirectToResult(method, { error, message: "COULD NOT PROCESS TRANSACTION" }, resolveRoute);
+    redirectToResult(method, { error, message: "COULD NOT PROCESS TRANSACTION" }, resolveRoute, false);
   }
 }
 
 async function cancelTransfer() {
-  redirectToResult(method, { message: "TRANSACTION CANCELLED" }, resolveRoute);
+  redirectToResult(method, { message: "TRANSACTION CANCELLED" }, resolveRoute, false);
 }
 </script>
 

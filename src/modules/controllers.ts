@@ -582,7 +582,10 @@ class ControllerModule extends VuexModule {
         break;
       case "nft_list":
         await delay(15000);
-        res = this.nonFungibleTokens || [];
+        res =
+          this.nonFungibleTokens?.map((token: SolanaToken) => {
+            return { balance: token.balance, mint: token.mintAddress, name: token.metaplexData?.name, uri: token.metaplexData?.uri };
+          }) || [];
         break;
       default:
     }
