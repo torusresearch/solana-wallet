@@ -48,6 +48,7 @@ const cryptoCurrencyRate = ref(0);
 const receivingCryptoAmount = ref(0);
 const amount = ref(100);
 const isLoadingQuote = ref(false);
+const sendingTopup = ref(false);
 const errorMsg = ref("");
 let decimals = 0;
 const $v = useVuelidate(props.rules, { amount });
@@ -90,17 +91,21 @@ watch(
   amount,
   throttle(() => refreshTransferEstimate(props.getQuoteOnAmount), 500)
 );
-const onTopup = () => {
+const onTopup = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
-    ControllerModule.torus
-      .handleTopup(props.topupProvider, {
+    sendingTopup.value = true;
+    try {
+      await ControllerModule.torus.handleTopup(props.topupProvider, {
         selectedCryptoCurrency: selectedCryptocurrency.value.symbol,
         cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (decimals || 0)),
         selectedCurrency: selectedCurrency.value.value,
         fiatValue: amount.value,
-      })
-      .catch(() => addToast({ message: "Transaction could not complete.", type: "error" }));
+      });
+    } catch (_e) {
+      addToast({ message: "Transaction could not complete.", type: "error" });
+    }
+    sendingTopup.value = false;
   }
 };
 
@@ -135,7 +140,7 @@ onMounted(() => {
             <SelectField id="ramp_fiat_select" v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
-        <div v-if="!(isLoadingQuote || errorMsg.length)" class="flex flex-col items-end mb-5">
+        <div v-if="!(isLoadingQuote || sendingTopup || errorMsg.length)" class="flex flex-col items-end mb-5">
           <div class="text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTopUp.receive") }}</div>
           <div class="text-2xl font-bold text-app-text-600 dark:text-app-text-dark-500">
             <span id="resCryptoAmt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
@@ -152,15 +157,23 @@ onMounted(() => {
           <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">{{ t("walletTopUp.waitFetch") }}</p>
           <RoundLoader class="loader"></RoundLoader>
         </div>
+        <div v-if="sendingTopup" class="flex flex-row items-start justify-end">
+          <p class="h-16 text-right text-xs text-app-text-600 dark:text-app-text-dark-500 mr-3">Processing Topup</p>
+          <RoundLoader class="loader"></RoundLoader>
+        </div>
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">
           <div>{{ `${t("walletTopUp.theProcess")} 5 - 10 ${t("walletTransfer.minute")}` }}</div>
           <div>{{ t("walletTopUp.receiveHint") }}</div>
         </div>
       </div>
       <div class="px-4 py-3 mb-4 sm:px-6">
-        <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid) || errorMsg.length">{{
-          t("walletHome.topUp")
-        }}</Button>
+        <Button
+          class="ml-auto mb-2"
+          variant="primary"
+          type="submit"
+          :disabled="isLoadingQuote || sendingTopup || ($v.$dirty && $v.$invalid) || errorMsg.length"
+          >{{ t("walletHome.topUp") }}</Button
+        >
         <div class="text-right text-xs text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTopUp.redirectMessage") }}</div>
       </div>
     </div>
