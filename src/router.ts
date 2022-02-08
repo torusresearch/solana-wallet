@@ -41,7 +41,7 @@ const router = createRouter({
           name: "walletHome",
           path: "home",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
-          meta: { title: "Home", tab: "home" },
+          meta: { title: "Home", tab: "home", tabHeader: "false" },
         },
         {
           name: "walletTransfer",
