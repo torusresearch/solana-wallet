@@ -29,7 +29,7 @@ const orderUrl = async (
     hostUrl: "https://app.tor.us",
     hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
     hostAppName: "Torus",
-    // hostApiKey: config.rampAPIKEY,
+    hostApiKey: config.rampAPIKEY,
     finalUrl: redirectFlow
       ? `${config.baseRoute}redirect?topup=success&method=topup&resolveRoute=${redirectURL}`
       : `${config.baseRoute}redirect?state=${instanceState}`, // redirect url
@@ -38,10 +38,10 @@ const orderUrl = async (
 
   // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
   const parameterString = new URLSearchParams(JSON.parse(JSON.stringify(parameters)));
-  //   const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
+  const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
 
   // testnet
-  const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
+  // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
   return finalUrl;
 };
 
