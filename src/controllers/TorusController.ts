@@ -1059,14 +1059,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async embedhandleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
     const windowId = req.params?.windowId;
     const params = req.params?.params || {};
-    return this.handleTopup(TOPUP.MOONPAY, params, windowId);
+    const provider = req.params?.provider || TOPUP.MOONPAY;
+    return this.handleTopup(provider, params, windowId);
   }
 
   async handleTopup(provider: string, params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {
     // async handleTopUp(finalUrl: URL, instanceId: string, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
     const instanceId = windowId || getRandomWindowId();
     const state = {
-      selectedAddress: params.selectedAddress || this.selectedAddress,
+      // selectedAddress: params.selectedAddress || this.selectedAddress,
+      selectedAddress: this.selectedAddress,
       email: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email,
     };
     log.info(params);
