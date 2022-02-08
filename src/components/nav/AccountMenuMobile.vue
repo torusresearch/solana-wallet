@@ -28,7 +28,7 @@ onMounted(() => {
     @keydown.self="toggleNav()"
   ></div>
   <div
-    :class="{ 'translate-x-full transform': !showNav }"
+    :class="{ 'translate-x-full': !showNav }"
     class="fixed bg-white dark:bg-app-gray-700 w-80 right-0 inset-y-0 z-20 transition duration-200 ease-in-out overflow-auto"
   >
     <slot />

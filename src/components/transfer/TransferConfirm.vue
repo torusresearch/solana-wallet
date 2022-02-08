@@ -101,7 +101,7 @@ const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
+    <Dialog :open="isOpen" as="div" :initial-focus="refDiv" @close="closeModal">
       <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -137,7 +137,7 @@ const refDiv = ref(null);
                       <img class="w-6" :src="SolanaLogoURL" alt="Solana Logo" />
                     </div>
                   </div>
-                  <div class="flex-grow line_connect">
+                  <div class="grow -translate-y-[7px]">
                     <hr />
                   </div>
                   <div class="pr-5 flex-none">
@@ -156,7 +156,7 @@ const refDiv = ref(null);
                       {{ addressSlicer(senderPubKey) }}
                     </div>
                   </div>
-                  <div class="flex-grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
+                  <div class="grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
                     <WiFiIcon class="w-3 h-3 mr-1" /> {{ `Solana ${t("walletActivity.network")}` }}
                   </div>
                   <div class="flex-none w-20 text-center">
@@ -209,8 +209,4 @@ const refDiv = ref(null);
     </Dialog>
   </TransitionRoot>
 </template>
-<style scoped>
-.line_connect {
-  transform: translateY(-7px);
-}
-</style>
+<style scoped></style>

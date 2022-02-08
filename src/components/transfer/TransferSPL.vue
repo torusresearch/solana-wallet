@@ -77,7 +77,7 @@ const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
+    <Dialog :open="isOpen" as="div" :initial-focus="refDiv" @close="closeModal">
       <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -94,7 +94,7 @@ const refDiv = ref(null);
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4 font-body"
+              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4"
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6 w-full">
                 <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
@@ -169,27 +169,15 @@ const refDiv = ref(null);
   </TransitionRoot>
 </template>
 <style scoped>
-.line_connect {
-  transform: translateY(-7px);
-}
-.img-container {
-  min-width: 160px;
-}
 .img_preview {
   max-width: 160px;
-  height: 160px;
   min-width: 160px;
-  border-radius: 6px;
-  object-fit: cover;
+  @apply h-40 rounded-md object-cover;
 }
 .property-name {
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 18px;
+  @apply font-bold text-sm leading-4;
 }
 .property-value {
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 18px;
+  @apply text-sm leading-4;
 }
 </style>
