@@ -1,7 +1,7 @@
 import MoonpayLogo from "@/assets/moonpay-logo.svg";
 import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
-import RampLogo from "@/assets/rampnetwork-logo.svg";
-import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
+// import RampLogo from "@/assets/rampnetwork-logo.svg";
+// import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 import i18n from "@/plugins/i18nPlugin";
 
 const { t } = i18n.global;
@@ -22,41 +22,41 @@ export type TopupProvider = {
 };
 
 export const TopupProviders: { [providerName: string]: TopupProvider } = {
-  [TOPUP.RAMPNETWORK]: {
-    name: TOPUP.RAMPNETWORK,
-    description: `Rampnetwork ${t("walletTopUp.description")}`,
-    paymentMethod: "Credit / Debit / Apple Pay",
-    fee: "0.62% to 2.9%",
-    limit: "5,000€/purchase, 20,000€/mo",
-    logo: (darkMode) => {
-      return darkMode ? RampLogoLight : RampLogo;
-    },
-    validCryptocurrencies: [
-      {
-        value: "SOL",
-        label: "SOL",
-        symbol: "SOLANA_SOL",
-      },
-      {
-        value: "USDT",
-        label: "USDT",
-        symbol: "SOLANA_USDT",
-      },
-      {
-        value: "KIN",
-        label: "KIN",
-        symbol: "SOLANA_KIN",
-      },
-      {
-        value: "USDC",
-        label: "USDC",
-        symbol: "SOLANA_USDC",
-      },
-    ],
-    validCurrencies: ["USD", "EUR", "GBP", "PLN"].map((k) => {
-      return { value: k, label: k };
-    }),
-  },
+  // [TOPUP.RAMPNETWORK]: {
+  //   name: TOPUP.RAMPNETWORK,
+  //   description: `Rampnetwork ${t("walletTopUp.description")}`,
+  //   paymentMethod: "Credit / Debit / Apple Pay",
+  //   fee: "0.62% to 2.9%",
+  //   limit: "5,000€/purchase, 20,000€/mo",
+  //   logo: (darkMode) => {
+  //     return darkMode ? RampLogoLight : RampLogo;
+  //   },
+  //   validCryptocurrencies: [
+  //     {
+  //       value: "SOL",
+  //       label: "SOL",
+  //       symbol: "SOLANA_SOL",
+  //     },
+  //     {
+  //       value: "USDT",
+  //       label: "USDT",
+  //       symbol: "SOLANA_USDT",
+  //     },
+  //     {
+  //       value: "KIN",
+  //       label: "KIN",
+  //       symbol: "SOLANA_KIN",
+  //     },
+  //     {
+  //       value: "USDC",
+  //       label: "USDC",
+  //       symbol: "SOLANA_USDC",
+  //     },
+  //   ],
+  //   validCurrencies: ["USD", "EUR", "GBP", "PLN"].map((k) => {
+  //     return { value: k, label: k };
+  //   }),
+  // },
   [TOPUP.MOONPAY]: {
     name: TOPUP.MOONPAY,
     description: `Moonpay ${t("walletTopUp.description")}`,
