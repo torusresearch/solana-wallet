@@ -28,8 +28,6 @@ import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;
-export const RAMPNETWORK = "rampnetwork";
-
 export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=1200";
 
 export type OpenLoginPopupResponse = {

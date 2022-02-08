@@ -233,3 +233,5 @@ export const waitForState = (ControllerModule: any) => {
     }, 100);
   });
 };
+
+export const getRandomWindowId = () => Math.random().toString(36).slice(2);

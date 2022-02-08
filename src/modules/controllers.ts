@@ -519,7 +519,8 @@ class ControllerModule extends VuexModule {
     let res;
     switch (method) {
       case "topup":
-        await this.torus.handleTopUp(
+        await this.torus.handleTopup(
+          params.provider,
           params.params ? params.params : { selectedAddress: this.selectedAddress },
           undefined,
           true,

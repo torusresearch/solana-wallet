@@ -66,6 +66,12 @@ export default {
 
   rampHost: "https://widget-instant.ramp.network",
 
+  moonpayApiHost: "https://moonpay-api.tor.us",
+  moonpayHost: "https://buy.moonpay.io",
+  moonpayApiQuoteHost: "https://api.moonpay.io",
+  moonpayLiveAPIKEY: "pk_live_Wg90NLnFst3ms7tiqnMDDO0yjlypMzYK",
+  moonpayTestHost: "https://buy-staging.moonpay.io",
+  moonpayTestAPIKEY: "pk_test_j6AnwGJD0XTJDg3bTO37OczjFsddYpS",
   // key is the login provider
   loginConfig: {
     [LOGIN_PROVIDER.GOOGLE]: {

@@ -74,6 +74,7 @@ import { Duplex } from "readable-stream";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
+import topupPlugin from "@/plugins/Topup";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -83,9 +84,10 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 
@@ -1057,37 +1059,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async embedhandleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
     const windowId = req.params?.windowId;
     const params = req.params?.params || {};
-    return this.handleTopUp(params, windowId);
+    return this.handleTopup(TOPUP.MOONPAY, params, windowId);
   }
 
-  async handleTopUp(params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {
+  async handleTopup(provider: string, params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {
+    // async handleTopUp(finalUrl: URL, instanceId: string, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
+    const instanceId = windowId || getRandomWindowId();
+    const state = {
+      selectedAddress: params.selectedAddress || this.selectedAddress,
+      email: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email,
+    };
+    log.info(params);
     try {
-      const instanceId = windowId || this.getWindowId();
-      const parameters = {
-        userAddress: params.selectedAddress || this.selectedAddress || undefined,
-        userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
-        swapAsset: params.selectedCryptoCurrency || "SOLANA_SOL" || undefined,
-        swapAmount: params.cryptoAmount || undefined,
-        fiatValue: params.fiatValue || undefined,
-        fiatCurrency: params.selectedCurrency || undefined,
-        variant: "hosted-auto",
-        webhookStatusUrl: `${config.rampApiHost}/transaction`,
-        hostUrl: "https://app.tor.us",
-        hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
-        hostAppName: "Torus",
-        hostApiKey: config.rampAPIKEY,
-        finalUrl: redirectFlow
-          ? `${config.baseRoute}redirect?topup=success&method=topup&resolveRoute=${redirectURL}`
-          : `${config.baseRoute}redirect?instanceId=${instanceId}&topup=success`, // redirect url
-      };
-
-      // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
-      const parameterString = new URLSearchParams(JSON.parse(JSON.stringify(parameters)));
-      const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
-
-      // testnet
-      // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
-
+      const finalUrl = await topupPlugin[provider].orderUrl(state, params, instanceId, redirectFlow, redirectURL);
       if (!redirectFlow) {
         const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
         const topUpPopUpWindow = new PopupWithBcHandler({
@@ -1142,8 +1126,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       throw error;
     }
   }
-
-  getWindowId = (): string => Math.random().toString(36).slice(2);
 
   async signMessage(
     req: JRPCRequest<{

@@ -61,8 +61,15 @@ const router = createRouter({
               component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
               meta: { title: "Topup - Ramp Network" },
             },
+            {
+              name: "moonpay",
+              path: "moonpay",
+              component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/Moonpay.vue"),
+              meta: { title: "Topup - Moonpay" },
+            },
             { path: "*", redirect: { name: "rampNetwork" } },
           ],
+          redirect: { name: "rampNetwork" },
         },
         {
           name: "walletActivity",
