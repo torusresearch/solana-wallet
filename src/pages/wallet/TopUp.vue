@@ -4,6 +4,7 @@ import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
+import controllerModule from "@/modules/controllers";
 import { TOPUP, TopupProvider, TopupProviders } from "@/utils/topup";
 
 const router = useRouter();
@@ -44,7 +45,7 @@ watch(selectedProvider, () => {
                     <circle v-if="checked" cx="12" cy="12" r="8" fill="currentColor" />
                   </svg>
                 </div>
-                <img :src="provider.logo()" :alt="provider.name" class="w-24" />
+                <img :src="provider.logo(controllerModule.isDarkMode)" :alt="provider.name" class="w-24" />
               </div>
               <RadioGroupDescription as="div" class="col-span-1 whitespace-pre-wrap">
                 <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">

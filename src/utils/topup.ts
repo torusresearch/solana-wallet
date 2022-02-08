@@ -2,7 +2,6 @@ import MoonpayLogo from "@/assets/moonpay-logo.svg";
 import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
 import RampLogo from "@/assets/rampnetwork-logo.svg";
 import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
-import { app } from "@/modules/app";
 import i18n from "@/plugins/i18nPlugin";
 
 const { t } = i18n.global;
@@ -17,7 +16,7 @@ export type TopupProvider = {
   paymentMethod: string;
   fee: string;
   limit: string;
-  logo: () => string;
+  logo: (darkMode: boolean) => string;
   validCryptocurrencies: { value: string; label: string; symbol: string }[];
   validCurrencies: { value: string; label: string }[];
 };
@@ -29,8 +28,8 @@ export const TopupProviders: { [providerName: string]: TopupProvider } = {
     paymentMethod: "Credit / Debit / Apple Pay",
     fee: "0.62% to 2.9%",
     limit: "5,000€/purchase, 20,000€/mo",
-    logo: () => {
-      return app.value.isDarkMode ? RampLogoLight : RampLogo;
+    logo: (darkMode) => {
+      return darkMode ? RampLogoLight : RampLogo;
     },
     validCryptocurrencies: [
       {
@@ -61,11 +60,11 @@ export const TopupProviders: { [providerName: string]: TopupProvider } = {
   [TOPUP.MOONPAY]: {
     name: TOPUP.MOONPAY,
     description: `Moonpay ${t("walletTopUp.description")}`,
-    paymentMethod: "Credit / Debit Card / Apple Pay ",
+    paymentMethod: "Credit / Debit Card / Bank Transfer",
     fee: "4.5% or 5 USD",
     limit: "2,000€/day, 10,000€/mo",
-    logo: () => {
-      return app.value.isDarkMode ? MoonpayLogoLight : MoonpayLogo;
+    logo: (darkMode: boolean) => {
+      return darkMode ? MoonpayLogoLight : MoonpayLogo;
     },
     validCryptocurrencies: [
       {
