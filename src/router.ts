@@ -96,6 +96,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "Discover" */ "@/pages/wallet/Discover.vue"),
           meta: { title: "Discover", tab: "discover" },
         },
+        {
+          name: "pay",
+          path: "pay",
+          component: () => import("@/pages/wallet/Pay.vue"),
+          meta: { title: "Solana Pay", tab: "pay" },
+        },
       ],
     },
     // AUTH STATE INDEPENDENT ROUTES
@@ -146,6 +152,12 @@ const router = createRouter({
       path: "/confirm_message",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/ConfirmMessage.vue"),
       meta: { title: "Sign Message" },
+    },
+    {
+      name: "solana_pay",
+      path: "/solana_pay",
+      component: () => import("@/pages/ConfirmSolanaPay.vue"),
+      meta: { title: "Solana Pay" },
     },
     {
       name: "redirect",

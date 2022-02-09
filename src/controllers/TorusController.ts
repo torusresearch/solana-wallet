@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@bonfida/spl-name-service";
+import { createTransaction, parseURL } from "@solana/pay";
 import {
   createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
@@ -831,6 +832,24 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: { url: finalUrl },
     });
     walletPopupWindow.open();
+  }
+
+  async solanapay() {
+    const url =
+      "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=0.01&reference=82ZJ7nbGpixjeDCmEhUcmwXYfvurzAgGdtSMuHnUgyny&label=Michael&message=Thanks%20for%20all%20the%20fish&memo=OrderId5678";
+
+    const { recipient, message, memo, amount, reference, label } = parseURL(url);
+    log.error("label: ", label);
+    log.info("message: ", message);
+
+    /**
+     * Create the transaction with the parameters decoded from the URL
+     */
+    const tx = await createTransaction(this.connection, new PublicKey(this.selectedAddress), recipient, amount as BigNumber, {
+      reference,
+      memo,
+    });
+    return tx;
   }
 
   public loginFromWidgetButton(): void {
