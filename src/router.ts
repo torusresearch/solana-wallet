@@ -86,6 +86,12 @@ const router = createRouter({
     },
     // AUTH STATE INDEPENDENT ROUTES
     {
+      name: "walletNFT",
+      path: "/wallet/nfts/:mint_address",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFT" */ "@/pages/wallet/Nft.vue"),
+      meta: { title: "NFT Details" },
+    },
+    {
       name: "logout",
       path: "/logout",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),

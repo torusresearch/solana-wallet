@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
+import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenInfo } from "@solana/spl-token-registry";
@@ -58,6 +59,7 @@ import {
   IProviderHandlers,
   KeyringController,
   NetworkController,
+  NFTInfo,
   PreferencesController,
   SolanaToken,
   TokenInfoController,
@@ -1172,6 +1174,25 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const relayPublicKey = this.state.RelayMap.torus;
     if (!relayPublicKey) throw new Error("Invalid Relay");
     return relayPublicKey;
+  }
+
+  async getNftMetadata(mint_address: string): Promise<NFTInfo | undefined> {
+    try {
+      const pda = await Metadata.getPDA(mint_address);
+      const { connection } = this;
+      const pdaInfo = await connection.getAccountInfo(pda);
+      if (pdaInfo) {
+        const metadata = new Metadata(pda, pdaInfo);
+        const response = await axios.get(metadata.data.data.uri);
+        return {
+          ...metadata.data.data,
+          offChainMetaData: response.data,
+        };
+      }
+      throw new Error();
+    } catch (error) {
+      return undefined;
+    }
   }
 
   async signAllTransaction(req: Ihandler<{ message: string[] | undefined }>, redirectFlow = false) {

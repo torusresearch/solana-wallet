@@ -247,6 +247,11 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  public async getNFTmetadata(mint_address: string) {
+    return this.torus.getNftMetadata(mint_address);
+  }
+
+  @Action
   public async getSNSAddress({ type, address }: { type: string; address: string }): Promise<string | null> {
     let filtered_address;
     switch (type) {
