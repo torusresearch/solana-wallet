@@ -67,6 +67,7 @@ import {
 import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
+import { ethErrors } from "eth-rpc-errors";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
@@ -501,7 +502,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
-    await signedTransaction.result;
+    try {
+      await signedTransaction.result;
+    } catch (e) {
+      throw ethErrors.provider.userRejectedRequest((e as any).message);
+    }
+
     try {
       // serialize transaction
       let serializedTransaction = signedTransaction.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
@@ -1156,7 +1162,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     },
     isRedirectFlow = false
   ) {
-    if (!this.selectedAddress) throw new Error("Not logged in");
+    if (!this.selectedAddress) throw ethErrors.provider.unauthorized("User Not logged in");
+
     let approve: boolean;
     if (!isRedirectFlow) approve = await this.handleSignMessagePopup(req);
     else approve = true;
@@ -1165,7 +1172,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const data = req.params?.data as Uint8Array;
       return this.keyringController.signMessage(data, this.selectedAddress);
     }
-    throw new Error("User Rejected");
+    throw ethErrors.provider.userRejectedRequest("User Rejected");
   }
 
   async getGaslessPublicKey() {
@@ -1182,7 +1189,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (!redirectFlow) approved = await this.handleTransactionPopup("", req);
     else approved = true;
     // throw error on reject
-    if (!approved) throw new Error("User Rejected the Transaction");
+    if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
@@ -1223,6 +1230,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const tx = Transaction.from(Buffer.from(message, "hex"));
 
     const ret_signed = await this.txController.addSignTransaction(tx, req);
+    try {
+      await ret_signed.result;
+    } catch (e) {
+      throw ethErrors.provider.userRejectedRequest((e as any).message);
+    }
 
     let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
     const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
