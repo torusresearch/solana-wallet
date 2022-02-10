@@ -1,4 +1,5 @@
 /* eslint-disable class-methods-use-this */
+import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -23,7 +24,7 @@ import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import axios from "axios";
 import { BigNumber } from "bignumber.js";
@@ -204,6 +205,10 @@ class ControllerModule extends VuexModule {
     return [];
   }
 
+  get connection() {
+    return this.torus.connection;
+  }
+
   @Mutation
   public setInstanceId(instanceId: string) {
     this.instanceId = instanceId;
@@ -247,8 +252,23 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  public async getNFTmetadata(mint_address: string) {
-    return this.torus.getNftMetadata(mint_address);
+  public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
+    try {
+      const pda = await Metadata.getPDA(mint_address);
+      const { connection } = this;
+      const pdaInfo = await connection.getAccountInfo(pda);
+      if (pdaInfo) {
+        const metadata = new Metadata(pda, pdaInfo);
+        const response = await axios.get(metadata.data.data.uri);
+        return {
+          ...metadata.data.data,
+          offChainMetaData: response.data,
+        };
+      }
+      throw new Error();
+    } catch (error) {
+      return undefined;
+    }
   }
 
   @Action

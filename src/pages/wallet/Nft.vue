@@ -59,17 +59,14 @@ const transferNFT = () => {
 
 <template>
   <div class="height-full flex flex-col bg-white dark:bg-app-gray-800">
-    <nav
-      v-if="selectedAddress && user.verifierId"
-      class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30"
-    >
+    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30">
       <div class="flex h-16 px-4">
         <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
             <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </router-link>
         </div>
-        <div class="flex flex-3">
+        <div v-if="selectedAddress && user.verifierId" class="flex flex-3">
           <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
             <router-link
               v-for="(value, key) in tabs"
@@ -86,12 +83,12 @@ const transferNFT = () => {
             >
           </div>
         </div>
-        <div class="hidden md:flex items-center flex-1 ml-auto justify-end">
+        <div v-if="selectedAddress && user.verifierId" class="hidden md:flex items-center flex-1 ml-auto justify-end">
           <LanguageSelector class="mr-2" /><AccountMenu :user="user"
             ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
           /></AccountMenu>
         </div>
-        <div class="ml-6 flex md:hidden items-center">
+        <div v-if="selectedAddress && user.verifierId" class="ml-6 flex md:hidden items-center">
           <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
