@@ -41,7 +41,7 @@ const router = createRouter({
           name: "walletHome",
           path: "home",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
-          meta: { title: "Home", tab: "home" },
+          meta: { title: "Home", tab: "home", tabHeader: "false" },
         },
         {
           name: "walletTransfer",
@@ -87,11 +87,17 @@ const router = createRouter({
           name: "walletNfts",
           path: "nfts",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFTS" */ "@/pages/wallet/NftDetail.vue"),
-          meta: { title: "Nfts", tabHeader: false, tab: "home" },
+          meta: { title: "NFTs", tab: "nfts" },
         },
       ],
     },
     // AUTH STATE INDEPENDENT ROUTES
+    {
+      name: "walletNFT",
+      path: "/wallet/nfts/:mint_address",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFT" */ "@/pages/wallet/Nft.vue"),
+      meta: { title: "NFT Details" },
+    },
     {
       name: "logout",
       path: "/logout",

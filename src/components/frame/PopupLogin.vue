@@ -43,8 +43,8 @@ const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" as="div" :initial-focus="refDiv">
-      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" class="dark" as="div" :initial-focus="refDiv">
+      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 flex justify-center items-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
           <TransitionChild
@@ -116,6 +116,7 @@ const refDiv = ref(null);
     dark:bg-app-gray-800
     shadow
     rounded-lg
+    relative
     z-20;
   height: auto;
   font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;

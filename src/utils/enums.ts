@@ -90,6 +90,12 @@ export const NAVIGATION_LIST = {
     route: "topup",
     icon: DatabaseIcon,
   },
+  nfts: {
+    name: "NFTs",
+    title: "NFTs",
+    route: "nfts",
+    icon: ListIcon,
+  },
   activity: {
     name: "navBar.activity",
     title: "walletActivity.transactionActivities",

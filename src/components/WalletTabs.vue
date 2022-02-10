@@ -40,12 +40,12 @@ const logout = async () => {
   <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
     <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30">
       <div class="flex h-16 px-4 header-border">
-        <div class="flex-none flex items-center">
+        <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
             <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </router-link>
         </div>
-        <div class="flex grow">
+        <div class="flex flex-3">
           <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
             <router-link
               v-for="(value, key) in tabs"
@@ -62,7 +62,7 @@ const logout = async () => {
             >
           </div>
         </div>
-        <div class="ml-6 hidden md:flex items-center">
+        <div class="hidden md:flex items-center flex-1 ml-auto justify-end">
           <LanguageSelector class="mr-2" /><AccountMenu :user="user"
             ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
           /></AccountMenu>
