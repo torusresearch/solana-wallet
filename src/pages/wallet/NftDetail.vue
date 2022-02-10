@@ -4,8 +4,10 @@ import axios from "axios";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import FallbackNft from "@/assets/fallback-nft.svg";
 import NftCard from "@/components/home/NftCard.vue";
 import ControllerModule from "@/modules/controllers";
+import { setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 
@@ -29,7 +31,7 @@ onMounted(async () => {
         if (a.stats.weeklyVolume < b.stats.weeklyVolume) return 1;
         return 0;
       });
-    exploreNFTS.value = combinedCollectionObject.slice(0, 5) as any;
+    exploreNFTS.value = combinedCollectionObject.slice(0, 10) as any;
   }
 });
 const openCollection = (collectionName: string) => {
@@ -54,6 +56,7 @@ const navigateNFT = (mintAddress: string) => {
             class="h-32 w-32 rounded-full overflow-hidden border-2 border-white cursor-pointer"
             @click="openCollection(collection.url)"
             @keydown="openCollection(collection.url)"
+            @error="setFallbackImg($event.target, FallbackNft)"
           />
           <span
             class="mt-4 text-app-text-500 dark:text-app-text-dark-400 cursor-pointer truncate"
@@ -64,7 +67,7 @@ const navigateNFT = (mintAddress: string) => {
         </div>
       </div>
     </div>
-    <div v-else class="w-full mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-center justify-items-center">
+    <div v-else class="w-full mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-center justify-items-center">
       <NftCard v-for="nft in nfts" :key="nft.mintAddress" :nft-token="nft" @card-clicked="navigateNFT(nft.mintAddress)" />
     </div>
   </div>

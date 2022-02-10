@@ -3,7 +3,6 @@ import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
 import { BroadcastChannel } from "broadcast-channel";
-import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -43,7 +42,6 @@ onMounted(async () => {
     edition.value = (metaData?.offChainMetaData as any).edition;
   }
   isLoading.value = false;
-  log.info(nftMetaData.value);
 });
 
 const goBack = () => {
