@@ -9,8 +9,8 @@ import { TOPUP, TopupProvider, TopupProviders } from "@/utils/topup";
 
 const router = useRouter();
 
-const routeName = router.currentRoute.value.name === "walletTopUp" ? TOPUP.RAMPNETWORK : router.currentRoute.value.name;
-const selectedProvider = ref<TopupProvider>(TopupProviders[routeName?.toString() || TOPUP.RAMPNETWORK]);
+const routeName = router.currentRoute.value.name === "walletTopUp" ? TOPUP.MOONPAY : router.currentRoute.value.name;
+const selectedProvider = ref<TopupProvider>(TopupProviders[routeName?.toString() || TOPUP.MOONPAY]);
 
 const providers = Object.values(TopupProviders);
 const { t } = useI18n();
