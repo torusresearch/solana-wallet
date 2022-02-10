@@ -59,15 +59,28 @@ const approveTxn = async (): Promise<void> => {
     });
     bc.close();
   } else {
-    const res = await ControllerModule.torus.signMessage({ params, method: "sign_message" }, true);
+    const res = await ControllerModule.torus.signMessage(
+      {
+        params: {
+          data: params.message,
+        },
+        method: "sign_message",
+      },
+      true
+    );
     redirectToResult(method, res, resolveRoute);
   }
 };
+
+const closeModal = async () => {
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+  bc.close();
+};
+
 const rejectTxn = async () => {
   if (!isRedirectFlow) {
-    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-    await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-    bc.close();
+    closeModal();
   } else {
     redirectToResult(method, { success: false }, resolveRoute, false);
   }
@@ -75,5 +88,11 @@ const rejectTxn = async () => {
 </script>
 
 <template>
-  <Permissions :requested-from="msg_data.origin" :approval-message="msg_data.message" @on-approved="approveTxn" @on-close-modal="rejectTxn" />
+  <Permissions
+    :requested-from="msg_data.origin"
+    :approval-message="msg_data.message"
+    @on-approved="approveTxn"
+    @on-rejected="rejectTxn"
+    @on-close-modal="closeModal"
+  />
 </template>
