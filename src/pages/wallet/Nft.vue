@@ -99,12 +99,12 @@ const transferNFT = () => {
       </div>
     </nav>
     <main v-if="nftMetaData" class="flex-1 relative">
-      <div class="h-[400px] w-full absolute top-0 left-0 flex justify-center items-center overflow-hidden">
-        <img alt="NFT" :src="nftMetaData.offChainMetaData.image" class="object-cover w-full h-full" />
+      <div class="h-[380px] w-full absolute top-0 left-0 flex justify-center items-center overflow-hidden">
+        <img alt="NFT" :src="nftMetaData.offChainMetaData?.image" class="object-cover w-full h-full" />
         <div class="h-full w-full bg-gray-800 backdrop-blur-lg bg-opacity-30 absolute top-0 left-0"></div>
       </div>
       <!-- content -->
-      <div class="px-4 gt-xs:px-12 md:px-12 py-10 relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start">
+      <div class="px-4 gt-xs:px-12 md:px-12 py-8 pb-6 relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start">
         <div class="flex flex-col">
           <div class="flex justify-between px-2 py-4 w-full">
             <div class="cursor-pointer flex items-center" @click="goBack" @keydown="goBack">
@@ -113,17 +113,20 @@ const transferNFT = () => {
             </div>
             <DotsHorizontalIcon class="h-6 w-6 text-app-text-dark-400 cursor-pointer" />
           </div>
-          <img alt="nft" :src="nftMetaData.offChainMetaData.image" class="h-[480px] w-[480px] object-cover overflow-hidden rounded-lg shadow-lg" />
+          <img alt="nft" :src="nftMetaData.offChainMetaData?.image" class="h-[480px] w-[480px] object-cover overflow-hidden rounded-lg shadow-lg" />
         </div>
-        <div class="flex flex-col pt-14 w-full md:w-[320px] ml-0 md:ml-10">
+        <div class="flex flex-col pt-4 md:pt-14 w-full md:w-[320px] ml-0 md:ml-10">
           <div class="w-full flex flex-col">
-            <div v-if="nftMetaData.offChainMetaData.collection" class="flex items-center">
-              <img alt="collection" :src="nftMetaData.offChainMetaData.image" class="h-5 w-5 object-cover rounded-full overflow-hidden mr-1" />
+            <div v-if="nftMetaData.offChainMetaData?.collection" class="flex items-center">
+              <img alt="collection" :src="nftMetaData.offChainMetaData?.image" class="h-5 w-5 object-cover rounded-full overflow-hidden mr-1" />
               <span class="text-app-gray-500 md:text-app-text-dark-400 dark:text-app-text-dark-400 text-sm">{{
                 nftMetaData.offChainMetaData?.collection?.name || ""
               }}</span>
             </div>
-            <h1 class="text-app-gray-700 md:text-app-text-dark-400 dark:text-app-text-dark-400 text-[26px] font-bold mt-6 truncate">
+            <h1
+              class="text-app-gray-700 md:text-app-text-dark-400 dark:text-app-text-dark-400 text-[26px] font-bold mt-2 truncate"
+              :class="nftMetaData.offChainMetaData?.collection ? 'md:mt-2' : 'md:mt-6'"
+            >
               {{ nftMetaData.offChainMetaData?.name || "" }}
             </h1>
             <p class="text-app-gray-600 md:text-app-text-dark-400 dark:text-app-text-dark-400 mt-4 text-sm h-20 truncate-multiline">
@@ -146,15 +149,15 @@ const transferNFT = () => {
               <span class="text-app-text-dark-400 text-xs">View on Solscan</span>
             </div>
           </div>
-          <div class="w-full flex flex-col mt-10">
-            <div v-if="edition" class="flex flex-col space-y-1 mb-7">
-              <span class="text-app-gray-500 text-xs">Edition</span>
+          <div class="w-full flex flex-col mt-7">
+            <div v-if="edition" class="flex flex-col space-y-1 mb-4">
+              <span class="text-app-gray-500 text-base">Edition</span>
               <span class="text-app-text-dark-400 text-xl">#{{ edition }}</span>
             </div>
-            <span v-if="nftMetaData.offChainMetaData.attributes.length > 0" class="text-app-gray-500 text-xs mb-2">Properties</span>
-            <div v-if="nftMetaData.offChainMetaData.attributes.length > 0" class="grid grid-cols-3 -ml-1">
+            <span v-if="(nftMetaData.offChainMetaData?.attributes?.length || 0) > 0" class="text-app-gray-500 text-base mb-2">Properties</span>
+            <div v-if="(nftMetaData.offChainMetaData?.attributes?.length || 0) > 0" class="grid grid-cols-3 -ml-1">
               <div
-                v-for="value in nftMetaData.offChainMetaData.attributes"
+                v-for="value in nftMetaData.offChainMetaData?.attributes"
                 :key="value.trait_type"
                 class="flex flex-col space-y-1 border-t-2 border-t-[#505154] m-1"
               >
