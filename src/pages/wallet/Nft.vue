@@ -30,6 +30,8 @@ const logout = async () => {
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
 const nfts = computed(() => ControllerModule.nonFungibleTokens);
 const mint = ref<string>("");
+const edition = ref<string | undefined>("");
+const isLoading = ref<boolean>(true);
 onMounted(async () => {
   mint.value = router.currentRoute.value.params.mint_address as string;
   const tokenInState = nfts.value.find((nft: SolanaToken) => nft.mintAddress === mint.value);
@@ -38,7 +40,9 @@ onMounted(async () => {
   } else {
     const metaData = await ControllerModule.getNFTmetadata(mint.value);
     nftMetaData.value = metaData;
+    edition.value = (metaData?.offChainMetaData as any).edition;
   }
+  isLoading.value = false;
   log.info(nftMetaData.value);
 });
 
@@ -56,8 +60,11 @@ const transferNFT = () => {
 </script>
 
 <template>
-  <div class="height-full flex flex-col bg-app-gray-800">
-    <nav v-if="selectedAddress && user.verifierId" class="bg-app-gray-800 border-transparent sticky top-0 z-30">
+  <div class="height-full flex flex-col bg-white dark:bg-app-gray-800">
+    <nav
+      v-if="selectedAddress && user.verifierId"
+      class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30"
+    >
       <div class="flex h-16 px-4">
         <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
@@ -73,7 +80,7 @@ const transferNFT = () => {
               :class="[
                 key === 'nfts'
                   ? 'border-app-primary-500 text-app-primary-500'
-                  : 'border-transparent text-gray-500 hover:border-white  hover:text-white',
+                  : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
                 'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
               ]"
               aria-current="page"
@@ -92,12 +99,12 @@ const transferNFT = () => {
       </div>
     </nav>
     <main v-if="nftMetaData" class="flex-1 relative">
-      <div class="h-[55vh] w-full absolute top-0 left-0 flex justify-center items-center blur-lg overflow-hidden">
+      <div class="h-[400px] w-full absolute top-0 left-0 flex justify-center items-center overflow-hidden">
         <img alt="NFT" :src="nftMetaData.offChainMetaData.image" class="object-cover w-full h-full" />
-        <div class="h-full w-full bg-gray-800 bg-opacity-30 absolute top-0 left-0"></div>
+        <div class="h-full w-full bg-gray-800 backdrop-blur-lg bg-opacity-30 absolute top-0 left-0"></div>
       </div>
-      <div class="h-12 w-full absolute top-[55vh] left-0 bg-app-gray-800"></div>
-      <div class="px-12 py-10 relative flex flex-col items-center w-full h-full justify-center gt-sm:flex-row gt-sm:items-start">
+      <!-- content -->
+      <div class="px-4 gt-xs:px-12 md:px-12 py-10 relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start">
         <div class="flex flex-col">
           <div class="flex justify-between px-2 py-4 w-full">
             <div class="cursor-pointer flex items-center" @click="goBack" @keydown="goBack">
@@ -108,24 +115,30 @@ const transferNFT = () => {
           </div>
           <img alt="nft" :src="nftMetaData.offChainMetaData.image" class="h-[480px] w-[480px] object-cover overflow-hidden rounded-lg shadow-lg" />
         </div>
-        <div class="flex flex-col pt-14 w-[320px] ml-0 gt-xs:w-[400px] gt-sm:ml-10">
+        <div class="flex flex-col pt-14 w-full md:w-[320px] ml-0 md:ml-10">
           <div class="w-full flex flex-col">
-            <div class="flex items-center">
+            <div v-if="nftMetaData.offChainMetaData.collection" class="flex items-center">
               <img alt="collection" :src="nftMetaData.offChainMetaData.image" class="h-5 w-5 object-cover rounded-full overflow-hidden mr-1" />
-              <span class="text-app-text-dark-400 text-sm">{{ nftMetaData.offChainMetaData.collection.name }}</span>
+              <span class="text-app-gray-500 md:text-app-text-dark-400 dark:text-app-text-dark-400 text-sm">{{
+                nftMetaData.offChainMetaData?.collection?.name || ""
+              }}</span>
             </div>
-            <h1 class="text-app-text-dark-400 text-[26px] font-bold mt-6">{{ nftMetaData.offChainMetaData.name }}</h1>
-            <p class="mt-4 text-app-text-dark-400 text-sm h-20 truncate-multiline">{{ nftMetaData.offChainMetaData.description }}</p>
+            <h1 class="text-app-gray-700 md:text-app-text-dark-400 dark:text-app-text-dark-400 text-[26px] font-bold mt-6 truncate">
+              {{ nftMetaData.offChainMetaData?.name || "" }}
+            </h1>
+            <p class="text-app-gray-600 md:text-app-text-dark-400 dark:text-app-text-dark-400 mt-4 text-sm h-20 truncate-multiline">
+              {{ nftMetaData.offChainMetaData?.description || "" }}
+            </p>
             <div
-              class="w-full rounded-full py-2 flex justify-center items-center bg-white mt-8 cursor-pointer"
+              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer"
               @click="transferNFT"
               @keydown="transferNFT"
             >
-              <img alt="paper airplane" :src="PaperAirplane" class="mr-1" />
-              <span class="text-black text-sm">Send</span>
+              <img alt="paper airplane" :src="PaperAirplane" class="mr-1 invert md:invert-0 dark:invert-0" />
+              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Send</span>
             </div>
             <div
-              class="rounded-full py-2 px-3 w-fit flex justify-center items-center bg-white bg-opacity-20 mt-3 cursor-pointer"
+              class="rounded-full py-2 px-3 w-fit flex justify-center items-center bg-app-gray-800 bg-opacity-80 md:bg-opacity-20 md:bg-white dark:bg-white dark:bg-opacity-20 mt-3 cursor-pointer"
               @click="viewNFT"
               @keydown="viewNFT"
             >
@@ -134,19 +147,19 @@ const transferNFT = () => {
             </div>
           </div>
           <div class="w-full flex flex-col mt-10">
-            <div class="flex flex-col space-y-1">
+            <div v-if="edition" class="flex flex-col space-y-1 mb-7">
               <span class="text-app-gray-500 text-xs">Edition</span>
-              <span class="text-app-text-dark-400 text-xl">#13820/15000</span>
+              <span class="text-app-text-dark-400 text-xl">#{{ edition }}</span>
             </div>
-            <span v-if="nftMetaData.offChainMetaData.attributes.length > 0" class="mt-7 text-app-gray-500 text-xs">Properties</span>
-            <div v-if="nftMetaData.offChainMetaData.attributes.length > 0" class="grid grid-cols-3 mt-2 -ml-1">
+            <span v-if="nftMetaData.offChainMetaData.attributes.length > 0" class="text-app-gray-500 text-xs mb-2">Properties</span>
+            <div v-if="nftMetaData.offChainMetaData.attributes.length > 0" class="grid grid-cols-3 -ml-1">
               <div
                 v-for="value in nftMetaData.offChainMetaData.attributes"
                 :key="value.trait_type"
                 class="flex flex-col space-y-1 border-t-2 border-t-[#505154] m-1"
               >
-                <span class="text-app-gray-600 text-xs">{{ value.trait_type }}</span>
-                <span class="text-app-text-dark-500 text-xs">{{ value.value }}</span>
+                <span class="text-app-gray-700 dark:text-app-gray-500 text-xs truncate">{{ value?.trait_type || "" }}</span>
+                <span class="text-app-gray-500 dark:text-app-text-dark-500 text-xs truncate">{{ value?.value || "" }}</span>
               </div>
             </div>
           </div>
@@ -155,7 +168,7 @@ const transferNFT = () => {
     </main>
     <main v-else class="flex-1 relative p-8">
       <div class="w-full px-4 py-8 bg-app-gray-700 rounded-lg flex flex-col items-center space-y-2">
-        <span class="text-app-text-dark-500 text-base text-center w-full inline-block">Invalid Mint Address</span>
+        <span class="text-app-text-dark-500 text-base text-center w-full inline-block">{{ isLoading ? "Loading..." : "Invalid Mint Address" }}</span>
         <div class="px-4 py-2 bg-app-primary-500 text-app-text-dark-400 rounded-md cursor-pointer" @click="goBack" @keydown="goBack">Back</div>
       </div>
     </main>

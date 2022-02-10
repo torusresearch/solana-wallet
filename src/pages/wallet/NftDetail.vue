@@ -64,7 +64,7 @@ const navigateNFT = (mintAddress: string) => {
         </div>
       </div>
     </div>
-    <div v-else class="w-full mt-10 flex flex-wrap">
+    <div v-else class="w-full mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-center justify-items-center">
       <NftCard v-for="nft in nfts" :key="nft.mintAddress" :nft-token="nft" @card-clicked="navigateNFT(nft.mintAddress)" />
     </div>
   </div>
