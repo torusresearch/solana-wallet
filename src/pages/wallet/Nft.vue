@@ -124,7 +124,7 @@ const transferNFT = () => {
             >
               {{ nftMetaData.offChainMetaData?.name || "" }}
             </h1>
-            <p class="text-app-gray-600 md:text-app-text-dark-400 dark:text-app-text-dark-400 mt-4 text-sm h-20 truncate-multiline">
+            <p class="text-app-gray-600 md:text-app-text-dark-400 dark:text-app-text-dark-400 mt-4 text-sm h-fit md:h-20 truncate-multiline">
               {{ nftMetaData.offChainMetaData?.description || "" }}
             </p>
             <div
