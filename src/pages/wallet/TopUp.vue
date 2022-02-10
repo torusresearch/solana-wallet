@@ -1,24 +1,22 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
-import { onMounted, ref } from "vue";
+import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
-import { RAMPNETWORK } from "@/utils/enums";
-import { TopupProvider, TopupProviders } from "@/utils/topup";
+import controllerModule from "@/modules/controllers";
+import { TOPUP, TopupProvider, TopupProviders } from "@/utils/topup";
 
 const router = useRouter();
 
-const selectedProvider = ref<TopupProvider>();
+const routeName = router.currentRoute.value.name === "walletTopUp" ? TOPUP.MOONPAY : router.currentRoute.value.name;
+const selectedProvider = ref<TopupProvider>(TopupProviders[routeName?.toString() || TOPUP.MOONPAY]);
+
 const providers = Object.values(TopupProviders);
 const { t } = useI18n();
-onMounted(() => {
-  selectedProvider.value = TopupProviders[RAMPNETWORK];
-  const routeName = router.currentRoute.value.name;
-  if (routeName === "walletTopup") {
-    // no gateway is selected, navigate to first one
-    router.push({ name: "rampNetwork" });
-  }
+
+watch(selectedProvider, () => {
+  router.push({ name: selectedProvider.value.name });
 });
 </script>
 
@@ -40,7 +38,7 @@ onMounted(() => {
                     <circle v-if="checked" cx="12" cy="12" r="8" fill="currentColor" />
                   </svg>
                 </div>
-                <img :src="provider.logo()" :alt="provider.name" class="w-24" />
+                <img :src="provider.logo(controllerModule.isDarkMode)" :alt="provider.name" class="w-24" />
               </div>
               <RadioGroupDescription as="div" class="col-span-1 whitespace-pre-wrap">
                 <div class="text-right font-medium text-xs text-app-text-600 dark:text-app-text-dark-500">
