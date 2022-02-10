@@ -8,7 +8,6 @@ import { useI18n } from "vue-i18n";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
-import ControllerModule from "@/modules/controllers";
 import { LOGIN_CONFIG } from "@/utils/enums";
 
 withDefaults(
@@ -44,7 +43,7 @@ const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode || true }" as="div" :initial-focus="refDiv">
+    <Dialog :open="isOpen" as="div" :initial-focus="refDiv">
       <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen px-4 flex justify-center items-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -113,11 +112,11 @@ const refDiv = ref(null);
     overflow-hidden
     text-left
     transition-all
-    transform
     bg-white
     dark:bg-app-gray-800
     shadow
-    rounded-lg;
+    rounded-lg
+    z-20;
   height: auto;
   font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;

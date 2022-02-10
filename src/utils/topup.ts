@@ -1,10 +1,14 @@
-import RampLogo from "@/assets/rampnetwork-logo.svg";
-import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
-import { app } from "@/modules/app";
+import MoonpayLogo from "@/assets/moonpay-logo.svg";
+import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
+// import RampLogo from "@/assets/rampnetwork-logo.svg";
+// import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 import i18n from "@/plugins/i18nPlugin";
-import { RAMPNETWORK } from "@/utils/enums";
 
 const { t } = i18n.global;
+export const enum TOPUP {
+  RAMPNETWORK = "rampNetwork",
+  MOONPAY = "moonpay",
+}
 
 export type TopupProvider = {
   name: string;
@@ -12,44 +16,64 @@ export type TopupProvider = {
   paymentMethod: string;
   fee: string;
   limit: string;
-  logo: () => string;
-  validCryptocurrencies: { value: string; label: string; ramp_symbol: string }[];
+  logo: (darkMode: boolean) => string;
+  validCryptocurrencies: { value: string; label: string; symbol: string }[];
   validCurrencies: { value: string; label: string }[];
 };
 
 export const TopupProviders: { [providerName: string]: TopupProvider } = {
-  [RAMPNETWORK]: {
-    name: "Ramp",
-    description: `Rampnetwork ${t("walletTopUp.description")}`,
-    paymentMethod: "Credit / Debit / Apple Pay",
-    fee: "0.62% to 2.9%",
-    limit: "5,000€/purchase, 20,000€/mo",
-    logo: () => {
-      return app.value.isDarkMode ? RampLogoLight : RampLogo;
+  // [TOPUP.RAMPNETWORK]: {
+  //   name: TOPUP.RAMPNETWORK,
+  //   description: `Rampnetwork ${t("walletTopUp.description")}`,
+  //   paymentMethod: "Credit / Debit / Apple Pay",
+  //   fee: "0.62% to 2.9%",
+  //   limit: "5,000€/purchase, 20,000€/mo",
+  //   logo: (darkMode) => {
+  //     return darkMode ? RampLogoLight : RampLogo;
+  //   },
+  //   validCryptocurrencies: [
+  //     {
+  //       value: "SOL",
+  //       label: "SOL",
+  //       symbol: "SOLANA_SOL",
+  //     },
+  //     {
+  //       value: "USDT",
+  //       label: "USDT",
+  //       symbol: "SOLANA_USDT",
+  //     },
+  //     {
+  //       value: "KIN",
+  //       label: "KIN",
+  //       symbol: "SOLANA_KIN",
+  //     },
+  //     {
+  //       value: "USDC",
+  //       label: "USDC",
+  //       symbol: "SOLANA_USDC",
+  //     },
+  //   ],
+  //   validCurrencies: ["USD", "EUR", "GBP", "PLN"].map((k) => {
+  //     return { value: k, label: k };
+  //   }),
+  // },
+  [TOPUP.MOONPAY]: {
+    name: TOPUP.MOONPAY,
+    description: `Moonpay ${t("walletTopUp.description")}`,
+    paymentMethod: "Credit / Debit Card / Bank Transfer",
+    fee: "4.5% or 5 USD",
+    limit: "2,000€/day, 10,000€/mo",
+    logo: (darkMode: boolean) => {
+      return darkMode ? MoonpayLogoLight : MoonpayLogo;
     },
     validCryptocurrencies: [
       {
         value: "SOL",
         label: "SOL",
-        ramp_symbol: "SOLANA_SOL",
-      },
-      {
-        value: "USDT",
-        label: "USDT",
-        ramp_symbol: "SOLANA_USDT",
-      },
-      {
-        value: "KIN",
-        label: "KIN",
-        ramp_symbol: "SOLANA_KIN",
-      },
-      {
-        value: "USDC",
-        label: "USDC",
-        ramp_symbol: "SOLANA_USDC",
+        symbol: "sol",
       },
     ],
-    validCurrencies: ["USD", "EUR", "GBP", "PLN"].map((k) => {
+    validCurrencies: ["USD", "EUR", "GBP"].map((k) => {
       return { value: k, label: k };
     }),
   },

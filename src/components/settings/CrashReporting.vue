@@ -21,10 +21,7 @@ const enabled = computed(() => ControllerModule.crashReport);
         @update:model-value="(v) => ControllerModule.setCrashReport(!ControllerModule.crashReport)"
       >
         <span class="sr-only">{{ t("walletSettings.enableNotifications") }}</span>
-        <span
-          :class="enabled ? 'translate-x-6' : 'translate-x-1'"
-          class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
-        />
+        <span :class="enabled ? 'translate-x-6' : 'translate-x-1'" class="inline-block w-4 h-4 bg-white rounded-full transition-transform" />
       </Switch>
       <div class="text-app-text-500 dark:text-app-text-dark-500 text-sm">
         {{ enabled ? t("walletSettings.crashReportIsEnabled") : t("walletSettings.crashReportIsDisabled") }}

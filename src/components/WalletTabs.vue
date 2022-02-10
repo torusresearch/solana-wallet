@@ -45,7 +45,7 @@ const logout = async () => {
             <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </router-link>
         </div>
-        <div class="flex flex-grow">
+        <div class="flex grow">
           <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
             <router-link
               v-for="(value, key) in tabs"
@@ -79,7 +79,7 @@ const logout = async () => {
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
-          <div class="flex-grow flex">
+          <div class="grow flex">
             <div id="rightPanel" class="w-full" />
           </div>
         </div>

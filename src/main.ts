@@ -11,4 +11,5 @@ import store from "./store";
 
 const vue = createApp(App);
 vue.use(i18nPlugin).use(router).use(store).mount("#app");
-installSentry(vue);
+
+if (process.env.NODE_ENV !== "development") installSentry(vue);

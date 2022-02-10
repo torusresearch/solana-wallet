@@ -351,8 +351,6 @@ class ControllerModule extends VuexModule {
       if (isMain) {
         this.torus.approveSignTransaction(txMeta.id);
       } else {
-        log.info(txMeta);
-        log.info(req);
         await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });
@@ -521,7 +519,8 @@ class ControllerModule extends VuexModule {
     let res;
     switch (method) {
       case "topup":
-        await this.torus.handleTopUp(
+        await this.torus.handleTopup(
+          params.provider,
           params.params ? params.params : { selectedAddress: this.selectedAddress },
           undefined,
           true,

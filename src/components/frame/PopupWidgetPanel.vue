@@ -44,7 +44,7 @@ const refDiv = ref(null);
 
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closePanel">
+    <Dialog :open="isOpen" as="div" :initial-focus="refDiv" @close="closePanel">
       <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
         <div class="min-h-screen text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
@@ -110,7 +110,7 @@ const refDiv = ref(null);
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
                       <img :src="SolanaLogo" alt="activity icon" />
                     </div>
-                    <div class="flex flex-grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
+                    <div class="flex grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
                       <div>
                         <div>{{ t("dappPopup.lastSign") }}</div>
                         <div>{{ addressSlicer(lastTransaction.signature) }}</div>
