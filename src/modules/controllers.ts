@@ -135,6 +135,10 @@ class ControllerModule extends VuexModule {
     return this.torus.currentCurrency;
   }
 
+  get lastTokenRefreshDate(): Date {
+    return this.torus.lastTokenRefreshDate;
+  }
+
   // user balance in equivalent selected currency
   get userBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
@@ -249,6 +253,11 @@ class ControllerModule extends VuexModule {
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
     }
+  }
+
+  @Action
+  public async refreshUserTokens() {
+    await this.torus.refreshUserTokens();
   }
 
   @Action

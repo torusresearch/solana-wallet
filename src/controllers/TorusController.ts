@@ -186,6 +186,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private engine?: JRPCEngine;
 
+  private lastTokenRefresh: Date = new Date();
+
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
   }
@@ -266,6 +268,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   get blockExplorerUrl(): string {
     return this.networkController.getProviderConfig().blockExplorerUrl;
+  }
+
+  get lastTokenRefreshDate(): Date {
+    return this.lastTokenRefresh;
   }
 
   /**
@@ -366,7 +372,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.networkController.lookupNetwork();
-
     // Listen to controller changes
     this.preferencesController.on("store", (state2) => {
       this.update({ PreferencesControllerState: state2 });
@@ -386,6 +391,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
+      this.lastTokenRefresh = new Date();
     });
 
     this.keyringController.on("store", (state2) => {
@@ -461,6 +467,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.tokenInfoController.update({
         tokenInfoMap,
       });
+      this.lastTokenRefresh = new Date();
     } catch (e) {
       log.error(e);
     }
@@ -690,6 +697,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async getBillboardData(): Promise<BillboardEvent[]> {
     return this.preferencesController.getBillBoardData();
+  }
+
+  async refreshUserTokens(): Promise<void> {
+    await this.tokensTracker.updateSolanaTokens();
   }
 
   setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean; rid?: string }>): void {
