@@ -10,7 +10,7 @@ import { SignMessageChannelDataType } from "@/utils/enums";
 import ControllerModule from "../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
-const { isRedirectFlow, params, method, resolveRoute } = useRedirectFlow();
+const { isRedirectFlow, params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
@@ -38,7 +38,7 @@ onMounted(async () => {
         origin: window.location.origin,
       };
     else {
-      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute, false);
+      redirectToResult(jsonrpc, { message: "Invalid or Missing Params", success: false, method }, req_id, resolveRoute);
       return;
     }
 
@@ -68,7 +68,7 @@ const approveTxn = async (): Promise<void> => {
       },
       true
     );
-    redirectToResult(method, res, resolveRoute);
+    redirectToResult(jsonrpc, { data: { signature: Buffer.from(res).toString("hex") }, success: true, method }, req_id, resolveRoute);
   }
 };
 
@@ -82,7 +82,7 @@ const rejectTxn = async () => {
   if (!isRedirectFlow) {
     closeModal();
   } else {
-    redirectToResult(method, { success: false }, resolveRoute, false);
+    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
   }
 };
 </script>

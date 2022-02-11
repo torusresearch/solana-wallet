@@ -44,84 +44,75 @@
     async function openurl(method) {
         const baseurl = "http://localhost:8080/redirectflow";
         let url = baseurl;
-        let params = {};
+        let requestObj = {
+            jsonrpc: "2.0",
+            method,
+            id:1,
+        };
         switch (method) {
             case "set_provider":
-                params = {
-                    blockExplorerUrl: "https://explorer.solana.com",
-                    chainId: "0x1",
-                    displayName: "Solana Mainnet",
-                    logo: "solana.svg",
-                    rpcTarget: solanaWeb3.clusterApiUrl("mainnet-beta"),
-                    ticker: "SOL",
-                    tickerName: "Solana Token",
-                };
-                break;
-            case "iframe_status":
-                params = {
-                    isFullScreen: false,
-                    rid: "",
-                };
+                requestObj.params={
+                        blockExplorerUrl: "https://explorer.solana.com",
+                        chainId: "0x2",
+                        displayName: "Solana Testnet",
+                        logo: "solana.svg",
+                        rpcTarget: solanaWeb3.clusterApiUrl("testnet"),
+                        ticker: "SOL",
+                        tickerName: "Solana Token"};
                 break;
             case "topup":
-                params = {
-                    params: {
-                        selectedAddress: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
-                    },
-                    provider: "rampnetwork",
-                };
+                requestObj
+                    .params={
+                        params: {
+                            selectedAddress: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                        },
+                        provider: "rampnetwork"
+                    };
                 break;
             case "send_transaction":
-                params = {
-                    message: await generateTransaction(),
-                };
+                requestObj.params={
+                        message: await generateTransaction(),
+                    };
                 break;
             case "send_spl_transaction":
-                params = {
-                    message: await generateSPLTransaction(),
-                };
+                requestObj.params={
+                        message: await generateSPLTransaction(),
+                    };
                 break;
             case "sign_transaction":
-                params = {
-                    message: await generateTransaction(),
-                };
+                requestObj.params={
+                        message: await generateTransaction(),
+                    };
                 break;
             case "sign_all_transactions":
-                params = {
-                    message: [await generateTransaction(), await generateTransaction(), await generateTransaction()],
+                requestObj.params={
+                        message: [await generateTransaction(), await generateTransaction(), await generateTransaction()],
                 };
                 break;
             case "sign_message":
-                params = {
-                    data: (new TextEncoder()).encode("Example Message"),
-                };
+                requestObj.params={
+                        message: (new TextEncoder()).encode("Example Message"),
+                    };
                 break;
             case "spl_transfer":
-                params = {
-                    mint_add: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-                    receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
-                    amount: 0.1,
-                }
+                requestObj.params={
+                        mint_add: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                        amount: 0.1,
+                    };
                 break;
             case "nft_transfer":
-                params = {
-                    mint_add: "BAYYCCY31SRrexQKwGqDRonVzMiB2Y2HagNZQv6cNWk7",
-                    receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
-                };
+                requestObj.params={
+                        mint_add: "BAYYCCY31SRrexQKwGqDRonVzMiB2Y2HagNZQv6cNWk7",
+                        receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                    };
                 break;
             default:
         }
-        let queryParams = new URLSearchParams();
-        queryParams.set("method", method);
-        let encodedParams = btoa(JSON.stringify(params));
-        let useParams = true;
-        if (typeof params === "object" && Object.keys(params).length === 0)
-            useParams = false;
-        if (Array.isArray(params) && params.length === 0) useParams = false;
-        const resolvePath = window.location.origin + window.location.pathname;
-        console.log("XX", params);
-        url = `${url}?${queryParams.toString()}&resolveRoute=${resolvePath}${useParams ? "#params=" + encodedParams : ""
-            }`;
+        let encodedRequestObj = btoa(JSON.stringify(requestObj));
+        const resolvePath = encodeURIComponent(window.location.origin + window.location.pathname);
+        console.log("XX", requestObj);
+        url = `${url}?resolveRoute=${resolvePath}#redirectflowdata=${encodedRequestObj}`;
         Object.assign(document.createElement("a"), {
             target: "_blank",
             href: url,

@@ -6,11 +6,11 @@ import BoxLoader from "@/components/common/BoxLoader.vue";
 import ControllerModule from "../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
-const { params, method, resolveRoute } = useRedirectFlow();
+const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 
 onMounted(async () => {
   const res = await ControllerModule.handleRedirectFlow({ method, params, resolveRoute });
-  redirectToResult(method, res, resolveRoute);
+  if (method !== "topup") redirectToResult(jsonrpc, { data: res, method, success: true }, req_id, resolveRoute);
 });
 </script>
 

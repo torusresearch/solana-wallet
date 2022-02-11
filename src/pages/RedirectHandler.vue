@@ -4,13 +4,13 @@ import { onMounted } from "vue";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
-const { isRedirectFlow, method, resolveRoute } = useRedirectFlow();
+const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 
 const checkTopupSuccess = async () => {
   const queryParameters = new URLSearchParams(window.location.search);
   const topupResult = queryParameters.get("topup");
   if (isRedirectFlow && topupResult) {
-    redirectToResult(method, topupResult, resolveRoute);
+    redirectToResult(jsonrpc, { success: topupResult, method }, req_id, resolveRoute);
   }
 };
 onMounted(async () => {
