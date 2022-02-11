@@ -609,6 +609,7 @@ class ControllerModule extends VuexModule {
           res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
         } catch (e) {
           window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+          throw e;
         }
         if (Object.keys(res).length && res.state && res.nonce) {
           const encryptedState = res.state;
