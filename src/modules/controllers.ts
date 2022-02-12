@@ -38,7 +38,7 @@ import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-dec
 import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
-import i18nPlugin from "@/plugins/i18nPlugin";
+import { i18n } from "@/plugins/i18nPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
 import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
@@ -243,7 +243,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
@@ -304,7 +304,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
@@ -315,7 +315,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
@@ -331,7 +331,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
@@ -342,7 +342,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setLocale(locale: string): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));

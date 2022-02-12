@@ -2,7 +2,7 @@ import MoonpayLogo from "@/assets/moonpay-logo.svg";
 import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
 // import RampLogo from "@/assets/rampnetwork-logo.svg";
 // import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
-import i18n from "@/plugins/i18nPlugin";
+import { i18n } from "@/plugins/i18nPlugin";
 
 const { t } = i18n.global;
 export const enum TOPUP {
