@@ -3,7 +3,7 @@ import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordNam
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 
-import { waitForState } from "./utils/helpers";
+import { backendStatePromise } from "./utils/helpers";
 import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
 
 const enum AuthStates {
@@ -212,8 +212,8 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
-  const isRedirectFlow = !!(to.query.resolveRoute || getB64DecodedData(to.hash).method);
-  if (to.name !== "frame") await waitForState(ControllerModule);
+  const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
+  if (to.name !== "frame") await backendStatePromise.promise;
   if (to.name === "404") return next(); // to prevent 404 redirecting to 404
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });

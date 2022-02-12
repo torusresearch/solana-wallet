@@ -38,10 +38,10 @@ import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-dec
 import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
-import i18nPlugin from "@/plugins/i18nPlugin";
+import { i18n } from "@/plugins/i18nPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, normalizeJson } from "@/utils/helpers";
+import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -133,6 +133,10 @@ class ControllerModule extends VuexModule {
 
   get currentCurrency(): string {
     return this.torus.currentCurrency;
+  }
+
+  get lastTokenRefreshDate(): Date {
+    return this.torus.lastTokenRefreshDate;
   }
 
   // user balance in equivalent selected currency
@@ -239,7 +243,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
@@ -249,6 +253,11 @@ class ControllerModule extends VuexModule {
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
     }
+  }
+
+  @Action
+  public async refreshUserTokens() {
+    await this.torus.refreshUserTokens();
   }
 
   @Action
@@ -295,7 +304,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
@@ -306,7 +315,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
@@ -322,7 +331,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
@@ -333,7 +342,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setLocale(locale: string): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));
@@ -632,7 +641,13 @@ class ControllerModule extends VuexModule {
     try {
       if (keyState.priv_key) {
         const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
-        const res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+        let res;
+        try {
+          res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+        } catch (e) {
+          window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+          throw e;
+        }
         if (Object.keys(res).length && res.state && res.nonce) {
           const encryptedState = res.state;
           const nonce = Buffer.from(res.nonce, "hex");
@@ -648,8 +663,9 @@ class ControllerModule extends VuexModule {
         }
       }
     } catch (error) {
-      window.localStorage.removeItem(CONTROLLER_MODULE_KEY);
       log.error("Error restoring state!", error);
+    } finally {
+      if (backendStatePromise.resolve) backendStatePromise.resolve("");
     }
   }
 }
