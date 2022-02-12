@@ -16,7 +16,7 @@ import ControllerModule from "../modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
-const { isRedirectFlow, params, method, resolveRoute } = useRedirectFlow();
+const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -62,7 +62,7 @@ onMounted(async () => {
         origin: window.origin,
       };
     } else {
-      redirectToResult(method, { message: "Invalid or Missing Params!" }, resolveRoute);
+      redirectToResult(jsonrpc, { message: "Invalid or Missing Params", method }, req_id, resolveRoute);
       return;
     }
     origin.value = txData.origin as string;
@@ -133,16 +133,21 @@ const approveTxn = async (): Promise<void> => {
     try {
       if (method === "send_transaction" && tx.value) {
         res = await ControllerModule.torus.transfer(tx.value, params);
-        redirectToResult(method, res, resolveRoute);
+        redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
       } else if (method === "sign_transaction" && tx.value) {
         res = ControllerModule.torus.signTransaction(tx.value);
-        redirectToResult(method, res, resolveRoute);
+        redirectToResult(
+          jsonrpc,
+          { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
+          req_id,
+          resolveRoute
+        );
       } else if (method === "sign_all_transactions") {
         res = await ControllerModule.torus.signAllTransaction({ params } as any, true);
-        redirectToResult(method, res, resolveRoute);
+        redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
       } else throw new Error();
     } catch (e) {
-      redirectToResult(method, `failed to execute ${method} : ${e}`, resolveRoute);
+      redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
     }
   }
 };
@@ -157,7 +162,7 @@ const rejectTxn = async () => {
   if (!isRedirectFlow) {
     closeModal();
   } else {
-    redirectToResult(method, { success: false }, resolveRoute);
+    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
   }
 };
 </script>

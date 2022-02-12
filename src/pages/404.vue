@@ -4,15 +4,15 @@ import { onMounted, ref } from "vue";
 import Button from "@/components/common/Button.vue";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
-const { method = "", resolveRoute = "" } = useRedirectFlow();
+const { method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 const errorText = ref<string>("");
 onMounted(() => {
-  if (!method && !resolveRoute) errorText.value = "Invalid or Missing Method and ResolveRoute!";
-  else if (!method) errorText.value = "Invalid or Missing Method!";
-  else if (!resolveRoute) errorText.value = "Invalid or Missing ResolveRoute!";
+  if (!method && !resolveRoute) errorText.value = "Invalid or Missing Method and ResolveRoute";
+  else if (!method) errorText.value = "Invalid or Missing Method";
+  else if (!resolveRoute) errorText.value = "Invalid or Missing ResolveRoute";
 });
 const closeAndRedirect = () => {
-  redirectToResult(method, { message: errorText.value }, resolveRoute);
+  redirectToResult(jsonrpc, { success: false, message: errorText.value, method }, req_id, resolveRoute);
 };
 </script>
 <template>

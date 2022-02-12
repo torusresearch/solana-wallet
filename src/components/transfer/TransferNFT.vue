@@ -48,14 +48,14 @@ const currency = computed(() => ControllerModule.torus.currentCurrency);
 const pricePerToken = computed<number>((): number => {
   return ControllerModule.torus.conversionRate;
 });
-const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
+const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
 const closeModal = () => {
   emits("onCloseModal");
 };
 
 const onCancel = () => {
-  emits("transferCancel");
+  emits("transferReject");
 };
 
 const onConfirm = () => {

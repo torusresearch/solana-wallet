@@ -19,7 +19,7 @@ import ControllerModule from "@/modules/controllers";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
-const { params, isRedirectFlow, method, resolveRoute } = useRedirectFlow({
+const { params, isRedirectFlow, req_id, resolveRoute, method, jsonrpc } = useRedirectFlow({
   blockExplorerUrl: "?cluster=mainnet",
   chainId: "0x1",
   displayName: "Solana Mainnet",
@@ -71,7 +71,7 @@ const approveProviderChange = async (): Promise<void> => {
     bc.close();
   } else {
     ControllerModule.torus.setNetwork(params as ProviderConfig);
-    redirectToResult(method, { success: true }, resolveRoute);
+    redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
   }
 };
 const denyProviderChange = async () => {
@@ -80,7 +80,7 @@ const denyProviderChange = async () => {
     await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
     bc.close();
   } else {
-    redirectToResult(method, { success: false }, resolveRoute);
+    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
   }
 };
 </script>

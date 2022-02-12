@@ -1153,7 +1153,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async signMessage(
     req: JRPCRequest<{
       data: Uint8Array;
-      display: string;
+      display?: string;
       message?: string;
     }> & {
       origin?: string | undefined;

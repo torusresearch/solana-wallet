@@ -459,7 +459,7 @@ watch(transferTo, () => {
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
       @transfer-confirm="confirmTransfer"
-      @transfer-cancel="closeModal"
+      @transfer-reject="closeModal"
       @on-close-modal="closeModal"
     />
   </div>

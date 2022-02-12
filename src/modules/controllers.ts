@@ -562,7 +562,7 @@ class ControllerModule extends VuexModule {
         );
         break;
       case "wallet_instance_id":
-        res = "";
+        res = { wallet_instance_id: "" };
         break;
       case "get_provider_state":
         res = {
@@ -581,7 +581,7 @@ class ControllerModule extends VuexModule {
         res = normalizeJson<UserInfo>(this.torus.userInfo);
         break;
       case "get_gasless_public_key":
-        res = this.torus.getGaslessPublicKey();
+        res = { pubkey: await this.torus.getGaslessPublicKey() };
         break;
       case "get_accounts":
         res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
@@ -591,7 +591,10 @@ class ControllerModule extends VuexModule {
         break;
       case "nft_list":
         await delay(15000);
-        res = this.nonFungibleTokens || [];
+        res =
+          this.nonFungibleTokens?.map((token: SolanaToken) => {
+            return { balance: token.balance, mint: token.mintAddress, name: token.metaplexData?.name, uri: token.metaplexData?.uri };
+          }) || [];
         break;
       default:
     }
