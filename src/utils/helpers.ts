@@ -207,31 +207,5 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
   };
 };
 
-export const waitForState = (ControllerModule: any) => {
-  return new Promise<void>((resolve, reject) => {
-    let timeout: NodeJS.Timeout;
-    let interval: NodeJS.Timeout;
-    // eslint-disable-next-line prefer-const
-    timeout = setTimeout(() => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-      reject();
-    }, 30_000);
-    interval = setInterval(() => {
-      const localKeyState = window.localStorage?.getItem("controllerModule");
-
-      if (ControllerModule.torus.selectedAddress) {
-        clearInterval(interval);
-        clearTimeout(timeout);
-        resolve();
-      }
-      if (!(localKeyState && JSON.parse(localKeyState)?.priv_key)) {
-        clearInterval(interval);
-        clearTimeout(timeout);
-        resolve();
-      }
-    }, 100);
-  });
-};
-
+export const backendStatePromise = promiseCreator();
 export const getRandomWindowId = () => Math.random().toString(36).slice(2);

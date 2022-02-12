@@ -41,7 +41,7 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/To
 import i18nPlugin from "@/plugins/i18nPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, normalizeJson } from "@/utils/helpers";
+import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -638,7 +638,13 @@ class ControllerModule extends VuexModule {
     try {
       if (keyState.priv_key) {
         const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
-        const res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+        let res;
+        try {
+          res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+        } catch (e) {
+          window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+          throw e;
+        }
         if (Object.keys(res).length && res.state && res.nonce) {
           const encryptedState = res.state;
           const nonce = Buffer.from(res.nonce, "hex");
@@ -654,8 +660,9 @@ class ControllerModule extends VuexModule {
         }
       }
     } catch (error) {
-      window.localStorage.removeItem(CONTROLLER_MODULE_KEY);
       log.error("Error restoring state!", error);
+    } finally {
+      if (backendStatePromise.resolve) backendStatePromise.resolve("");
     }
   }
 }

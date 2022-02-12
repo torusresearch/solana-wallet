@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { isMain, promiseCreator, waitForState } from "@/utils/helpers";
+import { backendStatePromise, isMain, promiseCreator } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -97,7 +97,7 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
-    await waitForState(ControllerModule);
+    await backendStatePromise.promise;
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
   }
