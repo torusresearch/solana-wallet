@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   BasePopupChannelData,
@@ -30,7 +30,7 @@ import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
-import { cloneDeep, merge } from "lodash-es";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -608,22 +608,28 @@ class ControllerModule extends VuexModule {
 
   @Action
   async saveToBackend({ private_key = "", saveState = {} }) {
-    const { pk, sk } = getED25519Key(private_key.padStart(64, "0"));
+    const tempKey = new Keypair().secretKey;
+    const { pk: publicKey, sk: secretKey } = getED25519Key(private_key.padStart(64, "0"));
+
+    // (ephermal private key, user public key)
     const keyState: KeyState = {
-      priv_key: base58.encode(sk),
+      priv_key: base58.encode(tempKey),
+      pub_key: base58.encode(publicKey),
     };
     window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
     try {
-      const nonce = nacl.randomBytes(24);
-      const stateString = stringify(saveState);
+      const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
+      const stateString = stringify({ ...saveState, private_key: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
-      const pubKey = base58.encode(pk);
-      const encryptedState = nacl.secretbox(stateByteArray, nonce, sk.slice(0, 32));
+      const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
+
       const timestamp = Date.now();
-      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
-      const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
+      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") }; // tkey metadata structure
+      const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
+      const signature = nacl.sign.detached(dataHash, secretKey);
       const signatureString = Buffer.from(signature).toString("hex");
-      await axios.post(`${config.openloginStateAPI}/set`, { pub_key: pubKey, signature: signatureString, set_data: setData });
+
+      await axios.post(`${config.openloginStateAPI}/set`, { pub_key: keyState.pub_key, signature: signatureString, set_data: setData });
     } catch (error) {
       log.error("Error saving state!", error);
     }
@@ -637,10 +643,11 @@ class ControllerModule extends VuexModule {
         ? JSON.parse(value)
         : {
             priv_key: "",
+            pub_key: "",
           };
     try {
-      if (keyState.priv_key) {
-        const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
+      if (keyState.priv_key && keyState.pub_key) {
+        const pubKey = keyState.pub_key;
         let res;
         try {
           res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
@@ -651,15 +658,23 @@ class ControllerModule extends VuexModule {
         if (Object.keys(res).length && res.state && res.nonce) {
           const encryptedState = res.state;
           const nonce = Buffer.from(res.nonce, "hex");
-          const privKey = base58.decode(keyState.priv_key);
-          const encryptedStateArray = Buffer.from(encryptedState, "hex");
-          const decryptedStateArray = nacl.secretbox.open(encryptedStateArray, nonce, privKey.slice(0, 32));
-          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state");
+          const ephermalPrivateKey = base58.decode(keyState.priv_key);
+
+          const decryptedStateArray = nacl.secretbox.open(Buffer.from(encryptedState, "hex"), nonce, ephermalPrivateKey.slice(0, 32));
+          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
           const decryptedState = JSON.parse(decryptedStateString);
 
-          const address = await this.torus.addAccount(privKey.toString("hex").slice(0, 64), decryptedState);
-          this.torus.setSelectedAccount(address);
+          if (!decryptedState.private_key) {
+            throw new Error("Private key not found in state");
+          }
+
+          // assume valid private key
+          const address = await this.torus.addAccount(
+            base58.decode(decryptedState.private_key).toString("hex").slice(0, 64),
+            omit(decryptedState, "private_key") as UserInfo
+          );
+          this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
         }
       }
     } catch (error) {
