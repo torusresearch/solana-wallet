@@ -446,6 +446,7 @@ watch(transferTo, () => {
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
       @transfer-confirm="confirmTransfer"
+      @transfer-cancel="closeModal"
       @on-close-modal="closeModal"
     />
     <TransferNFT
