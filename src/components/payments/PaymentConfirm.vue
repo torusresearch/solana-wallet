@@ -26,6 +26,7 @@ const props = withDefaults(
     isOpen?: boolean;
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
+    network: string;
   }>(),
   {
     senderPubKey: "",
@@ -92,7 +93,7 @@ const totalFiatCostString = computed(() => {
       </div>
       <div class="mt-4 px-6">
         <div class="flex flex-col">
-          <NetworkDisplay />
+          <NetworkDisplay :network="network" />
           <p class="whitespace-no-wrap overflow-hidden overflow-ellipsis text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">
             {{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.receiverPubKey }}
           </p>

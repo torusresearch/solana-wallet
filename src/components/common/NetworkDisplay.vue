@@ -4,7 +4,15 @@ import { computed } from "vue";
 
 import ControllerModule from "@/modules/controllers";
 
-const network = computed(() => ControllerModule.torus.currentNetworkName);
+const props = withDefaults(
+  defineProps<{
+    network?: string;
+  }>(),
+  {
+    network: undefined,
+  }
+);
+const network = computed(() => props.network || ControllerModule.torus.currentNetworkName);
 </script>
 
 <template>
