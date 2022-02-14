@@ -8,6 +8,24 @@ import type { OpenLoginPopupResponse } from "@/utils/enums";
 
 import config from "../config";
 
+const endListner = () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let elistner: (this: Window, ev: MessageEvent<any>) => any = () => {};
+
+  const promise = new Promise<OpenLoginPopupResponse>((resolve) => {
+    elistner = (event: unknown) => {
+      log.info(event);
+      const fdata = (event as { data: { target: string; data: OpenLoginPopupResponse } }).data;
+      if (fdata.target === "login") {
+        resolve(fdata.data);
+        log.info("data matched");
+        window.removeEventListener("message", elistner);
+      }
+    };
+    window.addEventListener("message", elistner);
+  });
+  return { elistner, promise };
+};
 class OpenLoginHandler {
   nonce = randomId();
 
@@ -65,8 +83,16 @@ class OpenLoginHandler {
       state: { url: this.finalURL, windowId: this.windowId },
       instanceId: this.nonce,
     });
-    const result = await verifierWindow.handle();
-    return result;
+    const verifierResult = verifierWindow.handle();
+    const { elistner, promise } = endListner();
+    try {
+      const result = await Promise.any([promise, verifierResult]);
+      window.removeEventListener("message", elistner);
+      return result;
+    } catch (e) {
+      window.removeEventListener("message", elistner);
+      throw new Error((e as { message: string }).message);
+    }
   }
 
   private setFinalUrl(): void {

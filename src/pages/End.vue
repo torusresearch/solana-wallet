@@ -34,14 +34,29 @@ async function endLogin() {
     }
     const appState = JSON.parse(safeatob(decodeURIComponent(decodeURIComponent(openLoginStore.appState as string))));
     const { instanceId } = appState;
+    try {
+      if (!error) throw new Error("");
 
-    const bc = new BroadcastChannel(instanceId, broadcastChannelOptions);
-    await bc.postMessage({
-      data: {
-        userInfo,
-        privKey,
-      },
-    } as PopupData<OpenLoginPopupResponse>);
+      const bc = new BroadcastChannel(instanceId, broadcastChannelOptions);
+      await bc.postMessage({
+        data: {
+          userInfo,
+          privKey,
+        },
+      } as PopupData<OpenLoginPopupResponse>);
+    } catch (e) {
+      window.opener.postMessage(
+        {
+          target: "login",
+          data: {
+            userInfo,
+            privKey,
+          },
+        },
+        window.origin
+      );
+      setTimeout(window.close, 1000);
+    }
   } catch (error) {
     log.error(error);
     // TODO: Display error to user and show crisp chat
