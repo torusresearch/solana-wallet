@@ -92,8 +92,8 @@ export const NAVIGATION_LIST = {
     icon: DatabaseIcon,
   },
   nfts: {
-    name: "NFTs",
-    title: "NFTs",
+    name: "navBar.nfts",
+    title: "navBar.nfts",
     route: "nfts",
     icon: ListIcon,
   },

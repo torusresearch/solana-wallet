@@ -115,7 +115,9 @@ onMounted(() => {
     <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 gt-sm:rounded-md gt-sm:overflow-hidden">
       <div class="py-6 px-4 space-y-6 gt-sm:p-6">
         <div>
-          <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">{{ selectedProvider.description }}.</p>
+          <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">
+            <span class="capitalize">{{ selectedProvider.name }}</span> {{ t(selectedProvider.description) }}.
+          </p>
         </div>
 
         <div class="grid grid-cols-3">

@@ -27,7 +27,7 @@ function cardClicked() {
           <!-- hack for 1:1 ratio-->
           <div class="h-0 pt-[100%] w-full"></div>
           <img
-            :src="nftToken?.metaplexData?.offChainMetaData?.image"
+            :src="nftToken?.metaplexData?.offChainMetaData?.image || FallbackNft"
             class="absolute top-0 left-0 overflow-hidden w-full h-full object-cover"
             alt="NFT LOGO"
             @error="setFallbackImg($event.target, FallbackNft)"
@@ -43,8 +43,9 @@ function cardClicked() {
           <div class="rounded-full overflow-hidden h-10 w-10">
             <img
               alt="collection"
-              :src="nftToken?.metaplexData?.offChainMetaData?.image"
+              :src="nftToken?.metaplexData?.offChainMetaData?.image || FallbackNft"
               class="rounded-full overflow-hidden h-10 w-10 object-cover"
+              @error="setFallbackImg($event.target, FallbackNft)"
             />
           </div>
         </div>

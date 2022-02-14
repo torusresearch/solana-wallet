@@ -120,7 +120,9 @@ onMounted(() => {
     <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 sm:rounded-md sm:overflow-hidden">
       <div class="py-6 px-4 space-y-6 sm:p-6">
         <div>
-          <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">{{ selectedProvider.description }}.</p>
+          <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">
+            <span class="capitalize">{{ selectedProvider.name }}</span> {{ t(selectedProvider.description) }}.
+          </p>
         </div>
 
         <div class="grid grid-cols-3">
@@ -146,7 +148,7 @@ onMounted(() => {
             <span id="resCryptoAmt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
           </div>
           <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">
-            {{ `${t("walletTopUp.rate")}: 1 ${selectedCryptocurrency.value} = ${cryptoCurrencyRate} ${selectedCurrency.value}` }}
+            {{ `${t("walletTopUp.rate")}: 1 ${selectedCryptocurrency.value} = ${cryptoCurrencyRate.toFixed(4)} ${selectedCurrency.value}` }}
           </div>
         </div>
 
