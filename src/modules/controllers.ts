@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
-import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   BasePopupChannelData,
@@ -608,10 +608,9 @@ class ControllerModule extends VuexModule {
 
   @Action
   async saveToBackend({ private_key = "", saveState = {} }) {
-    const tempKey = new Keypair().secretKey;
+    const tempKey = nacl.box.keyPair().secretKey;
     const { pk: publicKey, sk: secretKey } = getED25519Key(private_key.padStart(64, "0"));
-
-    // (ephermal private key, user public key)
+    // (ephemeral private key, user public key)
     const keyState: KeyState = {
       priv_key: base58.encode(tempKey),
       pub_key: base58.encode(publicKey),
