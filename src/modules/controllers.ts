@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   BasePopupChannelData,
@@ -30,7 +30,7 @@ import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
-import { cloneDeep, merge } from "lodash-es";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -608,17 +608,19 @@ class ControllerModule extends VuexModule {
 
   @Action
   async saveToBackend({ private_key = "", saveState = {} }) {
+    const tempKey = new Keypair().secretKey;
     const { pk, sk } = getED25519Key(private_key.padStart(64, "0"));
     const keyState: KeyState = {
-      priv_key: base58.encode(sk),
+      priv_key: base58.encode(tempKey),
+      pub_key: base58.encode(pk),
     };
     window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
     try {
       const nonce = nacl.randomBytes(24);
-      const stateString = stringify(saveState);
+      const stateString = stringify({ ...saveState, private_key: base58.encode(sk) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
       const pubKey = base58.encode(pk);
-      const encryptedState = nacl.secretbox(stateByteArray, nonce, sk.slice(0, 32));
+      const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32));
       const timestamp = Date.now();
       const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
       const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
@@ -637,10 +639,11 @@ class ControllerModule extends VuexModule {
         ? JSON.parse(value)
         : {
             priv_key: "",
+            pub_key: "",
           };
     try {
-      if (keyState.priv_key) {
-        const pubKey = base58.encode(base58.decode(keyState.priv_key).slice(32, 64));
+      if (keyState.priv_key && keyState.pub_key) {
+        const pubKey = keyState.pub_key;
         let res;
         try {
           res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
@@ -658,7 +661,10 @@ class ControllerModule extends VuexModule {
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
           const decryptedState = JSON.parse(decryptedStateString);
 
-          const address = await this.torus.addAccount(privKey.toString("hex").slice(0, 64), decryptedState);
+          const address = await this.torus.addAccount(
+            base58.decode(decryptedState.private_key).toString("hex").slice(0, 64),
+            omit(decryptedState, "private_key") as UserInfo
+          );
           this.torus.setSelectedAccount(address);
         }
       }
