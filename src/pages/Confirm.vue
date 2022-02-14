@@ -48,6 +48,8 @@ const finalTxData = reactive<FinalTxData>({
 const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
+const network = ref("");
+
 onMounted(async () => {
   try {
     let txData: Partial<TransactionChannelDataType>;
@@ -66,6 +68,7 @@ onMounted(async () => {
       return;
     }
     origin.value = txData.origin as string;
+    network.value = txData.network || "";
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
@@ -177,6 +180,7 @@ const rejectTxn = async () => {
     :crypto-tx-fee="finalTxData.totalSolFee"
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
+    :network="network"
     @on-close-modal="closeModal()"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
@@ -185,6 +189,7 @@ const rejectTxn = async () => {
     v-else-if="decodedInst"
     :decoded-inst="decodedInst || []"
     :origin="origin"
+    :network="network"
     @on-close-modal="closeModal()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
