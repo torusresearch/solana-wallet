@@ -623,7 +623,8 @@ class ControllerModule extends VuexModule {
       const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32));
       const timestamp = Date.now();
       const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") };
-      const signature = nacl.sign.detached(Buffer.from(stringify(setData), "utf-8"), sk);
+      const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
+      const signature = nacl.sign.detached(dataHash, sk);
       const signatureString = Buffer.from(signature).toString("hex");
       await axios.post(`${config.openloginStateAPI}/set`, { pub_key: pubKey, signature: signatureString, set_data: setData });
     } catch (error) {
