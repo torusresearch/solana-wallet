@@ -10,7 +10,7 @@ export const enum TOPUP {
 
 export type TopupProvider = {
   name: string;
-  description: string;
+  title: string;
   paymentMethod: string;
   fee: string;
   limit: string;
@@ -22,7 +22,7 @@ export type TopupProvider = {
 export const TopupProviders: { [providerName: string]: TopupProvider } = {
   // [TOPUP.RAMPNETWORK]: {
   //   name: TOPUP.RAMPNETWORK,
-  //   description: `Rampnetwork ${t("walletTopUp.description")}`,
+  //   title: `Rampnetwork ${t("walletTopUp.description")}`,
   //   paymentMethod: "Credit / Debit / Apple Pay",
   //   fee: "0.62% to 2.9%",
   //   limit: "5,000€/purchase, 20,000€/mo",

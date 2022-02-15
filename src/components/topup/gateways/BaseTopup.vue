@@ -27,9 +27,9 @@ const props = withDefaults(
     getQuoteOnCrypto: (requestObject: RequestObject) => Promise<QuoteResponse>;
     rules: {
       amount: {
-        required: ValidationRuleWithParams<object, any>;
-        minValue: ValidationRuleWithParams<object, any>;
-        maxValue: ValidationRuleWithParams<object, any>;
+        required: ValidationRuleWithParams;
+        minValue: ValidationRuleWithParams;
+        maxValue: ValidationRuleWithParams;
       };
     };
     topupProvider: string;
