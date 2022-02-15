@@ -28,6 +28,7 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+    estimationInProgress: boolean;
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: string;
   }>(),
@@ -160,6 +161,7 @@ const refDiv = ref(null);
                     :estimated-balance-change="props.estimatedBalanceChange"
                     :has-estimation-error="props.hasEstimationError"
                     :is-expand="true"
+                    :estimation-in-progres="props.estimationInProgress"
                   />
                 </div>
                 <div class="flex flex-row justify-start items-center mt-2 w-full">
@@ -173,8 +175,12 @@ const refDiv = ref(null);
               <div class="flex flex-row items- justify-start w-full mt-8">
                 <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
-                  <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ getFees() }} SOL</p>
-                  <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxCostString }}</p>
+                  <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">
+                    {{ estimationInProgress ? "..." : `${getFees()} SOL` }}
+                  </p>
+                  <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">
+                    ~{{ estimationInProgress ? "..." : fiatTxCostString }}
+                  </p>
                 </div>
               </div>
               <div class="flex flex-row items-center my-6 mx-3">

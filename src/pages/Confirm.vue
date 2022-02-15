@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Connection, LAMPORTS_PER_SOL, Message, SignaturePubkeyPair, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
-import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
+import {
+  addressSlicer,
+  BROADCAST_CHANNELS,
+  BroadcastChannelHandler,
+  broadcastChannelOptions,
+  POPUP_RESULT,
+  ProviderConfig,
+} from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
@@ -18,6 +25,7 @@ import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers"
 const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+const estimationInProgress = ref(false);
 const hasEstimationError = ref("");
 const estimatedBalanceChange = ref<AccountEstimation[]>([]);
 interface FinalTxData {
@@ -54,6 +62,20 @@ const network = ref("");
 
 const signTxOnly = ref(false);
 const signatureNotRequired = ref(false);
+
+const estimate = async (conn: Connection, estimateTx: Transaction, signer: string) => {
+  estimationInProgress.value = true;
+  try {
+    hasEstimationError.value = "";
+    estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(conn, estimateTx, signer);
+    log.info("TransEstim", estimatedBalanceChange.value);
+  } catch (e) {
+    log.error("TransEstim", e);
+    hasEstimationError.value = "Unable estimate balance changes";
+  }
+  estimationInProgress.value = false;
+};
+
 onMounted(async () => {
   try {
     let txData: Partial<TransactionChannelDataType>;
@@ -74,12 +96,12 @@ onMounted(async () => {
 
     origin.value = txData.origin as string;
     network.value = txData.network || "";
-    const networkConfig = txData.networkDetails;
-    const conn = new Connection(networkConfig.rpcTarget);
+    const networkConfig = txData.networkDetails as ProviderConfig;
+    const conn = new Connection(networkConfig.rpcTarget as string);
     const block = await conn.getRecentBlockhash("finalized");
 
     log.info(txData);
-    signTxOnly.value = ["sign_transaction", "sign_all_transactions"].includes(txData.type);
+    signTxOnly.value = ["sign_transaction", "sign_all_transactions"].includes(txData.type as string);
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
@@ -96,7 +118,7 @@ onMounted(async () => {
           decoded.push(decodeInstruction(inst));
         });
         signer.push(
-          ...tx.value.signatures.filter((signPair) => {
+          ...tx2.signatures.filter((signPair) => {
             return signPair.publicKey?.toBase58() === txData.signer;
           })
         );
@@ -124,20 +146,11 @@ onMounted(async () => {
           return k.pubkey.toBase58() === txData.signer && k.isSigner;
         }).length;
       }).length === 0;
-    signatureNotRequired.value ||= tx.instructions.length === 0;
+    signatureNotRequired.value ||= tx.value.instructions.length === 0;
 
     if (signatureNotRequired.value) return;
 
-    try {
-      hasEstimationError.value = "";
-      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(tx.value);
-      log.info("TransEstim", estimatedBalanceChange.value);
-    } catch (e) {
-      log.error("TransEstim", e);
-      hasEstimationError.value = "Unable estimate balance changes";
-    }
-
-    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
+    estimate(conn, tx.value, txData.signer || "");
 
     const signerCount = tx.value.instructions.reduce((prev, current) => {
       current.keys.forEach((item) => {
@@ -248,7 +261,7 @@ const rejectTxn = async () => {
   >
     <PermissionsInvalid v-if="signatureNotRequired" :origin="origin" @on-close-modal="rejectTxn()" />
     <PaymentConfirm
-      v-else-if="finalTxData.totalSolAmount"
+      v-else-if="finalTxData.totalSolAmount && !signTxOnly"
       :is-open="true"
       :sender-pub-key="finalTxData.slicedSenderAddress"
       :receiver-pub-key="finalTxData.slicedReceiverAddress"
@@ -256,23 +269,28 @@ const rejectTxn = async () => {
       :crypto-tx-fee="finalTxData.totalNetworkFee"
       :is-gasless="finalTxData.isGasless"
       :decoded-inst="decodedInst || []"
+      :estimation-in-progress="estimationInProgress"
       :estimated-balance-change="estimatedBalanceChange"
       :has-estimation-error="hasEstimationError"
+      :network="network"
       @on-close-modal="rejectTxn()"
       @transfer-confirm="approveTxn()"
       @transfer-cancel="rejectTxn()"
     />
     <PermissionsTx
-      v-else-if="decodedInst"
+      v-else-if="decodedInst || signTxOnly"
       :decoded-inst="decodedInst || []"
       :origin="origin"
+      :estimation-in-progress="estimationInProgress"
       :estimated-balance-change="estimatedBalanceChange"
       :has-estimation-error="hasEstimationError"
       :sign-tx-only="signTxOnly"
       :tx-fee="finalTxData.totalNetworkFee"
       :is-gasless="finalTxData.isGasless"
+      :network="network"
       @on-close-modal="rejectTxn()"
       @on-approved="approveTxn()"
+      @on-cancel="rejectTxn()"
     />
   </div>
 </template>

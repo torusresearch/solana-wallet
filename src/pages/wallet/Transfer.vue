@@ -39,6 +39,11 @@ const transferTypes = ALLOWED_VERIFIERS;
 const selectedToken = ref<Partial<SolAndSplToken>>(tokens.value[0]);
 const transferConfirmed = ref(false);
 const showAmountField = ref(true);
+
+const hasEstimationError = ref("");
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
+const estimationInProgress = ref(true);
+
 const router = useRouter();
 const route = useRoute();
 
@@ -252,8 +257,6 @@ async function generateTransaction(): Promise<Transaction> {
   }
   return tx;
 }
-const hasEstimationError = ref("");
-const estimatedBalanceChange = ref<AccountEstimation[]>([]);
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
@@ -268,13 +271,19 @@ const openModal = async () => {
     }
 
     isOpen.value = true;
+    estimationInProgress.value = true;
     try {
-      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(await generateTransaction());
+      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(
+        ControllerModule.torus.connection,
+        await generateTransaction(),
+        ControllerModule.selectedAddress
+      );
       hasEstimationError.value = "";
     } catch (e) {
       hasEstimationError.value = "Unable estimate balance changes";
       log.info("Error in transaction simulation", e);
     }
+    estimationInProgress.value = false;
   }
 
   // This can't be guarantee
@@ -435,39 +444,6 @@ watch(transferTo, () => {
                 {{ t("dappTransfer.transfer") }}
                 <span class="text-base"></span>
               </Button>
-              <!-- :crypto-tx-fee="state.transactionFee" -->
-              <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
-              <AsyncTransferConfirm
-                :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="resolvedAddress"
-                :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
-                :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="resolvedAddress"
-                :token-symbol="selectedToken?.data?.symbol || 'SOL'"
-                :token="selectedToken"
-                :is-open="isOpen && selectedToken.isFungible"
-                :crypto-tx-fee="transactionFee"
-                :transfer-disabled="transferDisabled"
-                :estimated-balance-change="estimatedBalanceChange"
-                :has-estimation-error="hasEstimationError"
-                @transfer-confirm="confirmTransfer"
-                @on-close-modal="closeModal"
-              />
-              <TransferNFT
-                :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="resolvedAddress"
-                :crypto-amount="sendAmount"
-                :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="resolvedAddress"
-                :is-open="isOpen && !selectedToken.isFungible"
-                :token="selectedToken"
-                :crypto-tx-fee="transactionFee"
-                :transfer-disabled="transferDisabled"
-                :estimated-balance-change="estimatedBalanceChange"
-                :has-estimation-error="hasEstimationError"
-                @transfer-confirm="confirmTransfer"
-                @on-close-modal="closeModal"
-              />
             </div>
           </div>
         </form>
@@ -492,6 +468,9 @@ watch(transferTo, () => {
       :is-open="isOpen && selectedToken.isFungible"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-cancel="closeModal"
       @on-close-modal="closeModal"
@@ -506,6 +485,9 @@ watch(transferTo, () => {
       :token="selectedToken"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-reject="closeModal"
       @on-close-modal="closeModal"

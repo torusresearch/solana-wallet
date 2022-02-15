@@ -29,6 +29,7 @@ const props = withDefaults(
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
+    estimationInProgress: boolean;
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: string;
   }>(),
@@ -123,6 +124,7 @@ const totalFiatCostString = computed(() => {
             :has-estimation-error="props.hasEstimationError"
             :estimated-balance-change="props.estimatedBalanceChange"
             :is-expand="true"
+            :estimation-in-progres="props.estimationInProgress"
           />
         </span>
         <span class="flex flex-row mt-3 justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">

@@ -27,6 +27,7 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+    estimationInProgress: boolean;
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: string;
   }>(),
@@ -197,6 +198,7 @@ const refDiv = ref(null);
                       :estimated-balance-change="props.estimatedBalanceChange"
                       :has-estimation-error="props.hasEstimationError"
                       :is-expand="true"
+                      :estimation-in-progres="props.estimationInProgress"
                     />
                   </div>
                 </div>
@@ -217,8 +219,12 @@ const refDiv = ref(null);
                 <div class="flex">
                   <div class="text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
                   <div class="ml-auto text-right">
-                    <div class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
-                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
+                    <div class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">
+                      ~ {{ props.estimationInProgress ? "..." : totalCryptoCostString }}
+                    </div>
+                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-400">
+                      ~ {{ props.estimationInProgress ? "..." : totalFiatCostString }}
+                    </div>
                   </div>
                 </div>
               </div>

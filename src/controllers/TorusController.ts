@@ -99,7 +99,7 @@ import {
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, MintLayout, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
-import { AccountEstimation, SolAndSplToken, SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
@@ -611,8 +611,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   // TODO: Try take this function out of toruscontroller
-  async getEstimateBalanceChange(tx: Transaction, signer = this.selectedAddress): Promise<AccountEstimation[]> {
-    const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
+  async getEstimateBalanceChange(connection: Connection, tx: Transaction, signer = this.selectedAddress): Promise<AccountEstimation[]> {
+    // const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
       // get writeable accounts from all instruction
       const accounts = tx.instructions.reduce((prev, current) => {
@@ -625,6 +625,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return prev;
       }, new Map<string, PublicKey>());
 
+      log.info(tx);
       // add selected Account incase signer is just fee payer (instruction will not track fee payer)
       accounts.set(signer, new PublicKey(signer));
 
@@ -632,7 +633,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const result = await connection.simulateTransaction(tx, undefined, Array.from(accounts.values()));
 
       // calculate diff of the token and sol
-      return this.calculateChanges(result.value, this.selectedAddress, Array.from(accounts.keys()));
+      return this.calculateChanges(connection, result.value, signer, Array.from(accounts.keys()));
     } catch (e) {
       log.warn(e);
       // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
@@ -640,17 +641,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  calculateChanges = async (result: SimulatedTransactionResponse, selecteAddress: string, accountKeys: string[]): Promise<AccountEstimation[]> => {
+  calculateChanges = async (
+    connection: Connection,
+    result: SimulatedTransactionResponse,
+    selectedAddress: string,
+    accountKeys: string[]
+  ): Promise<AccountEstimation[]> => {
     // filter out  address token (Token ProgramId ).
     // parse account data, filter selecteAddress as token holder
     const returnResult: AccountEstimation[] = [];
-
-    const accIdx = accountKeys.findIndex((item) => item === this.selectedAddress);
-    log.info(accIdx);
-    if (accIdx >= 0) {
-      const solchanges = (result.accounts?.at(accIdx)?.lamports || 0) / LAMPORTS_PER_SOL - Number(this.userSOLBalance);
-      returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selecteAddress });
-    }
 
     const mintTokenAddress: string[] = [];
     const postTokenDetails: TokenAccount[] = [];
@@ -663,20 +662,41 @@ export default class TorusController extends BaseController<TorusControllerConfi
           data: Buffer.from(item.data[0], item.data[1] as BufferEncoding),
         });
 
-        if (tokenDetail.data.owner.toBase58() === selecteAddress) {
+        if (tokenDetail.data.owner.toBase58() === selectedAddress) {
           mintTokenAddress.push(tokenDetail.data.mint.toBase58());
           postTokenDetails.push(tokenDetail);
         }
       }
     });
 
-    const connection = this.networkController.getConnection();
-    const mintAccounts = await connection.getMultipleAccountsInfo(mintTokenAddress.map((item) => new PublicKey(item)));
-    const mintAccountInfos: MintInfo[] = mintAccounts.map((item) => MintLayout.decode(item?.data));
+    const accIdx = accountKeys.findIndex((item) => item === selectedAddress);
 
-    const tokenAccounts = await connection.getMultipleAccountsInfo(postTokenDetails.map((item) => item.pubkey));
+    const queryPubKey = [
+      new PublicKey(selectedAddress),
+      ...mintTokenAddress.map((item) => new PublicKey(item)),
+      ...postTokenDetails.map((item) => item.pubkey),
+    ];
+    const queryAccounts = await connection.getMultipleAccountsInfo(queryPubKey);
+    const signerAccount = queryAccounts[0];
+    const mintAccounts = queryAccounts.slice(1, mintTokenAddress.length + 1);
+    const tokenAccounts = queryAccounts.slice(mintTokenAddress.length + 1);
+
+    log.info(queryAccounts);
+    log.info(signerAccount);
+    log.info(mintAccounts);
+    log.info(tokenAccounts);
+
+    // const signerAccount = await connection.getMultipleAccountsInfo([new PublicKey(selectedAddress)]);
+    // const mintAccounts = await connection.getMultipleAccountsInfo(mintTokenAddress.map((item) => new PublicKey(item)));
+    // const tokenAccounts = await connection.getMultipleAccountsInfo(postTokenDetails.map((item) => item.pubkey));
+
+    const mintAccountInfos: MintInfo[] = mintAccounts.map((item) => MintLayout.decode(item?.data));
     const preTokenDetails = tokenAccounts.map((item, idx) => (item ? new TokenAccount(postTokenDetails[idx].pubkey, item) : null));
 
+    if (accIdx >= 0) {
+      const solchanges = ((result.accounts?.at(accIdx)?.lamports || 0) - Number(signerAccount?.lamports)) / LAMPORTS_PER_SOL;
+      returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selectedAddress });
+    }
     postTokenDetails.forEach(async (item, idx) => {
       const mint = item.data.mint.toBase58();
       const symbol =
