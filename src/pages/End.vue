@@ -35,8 +35,6 @@ async function endLogin() {
     const appState = JSON.parse(safeatob(decodeURIComponent(decodeURIComponent(openLoginStore.appState as string))));
     const { instanceId } = appState;
     try {
-      if (!error) throw new Error("");
-
       const bc = new BroadcastChannel(instanceId, broadcastChannelOptions);
       await bc.postMessage({
         data: {
