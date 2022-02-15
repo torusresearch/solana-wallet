@@ -13,6 +13,10 @@ export function getBackendDomain(): string {
   return `${process.env.BACKEND_DOMAIN}`;
 }
 
+export function getStateDomain(): string {
+  return `${process.env.STATE_DOMAIN}`;
+}
+
 export function wait(millSeconds = 1000) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -31,11 +35,8 @@ export async function getInnerText(page: Page, selector: string): Promise<string
 }
 
 export async function getControllerState(page: Page) {
-  const sessionState = await page.evaluate(() => window.sessionStorage.getItem("controllerModule"));
-  const localState = await page.evaluate(() => window.localStorage.getItem("controllerModule"));
-  const state = sessionState || localState;
-  if (state) return JSON.parse(state)?.controllerModule;
-  return {};
+  // eslint-disable-next-line no-underscore-dangle
+  return page.evaluate(() => (window as any).$store._state.data.controllerModule);
 }
 
 export async function switchTab(page: Page, tab: Tabs) {
@@ -90,9 +91,9 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
   // wait for controllerModule language to update
   await page.waitForFunction(
-    async (locale) => {
-      const state = window.sessionStorage.getItem("controllerModule") || window.localStorage.getItem("controllerModule");
-      const controllerModule = await JSON.parse(state as string)?.controllerModule;
+    (locale) => {
+      // eslint-disable-next-line no-underscore-dangle
+      const { controllerModule } = (window as any).$store._state.data;
       if (
         controllerModule?.torusState?.PreferencesControllerState?.identities[
           controllerModule?.torusState?.PreferencesControllerState?.selectedAddress

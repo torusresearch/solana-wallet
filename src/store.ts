@@ -10,5 +10,6 @@ interface VuexState {
 }
 
 const store = createStore<VuexState>({});
-
+// for testing
+(window as any).$store = store;
 export default store;
