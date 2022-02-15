@@ -10,7 +10,7 @@ export const enum TOPUP {
 
 export type TopupProvider = {
   name: string;
-  title: string;
+  description: string;
   paymentMethod: string;
   fee: string;
   limit: string;
