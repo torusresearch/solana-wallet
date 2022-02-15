@@ -14,11 +14,9 @@ const endListner = () => {
 
   const promise = new Promise<OpenLoginPopupResponse>((resolve) => {
     elistner = (event: unknown) => {
-      log.info(event);
       const fdata = (event as { data: { target: string; data: OpenLoginPopupResponse } }).data;
-      if (fdata.target === "login") {
+      if (fdata.target === "login" && (event as { origin: string }).origin === window.origin) {
         resolve(fdata.data);
-        log.info("data matched");
         window.removeEventListener("message", elistner);
       }
     };
