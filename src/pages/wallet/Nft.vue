@@ -7,6 +7,7 @@ import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
+import FallbackNft from "@/assets/fallback-nft.svg";
 import PaperAirplane from "@/assets/paper-airplane.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
@@ -14,6 +15,7 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
+import { setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -95,7 +97,12 @@ const transferNFT = () => {
     </nav>
     <main v-if="nftMetaData" class="flex-1 relative">
       <div class="h-[380px] w-full absolute top-0 left-0 flex justify-center items-center overflow-hidden">
-        <img alt="NFT" :src="nftMetaData.offChainMetaData?.image" class="object-cover w-full h-full" />
+        <img
+          alt="NFT"
+          :src="nftMetaData.offChainMetaData?.image || FallbackNft"
+          class="object-cover w-full h-full"
+          @error="setFallbackImg($event.target, FallbackNft)"
+        />
         <div class="h-full w-full bg-gray-800 backdrop-blur-lg bg-opacity-30 absolute top-0 left-0"></div>
       </div>
       <!-- content -->
@@ -108,12 +115,22 @@ const transferNFT = () => {
             </div>
             <DotsHorizontalIcon class="h-6 w-6 text-app-text-dark-400 cursor-pointer" />
           </div>
-          <img alt="nft" :src="nftMetaData.offChainMetaData?.image" class="h-[480px] w-[480px] object-cover overflow-hidden rounded-lg shadow-lg" />
+          <img
+            alt="nft"
+            :src="nftMetaData.offChainMetaData?.image || FallbackNft"
+            class="h-[480px] w-[480px] object-cover overflow-hidden rounded-lg shadow-lg"
+            @error="setFallbackImg($event.target, FallbackNft)"
+          />
         </div>
         <div class="flex flex-col pt-4 md:pt-14 w-full md:w-[320px] ml-0 md:ml-10">
           <div class="w-full flex flex-col">
             <div v-if="nftMetaData.offChainMetaData?.collection" class="flex items-center">
-              <img alt="collection" :src="nftMetaData.offChainMetaData?.image" class="h-5 w-5 object-cover rounded-full overflow-hidden mr-1" />
+              <img
+                alt="collection"
+                :src="nftMetaData.offChainMetaData?.image || FallbackNft"
+                class="h-5 w-5 object-cover rounded-full overflow-hidden mr-1"
+                @error="setFallbackImg($event.target, FallbackNft)"
+              />
               <span class="text-app-gray-500 md:text-app-text-dark-400 dark:text-app-text-dark-400 text-sm">{{
                 nftMetaData.offChainMetaData?.collection?.name || ""
               }}</span>

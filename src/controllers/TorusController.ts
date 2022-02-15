@@ -406,7 +406,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
-      this.updateTokenInfoMap();
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {

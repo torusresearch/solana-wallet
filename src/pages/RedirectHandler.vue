@@ -8,9 +8,9 @@ const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlo
 
 const checkTopupSuccess = async () => {
   const queryParameters = new URLSearchParams(window.location.search);
-  const topupResult = queryParameters.get("topup");
-  if (isRedirectFlow && topupResult) {
-    redirectToResult(jsonrpc, { success: topupResult, method }, req_id, resolveRoute);
+  const state = queryParameters.get("state");
+  if (isRedirectFlow && state) {
+    redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
   }
 };
 onMounted(async () => {
