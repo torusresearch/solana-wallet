@@ -249,6 +249,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.networkController?.state?.chainId;
   }
 
+  // UNSAFE METHOD: use with caution
   get privateKey(): string {
     return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
   }
@@ -283,14 +284,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
    */
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
+
+    // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
     this.update(_state, true);
+
     this.networkController = new NetworkController({
       config: this.config.NetworkControllerConfig,
       state: this.state.NetworkControllerState,
     });
     this.initializeProvider();
+
     this.embedController = new BaseEmbedController({
       config: {},
       state: this.state.EmbedControllerState,
@@ -375,7 +380,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
     });
 
+    // TODO: this returns a promise
     this.networkController.lookupNetwork();
+
     // Listen to controller changes
     this.preferencesController.on("store", (state2) => {
       this.update({ PreferencesControllerState: state2 });
@@ -395,7 +402,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
-      this.lastTokenRefresh = new Date();
+      this.lastTokenRefresh = new Date(); // useful in UI
     });
 
     this.keyringController.on("store", (state2) => {
@@ -662,7 +669,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
-  signTransaction(transaction: Transaction): Transaction {
+  UNSAFE_signTransaction(transaction: Transaction): Transaction {
     return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
   }
 
@@ -1181,13 +1188,22 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return relayPublicKey;
   }
 
-  async signAllTransaction(req: Ihandler<{ message: string[] | undefined }>, redirectFlow = false) {
+  async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
+    // sign all transaction
+    const allTransactions = req.params?.message?.map((msg) => {
+      let tx = Transaction.from(Buffer.from(msg, "hex"));
+      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      return signedMessage;
+    });
+    return allTransactions;
+  }
+
+  async providerSignAllTransaction(req: Ihandler<{ message: string[] | undefined }>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
 
-    let approved: boolean;
-    // send to popup with all transaction
-    if (!redirectFlow) approved = await this.handleTransactionPopup("", req);
-    else approved = true;
+    const approved = await this.handleTransactionPopup("", req);
+
     // throw error on reject
     if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
@@ -1343,7 +1359,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getAccounts: this.getAccounts.bind(this),
       signMessage: this.signMessage.bind(this),
       signTransaction: this.providerSignTransaction.bind(this),
-      signAllTransactions: this.signAllTransaction.bind(this),
+      signAllTransactions: this.providerSignAllTransaction.bind(this),
       sendTransaction: this.sendTransaction.bind(this),
       getProviderState: this.getNetworkProviderState.bind(this),
       getGaslessPublicKey: this.getGaslessPublicKey.bind(this),

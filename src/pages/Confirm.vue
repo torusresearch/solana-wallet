@@ -138,7 +138,7 @@ const approveTxn = async (): Promise<void> => {
         res = await ControllerModule.torus.transfer(tx.value, params);
         redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
       } else if (method === "sign_transaction" && tx.value) {
-        res = ControllerModule.torus.signTransaction(tx.value);
+        res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
         redirectToResult(
           jsonrpc,
           { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
@@ -146,7 +146,7 @@ const approveTxn = async (): Promise<void> => {
           resolveRoute
         );
       } else if (method === "sign_all_transactions") {
-        res = await ControllerModule.torus.signAllTransaction({ params } as any, true);
+        res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as any);
         redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
       } else throw new Error();
     } catch (e) {
