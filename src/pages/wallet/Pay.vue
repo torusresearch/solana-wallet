@@ -30,19 +30,15 @@ const onDecode = (result: { data: string; cornerPoints: { x: number; y: number }
 };
 
 onMounted(async () => {
-  log.info(route.query);
-
-  // const cam = await QrScanner.hasCamera();
-  // if (!cam) {
-  //   throw Error("No Camera");
-  // }
   if (el.value) {
     scanner = new QrScanner(el.value, onDecode, { highlightScanRegion: true });
     log.info(scanner);
   }
 
   if (route.query.request) {
-    requestLink.value = `solana://${route.query.request}`;
+    log.info(route.query);
+    const idx = window.location.search.indexOf("=");
+    requestLink.value = window.location.search.substring(idx + 1);
   } else {
     scanner.start();
   }
