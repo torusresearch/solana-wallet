@@ -3,7 +3,7 @@
 // import { ParsedURL, parseURL } from "@solana/pay";
 import log from "loglevel";
 import QrScanner from "qr-scanner";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import SolanaPay from "@/components/solanapay/SolanaPay.vue";
@@ -16,6 +16,16 @@ const el = ref<HTMLVideoElement>();
 const errMessage = ref("");
 
 let scanner: QrScanner;
+
+watch(
+  route,
+  () => {
+    if (scanner) scanner.destroy();
+    log.info(scanner);
+  },
+  { flush: "pre", immediate: true, deep: true }
+);
+
 const onDecode = (result: { data: string; cornerPoints: { x: number; y: number }[] }) => {
   log.info("decode");
   log.info(result);
@@ -54,11 +64,13 @@ const onApproved = async () => {
   // create Transaction send
   try {
     await controllerModule.torus.solanapay(requestLink.value);
+    scanner.destroy();
     // redirect to transaction page
     router.push("/wallet/activity");
   } catch (e) {
     log.error(e);
     // show error message
+    requestLink.value = "";
   }
 };
 

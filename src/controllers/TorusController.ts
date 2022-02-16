@@ -844,7 +844,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       memo,
     });
     log.info(tx);
-    // this.transfer(tx);
+    const block = await this.connection.getRecentBlockhash();
+    tx.recentBlockhash = block.blockhash;
+    tx.feePayer = new PublicKey(this.selectedAddress);
+    this.transfer(tx);
     return tx;
   }
 
