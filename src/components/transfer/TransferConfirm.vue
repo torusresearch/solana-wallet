@@ -53,19 +53,19 @@ const pricePerToken = computed<number>((): number => {
   }
   return ControllerModule.torus.conversionRate;
 });
-const emits = defineEmits(["transferConfirm", "onCloseModal"]);
+const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
 
 const closeModal = () => {
   emits("onCloseModal");
 };
 
 const onCancel = () => {
-  closeModal();
+  emits("transferCancel");
 };
 
 const onConfirm = () => {
-  closeModal();
   emits("transferConfirm");
+  closeModal();
 };
 
 // Amount to send
@@ -102,7 +102,7 @@ const refDiv = ref(null);
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
-      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
+      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
@@ -118,7 +118,7 @@ const refDiv = ref(null);
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
+              class="relative inline-block w-full max-w-sm text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
                 <div>
@@ -134,11 +134,10 @@ const refDiv = ref(null);
                     <div
                       class="flex justify-center border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark2 rounded-full w-12 h-12"
                     >
-                      <!-- <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" /> -->
                       <img class="w-6" :src="SolanaLogoURL" alt="Solana Logo" />
                     </div>
                   </div>
-                  <div class="flex-grow line_connect">
+                  <div class="grow -translate-y-[7px]">
                     <hr />
                   </div>
                   <div class="pr-5 flex-none">
@@ -153,21 +152,18 @@ const refDiv = ref(null);
                 <div class="flex mt-1">
                   <div class="flex-none w-20 text-center">
                     <!-- <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">tom@gmail.com</div> -->
-                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
+                    <div class="truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
                       {{ addressSlicer(senderPubKey) }}
                     </div>
                   </div>
-                  <div class="flex-grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
+                  <div class="grow text-xs text-app-text-500 dark:text-app-text-dark-500 flex items-center justify-center -mt-14">
                     <WiFiIcon class="w-3 h-3 mr-1" /> {{ `Solana ${t("walletActivity.network")}` }}
                   </div>
                   <div class="flex-none w-20 text-center">
-                    <div
-                      v-if="receiverVerifier !== 'solana'"
-                      class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500"
-                    >
+                    <div v-if="receiverVerifier !== 'solana'" class="truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
                       {{ receiverVerifierId }}
                     </div>
-                    <div class="overflow-ellipsis truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
+                    <div class="truncate text-xxs text-app-text-500 dark:text-app-text-dark-500">
                       {{ addressSlicer(receiverPubKey) }}
                     </div>
                   </div>
@@ -200,15 +196,11 @@ const refDiv = ref(null);
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 gap-3 m-6">
-                <div>
-                  <Button class="ml-auto" :block="true" variant="tertiary" @click="onCancel">{{ t("walletTransfer.cancel") }}</Button>
-                </div>
-                <div>
-                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
-                    t("walletTransfer.confirm")
-                  }}</Button>
-                </div>
+              <div class="flex flex-row items-center my-4 mx-3">
+                <Button class="flex-auto mx-2" :block="true" variant="tertiary" @click="onCancel">{{ t("walletTransfer.cancel") }}</Button>
+                <Button class="flex-auto mx-2" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                  t("walletTransfer.confirm")
+                }}</Button>
               </div>
             </div>
           </TransitionChild>
@@ -217,8 +209,4 @@ const refDiv = ref(null);
     </Dialog>
   </TransitionRoot>
 </template>
-<style scoped>
-.line_connect {
-  transform: translateY(-7px);
-}
-</style>
+<style scoped></style>

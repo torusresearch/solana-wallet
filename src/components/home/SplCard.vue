@@ -1,0 +1,59 @@
+<script setup lang="ts">
+import { SolanaToken } from "@toruslabs/solana-controllers";
+import { computed } from "vue";
+
+import ControllerModule from "@/modules/controllers";
+
+const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
+
+function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLength = 5): number {
+  return parseFloat((perTokenPrice * tokenAmount).toFixed(subStringLength));
+}
+
+defineProps<{
+  splToken?: SolanaToken;
+}>();
+
+const emits = defineEmits(["splClicked"]);
+
+function splClicked() {
+  emits("splClicked");
+}
+</script>
+
+<template>
+  <div
+    class="shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
+    @click="splClicked"
+    @keydown="splClicked"
+  >
+    <div class="dark:shadow_down flex flex-row justify-between items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
+      <span class="flex flex-row justify-start items-center">
+        <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken.data?.logoURI" alt="TOKEN Logo" />
+        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken.data?.name }}</p></span
+      >
+      <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
+        ~ {{ (+splToken.balance?.uiAmountString).toFixed(3) }} {{ splToken.data?.symbol }}
+      </p>
+    </div>
+    <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">
+      <p>
+        1 {{ splToken.data?.symbol }} ≈ {{ (splToken.price?.[currency === "sol" ? "usd" : currency] || 0).toFixed(3) }}
+        {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
+      </p>
+      <p>
+        ~{{ getUiTokenValue(splToken.price?.[currency === "sol" ? "usd" : currency] || 0, splToken.balance?.uiAmount || 0, 3) }}
+        {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
+      </p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.dark .dark\:shadow_down {
+  box-shadow: 0px 14px 28px 0px rgba(36, 37, 41, 0.5);
+}
+.dark .dark\:shadow_box {
+  box-shadow: 0px 14px 28px 0px rgba(92, 108, 127, 0.06);
+}
+</style>

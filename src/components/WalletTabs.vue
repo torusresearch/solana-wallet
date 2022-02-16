@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BroadcastChannel } from "broadcast-channel";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -7,11 +8,14 @@ import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
+import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/enums";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
 requireLoggedIn();
+
+setLocale(i18n, ControllerModule.torus.locale || i18n.global.locale);
 
 const props = withDefaults(
   defineProps<{
@@ -28,8 +32,10 @@ const { t } = useI18n();
 const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
-const logout = () => {
-  ControllerModule.logout();
+const logout = async () => {
+  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
+  bc.postMessage("logout");
+  await ControllerModule.logout();
 };
 </script>
 
@@ -37,12 +43,12 @@ const logout = () => {
   <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
     <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30">
       <div class="flex h-16 px-4 header-border">
-        <div class="flex-none flex items-center">
+        <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
             <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </router-link>
         </div>
-        <div class="flex flex-grow">
+        <div class="flex flex-3">
           <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
             <router-link
               v-for="(value, key) in tabs"
@@ -59,7 +65,7 @@ const logout = () => {
             >
           </div>
         </div>
-        <div class="ml-6 hidden md:flex items-center">
+        <div class="hidden md:flex items-center flex-1 ml-auto justify-end">
           <LanguageSelector class="mr-2" /><AccountMenu :user="user"
             ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
           /></AccountMenu>
@@ -76,7 +82,7 @@ const logout = () => {
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
-          <div class="flex-grow flex">
+          <div class="grow flex">
             <div id="rightPanel" class="w-full" />
           </div>
         </div>

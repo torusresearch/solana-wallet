@@ -232,8 +232,10 @@ const openModal = async () => {
 
     isOpen.value = true;
   }
-  const { b_hash, fee } = await ControllerModule.torus.calculateTxFee();
-  blockhash.value = b_hash;
+
+  // This can't be guarantee
+  const { blockHash, fee } = await ControllerModule.torus.calculateTxFee();
+  blockhash.value = blockHash;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
@@ -370,26 +372,25 @@ watch(transferTo, () => {
 
 <template>
   <div class="py-2">
-    <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-      <Card class="order-2 sm:order-1">
+    <div class="mt-5 flex flex-row justify-around items-start gt-sm:space-x-5 lt-sm:flex-col-reverse lt-sm:justify-start">
+      <Card class="w-1/2 lt-sm:mt-4" :class="[selectedToken.isFungible ? '!w-full' : 'gt-sm:w-1/2 lt-sm:w-full mr-auto']">
         <form action="#" method="POST" class="w-full">
-          <div>
-            <AsyncTransferTokenSelect class="mb-6" :selected-token="selectedToken" @update:selected-token="updateSelectedToken($event)" />
-            <div class="grid grid-cols-3 gap-3 mb-6">
-              <div class="col-span-3 sm:col-span-2">
-                <ComboBox
-                  v-model="transferTo"
-                  :label="t('walletActivity.sendTo')"
-                  :errors="isOpen ? undefined : $v.transferTo.$errors"
-                  :items="contacts"
-                />
-              </div>
-              <div class="col-span-3 sm:col-span-1 mt-6 lt-sm:mt-2">
+          <div class="flex flex-col justify-around items-start space-y-9">
+            <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
+            <div class="w-full flex flex-row space-x-2">
+              <ComboBox
+                v-model="transferTo"
+                :label="t('walletActivity.sendTo')"
+                :errors="isOpen ? undefined : $v.transferTo.$errors"
+                :items="contacts"
+                class="w-2/3 flex-auto"
+              />
+              <div class="w-1/3 flex-auto mt-6">
                 <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
               </div>
             </div>
 
-            <div v-if="showAmountField" class="mb-6">
+            <div v-if="showAmountField" class="w-full">
               <TextField
                 v-model="sendAmount"
                 :label="t('dappTransfer.amount')"
@@ -418,52 +419,49 @@ watch(transferTo, () => {
                 </div>
               </TextField>
             </div>
-            <div class="flex">
-              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
-                {{ t("dappTransfer.transfer") }}
-                <span class="text-base"></span>
-              </Button>
-              <!-- :crypto-tx-fee="state.transactionFee" -->
-              <!-- :transfer-disabled="$v.$invalid || $v.$dirty || $v.$error || !allRequiredValuesAvailable()" -->
-              <AsyncTransferConfirm
-                :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="resolvedAddress"
-                :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
-                :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="resolvedAddress"
-                :token-symbol="selectedToken?.data?.symbol || 'SOL'"
-                :token="selectedToken"
-                :is-open="isOpen && selectedToken.isFungible"
-                :crypto-tx-fee="transactionFee"
-                :transfer-disabled="transferDisabled"
-                @transfer-confirm="confirmTransfer"
-                @on-close-modal="closeModal"
-              />
-              <TransferNFT
-                :sender-pub-key="ControllerModule.selectedAddress"
-                :receiver-pub-key="resolvedAddress"
-                :crypto-amount="sendAmount"
-                :receiver-verifier="selectedVerifier"
-                :receiver-verifier-id="resolvedAddress"
-                :is-open="isOpen && !selectedToken.isFungible"
-                :token="selectedToken"
-                :crypto-tx-fee="transactionFee"
-                :transfer-disabled="transferDisabled"
-                @transfer-confirm="confirmTransfer"
-                @on-close-modal="closeModal"
-              />
-            </div>
+            <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
+              {{ t("dappTransfer.transfer") }}
+            </Button>
           </div>
         </form>
       </Card>
-      <AsyncTokenBalance v-if="selectedToken.isFungible" class="self-start order-1 sm:order-2" :selected-token="selectedToken" />
-    </dl>
+      <AsyncTokenBalance v-if="selectedToken.isFungible" class="w-full" :selected-token="selectedToken" />
+    </div>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
       :title="messageModalState.messageTitle"
       :description="messageModalState.messageDescription"
       :status="messageModalState.messageStatus"
       @on-close="onMessageModalClosed"
+    />
+    <AsyncTransferConfirm
+      :sender-pub-key="ControllerModule.selectedAddress"
+      :receiver-pub-key="resolvedAddress"
+      :crypto-amount="isCurrencyFiat ? convertFiatToCrypto(sendAmount) : sendAmount"
+      :receiver-verifier="selectedVerifier"
+      :receiver-verifier-id="resolvedAddress"
+      :token-symbol="selectedToken?.data?.symbol || 'SOL'"
+      :token="selectedToken"
+      :is-open="isOpen && selectedToken.isFungible"
+      :crypto-tx-fee="transactionFee"
+      :transfer-disabled="transferDisabled"
+      @transfer-confirm="confirmTransfer"
+      @transfer-cancel="closeModal"
+      @on-close-modal="closeModal"
+    />
+    <TransferNFT
+      :sender-pub-key="ControllerModule.selectedAddress"
+      :receiver-pub-key="resolvedAddress"
+      :crypto-amount="sendAmount"
+      :receiver-verifier="selectedVerifier"
+      :receiver-verifier-id="resolvedAddress"
+      :is-open="isOpen && !selectedToken.isFungible"
+      :token="selectedToken"
+      :crypto-tx-fee="transactionFee"
+      :transfer-disabled="transferDisabled"
+      @transfer-confirm="confirmTransfer"
+      @transfer-reject="closeModal"
+      @on-close-modal="closeModal"
     />
   </div>
 </template>
@@ -472,6 +470,6 @@ watch(transferTo, () => {
   @apply dark:bg-app-gray-700;
 }
 .currency-selector {
-  @apply font-body py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+  @apply py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
 }
 </style>

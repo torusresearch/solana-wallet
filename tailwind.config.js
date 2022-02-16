@@ -10,7 +10,7 @@ const appColors = {
 };
 
 module.exports = {
-  purge: [
+  content: [
     "public/index.html",
     "src/**/*.{ts,tsx,jsx,js,vue}",
     "node_modules/\\@toruslabs/**/*.{ts,tsx,jsx,js,vue}",
@@ -66,6 +66,10 @@ module.exports = {
           warning: "#FBC94A",
           error: "#FB4A61",
           info: "#D4D4D4",
+          green: tailwindColors.emerald,
+          yellow: tailwindColors.amber,
+          purple: tailwindColors.violet,
+          current: "currentColor",
         },
       },
       boxShadow: {
@@ -83,17 +87,6 @@ module.exports = {
         "lg-xl": { min: "1280px", max: "1535px" }, // between lg and xl
         "gt-2xl": { min: "1536px" }, // more than 2xl
       },
-    },
-  },
-  variants: {
-    extend: {
-      opacity: ["disabled"],
-      backgroundColor: ["disabled", "active", "hover"],
-      textColor: ["disabled", "active"],
-      borderColor: ["disabled"],
-      outline: ["focus"],
-      boxShadow: ["dark"],
-      textOpacity: ["hover"],
     },
   },
   plugins: [require("@tailwindcss/forms")],

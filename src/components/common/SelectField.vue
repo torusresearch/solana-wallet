@@ -47,7 +47,7 @@ const value = computed({
         class="shadow-inner dark:shadow-none dark:bg-app-gray-800 rounded-md w-full px-3 flex justify-end items-center"
         :class="[`size-${size}`]"
       >
-        <span class="flex items-center flex-grow min-w-0">
+        <span class="flex items-center grow min-w-0">
           <span
             v-if="placeholder && !inputIsDirty"
             class="truncate text-app-text-500 dark:text-app-text-dark-600 dark:text-opacity-50 pr-4"

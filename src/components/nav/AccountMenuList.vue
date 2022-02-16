@@ -95,7 +95,7 @@ const getWalletBalance = (address: string): string => {
           <div class="ml-auto text-xs text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ getWalletBalance(wallet) }} {{ currency }}</div>
         </div>
         <div class="flex">
-          <div class="text-xxs w-full overflow-x-hidden overflow-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
+          <div class="text-xxs w-full overflow-x-hidden text-ellipsis mr-2 pl-5 text-app-text-400 dark:text-app-text-dark-500">
             {{ wallet }}
           </div>
           <div class="ml-auto flex space-x-1">

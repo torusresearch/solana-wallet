@@ -29,8 +29,8 @@ const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" :initial-focus="refDiv" as="div" @close="closeModal">
-      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
+    <Dialog :open="isOpen" :initial-focus="refDiv" :class="{ dark: ControllerModule.isDarkMode }" as="div" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
@@ -45,7 +45,7 @@ const refDiv = ref(null);
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="inline-block gt-sm:w-96 align-middle transition-all transform bg-white dark:bg-app-gray-700 rounded-md">
+            <div class="relative inline-block gt-sm:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md">
               <DialogTitle
                 as="div"
                 class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md flex justify-center py-8 relative"

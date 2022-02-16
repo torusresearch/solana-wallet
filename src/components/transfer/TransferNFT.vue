@@ -20,9 +20,9 @@ const props = withDefaults(
   defineProps<{
     senderPubKey: string;
     receiverPubKey: string;
-    receiverVerifierId: string;
-    receiverVerifier: string;
-    cryptoAmount: number;
+    receiverVerifierId?: string;
+    receiverVerifier?: string;
+    cryptoAmount?: number;
     cryptoTxFee: number;
     tokenSymbol?: string;
     transferDisabled?: boolean;
@@ -48,19 +48,19 @@ const currency = computed(() => ControllerModule.torus.currentCurrency);
 const pricePerToken = computed<number>((): number => {
   return ControllerModule.torus.conversionRate;
 });
-const emits = defineEmits(["transferConfirm", "onCloseModal"]);
+const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
 const closeModal = () => {
   emits("onCloseModal");
 };
 
 const onCancel = () => {
-  closeModal();
+  emits("transferReject");
 };
 
 const onConfirm = () => {
-  closeModal();
   emits("transferConfirm");
+  closeModal();
 };
 // Transaction fee
 const fiatTxFeeString = computed(() => {
@@ -75,7 +75,7 @@ const refDiv = ref(null);
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
-      <div ref="refDiv" class="fixed inset-0 z-10 overflow-y-auto">
+      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
 
@@ -91,9 +91,9 @@ const refDiv = ref(null);
             leave-to="opacity-0 scale-95"
           >
             <div
-              class="inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4"
+              class="relative inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4"
             >
-              <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
+              <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6 w-full">
                 <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
                   {{ t("walletTransfer.confirmTransaction") }}
                 </p>
@@ -119,7 +119,7 @@ const refDiv = ref(null);
                   />
                 </div>
                 <div class="flex flex-col justify-center items-start h-full w-full ml-6">
-                  <div class="flex flex-col justify-center items-start flex-auto w-full">
+                  <div class="flex flex-col justify-center items-start flex-auto">
                     <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftName") }}</p>
                     <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.name }}</p>
                   </div>
@@ -127,7 +127,7 @@ const refDiv = ref(null);
                     <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftSymbol") }}</p>
                     <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.symbol }}</p>
                   </div>
-                  <div class="flex flex-col justify-center items-start flex-auto w-full">
+                  <div class="flex flex-col justify-center items-start flex-auto">
                     <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.viewNFT") }}</p>
                     <a
                       class="property-value text-app-text-500 dark:text-app-text-dark-500"
@@ -151,15 +151,17 @@ const refDiv = ref(null);
                   <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
                 </div>
               </div>
-              <div class="flex flex-row justify-around items-center m-6">
-                <p class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="onCancel" @keydown="onCancel">
+              <div class="flex flex-row items-center my-6 mx-3">
+                <p
+                  class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer flex-auto w-1/2 mx-2 text-center"
+                  @click="onCancel"
+                  @keydown="onCancel"
+                >
                   {{ t("walletTransfer.cancel") }}
                 </p>
-                <div>
-                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
-                    t("walletTransfer.confirm")
-                  }}</Button>
-                </div>
+                <Button class="flex-auto mx-2 w-1/2" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                  t("walletTransfer.confirm")
+                }}</Button>
               </div>
             </div>
           </TransitionChild>
@@ -169,27 +171,15 @@ const refDiv = ref(null);
   </TransitionRoot>
 </template>
 <style scoped>
-.line_connect {
-  transform: translateY(-7px);
-}
-.img-container {
-  min-width: 160px;
-}
 .img_preview {
   max-width: 160px;
-  height: 160px;
   min-width: 160px;
-  border-radius: 6px;
-  object-fit: cover;
+  @apply h-40 rounded-md object-cover;
 }
 .property-name {
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 18px;
+  @apply font-bold text-sm leading-4;
 }
 .property-value {
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 18px;
+  @apply text-sm leading-4;
 }
 </style>

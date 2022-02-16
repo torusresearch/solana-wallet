@@ -1,173 +1,60 @@
 <script setup lang="ts">
 import { SolanaToken } from "@toruslabs/solana-controllers";
 
-import FallbackNft from "@/assets/nft.png";
-import { Button } from "@/components/common";
-import { NFT_CARD_MODE } from "@/utils/enums";
+import FallbackNft from "@/assets/fallback-nft.svg";
 import { setFallbackImg } from "@/utils/helpers";
-import { ClubbedNfts } from "@/utils/interfaces";
 
-const props = defineProps<{
+defineProps<{
   nftToken?: SolanaToken;
-  mode: NFT_CARD_MODE;
-  summaryData?: ClubbedNfts; // used when mode is summary
 }>();
 
-const emits = defineEmits(["cardClicked", "transferClicked", "closeClicked"]);
+const emits = defineEmits(["cardClicked"]);
 
 function cardClicked() {
   emits("cardClicked");
 }
-
-function transferClicked() {
-  emits("transferClicked");
-}
-function closeClicked() {
-  emits("closeClicked");
-}
 </script>
 
 <template>
-  <div
-    :class="
-      mode !== NFT_CARD_MODE.SUMMARY
-        ? `flex items-center justify-start`
-        : `my-3 px-3 overflow-hidden w-full sm:w-1/2 md:w-1/3 xl:w-1/4 lg:w-1/4 cursor-pointer`
-    "
-    @click="cardClicked"
-    @keydown="cardClicked"
-  >
+  <div class="p-2 w-full overflow-hidden">
     <div
-      v-if="props.summaryData && mode === NFT_CARD_MODE.SUMMARY"
-      class="cursor-pointer p-3 shadow dark:shadow-dark nft-container border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md summary-card"
+      class="w-full cursor-pointer bg-white dark:bg-app-gray-700 rounded-lg shadow-md dark:shadow-dark overflow-hidden"
+      @click="cardClicked"
+      @keydown="cardClicked"
     >
-      <div class="nft-item flex flex-row justify-start items-center w-100 h-100 overflow-hidden max-w-full">
-        <div class="nft-face img-loader-container">
-          <img :src="props.summaryData.img" class="nft-face" alt="NFT LOGO" @error="setFallbackImg($event.target, FallbackNft)" />
-        </div>
-        <div class="flex flex-col justify-center align-center w-100 h-100 flex-1">
-          <p class="token-name">{{ props.summaryData.collectionName }}</p>
-          <p class="token-desc summary">{{ `${props.summaryData.count || 1} Assets` }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div
-      v-if="mode !== NFT_CARD_MODE.SUMMARY && nftToken"
-      class="large-card cursor-pointer my-3 px-3 shadow dark:shadow-dark border border-app-gray-200 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
-    >
-      <div class="nft-item flex flex-col justify-start align-start w-100">
-        <div class="nft-face-large" style="background-color: rgb(156, 156, 156)">
+      <div class="flex flex-col">
+        <div class="w-full relative">
+          <!-- hack for 1:1 ratio-->
+          <div class="h-0 pt-[100%] w-full"></div>
           <img
-            :src="nftToken?.metaplexData?.offChainMetaData?.image"
-            class="nft-face-large"
+            :src="nftToken?.metaplexData?.offChainMetaData?.image || FallbackNft"
+            class="absolute top-0 left-0 overflow-hidden w-full h-full object-cover"
             alt="NFT LOGO"
             @error="setFallbackImg($event.target, FallbackNft)"
           />
         </div>
-        <div class="flex flex-col justify-center align-center w-100 h-100">
-          <p class="token-name">{{ nftToken.metaplexData?.offChainMetaData?.name }}</p>
-          <p class="token-family mt-1 text-app-text-600 dark:text-app-text-dark-500">
-            {{ nftToken.metaplexData?.offChainMetaData?.collection?.name }}
-          </p>
-        </div>
-        <template v-if="mode === NFT_CARD_MODE.EXPANDED">
-          <div v-if="nftToken.metaplexData?.offChainMetaData?.description" class="flex flex-col justify-center align-center w-100 h-100 mt-4">
-            <p class="field-title mb-1">Description</p>
-            <p class="token-desc ml-2">{{ nftToken.metaplexData?.offChainMetaData?.description }}</p>
-          </div>
-
-          <div v-if="nftToken.metaplexData?.offChainMetaData?.attributes?.length" class="flex flex-col justify-center align-center w-100 h-100 mt-4">
-            <p class="field-title">Attributes</p>
-            <p v-for="attribute in nftToken.metaplexData?.offChainMetaData.attributes" :key="`${attribute.value}`" class="token-desc mt-1 ml-2">
-              {{ attribute.trait_type }}: {{ attribute.value }}
+        <div class="flex items-center justify-between h-20 px-2">
+          <div class="flex flex-col space-y-1 w-[70%]">
+            <p class="token-name">{{ nftToken?.metaplexData?.offChainMetaData?.name }}</p>
+            <p class="font-normal text-xs leading-3 truncate text-app-text-600 dark:text-app-text-400">
+              {{ nftToken?.metaplexData?.offChainMetaData?.collection?.name }}
             </p>
           </div>
-          <!-- <button class="mt-5" @click="transferClicked()">Transfer</button> -->
-          <Button variant="outline" :block="true" class="mt-5" size="small" @click="transferClicked()">Transfer</Button>
-          <p class="cursor-pointer text-center mt-5 text-app-text-500 dark:text-app-text-dark-500" @click="closeClicked()" @keydown="closeClicked()">
-            Close
-          </p>
-        </template>
+          <div class="rounded-full overflow-hidden h-10 w-10">
+            <img
+              alt="collection"
+              :src="nftToken?.metaplexData?.offChainMetaData?.image || FallbackNft"
+              class="rounded-full overflow-hidden h-10 w-10 object-cover"
+              @error="setFallbackImg($event.target, FallbackNft)"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <style scoped>
-.nft-face {
-  height: 40px;
-  width: 40px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-right: 16px;
-}
-.nft-face-container {
-  height: 40px;
-  width: 40px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-right: 16px;
-  background: rgb(156, 156, 156);
-}
-/* .nft-container {
-  min-height: 80px;
-  padding: 20px;
-} */
-
 .token-name {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 19px;
-  color: #2f3136;
-  word-break: break-word;
+  @apply font-bold text-sm leading-5 text-gray-800 break-all dark:text-app-text-dark-white truncate;
 }
-
-.token-desc,
-.token-family {
-  font-style: normal;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 14px;
-}
-.dark .token-name,
-.dark .token-desc {
-  color: #ffffff;
-}
-
-.large-card {
-  width: 185px;
-  padding: 16px 16px 26px 16px;
-  margin-bottom: 40px;
-}
-.nft-face-large {
-  width: 153px;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin: 0 auto 16px auto;
-}
-
-.nft-face-large-container {
-  width: 153px;
-  height: 160px;
-  border-radius: 6px;
-  margin: 0 auto 16px auto;
-}
-.field-title {
-  color: #979797;
-  font-size: 12px;
-  font-weight: bold;
-}
-.summary {
-  white-space: nowrap;
-}
-.summary-card {
-  max-width: 320px;
-  overflow: hidden;
-  margin: auto;
-}
-/* .container-card {
-  width: 290px;
-} */
 </style>

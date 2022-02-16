@@ -1,15 +1,33 @@
 <script setup lang="ts">
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT, PopupWhitelabelData } from "@toruslabs/base-controllers";
+import {
+  BROADCAST_CHANNELS,
+  BroadcastChannelHandler,
+  broadcastChannelOptions,
+  POPUP_RESULT,
+  PopupWhitelabelData,
+  ProviderConfig,
+} from "@toruslabs/base-controllers";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted, reactive } from "vue";
-// import log from "loglevel";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+
+const { params, isRedirectFlow, req_id, resolveRoute, method, jsonrpc } = useRedirectFlow({
+  blockExplorerUrl: "?cluster=mainnet",
+  chainId: "0x1",
+  displayName: "Solana Mainnet",
+  logo: "solana.svg",
+  rpcTarget: "https://api.mainnet-beta.solana.com",
+  ticker: "SOL",
+  tickerName: "Solana Token",
+});
 
 const { t } = useI18n();
 
@@ -21,6 +39,7 @@ interface FinalTxData {
   fromNetwork: string;
   whitelabelData: PopupWhitelabelData;
 }
+
 const finalProviderData = reactive<FinalTxData>({
   origin: "",
   toNetwork: "",
@@ -29,30 +48,45 @@ const finalProviderData = reactive<FinalTxData>({
     theme: "light",
   },
 });
+
 onMounted(async () => {
-  const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
-  const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
-  finalProviderData.origin = providerData.origin;
-  finalProviderData.toNetwork = providerData.newNetwork.displayName;
-  finalProviderData.fromNetwork = providerData.currentNetwork;
-  finalProviderData.whitelabelData = providerData.whitelabelData;
+  if (!isRedirectFlow) {
+    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
+    const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
+    finalProviderData.origin = providerData.origin;
+    finalProviderData.toNetwork = providerData.newNetwork.displayName;
+    finalProviderData.fromNetwork = providerData.currentNetwork;
+    finalProviderData.whitelabelData = providerData.whitelabelData;
+  } else {
+    finalProviderData.toNetwork = params.displayName;
+    finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+  }
 });
 const approveProviderChange = async (): Promise<void> => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({
-    data: { type: POPUP_RESULT, approve: true },
-  });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({
+      data: { type: POPUP_RESULT, approve: true },
+    });
+    bc.close();
+  } else {
+    ControllerModule.torus.setNetwork(params as ProviderConfig);
+    redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
+  }
 };
 const denyProviderChange = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+    bc.close();
+  } else {
+    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
+  }
 };
 </script>
 
 <template>
-  <div class="h-full w-full bg-white dark:bg-app-gray-700 flex justify-center items-center" :class="{ dark: ControllerModule.isDarkMode }">
+  <div class="h-full w-full bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="content-box h-full bg-white dark:bg-app-gray-700 flex flex-col justify-between shadow dark:shadow-dark">
       <div class="shadow w-full dark:shadow-dark text-center py-6 relative" tabindex="0">
         <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="SolanaLogoURL" alt="Solana Logo" />
@@ -67,16 +101,16 @@ const denyProviderChange = async () => {
             {{ t("dappPermission.changeNetwork", { network: finalProviderData.toNetwork }) }}
           </div>
           <!-- <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
+            <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500">Requested From:</div>
           </div> -->
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">
+            <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">
               {{ `${t("dappPermission.currentNetwork")}:` }}
             </div>
             <div class="col-span-3"><TextField v-model="finalProviderData.fromNetwork" type="text" :disabled="true" /></div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
-            <div class="col-span-3 font-body text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("dappPermission.requestNew") }}</div>
+            <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("dappPermission.requestNew") }}</div>
             <div class="col-span-3"><TextField v-model="finalProviderData.toNetwork" type="text" :disabled="true" /></div>
           </div>
         </div>

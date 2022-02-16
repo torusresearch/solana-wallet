@@ -1,5 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   BasePopupChannelData,
@@ -17,25 +18,30 @@ import {
   SelectedAddresssChangeChannelData,
   THEME,
   TX_EVENTS,
+  UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import nacl from "@toruslabs/tweetnacl-js";
+import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
+import base58 from "bs58";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
+import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
-import i18nPlugin from "@/plugins/i18nPlugin";
-import installStorePlugin from "@/plugins/persistPlugin";
+import { i18n } from "@/plugins/i18nPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { isMain } from "@/utils/helpers";
+import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
+import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -48,7 +54,10 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+  public torus = new TorusController({
+    _config: DEFAULT_CONFIG,
+    _state: cloneDeep(DEFAULT_STATE),
+  });
 
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
@@ -90,12 +99,20 @@ class ControllerModule extends VuexModule {
         if (item.decimal === 0) {
           const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
           if (nftInfo) {
-            return { ...item, logoURI: nftInfo.offChainMetaData?.image, cryptoCurrency: nftInfo.symbol };
+            return {
+              ...item,
+              logoURI: nftInfo.offChainMetaData?.image,
+              cryptoCurrency: nftInfo.symbol,
+            };
           }
         } else {
           const tokenInfo = this.torusState.TokenInfoState.tokenInfoMap[item.mintAddress];
           if (tokenInfo) {
-            return { ...item, logoURI: tokenInfo.logoURI, cryptoCurrency: tokenInfo.symbol };
+            return {
+              ...item,
+              logoURI: tokenInfo.logoURI,
+              cryptoCurrency: tokenInfo.symbol,
+            };
           }
         }
       }
@@ -116,6 +133,10 @@ class ControllerModule extends VuexModule {
 
   get currentCurrency(): string {
     return this.torus.currentCurrency;
+  }
+
+  get lastTokenRefreshDate(): Date {
+    return this.torus.lastTokenRefreshDate;
   }
 
   // user balance in equivalent selected currency
@@ -155,7 +176,13 @@ class ControllerModule extends VuexModule {
           ) {
             return acc;
           }
-          return [...acc, { ...current, metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress] }];
+          return [
+            ...acc,
+            {
+              ...current,
+              metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.mintAddress],
+            },
+          ];
         }, [])
         .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
     return [];
@@ -182,6 +209,10 @@ class ControllerModule extends VuexModule {
     return [];
   }
 
+  get connection() {
+    return this.torus.connection;
+  }
+
   @Mutation
   public setInstanceId(instanceId: string) {
     this.instanceId = instanceId;
@@ -194,7 +225,10 @@ class ControllerModule extends VuexModule {
 
   @Mutation
   public resetTorusController(): void {
-    this.torus = new TorusController({ _config: DEFAULT_CONFIG, _state: cloneDeep(DEFAULT_STATE) });
+    this.torus = new TorusController({
+      _config: DEFAULT_CONFIG,
+      _state: cloneDeep(DEFAULT_STATE),
+    });
   }
 
   @Action
@@ -209,7 +243,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
@@ -218,6 +252,31 @@ class ControllerModule extends VuexModule {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.CRASH_REPORT_SUCCESS));
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
+    }
+  }
+
+  @Action
+  public async refreshUserTokens() {
+    await this.torus.refreshUserTokens();
+  }
+
+  @Action
+  public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
+    try {
+      const pda = await Metadata.getPDA(mint_address);
+      const { connection } = this;
+      const pdaInfo = await connection.getAccountInfo(pda);
+      if (pdaInfo) {
+        const metadata = new Metadata(pda, pdaInfo);
+        const response = await axios.get(metadata.data.data.uri);
+        return {
+          ...metadata.data.data,
+          offChainMetaData: response.data,
+        };
+      }
+      throw new Error();
+    } catch (error) {
+      return undefined;
     }
   }
 
@@ -245,7 +304,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
@@ -256,7 +315,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
@@ -272,7 +331,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
@@ -283,7 +342,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setLocale(locale: string): Promise<void> {
-    const { t } = i18nPlugin.global;
+    const { t } = i18n.global;
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));
@@ -326,8 +385,6 @@ class ControllerModule extends VuexModule {
       if (isMain) {
         this.torus.approveSignTransaction(txMeta.id);
       } else {
-        log.info(txMeta);
-        log.info(req);
         await this.torus.handleTransactionPopup(txMeta.id, req);
       }
     });
@@ -336,6 +393,7 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
+    this.restoreFromBackend();
 
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
@@ -369,7 +427,8 @@ class ControllerModule extends VuexModule {
 
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
-    await this.torus.triggerLogin({ loginProvider, login_hint });
+    const res = await this.torus.triggerLogin({ loginProvider, login_hint });
+    this.saveToBackend({ private_key: res.privKey, saveState: res.userInfo });
   }
 
   @Action
@@ -385,7 +444,9 @@ class ControllerModule extends VuexModule {
         if (openLoginInstance.state.support3PC) {
           // eslint-disable-next-line no-underscore-dangle
           openLoginInstance._syncState(await openLoginInstance._getData());
-          await openLoginInstance.logout({ clientId: config.openLoginClientId });
+          await openLoginInstance.logout({
+            clientId: config.openLoginClientId,
+          });
         }
       } catch (error) {
         log.warn(error, "unable to logout with openlogin");
@@ -412,6 +473,7 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
+    window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
   }
 
   @Action
@@ -487,37 +549,141 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  async handleRedirectFlow({ method, params, resolveRoute }: { method: string; params: { [keyof: string]: any }; resolveRoute: string }) {
+    let res;
+    switch (method) {
+      case "topup":
+        await this.torus.handleTopup(
+          params.provider,
+          params.params ? params.params : { selectedAddress: this.selectedAddress },
+          undefined,
+          true,
+          resolveRoute as string
+        );
+        break;
+      case "wallet_instance_id":
+        res = { wallet_instance_id: "" };
+        break;
+      case "get_provider_state":
+        res = {
+          currentLoginProvider: this.torus.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          isLoggedIn: !!this.selectedAddress,
+        };
+        break;
+      case "wallet_get_provider_state":
+        res = {
+          accounts: this.torus.state.KeyringControllerState.wallets.map((e) => e.publicKey),
+          chainId: this.torus.state.NetworkControllerState.chainId,
+          isUnlocked: !!this.selectedAddress,
+        };
+        break;
+      case "user_info":
+        res = normalizeJson<UserInfo>(this.torus.userInfo);
+        break;
+      case "get_gasless_public_key":
+        res = { pubkey: await this.torus.getGaslessPublicKey() };
+        break;
+      case "get_accounts":
+        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        break;
+      case "solana_request_accounts":
+        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        break;
+      case "nft_list":
+        await delay(15000);
+        res =
+          this.nonFungibleTokens?.map((token: SolanaToken) => {
+            return { balance: token.balance, mint: token.mintAddress, name: token.metaplexData?.name, uri: token.metaplexData?.uri };
+          }) || [];
+        break;
+      default:
+    }
+    return res;
+  }
+
+  @Action
   openWalletPopup(path: string) {
     this.torus.showWalletPopup(path, this.instanceId);
+  }
+
+  @Action
+  async saveToBackend({ private_key = "", saveState = {} }) {
+    const tempKey = new Keypair().secretKey.slice(32, 64);
+    const { pk: publicKey, sk: secretKey } = getED25519Key(private_key.padStart(64, "0"));
+    // (ephemeral private key, user public key)
+    const keyState: KeyState = {
+      priv_key: base58.encode(tempKey),
+      pub_key: base58.encode(publicKey),
+    };
+    window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
+    try {
+      const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
+      const stateString = stringify({ ...saveState, private_key: base58.encode(secretKey) });
+      const stateByteArray = Buffer.from(stateString, "utf-8");
+      const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
+
+      const timestamp = Date.now();
+      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") }; // tkey metadata structure
+      const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
+      const signature = nacl.sign.detached(dataHash, secretKey);
+      const signatureString = Buffer.from(signature).toString("hex");
+
+      await axios.post(`${config.openloginStateAPI}/set`, { pub_key: keyState.pub_key, signature: signatureString, set_data: setData });
+    } catch (error) {
+      log.error("Error saving state!", error);
+    }
+  }
+
+  @Action
+  async restoreFromBackend() {
+    const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
+    const keyState: KeyState =
+      typeof value === "string"
+        ? JSON.parse(value)
+        : {
+            priv_key: "",
+            pub_key: "",
+          };
+    try {
+      if (keyState.priv_key && keyState.pub_key) {
+        const pubKey = keyState.pub_key;
+        let res;
+        try {
+          res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+        } catch (e) {
+          window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+          throw e;
+        }
+        if (Object.keys(res).length && res.state && res.nonce) {
+          const encryptedState = res.state;
+          const nonce = Buffer.from(res.nonce, "hex");
+          const ephermalPrivateKey = base58.decode(keyState.priv_key);
+
+          const decryptedStateArray = nacl.secretbox.open(Buffer.from(encryptedState, "hex"), nonce, ephermalPrivateKey.slice(0, 32));
+          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
+          const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
+          const decryptedState = JSON.parse(decryptedStateString);
+
+          if (!decryptedState.private_key) {
+            throw new Error("Private key not found in state");
+          }
+
+          // assume valid private key
+          const address = await this.torus.addAccount(
+            base58.decode(decryptedState.private_key).toString("hex").slice(0, 64),
+            omit(decryptedState, "private_key") as UserInfo
+          );
+          this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
+        }
+      }
+    } catch (error) {
+      log.error("Error restoring state!", error);
+    } finally {
+      if (backendStatePromise.resolve) backendStatePromise.resolve("");
+    }
   }
 }
 
 const module = getModule(ControllerModule);
-
-installStorePlugin({
-  key: CONTROLLER_MODULE_KEY,
-  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
-  saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
-    const requiredState = omit(state, [`${CONTROLLER_MODULE_KEY}.torus`]);
-    storage?.setItem(key, JSON.stringify(requiredState));
-  },
-  restoreState: (key: string, storage?: Storage) => {
-    const value = storage?.getItem(key);
-    if (typeof value === "string") {
-      // If string, parse, or else, just return
-      const parsedValue = JSON.parse(value || "{}");
-      return {
-        [CONTROLLER_MODULE_KEY]: {
-          torus: new TorusController({
-            _config: DEFAULT_CONFIG,
-            _state: DEFAULT_STATE,
-          }),
-          ...(parsedValue[CONTROLLER_MODULE_KEY] || {}),
-        },
-      };
-    }
-    return value || {};
-  },
-});
 
 export default module;

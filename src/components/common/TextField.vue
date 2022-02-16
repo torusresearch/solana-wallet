@@ -11,6 +11,7 @@ const props = withDefaults(
     modelValue?: string | number;
     errors?: Array<ErrorObject>;
     type?: string;
+    disabled?: boolean;
     spellCheck?: boolean;
     postfixText?: string;
   }>(),
@@ -22,6 +23,7 @@ const props = withDefaults(
     modelValue: "",
     errors: () => [],
     type: "text",
+    disabled: false,
     spellCheck: false,
     postfixText: "",
   }
@@ -61,6 +63,7 @@ const value = computed({
       :placeholder="placeholder"
       aria-label="text field"
       :spellcheck="spellCheck"
+      :disabled="disabled"
     />
 
     <div class="p-1 h-full"><slot></slot></div>

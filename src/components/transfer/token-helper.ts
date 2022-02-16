@@ -32,6 +32,7 @@ export const nftTokens = computed<Partial<SolAndSplToken>[]>(() => {
   });
 });
 
-export function getTokenFromMint(tokenList: Partial<SolAndSplToken>[], mint: string) {
-  return tokenList.find((el) => el.mintAddress === mint);
+export function getTokenFromMint(tokenList: Partial<SolAndSplToken>[], mint: string): Partial<SolAndSplToken> | undefined {
+  const token = tokenList.find((el) => el.mintAddress === mint);
+  return token;
 }

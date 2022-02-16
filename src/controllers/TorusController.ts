@@ -3,6 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TokenInfo } from "@solana/spl-token-registry";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -63,8 +64,10 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
+import { ethErrors } from "eth-rpc-errors";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
@@ -72,6 +75,7 @@ import { Duplex } from "readable-stream";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
+import topupPlugin from "@/plugins/Topup";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -81,9 +85,10 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRelaySigned, normalizeJson } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 
@@ -181,6 +186,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private engine?: JRPCEngine;
 
+  private lastTokenRefresh: Date = new Date();
+
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
   }
@@ -211,6 +218,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController.state.identities[this.selectedAddress]?.userInfo || cloneDeep(DEFAULT_PREFERENCES.userInfo);
   }
 
+  get locale(): string {
+    return this.getAccountPreferences(this.selectedAddress)?.locale?.split("-")[0] || getUserLanguage();
+  }
+
   get communicationProvider(): SafeEventEmitterProvider {
     return this.embedController._communicationProviderProxy;
   }
@@ -238,6 +249,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.networkController?.state?.chainId;
   }
 
+  // UNSAFE METHOD: use with caution
   get privateKey(): string {
     return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
   }
@@ -263,19 +275,27 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.networkController.getProviderConfig().blockExplorerUrl;
   }
 
+  get lastTokenRefreshDate(): Date {
+    return this.lastTokenRefresh;
+  }
+
   /**
    * Always call init function before using this controller
    */
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
+
+    // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
     this.update(_state, true);
+
     this.networkController = new NetworkController({
       config: this.config.NetworkControllerConfig,
       state: this.state.NetworkControllerState,
     });
     this.initializeProvider();
+
     this.embedController = new BaseEmbedController({
       config: {},
       state: this.state.EmbedControllerState,
@@ -360,6 +380,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
     });
 
+    // TODO: this returns a promise
     this.networkController.lookupNetwork();
 
     // Listen to controller changes
@@ -381,6 +402,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
+      this.lastTokenRefresh = new Date(); // useful in UI
     });
 
     this.keyringController.on("store", (state2) => {
@@ -415,6 +437,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.updateRelayMap();
+    this.updateTokenInfoMap();
   }
 
   updateRelayMap = async (): Promise<void> => {
@@ -441,6 +464,25 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
+  // TODO: shift to TokenInfo controller if possible
+  updateTokenInfoMap = async (): Promise<void> => {
+    if (!this.tokens[this.selectedAddress]) return;
+    let tokenInfoMap: { [mintAddress: string]: TokenInfo } = {};
+    try {
+      tokenInfoMap = (
+        await axios.post(`${config.api}/tokeninfo`, {
+          mint_addresses: this.tokens[this.selectedAddress].map((e) => e.mintAddress),
+        })
+      ).data;
+      this.tokenInfoController.update({
+        tokenInfoMap,
+      });
+      this.lastTokenRefresh = new Date();
+    } catch (e) {
+      log.error(e);
+    }
+  };
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
@@ -463,10 +505,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async calculateTxFee(): Promise<{ b_hash: string; fee: number }> {
-    const b_hash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
-    const fee = 5000;
-    return { b_hash, fee };
+  async calculateTxFee(): Promise<{ blockHash: string; fee: number }> {
+    const blockHash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
+    const fee = (await this.connection.getFeeCalculatorForBlockhash(blockHash)).value?.lamportsPerSignature || 0;
+    return { blockHash, fee };
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
@@ -479,7 +521,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
-    await signedTransaction.result;
+    try {
+      await signedTransaction.result;
+    } catch (e) {
+      throw ethErrors.provider.userRejectedRequest((e as any).message);
+    }
+
     try {
       // serialize transaction
       let serializedTransaction = signedTransaction.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
@@ -503,10 +550,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async transferSpl(receiver: string, amount: number, selectedToken: SolAndSplToken): Promise<string> {
+  async transferSpl(receiver: string, amount: number, selectedToken: Partial<SolAndSplToken>): Promise<string> {
     const { connection } = this;
     const transaction = new Transaction();
-    const tokenMintAddress = selectedToken.mintAddress;
+    const tokenMintAddress = selectedToken.mintAddress as string;
     const decimals = selectedToken.balance?.decimals || 0;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
@@ -622,7 +669,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
-  signTransaction(transaction: Transaction): Transaction {
+  UNSAFE_signTransaction(transaction: Transaction): Transaction {
     return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
   }
 
@@ -660,6 +707,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async getBillboardData(): Promise<BillboardEvent[]> {
     return this.preferencesController.getBillBoardData();
+  }
+
+  async refreshUserTokens(): Promise<void> {
+    await this.tokensTracker.updateSolanaTokens();
   }
 
   setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean; rid?: string }>): void {
@@ -1035,61 +1086,43 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async embedhandleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
     const windowId = req.params?.windowId;
     const params = req.params?.params || {};
-    return this.handleTopUp(params, windowId);
+    const provider = TOPUP.MOONPAY;
+    // const provider = req.params?.provider || TOPUP.MOONPAY;
+    // if (!topupPlugin[provider]) throw ethErrors.provider.custom({ code: -32000, message: "Invalid topup provider" });
+    return this.handleTopup(provider, params, windowId);
   }
 
-  async handleTopUp(params: PaymentParams, windowId?: string): Promise<boolean> {
+  async handleTopup(provider: string, params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {
+    // async handleTopUp(finalUrl: URL, instanceId: string, windowId?: string, redirectFlow?: boolean): Promise<boolean> {
+    const instanceId = windowId || getRandomWindowId();
+    const state = {
+      // selectedAddress: params.selectedAddress || this.selectedAddress,
+      selectedAddress: this.selectedAddress,
+      email: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email,
+    };
+    log.info(params);
     try {
-      const instanceId = windowId || this.getWindowId();
-      const instanceState = encodeURIComponent(
-        window.btoa(
-          JSON.stringify({
-            instanceId,
-            provider: "RAMP_NETWORK",
-          })
-        )
-      );
-      const parameters = {
-        userAddress: params.selectedAddress || this.selectedAddress || undefined,
-        userEmailAddress: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || undefined,
-        swapAsset: params.selectedCryptoCurrency || "SOLANA_SOL" || undefined,
-        swapAmount: params.cryptoAmount || undefined,
-        fiatValue: params.fiatValue || undefined,
-        fiatCurrency: params.selectedCurrency || undefined,
-        variant: "hosted-auto",
-        webhookStatusUrl: `${config.rampApiHost}/transaction`,
-        hostUrl: "https://app.tor.us",
-        hostLogoUrl: "https://app.tor.us/images/torus-logo-blue.svg",
-        hostAppName: "Torus",
-        hostApiKey: config.rampAPIKEY,
-        finalUrl: `${config.baseRoute}redirect?state=${instanceState}`, // redirect url
-      };
-
-      // const redirectUrl = new URL(`${config.baseRoute}/redirect?instanceId=${windowId}&integrity=true&id=${windowId}`);
-      const parameterString = new URLSearchParams(JSON.parse(JSON.stringify(parameters)));
-      const finalUrl = new URL(`${config.rampHost}?${parameterString.toString()}`);
-
-      // testnet
-      // const finalUrl = new URL(`https://ri-widget-staging.firebaseapp.com/?${parameterString.toString()}`);
-
-      const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
-
-      const topUpPopUpWindow = new PopupWithBcHandler({
-        state: {
-          url: finalUrl,
-          windowId,
-        },
-        config: {
-          dappStorageKey: config.dappStorageKey || undefined,
-          communicationEngine: this.communicationEngine,
-          communicationWindowManager: this.communicationManager,
-          target: "_blank",
-        },
-        instanceId: channelName,
-      });
-      await topUpPopUpWindow.handle();
+      const finalUrl = await topupPlugin[provider].orderUrl(state, params, instanceId, redirectFlow, redirectURL);
+      if (!redirectFlow) {
+        const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
+        const topUpPopUpWindow = new PopupWithBcHandler({
+          state: {
+            url: finalUrl,
+            windowId,
+          },
+          config: {
+            dappStorageKey: config.dappStorageKey || undefined,
+            communicationEngine: this.communicationEngine,
+            communicationWindowManager: this.communicationManager,
+            target: "_blank",
+          },
+          instanceId: channelName,
+        });
+        await topUpPopUpWindow.handle();
+      } else {
+        window.location.href = finalUrl.toString();
+      }
       return true;
-      // debugger;
     } catch (err) {
       log.error(err);
       throw err;
@@ -1125,114 +1158,126 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  getWindowId = (): string => Math.random().toString(36).slice(2);
+  async signMessage(
+    req: JRPCRequest<{
+      data: Uint8Array;
+      display?: string;
+      message?: string;
+    }> & {
+      origin?: string | undefined;
+      windowId?: string | undefined;
+    },
+    isRedirectFlow = false
+  ) {
+    if (!this.selectedAddress) throw ethErrors.provider.unauthorized("User Not logged in");
 
-  private initializeProvider() {
-    const providerHandlers: IProviderHandlers = {
-      version: PKG.version,
-      requestAccounts: async (req) => {
-        const accounts = await this.requestAccounts(req);
-        this.engine?.emit("notification", {
-          method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
-          params: {
-            accounts,
-            isUnlocked: accounts.length > 0,
-          },
-        });
-        this.communicationEngine?.emit("notification", {
-          method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-          params: {
-            currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-          },
-        });
-        return accounts;
+    let approve: boolean;
+    if (!isRedirectFlow) approve = await this.handleSignMessagePopup(req);
+    else approve = true;
+    if (approve) {
+      // const msg = Buffer.from(req.params?.message || "", "hex");
+      const data = req.params?.data as Uint8Array;
+      return this.keyringController.signMessage(data, this.selectedAddress);
+    }
+    throw ethErrors.provider.userRejectedRequest("User Rejected");
+  }
+
+  async getGaslessPublicKey() {
+    const relayPublicKey = this.state.RelayMap.torus;
+    if (!relayPublicKey) throw new Error("Invalid Relay");
+    return relayPublicKey;
+  }
+
+  async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
+    // sign all transaction
+    const allTransactions = req.params?.message?.map((msg) => {
+      let tx = Transaction.from(Buffer.from(msg, "hex"));
+      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      return signedMessage;
+    });
+    return allTransactions;
+  }
+
+  async providerSignAllTransaction(req: Ihandler<{ message: string[] | undefined }>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+
+    const approved = await this.handleTransactionPopup("", req);
+
+    // throw error on reject
+    if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
+    // sign all transaction
+    const allTransactions = req.params?.message?.map((msg) => {
+      let tx = Transaction.from(Buffer.from(msg, "hex"));
+      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      return signedMessage;
+    });
+    return allTransactions;
+  }
+
+  private async providerRequestAccounts(req: JRPCRequest<unknown>) {
+    const accounts = await this.requestAccounts(req);
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+      params: {
+        accounts,
+        isUnlocked: accounts.length > 0,
       },
+    });
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+      params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+    });
+    return accounts;
+  }
 
-      // Expose no accounts if this origin has not been approved, preventing
-      // account-requiring RPC methods from completing successfully
-      // only show address if account is unlocked
-      getAccounts: async () => (this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : []),
-      signMessage: async (
-        req: JRPCRequest<{
-          data: Uint8Array;
-          display: string;
-          message?: string;
-        }> & {
-          origin?: string | undefined;
-          windowId?: string | undefined;
-        }
-      ) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
-        const approve = await this.handleSignMessagePopup(req);
-        if (approve) {
-          // const msg = Buffer.from(req.params?.message || "", "hex");
-          const data = req.params?.data as Uint8Array;
-          return this.keyringController.signMessage(data, this.selectedAddress);
-        }
-        throw new Error("User Rejected");
-      },
-      signTransaction: async (req) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
+  private async getAccounts() {
+    return this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
+  }
 
-        const message = req.params?.message;
-        if (!message) throw new Error("empty error message");
+  private async providerSignTransaction(req: JRPCRequest<any>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
 
-        const tx = Transaction.from(Buffer.from(message, "hex"));
+    const message = req.params?.message;
+    if (!message) throw new Error("empty error message");
 
-        const ret_signed = await this.txController.addSignTransaction(tx, req);
-        const result = await ret_signed.result;
-        log.info(result);
+    const tx = Transaction.from(Buffer.from(message, "hex"));
 
-        let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
-        const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-        if (gaslessHost) {
-          signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
-        }
-        return signed_tx;
-      },
-      signAllTransactions: async (req) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
+    const ret_signed = await this.txController.addSignTransaction(tx, req);
+    try {
+      await ret_signed.result;
+    } catch (e) {
+      throw ethErrors.provider.userRejectedRequest((e as any).message);
+    }
 
-        // send to popup with all transaction
-        const approved = await this.handleTransactionPopup("", req);
+    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+    const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
+    if (gaslessHost) {
+      signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
+    }
+    return signed_tx;
+  }
 
-        // throw error on reject
-        if (!approved) throw new Error("User Rejected the Transaction");
+  private async sendTransaction(req: JRPCRequest<any>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
 
-        // sign all transaction
-        const allTransactions = req.params?.message.map((msg) => {
-          let tx = Transaction.from(Buffer.from(msg, "hex"));
-          tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-          const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
-          return signedMessage;
-        });
-        return allTransactions;
-      },
-      sendTransaction: async (req) => {
-        if (!this.selectedAddress) throw new Error("Not logged in");
+    const message = req.params?.message;
+    if (!message) throw new Error("empty error message");
 
-        const message = req.params?.message;
-        if (!message) throw new Error("empty error message");
+    const tx = Transaction.from(Buffer.from(message, "hex"));
 
-        const tx = Transaction.from(Buffer.from(message, "hex"));
+    return this.transfer(tx, req);
+  }
 
-        return this.transfer(tx, req);
-      },
-      getProviderState: (req, res, _, end) => {
-        res.result = {
-          accounts: this.keyringController.getPublicKeys(),
-          chainId: this.networkController.state.chainId,
-          isUnlocked: !!this.selectedAddress,
-        };
-        end();
-      },
-      getGaslessPublicKey: async () => {
-        const relayPublicKey = this.state.RelayMap.torus;
-        if (!relayPublicKey) throw new Error("Invalid Relay");
-        return relayPublicKey;
-      },
+  private getNetworkProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    res.result = {
+      accounts: this.keyringController.getPublicKeys(),
+      chainId: this.networkController.state.chainId,
+      isUnlocked: !!this.selectedAddress,
     };
-    return this.networkController.initializeProvider(providerHandlers);
+    end();
   }
 
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
@@ -1282,29 +1327,56 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   }
 
+  private async getCommProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    res.result = {
+      currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      isLoggedIn: !!this.selectedAddress,
+    };
+    end();
+  }
+
+  private async topup(req: JRPCRequest<TopupInput>) {
+    return this.embedhandleTopUp(req);
+  }
+
+  private async getWalletInstanceId() {
+    return "";
+  }
+
+  private async getUserInfo(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    res.result = normalizeJson<UserInfo>(this.userInfo);
+    end();
+  }
+
+  private initializeProvider() {
+    const providerHandlers: IProviderHandlers = {
+      version: PKG.version,
+      requestAccounts: this.providerRequestAccounts.bind(this),
+
+      // Expose no accounts if this origin has not been approved, preventing
+      // account-requiring RPC methods from completing successfully
+      // only show address if account is unlocked
+      getAccounts: this.getAccounts.bind(this),
+      signMessage: this.signMessage.bind(this),
+      signTransaction: this.providerSignTransaction.bind(this),
+      signAllTransactions: this.providerSignAllTransaction.bind(this),
+      sendTransaction: this.sendTransaction.bind(this),
+      getProviderState: this.getNetworkProviderState.bind(this),
+      getGaslessPublicKey: this.getGaslessPublicKey.bind(this),
+    };
+    return this.networkController.initializeProvider(providerHandlers);
+  }
+
   private initializeCommunicationProvider() {
     const commProviderHandlers: ICommunicationProviderHandlers = {
       setIFrameStatus: this.setIFrameStatus.bind(this),
       changeProvider: this.changeProvider.bind(this),
       logout: this.logout.bind(this),
-      getUserInfo: (req, res, _, end) => {
-        res.result = normalizeJson<UserInfo>(this.userInfo);
-        end();
-      },
-      getWalletInstanceId: () => {
-        return "";
-      },
-      topup: async (req) => {
-        return this.embedhandleTopUp(req);
-      },
+      getUserInfo: this.getUserInfo.bind(this),
+      getWalletInstanceId: this.getWalletInstanceId.bind(this),
+      topup: this.topup.bind(this),
       handleWindowRpc: this.communicationManager.handleWindowRpc,
-      getProviderState: (req, res, _, end) => {
-        res.result = {
-          currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-          isLoggedIn: !!this.selectedAddress,
-        };
-        end();
-      },
+      getProviderState: this.getCommProviderState.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }

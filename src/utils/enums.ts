@@ -28,14 +28,17 @@ import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;
-export const RAMPNETWORK = "rampnetwork";
-
 export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=1200";
 
 export type OpenLoginPopupResponse = {
   userInfo: OpenloginUserInfo;
   privKey: string;
 };
+
+export interface KeyState {
+  priv_key: string;
+  pub_key: string;
+}
 
 export interface TorusControllerState extends BaseState {
   NetworkControllerState: NetworkState;
@@ -87,6 +90,12 @@ export const NAVIGATION_LIST = {
     title: "walletTopUp.selectProvider",
     route: "topup",
     icon: DatabaseIcon,
+  },
+  nfts: {
+    name: "navBar.nfts",
+    title: "navBar.nfts",
+    route: "nfts",
+    icon: ListIcon,
   },
   activity: {
     name: "navBar.activity",
@@ -274,3 +283,82 @@ export const LOCALES = [
     value: LOCALE_ES,
   },
 ];
+
+export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean } } = {
+  logout: {
+    redirectPath: "/logout",
+    requiresLogin: false,
+  },
+  login: {
+    redirectPath: "/login",
+    requiresLogin: false,
+  },
+  wallet_instance_id: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  set_provider: {
+    redirectPath: "/providerchange",
+    requiresLogin: true,
+  },
+  topup: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  get_provider_state: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  wallet_get_provider_state: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  send_transaction: {
+    redirectPath: "/confirm",
+    requiresLogin: true,
+  },
+  sign_transaction: {
+    redirectPath: "/confirm",
+    requiresLogin: true,
+  },
+  sign_all_transactions: {
+    redirectPath: "/confirm",
+    requiresLogin: true,
+  },
+  sign_message: {
+    redirectPath: "/confirm_message",
+    requiresLogin: true,
+  },
+  connect: {
+    redirectPath: "/",
+    requiresLogin: false,
+  },
+  user_info: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  get_gasless_public_key: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  get_accounts: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  solana_request_accounts: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  spl_transfer: {
+    redirectPath: "/confirm_spl",
+    requiresLogin: true,
+  },
+  nft_list: {
+    redirectPath: "/",
+    requiresLogin: true,
+  },
+  nft_transfer: {
+    redirectPath: "/confirm_nft",
+    requiresLogin: true,
+  },
+};

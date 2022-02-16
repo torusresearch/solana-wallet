@@ -38,6 +38,18 @@
   }
 }
 
+@layer utilities {
+  .outline-black {
+    outline: 2px dotted black;
+    outline-offset: 2px;
+  }
+
+  .outline-white {
+    outline: 2px dotted white;
+    outline-offset: 2px;
+  }
+}
+
 html,
 body {
   height: 100%;
@@ -50,6 +62,20 @@ body {
   overflow: auto;
 }
 
+.back-nav {
+  height: 100vh;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #000000e0;
+  z-index: 100;
+  color: white;
+  font-size: 20px;
+  text-decoration: underline;
+  text-align: center;
+  line-height: 100vh;
+}
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -121,4 +147,12 @@ input[type=number] {
 }
 .size-large {
   height: 60px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
 }

@@ -23,11 +23,11 @@ const { t } = useI18n();
     </div>
     <transition
       enter-active-class="transition ease-out duration-200"
-      enter-from-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
       leave-active-class="transition ease-in duration-75"
-      leave-from-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
     >
       <MenuItems
         class="origin-top-right absolute right-0 mt-2 w-96 rounded-md shadow-lg dark:shadow-dark py-1 bg-white dark:bg-app-gray-700 ring-1 ring-black ring-opacity-5 focus:outline-none"

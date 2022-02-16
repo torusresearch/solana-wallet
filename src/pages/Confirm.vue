@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -10,8 +10,13 @@ import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
+
+import ControllerModule from "../modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+
+const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -40,46 +45,59 @@ const finalTxData = reactive<FinalTxData>({
   isGasless: false,
 });
 
+const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
+const network = ref("");
+
 onMounted(async () => {
   try {
-    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
-    const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
-    const networkConfig = txData.networkDetails;
+    let txData: Partial<TransactionChannelDataType>;
+    if (!isRedirectFlow) {
+      const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
+      txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
+    } else if (params?.message) {
+      txData = {
+        type: method,
+        message: params?.message,
+        signer: ControllerModule.selectedAddress,
+        origin: window.origin,
+      };
+    } else {
+      redirectToResult(jsonrpc, { message: "Invalid or Missing Params", method }, req_id, resolveRoute);
+      return;
+    }
+    origin.value = txData.origin as string;
+    network.value = txData.network || "";
 
-    origin.value = txData.origin;
-
-    // TODO: currently, controllers does not support multi transaction fllow
+    // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
       (txData.message as string[]).forEach((msg) => {
-        const tx = Transaction.from(Buffer.from(msg, "hex"));
-        tx.instructions.forEach((inst) => {
+        const tx2 = Transaction.from(Buffer.from(msg, "hex"));
+        tx2.instructions.forEach((inst) => {
           decoded.push(decodeInstruction(inst));
         });
       });
-
       decodedInst.value = decoded;
       return;
     }
 
-    const tx = Transaction.from(Buffer.from(txData.message as string, "hex"));
-    const conn = new Connection(networkConfig.rpcTarget);
-    const block = await conn.getRecentBlockhash("finalized");
+    tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
 
-    const isGasless = tx.feePayer?.toBase58() !== txData.signer;
+    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
 
-    decodedInst.value = tx.instructions.map((inst) => {
+    decodedInst.value = tx.value.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
 
     try {
-      if (tx.instructions.length > 1) return;
-      if (!tx.instructions[0].programId.equals(SystemProgram.programId)) return;
-      if (SystemInstruction.decodeInstructionType(tx.instructions[0]) !== "Transfer") return;
-      const decoded = tx.instructions.map((inst) => {
+      if (tx.value.instructions.length > 1) return;
+      if (!tx.value.instructions[0].programId.equals(SystemProgram.programId)) return;
+      if (SystemInstruction.decodeInstructionType(tx.value.instructions[0]) !== "Transfer") return;
+      const decoded = tx.value.instructions.map((inst) => {
         const decoded_inst = SystemInstruction.decodeTransfer(inst);
         return decoded_inst;
       });
@@ -96,7 +114,7 @@ onMounted(async () => {
       finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
-      finalTxData.networkDisplayName = txData.networkDetails?.displayName;
+      finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
       finalTxData.isGasless = isGasless;
     } catch (e) {
       log.error(e);
@@ -107,16 +125,48 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({
-    data: { type: POPUP_RESULT, approve: true },
-  });
-  bc.close();
+  if (!isRedirectFlow) {
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({
+      data: { type: POPUP_RESULT, approve: true },
+    });
+    bc.close();
+  } else {
+    let res: string | string[] | Transaction | undefined;
+    try {
+      if (method === "send_transaction" && tx.value) {
+        res = await ControllerModule.torus.transfer(tx.value, params);
+        redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
+      } else if (method === "sign_transaction" && tx.value) {
+        res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
+        redirectToResult(
+          jsonrpc,
+          { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
+          req_id,
+          resolveRoute
+        );
+      } else if (method === "sign_all_transactions") {
+        res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as any);
+        redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
+      } else throw new Error();
+    } catch (e) {
+      redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
+    }
+  }
 };
-const rejectTxn = async () => {
+
+const closeModal = async () => {
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
   bc.close();
+};
+
+const rejectTxn = async () => {
+  if (!isRedirectFlow) {
+    closeModal();
+  } else {
+    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
+  }
 };
 </script>
 
@@ -130,14 +180,18 @@ const rejectTxn = async () => {
     :crypto-tx-fee="finalTxData.totalSolFee"
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
-    @on-close-modal="rejectTxn()"
+    :network="network"
+    @on-close-modal="closeModal()"
     @transfer-confirm="approveTxn()"
+    @transfer-cancel="rejectTxn()"
   />
   <PermissionsTx
     v-else-if="decodedInst"
     :decoded-inst="decodedInst || []"
     :origin="origin"
-    @on-close-modal="rejectTxn()"
+    :network="network"
+    @on-close-modal="closeModal()"
     @on-approved="approveTxn()"
+    @on-cancel="rejectTxn()"
   />
 </template>

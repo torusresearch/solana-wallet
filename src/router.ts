@@ -3,6 +3,9 @@ import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordNam
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 
+import { backendStatePromise } from "./utils/helpers";
+import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
+
 const enum AuthStates {
   AUTHENTICATED = "auth",
   NON_AUTHENTICATED = "un-auth",
@@ -38,7 +41,7 @@ const router = createRouter({
           name: "walletHome",
           path: "home",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
-          meta: { title: "Home", tab: "home" },
+          meta: { title: "Home", tab: "home", tabHeader: "false" },
         },
         {
           name: "walletTransfer",
@@ -52,14 +55,21 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP" */ "@/pages/wallet/TopUp.vue"),
           meta: { title: "Top Up", tab: "topup" },
           children: [
+            // {
+            //   name: "rampNetwork",
+            //   path: "ramp-network",
+            //   component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
+            //   meta: { title: "Topup - Ramp Network" },
+            // },
             {
-              name: "rampNetwork",
-              path: "ramp-network",
-              component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
-              meta: { title: "Topup - Ramp Network" },
+              name: "moonpay",
+              path: "moonpay",
+              component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/Moonpay.vue"),
+              meta: { title: "Topup - Moonpay" },
             },
-            { path: "*", redirect: { name: "rampNetwork" } },
+            { path: "/:catchAll(.*)", redirect: { name: "moonpay" } },
           ],
+          redirect: { name: "moonpay" },
         },
         {
           name: "walletActivity",
@@ -77,17 +87,23 @@ const router = createRouter({
           name: "walletNfts",
           path: "nfts",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFTS" */ "@/pages/wallet/NftDetail.vue"),
-          meta: { title: "Nfts", tabHeader: false, tab: "home" },
+          meta: { title: "NFTs", tab: "nfts" },
         },
       ],
+    },
+    // AUTH STATE INDEPENDENT ROUTES
+    {
+      name: "walletNFT",
+      path: "/wallet/nfts/:mint_address",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFT" */ "@/pages/wallet/Nft.vue"),
+      meta: { title: "NFT Details" },
     },
     {
       name: "logout",
       path: "/logout",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),
-      meta: { title: "Logout", auth: AuthStates.AUTHENTICATED },
+      meta: { title: "Logout" },
     },
-    // AUTH STATE INDEPENDENT ROUTES
     {
       name: "start",
       path: "/start",
@@ -107,6 +123,18 @@ const router = createRouter({
       meta: { title: "Confirm" },
     },
     {
+      name: "confirm_nft",
+      path: "/confirm_nft",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/ConfirmNft.vue"),
+      meta: { title: "Confirm Nft" },
+    },
+    {
+      name: "confirm_spl",
+      path: "/confirm_spl",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/ConfirmSpl.vue"),
+      meta: { title: "Confirm Spl" },
+    },
+    {
       name: "confirm_message",
       path: "/confirm_message",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/ConfirmMessage.vue"),
@@ -117,6 +145,29 @@ const router = createRouter({
       path: "/redirect",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectHandler.vue"),
       meta: { title: "redirecting" },
+    },
+    {
+      name: "redirectflow",
+      path: "/redirectflow",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
+      meta: { title: "redirecting" },
+      beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+        const { method = "" } = getB64DecodedData(to.hash);
+        const resolveRoute = (to.query.resolveRoute as string) || "";
+        const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
+        if (!resolveRoute || !method) return next({ name: "404", query: to.query, hash: to.hash });
+        if (!ControllerModule.selectedAddress && requiresLogin)
+          return next({
+            name: "login",
+            query: {
+              redirectTo: shouldRedirect ? redirectPath : "/redirectflow",
+              resolveRoute,
+            },
+            hash: to.hash,
+          });
+        if (shouldRedirect) return next(`${redirectPath}?resolveRoute=${resolveRoute}${to.hash}`);
+        return next();
+      },
     },
     {
       name: "providerchange",
@@ -130,6 +181,12 @@ const router = createRouter({
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
       meta: { title: "Frame" },
     },
+    {
+      name: "404",
+      path: "/404",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "404" */ "@/pages/404.vue"),
+      meta: { title: "404" },
+    },
   ],
 });
 
@@ -142,20 +199,27 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
     return next();
   }
   if (!hasInstanceId(toRoute) && hasInstanceId(fromRoute)) {
-    return next({ name: toRoute.name as RouteRecordName, query: fromRoute.query, hash: toRoute.hash, params: toRoute.params });
+    return next({
+      name: toRoute.name as RouteRecordName,
+      query: fromRoute.query,
+      hash: toRoute.hash,
+      params: toRoute.params,
+    });
   }
   return next();
 });
 
-router.beforeEach((to, _, next) => {
+router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn()) {
-    next("/login");
-  } else if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn()) {
-    next("/");
-  }
-  next();
+  const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
+  if (to.name !== "frame") await backendStatePromise.promise;
+  if (to.name === "404") return next(); // to prevent 404 redirecting to 404
+  if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
+  if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
+  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
+  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+  return next();
 });
 
 export default router;

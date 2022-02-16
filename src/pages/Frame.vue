@@ -2,11 +2,11 @@
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { isMain, promiseCreator } from "@/utils/helpers";
+import { backendStatePromise, isMain, promiseCreator } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -24,6 +24,8 @@ const initParams = {
   },
   extraParams: {},
 } as EmbedInitParams;
+
+const showUI = ref(false);
 
 const hashParams = new URLSearchParams(window.location.hash.slice(1));
 const specifiedOrigin = hashParams.get("origin");
@@ -95,7 +97,9 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
+    await backendStatePromise.promise;
     ControllerModule.setupCommunication(dappOrigin);
+    showUI.value = true;
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
@@ -122,7 +126,7 @@ const closePanel = () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex justify-center items-center">
+  <div v-if="showUI" class="min-h-screen flex justify-center items-center">
     <PopupLogin
       :is-open="oauthModalVisibility && !isLoggedIn"
       :other-wallets="initParams.extraParams?.otherWallets"

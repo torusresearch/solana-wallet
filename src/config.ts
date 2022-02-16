@@ -37,6 +37,7 @@ export default {
   commonApiHost: "https://common-api.tor.us",
   metadataHost: "https://metadata.tor.us",
   api: "https://solana-api.tor.us",
+  openloginStateAPI: "https://solana-openlogin-state.tor.us",
   redirect_uri: redirectURI,
   dappStorageKey,
 
@@ -49,7 +50,7 @@ export default {
   },
 
   torusNetwork: VUE_APP_TORUS_NETWORK as OPENLOGIN_NETWORK_TYPE,
-  openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE",
+  openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE", // or BMZf6WLV8sgy7uevrgbgPi1eSXdpbBJK6DValUJjz1MuXZKj9kRzcYU10HUm-ZGFjKVVH7Yb0VXeWiKP1-v1J4c
   openLoginWhiteLabel: {
     dark: false,
     name: "Solana Wallet",
@@ -65,6 +66,12 @@ export default {
 
   rampHost: "https://widget-instant.ramp.network",
 
+  moonpayApiHost: "https://moonpay-api.tor.us",
+  moonpayHost: "https://buy.moonpay.io",
+  moonpayApiQuoteHost: "https://api.moonpay.io",
+  moonpayLiveAPIKEY: "pk_live_Wg90NLnFst3ms7tiqnMDDO0yjlypMzYK",
+  moonpayTestHost: "https://buy-staging.moonpay.io",
+  moonpayTestAPIKEY: "pk_test_j6AnwGJD0XTJDg3bTO37OczjFsddYpS",
   // key is the login provider
   loginConfig: {
     [LOGIN_PROVIDER.GOOGLE]: {
