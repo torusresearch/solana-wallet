@@ -106,6 +106,8 @@ import {
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { createTransaction } from "@/utils/solanapay/createTransaction";
+import { parseURL } from "@/utils/solanapay/parseURL";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -834,21 +836,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     walletPopupWindow.open();
   }
 
-  async solanapay() {
-    const url =
-      "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=0.01&reference=82ZJ7nbGpixjeDCmEhUcmwXYfvurzAgGdtSMuHnUgyny&label=Michael&message=Thanks%20for%20all%20the%20fish&memo=OrderId5678";
-
-    const { recipient, message, memo, amount, reference, label } = parseURL(url);
-    log.error("label: ", label);
-    log.info("message: ", message);
-
-    /**
-     * Create the transaction with the parameters decoded from the URL
-     */
+  async solanapay(url: string) {
+    const { recipient, memo, amount, reference, splToken } = parseURL(url);
     const tx = await createTransaction(this.connection, new PublicKey(this.selectedAddress), recipient, amount as BigNumber, {
+      splToken,
       reference,
       memo,
     });
+    log.info(tx);
+    // this.transfer(tx);
     return tx;
   }
 

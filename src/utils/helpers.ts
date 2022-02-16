@@ -274,3 +274,16 @@ export function getBrowserKey() {
   }
   return id;
 }
+export const TokenAccountLayout = borsh.struct([
+  borsh.publicKey("mint"),
+  borsh.publicKey("owner"),
+  borsh.u64("amount"),
+  borsh.u32("delegateOption"),
+  borsh.publicKey("delegate"),
+  borsh.u8("state"),
+  borsh.u32("isNativeOption"),
+  borsh.u64("isNative"),
+  borsh.u64("delegatedAmount"),
+  borsh.u32("closeAuthorityOption"),
+  borsh.publicKey("closeAuthority"),
+]);
