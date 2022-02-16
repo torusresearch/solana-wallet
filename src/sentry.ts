@@ -1,8 +1,12 @@
+import * as FullStory from "@fullstory/browser";
 import { Integrations } from "@sentry/browser";
+import SentryFullStory from "@sentry/fullstory";
 import * as Sentry from "@sentry/vue";
 import LoglevelSentryPlugin, { redactBreadcrumbData } from "@toruslabs/loglevel-sentry";
 import log from "loglevel";
 import { App } from "vue";
+
+FullStory.init({ orgId: "17H3CQ" });
 
 function getSampleRate() {
   try {
@@ -19,7 +23,7 @@ export function installSentry(Vue: App) {
     environment: process.env.VUE_APP_MODE,
     release: `solana-wallet@${process.env.VUE_APP_SOLANA_BUILD_VERSION}`,
     autoSessionTracking: true,
-    integrations: [new Integrations.Breadcrumbs({ console: false })],
+    integrations: [new Integrations.Breadcrumbs({ console: false }), new SentryFullStory("torus")],
     sampleRate: getSampleRate(),
     normalizeDepth: 5,
     ignoreErrors: [
