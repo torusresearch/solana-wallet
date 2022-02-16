@@ -44,7 +44,7 @@ const orderUrl = async (
     apiKey: config.moonpayLiveAPIKEY,
     // apiKey: config.moonpayTestAPIKEY,
     enabledPaymentMethods: "credit_debit_card,sepa_bank_transfer,gbp_bank_transfer",
-    defaultCurrencyCode: params.selectedCryptoCurrency || undefined,
+    currencyCode: params.selectedCryptoCurrency || undefined,
     // walletAdress: state.selectedAddress,
     walletAddresses: JSON.stringify({ sol: state.selectedAddress }),
     //   colorCode,
