@@ -1252,7 +1252,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       throw ethErrors.provider.userRejectedRequest((e as any).message);
     }
 
-    let signed_tx = ret_signed.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
+    let signed_tx = ret_signed.transactionMeta.txReceipt as string;
     const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
     if (gaslessHost) {
       signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
