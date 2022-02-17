@@ -464,25 +464,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
-  // TODO: shift to TokenInfo controller if possible
-  // updateTokenInfoMap = async (): Promise<void> => {
-  //   if (!this.tokens[this.selectedAddress]) return;
-  //   let tokenInfoMap: { [mintAddress: string]: TokenInfo } = {};
-  //   try {
-  //     tokenInfoMap = (
-  //       await axios.post(`${config.api}/tokeninfo`, {
-  //         mint_addresses: this.tokens[this.selectedAddress].map((e) => e.mintAddress),
-  //       })
-  //     ).data;
-  //     this.tokenInfoController.update({
-  //       tokenInfoMap,
-  //     });
-  //     this.lastTokenRefresh = new Date();
-  //   } catch (e) {
-  //     log.error(e);
-  //   }
-  // };
-
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
