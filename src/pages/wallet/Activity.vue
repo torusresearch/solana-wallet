@@ -115,9 +115,13 @@ const filteredTransaction = computed(() => {
     <ActivityItem :activity="tx" />
   </div>
   <Teleport to="#rightPanel">
-    <div class="hidden sm:flex ml-auto w-fit">
-      <SelectField v-model="actionType" class="mr-4" :items="actionTypes" />
-      <SelectField v-model="period" :items="periods" />
+    <div class="flex ml-auto w-fit lt-sm:flex-col">
+      <span class="w-56">
+        <SelectField v-model="actionType" :items="actionTypes" />
+      </span>
+      <span class="w-56">
+        <SelectField v-model="period" :items="periods" />
+      </span>
     </div>
   </Teleport>
 </template>
