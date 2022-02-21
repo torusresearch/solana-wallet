@@ -73,7 +73,8 @@ import { Duplex } from "readable-stream";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import topupPlugin from "@/plugins/Topup";
+import { topupPlugin } from "@/plugins/Topup";
+import { TOPUP } from "@/plugins/Topup/interface";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -86,7 +87,6 @@ import {
 import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
-import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 

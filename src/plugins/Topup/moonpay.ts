@@ -2,8 +2,32 @@ import { PaymentParams } from "@toruslabs/base-controllers";
 import { get } from "@toruslabs/http-helpers";
 import log from "loglevel";
 
+import MoonpayLogo from "@/assets/moonpay-logo.svg";
+import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
 import config from "@/config";
-import { TOPUP } from "@/utils/topup";
+
+import { TOPUP, TopupProviderDetails } from "./interface";
+
+const configDetails: TopupProviderDetails = {
+  name: TOPUP.MOONPAY,
+  description: "walletTopUp.description",
+  paymentMethod: "Credit / Debit Card / Bank Transfer",
+  fee: "4.5% or 5 USD",
+  limit: "2,000€/day, 10,000€/mo",
+  logo: (darkMode: boolean) => {
+    return darkMode ? MoonpayLogoLight : MoonpayLogo;
+  },
+  validCryptocurrencies: [
+    {
+      value: "SOL",
+      label: "SOL",
+      symbol: "sol",
+    },
+  ],
+  validCurrencies: ["USD", "EUR", "GBP"].map((k) => {
+    return { value: k, label: k };
+  }),
+};
 
 export const getSignature = async (requestObject: { url: string }) => {
   try {
@@ -61,6 +85,13 @@ const orderUrl = async (
   //   return new URL(url);
 };
 
+const getLogoUrl = (darkMode?: boolean) => {
+  if (darkMode) return MoonpayLogoLight;
+  return MoonpayLogo;
+};
+
 export default {
+  detail: configDetails,
   orderUrl,
+  getLogoUrl,
 };

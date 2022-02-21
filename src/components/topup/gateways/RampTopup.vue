@@ -12,12 +12,14 @@ import { Button, RoundLoader, SelectField, TextField } from "@/components/common
 import config from "@/config";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
-import { TOPUP, TopupProviders } from "@/utils/topup";
+import { topupPlugin } from "@/plugins/Topup";
+import { TOPUP } from "@/plugins/Topup/interface";
+// import { TOPUP,  } from "@/utils/topup";
 
 const { t } = useI18n();
 const router = useRouter();
 const routeName = router.currentRoute.value.name?.toString() || TOPUP.MOONPAY;
-const selectedProvider = TopupProviders[routeName];
+const selectedProvider = topupPlugin[routeName].detail;
 const selectedCryptocurrency = ref(selectedProvider.validCryptocurrencies[0]);
 const selectedCurrency = ref(selectedProvider.validCurrencies[0]);
 const currency = ControllerModule.torus.currentCurrency;

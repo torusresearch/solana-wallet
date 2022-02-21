@@ -1,6 +1,46 @@
 import { PaymentParams } from "@toruslabs/base-controllers";
 
+import RampLogo from "@/assets/rampnetwork-logo.svg";
+import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 import config from "@/config";
+
+import { TOPUP, TopupProviderDetails } from "./interface";
+
+const configDetails: TopupProviderDetails = {
+  name: TOPUP.RAMPNETWORK,
+  description: "Rampnetwork",
+  paymentMethod: "Credit / Debit / Apple Pay",
+  fee: "0.62% to 2.9%",
+  limit: "5,000€/purchase, 20,000€/mo",
+  logo: (darkMode?: boolean) => {
+    return darkMode ? RampLogoLight : RampLogo;
+  },
+  validCryptocurrencies: [
+    {
+      value: "SOL",
+      label: "SOL",
+      symbol: "SOLANA_SOL",
+    },
+    {
+      value: "USDT",
+      label: "USDT",
+      symbol: "SOLANA_USDT",
+    },
+    {
+      value: "KIN",
+      label: "KIN",
+      symbol: "SOLANA_KIN",
+    },
+    {
+      value: "USDC",
+      label: "USDC",
+      symbol: "SOLANA_USDC",
+    },
+  ],
+  validCurrencies: ["USD", "EUR", "GBP", "PLN"].map((k) => {
+    return { value: k, label: k };
+  }),
+};
 
 const orderUrl = async (
   state: { selectedAddress: string; email: string },
@@ -45,6 +85,12 @@ const orderUrl = async (
   return finalUrl;
 };
 
+const getLogoUrl = (darkMode?: boolean) => {
+  if (darkMode) return RampLogoLight;
+  return RampLogo;
+};
 export default {
+  detail: configDetails,
   orderUrl,
+  getLogoUrl,
 };

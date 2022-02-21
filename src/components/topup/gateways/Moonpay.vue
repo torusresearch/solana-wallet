@@ -3,8 +3,9 @@ import { get } from "@toruslabs/http-helpers";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 
+import { TOPUP } from "@/plugins/Topup/interface";
+
 import config from "../../../config";
-import { TOPUP } from "../../../utils/topup";
 import BaseTopup, { QuoteResponse } from "./BaseTopup.vue";
 import { RequestObject } from "./types";
 
@@ -27,7 +28,8 @@ async function getQuote(requestObject: RequestObject): Promise<QuoteResponse> {
     );
   } catch (error) {
     log.error(error);
-    throw await error.json();
+    // throw await error.json();
+    throw await error;
   }
   // log.info(response);
 
