@@ -22,6 +22,12 @@ const router = createRouter({
       path: "/",
       redirect: "/wallet",
     },
+    {
+      name: "profile",
+      path: "/:address",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROFILE" */ "@/pages/Profile.vue"),
+      meta: { title: "User Profile" },
+    },
     // UNAUTHENTICATED ROUTES
     {
       name: "login",
