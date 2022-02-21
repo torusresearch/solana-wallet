@@ -121,7 +121,7 @@ onMounted(() => {
       <div class="py-6 px-4 space-y-6 sm:p-6">
         <div>
           <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">
-            {{ `${selectedProvider.title} ${t("walletTopUp.description")}.` }}
+            <span class="capitalize">{{ selectedProvider.name }}</span> {{ t(selectedProvider.description) }}.
           </p>
         </div>
 
@@ -148,7 +148,7 @@ onMounted(() => {
             <span id="resCryptoAmt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
           </div>
           <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">
-            {{ `${t("walletTopUp.rate")}: 1 ${selectedCryptocurrency.value} = ${cryptoCurrencyRate} ${selectedCurrency.value}` }}
+            {{ `${t("walletTopUp.rate")}: 1 ${selectedCryptocurrency.value} = ${cryptoCurrencyRate.toFixed(4)} ${selectedCurrency.value}` }}
           </div>
         </div>
 

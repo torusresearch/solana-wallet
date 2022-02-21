@@ -608,10 +608,9 @@ class ControllerModule extends VuexModule {
 
   @Action
   async saveToBackend({ private_key = "", saveState = {} }) {
-    const tempKey = new Keypair().secretKey;
+    const tempKey = new Keypair().secretKey.slice(32, 64);
     const { pk: publicKey, sk: secretKey } = getED25519Key(private_key.padStart(64, "0"));
-
-    // (ephermal private key, user public key)
+    // (ephemeral private key, user public key)
     const keyState: KeyState = {
       priv_key: base58.encode(tempKey),
       pub_key: base58.encode(publicKey),

@@ -10,7 +10,7 @@ export const enum TOPUP {
 
 export type TopupProvider = {
   name: string;
-  title: string;
+  description: string;
   paymentMethod: string;
   fee: string;
   limit: string;
@@ -57,7 +57,7 @@ export const TopupProviders: { [providerName: string]: TopupProvider } = {
   // },
   [TOPUP.MOONPAY]: {
     name: TOPUP.MOONPAY,
-    title: "Moonpay",
+    description: "walletTopUp.description",
     paymentMethod: "Credit / Debit Card / Bank Transfer",
     fee: "4.5% or 5 USD",
     limit: "2,000€/day, 10,000€/mo",
