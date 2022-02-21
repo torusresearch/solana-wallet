@@ -4,6 +4,7 @@ import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   addressSlicer,
+  ACTIVITY_ACTION_TOPUP,
   BasePopupChannelData,
   BillboardEvent,
   BROADCAST_CHANNELS,
@@ -18,6 +19,7 @@ import {
   ProviderConfig,
   SelectedAddresssChangeChannelData,
   THEME,
+  TransactionStatus,
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
@@ -40,6 +42,8 @@ import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
+import { topupPlugin } from "@/plugins/Topup";
+import { TOPUP } from "@/plugins/Topup/interface";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
 import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
@@ -119,6 +123,15 @@ class ControllerModule extends VuexModule {
         return {
           ...item,
           cryptoCurrency: addressSlicer(item.mintAddress),
+        };
+      }
+      if (item.action === ACTIVITY_ACTION_TOPUP) {
+        let provider = item.from?.toLowerCase() || TOPUP.MOONPAY;
+        if (provider === "ramp") provider = TOPUP.RAMPNETWORK;
+        return {
+          ...item,
+          status: ["success"].includes(item.status) ? TransactionStatus.finalized : TransactionStatus.submitted,
+          logoURI: topupPlugin[provider].getLogoUrl(this.isDarkMode),
         };
       }
       return item;
