@@ -384,9 +384,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.emit("networkDidChange", this.state.NetworkControllerState.network);
     });
 
-    // TODO: this returns a promise
-    this.networkController.lookupNetwork();
-
     // Listen to controller changes
     this.preferencesController.on("store", (state2) => {
       this.update({ PreferencesControllerState: state2 });

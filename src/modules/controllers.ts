@@ -163,7 +163,7 @@ class ControllerModule extends VuexModule {
   // get selectedBalance(): string {}
 
   get selectedNetworkDisplayName(): string {
-    return this.torusState.NetworkControllerState.providerConfig.displayName;
+    return this.torusState.NetworkControllerState.network;
   }
 
   get contacts(): Contact[] {
