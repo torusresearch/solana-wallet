@@ -71,7 +71,7 @@ export const TopupProviders: { [providerName: string]: TopupProvider } = {
         symbol: "sol",
       },
       {
-        value: "USDC (SOL",
+        value: "USDC (SOL)",
         label: "USDC (SOL)",
         symbol: "usdc_sol",
       },
