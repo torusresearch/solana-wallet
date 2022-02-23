@@ -24,27 +24,25 @@ test.describe("Home Page", async () => {
     await switchTab(page, "home");
 
     // ENSURE UI IS INTACT
-    await ensureTextualElementExists(page, "TOTAL VALUE");
+    await ensureTextualElementExists(page, "Account Balance");
   });
 
-  test("Topup Button click should take to correct route", async () => {
+  test("Topup Button click should take to topup page", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
 
-    // ENSURE TopUp button click should take to correct route
+    // ENSURE TopUp button click should take to topup page
     await page.click("button >> text=Top up");
-    await wait(1000);
-    expect(page.url().includes("/wallet/topup")).toBeTruthy();
+    await ensureTextualElementExists(page, "Select a Provider");
   });
 
-  test("Transfer button click should take to correct route", async () => {
+  test("Transfer button click should take to transfer page", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
 
-    // ENSURE Transfer button click should take to correct route
-    page.click("button >> text=Transfer");
-    await wait(1000);
-    expect(page.url().endsWith("/wallet/transfer")).toBeTruthy();
+    // ENSURE Transfer button click should take to transfer page
+    await page.click("button >> text=Transfer");
+    await ensureTextualElementExists(page, "Transfer Details");
   });
 
   test("Currency Change should work correctly", async () => {
@@ -52,6 +50,9 @@ test.describe("Home Page", async () => {
     await switchTab(page, "home");
     // Switching to testnet as it has > 0 balance
     await switchNetwork(page, "testnet");
+    expect(await getInnerText(page, "#selected_network")).toContain("Solana Testnet");
+
+    // default selection should be USD
 
     const initial_amount = Number(await getInnerText(page, "#conversionRate"));
     // ENSURE On selecting EUR as currency, conversion rate has a positive value
@@ -90,34 +91,19 @@ test.describe("Home Page", async () => {
     expect(eurRate !== usdRate).toBeTruthy();
   });
 
-  test("Tokens and NFTs should display", async () => {
+  test("Tokens should display and clicking should take to transfer page", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
-    const ControllerModule = await getControllerState(page);
-    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
-      isFungible: boolean;
-      balance: {
-        uiAmount: number;
-      };
-    }[];
-    tokens = tokens.filter((token) => token.balance.uiAmount);
-    const NFT = tokens.filter((token) => !token.isFungible);
-    const SPL = tokens.filter((token) => token.isFungible);
-    if (NFT.length) {
-      const tokenTabs = page.locator(".tok-tab");
-      await tokenTabs.first().click();
-      const nft_count = (await page.locator("div.nft-item .token-desc.summary").allInnerTexts())
-        .map((e) => parseInt(e.split(" ")[0], 10))
-        .reduce((curr, prev) => curr + prev, 0);
-      expect(nft_count).toStrictEqual(NFT.length);
-    }
-
-    if (SPL.length) {
-      const tokenTabs = page.locator("div.tok-tab");
-      await tokenTabs.last().click();
-      expect(await page.locator("div.token-item").elementHandles()).toHaveLength(SPL.length);
+    // Ensure Tokens are displayed
+    await ensureTextualElementExists(page, "Tokens");
+    // const token_locator = page.locator("//div/h2[contains(text(),'Tokens')]/..//span/p");
+    const token_locator = await page.waitForSelector("//div/h2[contains(text(),'Tokens')]/..//span/p");
+    if (token_locator) {
+      wait(1000);
+      await token_locator.click();
+      await ensureTextualElementExists(page, "Transfer Details");
     }
   });
 
@@ -210,27 +196,26 @@ test.describe("Home Page with Imported Account", async () => {
     await switchTab(page, "home");
 
     // ENSURE UI IS INTACT
-    await ensureTextualElementExists(page, "TOTAL VALUE");
+    await ensureTextualElementExists(page, "Account Balance");
   });
 
-  test("Topup Button click should take to correct route", async () => {
+  test("Topup Button click should take to topup page", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
 
     // ENSURE TopUp button click should take to correct route
     await page.click("button >> text=Top up");
-    await wait(1000);
-    expect(page.url().includes("/wallet/topup")).toBeTruthy();
+    await ensureTextualElementExists(page, "Select a Provider");
   });
 
-  test("Transfer button click should take to correct route", async () => {
+  test("Transfer button click should take to transfer page", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
 
     // ENSURE Transfer button click should take to correct route
     page.click("button >> text=Transfer");
-    await wait(1000);
-    expect(page.url().endsWith("/wallet/transfer")).toBeTruthy();
+    await page.click("button >> text=Transfer");
+    await ensureTextualElementExists(page, "Transfer Details");
   });
 
   test("Currency Change should work correctly", async () => {
