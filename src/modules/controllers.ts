@@ -19,7 +19,6 @@ import {
   ProviderConfig,
   SelectedAddresssChangeChannelData,
   THEME,
-  TransactionStatus,
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
@@ -130,7 +129,6 @@ class ControllerModule extends VuexModule {
         if (provider === "ramp") provider = TOPUP.RAMPNETWORK;
         return {
           ...item,
-          status: ["success"].includes(item.status) ? TransactionStatus.finalized : TransactionStatus.submitted,
           logoURI: topupPlugin[provider].getLogoUrl(this.isDarkMode),
         };
       }
