@@ -3,7 +3,8 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
 import BN from "bignumber.js";
-// import log from "loglevel";
+import log from "loglevel";
+
 export type DecodedDataType = {
   type: string;
   data: { [key: string]: string | PublicKey | number | undefined | null };
@@ -308,14 +309,18 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
 }
 
 export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {
-  if (instruction.programId.equals(SystemProgram.programId)) {
-    return decodeSystemInstruction(instruction);
-  }
-  if (instruction.programId.equals(StakeProgram.programId)) {
-    return decodeStakeInstruction(instruction);
-  }
-  if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
-    return decodeTokenInstruction(instruction);
+  try {
+    if (instruction.programId.equals(SystemProgram.programId)) {
+      return decodeSystemInstruction(instruction);
+    }
+    if (instruction.programId.equals(StakeProgram.programId)) {
+      return decodeStakeInstruction(instruction);
+    }
+    if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
+      return decodeTokenInstruction(instruction);
+    }
+  } catch (err) {
+    log.error(err);
   }
   return decodeUnknownInstruction(instruction);
 };
