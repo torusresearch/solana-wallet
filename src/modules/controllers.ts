@@ -486,7 +486,11 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
-    window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+    try {
+      window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+    } catch (error) {
+      log.error("LocalStorage unavailable");
+    }
   }
 
   @Action
@@ -628,8 +632,8 @@ class ControllerModule extends VuexModule {
       priv_key: base58.encode(tempKey),
       pub_key: base58.encode(publicKey),
     };
-    window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
     try {
+      window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
       const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
       const stateString = stringify({ ...saveState, private_key: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
@@ -649,15 +653,15 @@ class ControllerModule extends VuexModule {
 
   @Action
   async restoreFromBackend() {
-    const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
-    const keyState: KeyState =
-      typeof value === "string"
-        ? JSON.parse(value)
-        : {
-            priv_key: "",
-            pub_key: "",
-          };
     try {
+      const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
+      const keyState: KeyState =
+        typeof value === "string"
+          ? JSON.parse(value)
+          : {
+              priv_key: "",
+              pub_key: "",
+            };
       if (keyState.priv_key && keyState.pub_key) {
         const pubKey = keyState.pub_key;
         let res;
