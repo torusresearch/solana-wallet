@@ -65,13 +65,11 @@ function openLink() {
     </div>
     <div class="mt-4 items-center px-4 flex flex-col justify-start h-full no-scrollbar overflow-y-auto">
       <div class="flex flex-col justify-start items-start w-full mt-4 mb-6">
-        <NetworkDisplay />
+        <NetworkDisplay :network="props.network" />
         <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
 
         <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-          <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent dark:text-app-text-accent">{{
-            getDomainFromUrl(props.origin)
-          }}</a>
+          <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent">{{ getDomainFromUrl(props.origin) }}</a>
           <div class="h-6 w-6 flex items-center justify-center rounded-md cursor-pointer" @click="openLink" @keydown="openLink">
             <img :src="GoToLinkLogo" alt="GoToLink" />
           </div>

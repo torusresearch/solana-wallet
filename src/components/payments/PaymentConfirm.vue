@@ -25,7 +25,6 @@ const props = withDefaults(
     cryptoTxFee: number;
     token?: string;
     isGasless?: boolean;
-    isOpen?: boolean;
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
@@ -69,18 +68,7 @@ const getTotalInSol = () => {
   }
   return new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
 };
-// const cryptoAmountString = computed(() => {
-//   return `${props.cryptoAmount} ${props.token}`;
-// });
-//
-// const fiatAmountString = computed(() => {
-//   const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
-//   return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
-// });
-//
-// const fiatTxFeeString = computed(() => {
-//   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
-// });
+
 const totalCryptoCostString = computed(() => {
   if (props.token === "SOL") {
     const totalCost = getTotalInSol();
@@ -102,17 +90,17 @@ const totalFiatCostString = computed(() => {
       <div class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
         {{ t("walletSettings.paymentConfirmation") }}
       </div>
-      <div class="mt-4 px-6">
-        <div class="flex flex-col">
-          <NetworkDisplay :network="network" />
-          <p class="whitespace-no-wrap overflow-hidden overflow-ellipsis text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">
-            {{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.receiverPubKey }}
-          </p>
-        </div>
+    </div>
+    <div class="mt-4 px-6">
+      <div class="flex flex-col">
+        <NetworkDisplay :network="network" />
+        <p class="whitespace-no-wrap overflow-hidden overflow-ellipsis text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">
+          {{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.receiverPubKey }}
+        </p>
       </div>
     </div>
     <hr class="m-5" />
-    <div class="mt-4 px-6 items-center scrollbar">
+    <div class="mt-4 px-6 items-center no-scrollbar overflow-y-auto flex-grow">
       <div class="flex flex-col justify-start items-start">
         <span class="flex flex-row justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
           <p>{{ t("walletTopUp.youSend") }}</p>
@@ -133,7 +121,7 @@ const totalFiatCostString = computed(() => {
         </span>
 
         <p
-          class="text-right mt-4 text-sm cursor-pointer view-details text-app-text-accent"
+          class="text-right w-full mt-4 text-sm cursor-pointer view-details text-app-text-accent"
           @click="() => (expand_inst = !expand_inst)"
           @keydown="() => (expand_inst = !expand_inst)"
         >

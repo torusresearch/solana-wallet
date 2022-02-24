@@ -439,12 +439,9 @@ watch(transferTo, () => {
                 </div>
               </TextField>
             </div>
-            <div class="flex">
-              <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
-                {{ t("dappTransfer.transfer") }}
-                <span class="text-base"></span>
-              </Button>
-            </div>
+            <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
+              {{ t("dappTransfer.transfer") }}
+            </Button>
           </div>
         </form>
       </Card>
