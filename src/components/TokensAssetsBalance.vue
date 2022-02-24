@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 import SplCard from "@/components/home/SplCard.vue";
-import ControllerModule from "@/modules/controllers";
+import { tokens } from "@/components/transfer/token-helper";
 
 const router = useRouter();
 
-const fungibleTokens = computed(() => ControllerModule.fungibleTokens);
-
-function transferToken(mint: string) {
-  router.push(`/wallet/transfer?mint=${mint}`);
+function transferToken(mint?: string) {
+  if (!mint) router.push("/wallet/transfer");
+  else router.push(`/wallet/transfer?mint=${mint}`);
 }
 </script>
 
@@ -18,7 +16,7 @@ function transferToken(mint: string) {
   <div class="flex flex-col">
     <div class="tab-info w-full overflow-x-hidden">
       <div class="flex flex-col space-y-4">
-        <div v-for="token in fungibleTokens" :key="token.tokenAddress.toString()" class="w-full">
+        <div v-for="token in tokens" :key="token?.tokenAddress?.toString()" class="w-full">
           <SplCard :spl-token="token" @spl-clicked="transferToken(token.mintAddress)"></SplCard>
         </div>
       </div>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { SolanaToken } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 
 import ControllerModule from "@/modules/controllers";
+import { SolAndSplToken } from "@/utils/interfaces";
 
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 
@@ -10,8 +10,13 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
   return parseFloat((perTokenPrice * tokenAmount).toFixed(subStringLength));
 }
 
+const formattedSOLBalance = computed(() => ControllerModule.convertedSolBalance);
+const conversionRate = computed(() => {
+  return ControllerModule.torus.conversionRate;
+});
+
 defineProps<{
-  splToken?: SolanaToken;
+  splToken: Partial<SolAndSplToken>;
 }>();
 
 const emits = defineEmits(["splClicked"]);
@@ -29,20 +34,25 @@ function splClicked() {
   >
     <div class="dark:shadow_down flex flex-row justify-between items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
       <span class="flex flex-row justify-start items-center">
-        <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken.data?.logoURI" alt="TOKEN Logo" />
-        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken.data?.name }}</p></span
+        <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken?.iconURL" alt="TOKEN Logo" />
+        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p></span
       >
       <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
-        ~ {{ (+splToken.balance?.uiAmountString).toFixed(3) }} {{ splToken.data?.symbol }}
+        ~ {{ (+(splToken?.balance?.uiAmountString ?? "0"))?.toFixed(3) }} {{ splToken?.symbol }}
       </p>
     </div>
     <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">
       <p>
-        1 {{ splToken.data?.symbol }} ≈ {{ (splToken.price?.[currency === "sol" ? "usd" : currency] || 0).toFixed(3) }}
+        1 {{ splToken?.symbol }} ≈
+        {{ !splToken.mintAddress ? conversionRate : (splToken?.price?.[currency === "sol" ? "usd" : currency] || 0).toFixed(3) }}
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
       <p>
-        ~{{ getUiTokenValue(splToken.price?.[currency === "sol" ? "usd" : currency] || 0, splToken.balance?.uiAmount || 0, 3) }}
+        ~{{
+          !splToken.mintAddress
+            ? formattedSOLBalance
+            : getUiTokenValue(splToken?.price?.[currency === "sol" ? "usd" : currency] || 0, splToken?.balance?.uiAmount || 0, 3)
+        }}
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
     </div>

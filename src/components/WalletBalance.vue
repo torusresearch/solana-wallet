@@ -21,7 +21,7 @@ const conversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
 });
 const formattedBalance = computed(() => {
-  return ControllerModule.userBalance;
+  return ControllerModule.totalBalance;
 });
 const updateCurrency = (newCurrency: string) => {
   ControllerModule.setCurrency(newCurrency);
