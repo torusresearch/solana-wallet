@@ -70,6 +70,11 @@ export const TopupProviders: { [providerName: string]: TopupProvider } = {
         label: "SOL",
         symbol: "sol",
       },
+      {
+        value: "USDC (SOL)",
+        label: "USDC (SOL)",
+        symbol: "usdc_sol",
+      },
     ],
     validCurrencies: ["USD", "EUR", "GBP"].map((k) => {
       return { value: k, label: k };
