@@ -1,7 +1,7 @@
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { computed } from "vue";
 
-import solicon from "@/assets/solana-mascot.svg";
+import solicon from "@/assets/solana-logo-light.svg";
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
