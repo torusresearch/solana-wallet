@@ -13,9 +13,10 @@ import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 
-import { PaymentConfirm } from "@/components/payments";
+// import { PaymentConfirm } from "@/components/payments";
+import TransactionConfirm from "@/components/payments/TransactionConfirm.vue";
 import PermissionsInvalid from "@/components/permissionsInvalid/PermissionsInvalid.vue";
-import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
+// import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
@@ -76,6 +77,12 @@ const estimate = async (conn: Connection, estimateTx: Transaction, signer: strin
   estimationInProgress.value = false;
 };
 
+const getFees = async (conn: Connection, messages: Message[]) => {
+  const feePromises = messages.map((item) => conn.getFeeForMessage(item, "max"));
+  const fees = await Promise.all(feePromises);
+  finalTxData.totalNetworkFee = fees.reduce((acc, item) => acc + item.value, 0) / LAMPORTS_PER_SOL;
+};
+
 onMounted(async () => {
   try {
     let txData: Partial<TransactionChannelDataType>;
@@ -98,7 +105,6 @@ onMounted(async () => {
     network.value = txData.network || "";
     const networkConfig = txData.networkDetails as ProviderConfig;
     const conn = new Connection(networkConfig.rpcTarget as string);
-    const block = await conn.getRecentBlockhash("finalized");
 
     log.info(txData);
     signTxOnly.value = ["sign_transaction", "sign_all_transactions"].includes(txData.type as string);
@@ -107,6 +113,9 @@ onMounted(async () => {
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
       const signer: SignaturePubkeyPair[] = [];
+
+      const messages: Message[] = [];
+
       (txData.message as string[]).forEach((msg) => {
         let tx2: Transaction;
         if (txData.messageOnly) {
@@ -117,15 +126,20 @@ onMounted(async () => {
         tx2.instructions.forEach((inst) => {
           decoded.push(decodeInstruction(inst));
         });
+
+        const isGasless = transactionItem.feePayer ? transactionItem.feePayer.toBase58() !== txData.signer : false;
+        if (!isGasless) messages.push(transactionItem.compileMessage());
+
+        // check for signer is wallet address
         signer.push(
           ...tx2.signatures.filter((signPair) => {
             return signPair.publicKey?.toBase58() === txData.signer;
           })
         );
-        // TODO use latest rpc api to get Fee from message
-        // Waiting for web3js for now
-        // finalTxData.totalNetworkFee += 0
       });
+
+      // compute fee
+      getFees(conn, messages);
 
       signatureNotRequired.value = signer.length === 0;
       // Could not estimate balance for multiple Transactions
@@ -140,34 +154,18 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    signatureNotRequired.value =
-      tx.value.instructions.filter((inst) => {
-        return inst.keys.filter((k) => {
-          return k.pubkey.toBase58() === txData.signer && k.isSigner;
-        }).length;
-      }).length === 0;
-    signatureNotRequired.value ||= tx.value.instructions.length === 0;
-
+    // Check if wallet signer is required
+    signatureNotRequired.value = tx.value.signatures.filter((signValue) => signValue.publicKey.toBase58() === txData.signer).length === 0;
     if (signatureNotRequired.value) return;
 
+    // estimate balance changes
     estimate(conn, tx.value, txData.signer || "");
+    // compute fees
+    getFees(conn, [tx.value.compileMessage()]);
 
-    const signerCount = tx.value.instructions.reduce((prev, current) => {
-      current.keys.forEach((item) => {
-        if (item.isSigner) prev.add(item.pubkey.toBase58());
-      });
-      return prev;
-    }, new Set<string>());
-    signerCount.add(txData.signer || "");
-
-    log.info(signerCount);
-    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
+    const isGasless = tx.value.feePayer ? tx.value.feePayer.toBase58() !== txData.signer : false;
     finalTxData.isGasless = isGasless;
 
-    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature * signerCount.size;
-    finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
-
-    log.info(txFee);
     decodedInst.value = tx.value.instructions.map((inst) => {
       return decodeInstruction(inst);
     });
@@ -192,12 +190,11 @@ onMounted(async () => {
 
       const txAmount = decoded[0].lamports;
 
-      const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
+      // const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
       finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
-      // finalTxData.totalNetworkFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalSolCost = totalSolCost.toString();
+      // finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
     } catch (e) {
@@ -208,6 +205,7 @@ onMounted(async () => {
   }
 });
 
+// Buttons / Events handler
 const approveTxn = async (): Promise<void> => {
   if (!isRedirectFlow) {
     const bc = new BroadcastChannel(channel, broadcastChannelOptions);
@@ -260,7 +258,7 @@ const rejectTxn = async () => {
     class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
   >
     <PermissionsInvalid v-if="signatureNotRequired" :origin="origin" @on-close-modal="rejectTxn()" />
-    <PaymentConfirm
+    <!-- <PaymentConfirm
       v-else-if="finalTxData.totalSolAmount && !signTxOnly"
       :is-open="true"
       :sender-pub-key="finalTxData.slicedSenderAddress"
@@ -276,8 +274,23 @@ const rejectTxn = async () => {
       @on-close-modal="rejectTxn()"
       @transfer-confirm="approveTxn()"
       @transfer-cancel="rejectTxn()"
+    /> -->
+    <TransactionConfirm
+      v-else-if="decodedInst || signTxOnly"
+      :decoded-inst="decodedInst || []"
+      :origin="origin"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
+      :sign-tx-only="signTxOnly"
+      :tx-fee="finalTxData.totalNetworkFee"
+      :is-gasless="finalTxData.isGasless"
+      :network="network"
+      @on-close-modal="rejectTxn()"
+      @transfer-confirm="approveTxn()"
+      @transfer-cancel="rejectTxn()"
     />
-    <PermissionsTx
+    <!-- <PermissionsTx
       v-else-if="decodedInst || signTxOnly"
       :decoded-inst="decodedInst || []"
       :origin="origin"
@@ -291,6 +304,6 @@ const rejectTxn = async () => {
       @on-close-modal="rejectTxn()"
       @on-approved="approveTxn()"
       @on-cancel="rejectTxn()"
-    />
+    /> -->
   </div>
 </template>

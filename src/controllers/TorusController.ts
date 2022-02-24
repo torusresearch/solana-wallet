@@ -4,7 +4,7 @@
 import { TokenAccount } from "@metaplex-foundation/mpl-core";
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, MintInfo, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
+import { AccountInfo, Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
 import {
   addressSlicer,
   BaseConfig,
@@ -691,7 +691,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // const tokenAccounts = await connection.getMultipleAccountsInfo(postTokenDetails.map((item) => item.pubkey));
 
     const mintAccountInfos: MintInfo[] = mintAccounts.map((item) => MintLayout.decode(item?.data));
-    const preTokenDetails = tokenAccounts.map((item, idx) => (item ? new TokenAccount(postTokenDetails[idx].pubkey, item) : null));
+    const preTokenDetails = tokenAccounts.map((item, idx) =>
+      item ? new TokenAccount(postTokenDetails[idx].pubkey, item as AccountInfo<Buffer>) : null
+    );
 
     if (accIdx >= 0) {
       const solchanges = ((result.accounts?.at(accIdx)?.lamports || 0) - Number(signerAccount?.lamports)) / LAMPORTS_PER_SOL;
