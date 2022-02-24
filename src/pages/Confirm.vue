@@ -168,7 +168,8 @@ onMounted(async () => {
     // estimate balance changes
     estimate(conn, tx.value, txData.signer || "");
     // compute fees
-    getFees(conn, [tx.value.compileMessage()]);
+    // getFees(conn, [tx.value.compileMessage()]);
+    getFees(conn, [tx.value]);
 
     const isGasless = tx.value.feePayer ? tx.value.feePayer.toBase58() !== txData.signer : false;
     finalTxData.isGasless = isGasless;
