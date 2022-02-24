@@ -514,10 +514,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async calculateTxFee(): Promise<{ blockHash: string; fee: number }> {
-    const blockHash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
-    const fee = (await this.connection.getFeeCalculatorForBlockhash(blockHash)).value?.lamportsPerSignature || 0;
-    return { blockHash, fee };
+  // TODO: Mainnet not yet support latest rpc spec, temp solution
+  async calculateTxFee(_message: Message): Promise<number> {
+    // const fee = await this.connection.getFeeForMessage(message);
+    // return fee.value / LAMPORTS_PER_SOL;
+    return 5000 / LAMPORTS_PER_SOL;
+  }
+
+  // TODO: Mainnet not yet support latest rpc spec, temp solution
+  async getBlockhash() {
+    const resp = await this.connection.getRecentBlockhash("finalized");
+    // const resp = await this.connection.getLatestBlockhash("finalized");
+    return resp.blockhash;
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
@@ -680,15 +688,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const signerAccount = queryAccounts[0];
     const mintAccounts = queryAccounts.slice(1, mintTokenAddress.length + 1);
     const tokenAccounts = queryAccounts.slice(mintTokenAddress.length + 1);
-
-    log.info(queryAccounts);
-    log.info(signerAccount);
-    log.info(mintAccounts);
-    log.info(tokenAccounts);
-
-    // const signerAccount = await connection.getMultipleAccountsInfo([new PublicKey(selectedAddress)]);
-    // const mintAccounts = await connection.getMultipleAccountsInfo(mintTokenAddress.map((item) => new PublicKey(item)));
-    // const tokenAccounts = await connection.getMultipleAccountsInfo(postTokenDetails.map((item) => item.pubkey));
 
     const mintAccountInfos: MintInfo[] = mintAccounts.map((item) => MintLayout.decode(item?.data));
     const preTokenDetails = tokenAccounts.map((item, idx) =>

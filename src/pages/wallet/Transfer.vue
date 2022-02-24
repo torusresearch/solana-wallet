@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, Message, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
@@ -257,9 +257,32 @@ async function generateTransaction(): Promise<Transaction> {
   }
   return tx;
 }
+
+const estimateChanges = async (transaction: Transaction) => {
+  estimationInProgress.value = true;
+  try {
+    estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(
+      ControllerModule.torus.connection,
+      transaction,
+      ControllerModule.selectedAddress
+    );
+    hasEstimationError.value = "";
+  } catch (e) {
+    hasEstimationError.value = "Unable estimate balance changes";
+    log.info("Error in transaction simulation", e);
+  }
+  estimationInProgress.value = false;
+};
+
+const computeFees = async (message: Message) => {
+  const fee = await ControllerModule.torus.calculateTxFee(message);
+  transactionFee.value = fee;
+};
+
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
+
   if (!$v.value.$invalid) {
     if (transferType.value.value === "sns") {
       const address = await addressPromise(); // doesn't throw
@@ -270,26 +293,16 @@ const openModal = async () => {
       }
     }
 
-    isOpen.value = true;
     estimationInProgress.value = true;
-    try {
-      estimatedBalanceChange.value = await ControllerModule.torus.getEstimateBalanceChange(
-        ControllerModule.torus.connection,
-        await generateTransaction(),
-        ControllerModule.selectedAddress
-      );
-      hasEstimationError.value = "";
-    } catch (e) {
-      hasEstimationError.value = "Unable estimate balance changes";
-      log.info("Error in transaction simulation", e);
-    }
-    estimationInProgress.value = false;
+    isOpen.value = true;
+
+    blockhash.value = await ControllerModule.torus.getBlockhash();
+    const transaction: Transaction = await generateTransaction();
+    estimateChanges(transaction);
+    computeFees(transaction.compileMessage());
   }
 
   // This can't be guarantee
-  const { blockHash, fee } = await ControllerModule.torus.calculateTxFee();
-  blockhash.value = blockHash;
-  transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
 

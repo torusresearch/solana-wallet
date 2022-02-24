@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, Message, SignaturePubkeyPair, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, SignaturePubkeyPair, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import {
   addressSlicer,
   BROADCAST_CHANNELS,
@@ -77,10 +77,15 @@ const estimate = async (conn: Connection, estimateTx: Transaction, signer: strin
   estimationInProgress.value = false;
 };
 
-const getFees = async (conn: Connection, messages: Message[]) => {
-  const feePromises = messages.map((item) => conn.getFeeForMessage(item, "max"));
-  const fees = await Promise.all(feePromises);
-  finalTxData.totalNetworkFee = fees.reduce((acc, item) => acc + item.value, 0) / LAMPORTS_PER_SOL;
+// TODO: Mainnet not yet support latest rpc spec, temp solution
+// const getFees = async (conn: Connection, messages: Message[]) => {
+//   const feePromises = messages.map((item) => conn.getFeeForMessage(item, "max"));
+//   const fees = await Promise.all(feePromises);
+//   finalTxData.totalNetworkFee = fees.reduce((acc, item) => acc + item.value, 0) / LAMPORTS_PER_SOL;
+// };
+const getFees = async (conn: Connection, messages: Transaction[]) => {
+  const numSigner = messages.reduce((acc, item) => acc + item.signatures.length, 0);
+  finalTxData.totalNetworkFee = (numSigner * 5000) / LAMPORTS_PER_SOL;
 };
 
 onMounted(async () => {
@@ -114,7 +119,8 @@ onMounted(async () => {
       const decoded: DecodedDataType[] = [];
       const signer: SignaturePubkeyPair[] = [];
 
-      const messages: Message[] = [];
+      // const messages: Message[] = [];
+      const messages: Transaction[] = [];
 
       (txData.message as string[]).forEach((msg) => {
         let tx2: Transaction;
@@ -128,7 +134,8 @@ onMounted(async () => {
         });
 
         const isGasless = transactionItem.feePayer ? transactionItem.feePayer.toBase58() !== txData.signer : false;
-        if (!isGasless) messages.push(transactionItem.compileMessage());
+        // if (!isGasless) messages.push(transactionItem.compileMessage());
+        if (!isGasless) messages.push(transactionItem);
 
         // check for signer is wallet address
         signer.push(
