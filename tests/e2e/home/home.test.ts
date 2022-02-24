@@ -3,15 +3,14 @@ import test, { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_SECRET_KEY, login } from "../../auth-helper";
 import {
-  changeLanguage,
-  ensureTextualElementExists,
-  getControllerState,
-  getInnerText,
-  importAccount,
-  switchNetwork,
-  switchTab,
-  wait,
-} from "../../utils";
+  clickPubKeyIcon,
+  clickTokenIfAvailable,
+  clickTopupButton,
+  clickTransferButton,
+  ensureCopiedToastDisplayed,
+  selectCurrency,
+} from "../../home.utils";
+import { changeLanguage, ensureTextualElementExists, getInnerText, importAccount, switchNetwork, switchTab, wait } from "../../utils";
 
 test.describe("Home Page", async () => {
   let page: Page;
@@ -32,7 +31,8 @@ test.describe("Home Page", async () => {
     await switchTab(page, "home");
 
     // ENSURE TopUp button click should take to topup page
-    await page.click("button >> text=Top up");
+    await clickTopupButton(page);
+    await wait(1000);
     await ensureTextualElementExists(page, "Select a Provider");
   });
 
@@ -41,7 +41,8 @@ test.describe("Home Page", async () => {
     await switchTab(page, "home");
 
     // ENSURE Transfer button click should take to transfer page
-    await page.click("button >> text=Transfer");
+    await clickTransferButton(page);
+    await wait(1000);
     await ensureTextualElementExists(page, "Transfer Details");
   });
 
@@ -52,38 +53,15 @@ test.describe("Home Page", async () => {
     await switchNetwork(page, "testnet");
     expect(await getInnerText(page, "#selected_network")).toContain("Solana Testnet");
 
-    // default selection should be USD
-
-    const initial_amount = Number(await getInnerText(page, "#conversionRate"));
     // ENSURE On selecting EUR as currency, conversion rate has a positive value
-    await page.click("#currencySelector");
-    await page.click("li[role='option'] >> text=EUR");
-    if (initial_amount !== 0)
-      await page.waitForFunction(
-        (prev) => {
-          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
-          if (curr !== prev) return true;
-          return false;
-        },
-        initial_amount,
-        { timeout: 5_000, polling: 500 }
-      );
+    await selectCurrency(page, "EUR");
+    await wait(1000);
     const eurRate = Number(await getInnerText(page, "#conversionRate"));
     expect(eurRate).toBeGreaterThan(0);
 
     // ENSURE On selecting USD as currency, conversion rate has a positive value
-    await page.click("#currencySelector");
-    await page.click("li[role='option'] >> text=USD");
-    if (eurRate !== 0)
-      await page.waitForFunction(
-        (prev) => {
-          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
-          if (curr !== prev) return true;
-          return false;
-        },
-        eurRate,
-        { timeout: 5_000, polling: 500 }
-      );
+    await selectCurrency(page, "USD");
+    await wait(1000);
     const usdRate = Number(await getInnerText(page, "#conversionRate"));
     expect(usdRate).toBeGreaterThan(0);
 
@@ -98,65 +76,19 @@ test.describe("Home Page", async () => {
     await switchNetwork(page, "testnet");
     // Ensure Tokens are displayed
     await ensureTextualElementExists(page, "Tokens");
-    // const token_locator = page.locator("//div/h2[contains(text(),'Tokens')]/..//span/p");
-    const token_locator = await page.waitForSelector("//div/h2[contains(text(),'Tokens')]/..//span/p");
-    if (token_locator) {
-      wait(1000);
-      await token_locator.click();
-      await ensureTextualElementExists(page, "Transfer Details");
-    }
+    await wait(1000);
+    await clickTokenIfAvailable(page);
   });
 
-  test("Clicking on NFT should navigate to nfts route", async () => {
+  test("clicking on public key icon copies public key to clipboard", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
-    // Switching to testnet as it has our nfts
-    await switchNetwork(page, "testnet");
-    const ControllerModule = await getControllerState(page);
-    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
-      isFungible: boolean;
-      balance: {
-        uiAmount: number;
-      };
-    }[];
-    tokens = tokens.filter((token) => token.balance.uiAmount);
-    const NFT = tokens.filter((token) => !token.isFungible);
-    if (NFT.length) {
-      const tokenTabs = page.locator(".tok-tab");
-      await tokenTabs.first().click();
-      await page.click("div.nft-item");
-      await wait(1000);
-      expect(/.*\/wallet\/nfts\?mints=.*$/.test(page.url())).toBeTruthy();
-      await page.click(".nft-item");
-      await page.click(".nft-item button");
-      await wait(1000);
-      expect(/.*\/wallet\/transfer\?mint=.*$/.test(page.url())).toBeTruthy();
-    }
+    // ENSURE clicking on public key icon on home page copies key to clipboard
+    await clickPubKeyIcon(page);
+    await ensureCopiedToastDisplayed(page);
   });
 
-  test("Clicking on SPL token should navigate to transfer route with token selected", async () => {
-    // see navigation works correctly
-    await switchTab(page, "home");
-    // Switching to testnet as it has our nfts
-    await switchNetwork(page, "testnet");
-    const ControllerModule = await getControllerState(page);
-    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
-      isFungible: boolean;
-      balance: {
-        uiAmount: number;
-      };
-    }[];
-    tokens = tokens.filter((token) => token.balance.uiAmount);
-    const SPL = tokens.filter((token) => token.isFungible);
-    if (SPL.length) {
-      const tokenTabs = page.locator(".tok-tab");
-      await tokenTabs.last().click();
-      await page.click("div.token-item");
-      await wait(1000);
-      expect(/.*\/wallet\/transfer\?mint=.*$/.test(page.url())).toBeTruthy();
-    }
-  });
-
+  // below test will to be moved to header test file once ready
   test("Language change should work", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
@@ -203,8 +135,9 @@ test.describe("Home Page with Imported Account", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
 
-    // ENSURE TopUp button click should take to correct route
-    await page.click("button >> text=Top up");
+    // ENSURE TopUp button click should take to topup page
+    await clickTopupButton(page);
+    await wait(1000);
     await ensureTextualElementExists(page, "Select a Provider");
   });
 
@@ -212,9 +145,9 @@ test.describe("Home Page with Imported Account", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
 
-    // ENSURE Transfer button click should take to correct route
-    page.click("button >> text=Transfer");
-    await page.click("button >> text=Transfer");
+    // ENSURE Transfer button click should take to transfer page
+    await clickTransferButton(page);
+    await wait(1000);
     await ensureTextualElementExists(page, "Transfer Details");
   });
 
@@ -223,37 +156,17 @@ test.describe("Home Page with Imported Account", async () => {
     await switchTab(page, "home");
     // Switching to testnet as it has > 0 balance
     await switchNetwork(page, "testnet");
+    expect(await getInnerText(page, "#selected_network")).toContain("Solana Testnet");
 
-    const initial_amount = Number(await getInnerText(page, "#conversionRate"));
     // ENSURE On selecting EUR as currency, conversion rate has a positive value
-    await page.click("#currencySelector");
-    await page.click("li[role='option'] >> text=EUR");
-    if (initial_amount !== 0)
-      await page.waitForFunction(
-        (prev) => {
-          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
-          if (curr !== prev) return true;
-          return false;
-        },
-        initial_amount,
-        { timeout: 5_000, polling: 500 }
-      );
+    await selectCurrency(page, "EUR");
+    await wait(1000);
     const eurRate = Number(await getInnerText(page, "#conversionRate"));
     expect(eurRate).toBeGreaterThan(0);
 
     // ENSURE On selecting USD as currency, conversion rate has a positive value
-    await page.click("#currencySelector");
-    await page.click("li[role='option'] >> text=USD");
-    if (eurRate !== 0)
-      await page.waitForFunction(
-        (prev) => {
-          const curr = Number((window.document.querySelector("#conversionRate") as any)?.innerText);
-          if (curr !== prev) return true;
-          return false;
-        },
-        eurRate,
-        { timeout: 5_000, polling: 500 }
-      );
+    await selectCurrency(page, "USD");
+    await wait(1000);
     const usdRate = Number(await getInnerText(page, "#conversionRate"));
     expect(usdRate).toBeGreaterThan(0);
 
@@ -261,84 +174,23 @@ test.describe("Home Page with Imported Account", async () => {
     expect(eurRate !== usdRate).toBeTruthy();
   });
 
-  test("Tokens and NFTs should display", async () => {
+  test("Tokens should display and clicking should take to transfer page", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
     // Switching to testnet as it has our nfts
     await switchNetwork(page, "testnet");
-    const ControllerModule = await getControllerState(page);
-    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
-      isFungible: boolean;
-      balance: {
-        uiAmount: number;
-      };
-    }[];
-    tokens = tokens.filter((token) => token.balance.uiAmount);
-    const NFT = tokens.filter((token) => !token.isFungible);
-    const SPL = tokens.filter((token) => token.isFungible);
-    if (NFT.length) {
-      const tokenTabs = page.locator(".tok-tab");
-      await tokenTabs.first().click();
-      const nft_count = (await page.locator("div.nft-item .token-desc.summary").allInnerTexts())
-        .map((e) => parseInt(e.split(" ")[0], 10))
-        .reduce((curr, prev) => curr + prev, 0);
-      expect(nft_count).toStrictEqual(NFT.length);
-    }
-
-    if (SPL.length) {
-      const tokenTabs = page.locator("div.tok-tab");
-      await tokenTabs.last().click();
-      expect(await page.locator("div.token-item").elementHandles()).toHaveLength(SPL.length);
-    }
+    // Ensure Tokens are displayed
+    await ensureTextualElementExists(page, "Tokens");
+    await wait(1000);
+    await clickTokenIfAvailable(page);
+    await ensureTextualElementExists(page, "Transfer Details");
   });
 
-  test("Clicking on NFT should navigate to nfts route", async () => {
+  test("clicking on public key icon copies public key to clipboard", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
-    // Switching to testnet as it has our nfts
-    await switchNetwork(page, "testnet");
-    const ControllerModule = await getControllerState(page);
-    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
-      isFungible: boolean;
-      balance: {
-        uiAmount: number;
-      };
-    }[];
-    tokens = tokens.filter((token) => token.balance.uiAmount);
-    const NFT = tokens.filter((token) => !token.isFungible);
-    if (NFT.length) {
-      const tokenTabs = page.locator(".tok-tab");
-      await tokenTabs.first().click();
-      await page.click("div.nft-item");
-      await wait(1000);
-      expect(/.*\/wallet\/nfts\?mints=.*$/.test(page.url())).toBeTruthy();
-      await page.click(".nft-item");
-      await page.click(".nft-item button");
-      await wait(1000);
-      expect(/.*\/wallet\/transfer\?mint=.*$/.test(page.url())).toBeTruthy();
-    }
-  });
-
-  test("Clicking on SPL token should navigate to transfer route with token selected", async () => {
-    // see navigation works correctly
-    await switchTab(page, "home");
-    // Switching to testnet as it has our nfts
-    await switchNetwork(page, "testnet");
-    const ControllerModule = await getControllerState(page);
-    let tokens = ControllerModule.torusState.TokensTrackerState.tokens[ControllerModule.torusState.PreferencesControllerState.selectedAddress] as {
-      isFungible: boolean;
-      balance: {
-        uiAmount: number;
-      };
-    }[];
-    tokens = tokens.filter((token) => token.balance.uiAmount);
-    const SPL = tokens.filter((token) => token.isFungible);
-    if (SPL.length) {
-      const tokenTabs = page.locator(".tok-tab");
-      await tokenTabs.last().click();
-      await page.click("div.token-item");
-      await wait(1000);
-      expect(/.*\/wallet\/transfer\?mint=.*$/.test(page.url())).toBeTruthy();
-    }
+    // ENSURE clicking on public key icon on home page copies key to clipboard
+    await clickPubKeyIcon(page);
+    await ensureCopiedToastDisplayed(page);
   });
 });

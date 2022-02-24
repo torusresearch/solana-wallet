@@ -80,21 +80,11 @@ export async function login(context: BrowserContext): Promise<Page> {
     })
   )`;
   await context.addInitScript({ content: stateFunction });
+  await context.grantPermissions(["clipboard-read"]);
   const page = await context.newPage();
   await page.goto(getDomain());
 
   await page.locator("text=Account Balance").waitFor();
 
-  // await ensureTextualElementExists(page, "TOTAL VALUE");
-  /*  await page.waitForFunction(
-    () => {
-      // eslint-disable-next-line no-underscore-dangle
-      const { controllerModule } = (window as any).$store._state.data;
-      if (controllerModule?.torusState?.PreferencesControllerState?.selectedAddress) return true;
-      return false;
-    },
-    null,
-    { polling: 500 }
-  ); */
   return page;
 }
