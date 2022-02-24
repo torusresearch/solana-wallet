@@ -27,23 +27,5 @@ function transferToken(mint?: string) {
 <style scoped>
 .tab-info {
   height: fit-content;
-  max-height: max(280px, calc(100vh - 450px));
-}
-@screen lt-sm {
-  .tab-info {
-    height: fit-content;
-    max-height: max(280px, calc(100vh - 610px));
-  }
-}
-
-.tab-info::-webkit-scrollbar-track {
-  @apply bg-app-primary-100 dark:bg-app-gray-800 rounded-lg;
-}
-
-.tab-info::-webkit-scrollbar {
-  @apply bg-app-primary-100 dark:bg-app-gray-800 w-1;
-}
-.tab-info::-webkit-scrollbar-thumb {
-  @apply rounded-lg bg-app-primary-500;
 }
 </style>

@@ -37,7 +37,7 @@ watch(localToken, () => {
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span class="flex items-center">
-          <img :src="selectedToken.iconURL" alt="selected token" class="h-6 w-6 rounded-full" @error="setFallbackImg($event.target, solicon)" />
+          <img :src="selectedToken.iconURL" alt="selected token" class="h-6 w-6" @error="setFallbackImg($event.target, solicon)" />
           <span class="ml-3 truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedToken.name || selectedToken?.metaplexData?.offChainMetaData?.name }}
           </span>
