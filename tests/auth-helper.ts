@@ -5,7 +5,7 @@ import axios from "axios";
 import base58 from "bs58";
 import stringify from "safe-stable-stringify";
 
-import { getBackendDomain, getDomain, getStateDomain } from "./utils";
+import { changeLanguage, getBackendDomain, getDomain, getStateDomain, wait } from "./utils";
 
 export const EPHEMERAL_SECRET_KEY = "JE6FauN4iF56b9aC8yrD314AYptuDHxzoChzkod5MxYR";
 
@@ -83,8 +83,8 @@ export async function login(context: BrowserContext): Promise<Page> {
   await context.grantPermissions(["clipboard-read"]);
   const page = await context.newPage();
   await page.goto(getDomain());
-
+  await changeLanguage(page, "english");
+  await wait(500);
   await page.locator("text=Account Balance").waitFor();
-
   return page;
 }
