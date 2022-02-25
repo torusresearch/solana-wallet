@@ -3,6 +3,7 @@ import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
+  addressSlicer,
   BasePopupChannelData,
   BillboardEvent,
   BROADCAST_CHANNELS,
@@ -115,6 +116,10 @@ class ControllerModule extends VuexModule {
             };
           }
         }
+        return {
+          ...item,
+          cryptoCurrency: addressSlicer(item.mintAddress),
+        };
       }
       return item;
     });
