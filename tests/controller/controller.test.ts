@@ -1,7 +1,6 @@
 // import { Connection } from "@solana/web3.js";
 import { PopupWithBcHandler } from "@toruslabs/base-controllers";
 import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS, TokenInfoController } from "@toruslabs/solana-controllers";
-// import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
