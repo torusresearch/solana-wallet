@@ -15,12 +15,12 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": ["webpack-env", "mocha"],
+    "types": ["webpack-env"],
     "paths": {
       "@/*": ["src/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/*.js", "tests/**/*.tsx", "playwright.config.ts", "src/scripts/*.js"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/*.tsx", "playwright.config.ts", "src/scripts/*.js"],
   "exclude": ["node_modules", "dist"]
 }
