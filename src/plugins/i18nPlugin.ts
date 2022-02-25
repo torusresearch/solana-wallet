@@ -1,3 +1,4 @@
+import log from "loglevel";
 import { nextTick } from "vue";
 import { createI18n, I18n } from "vue-i18n";
 
@@ -40,12 +41,20 @@ export async function loadLocaleMessages(i18n: I18n, locale: string) {
 }
 
 export const setLocale = async (i18n: I18n, lang: string) => {
+  let finalLang = lang;
+
+  // if unknown locale is requested, default to en.
+  if (!languageMap[lang]) {
+    log.error(`REQUESTED UNKNOWN LOCALE ${lang}`);
+    finalLang = "en";
+  }
+
   // load locale messages
-  if (!i18n.global.availableLocales.includes(lang)) {
-    await loadLocaleMessages(i18n, lang);
+  if (!i18n.global.availableLocales.includes(finalLang)) {
+    await loadLocaleMessages(i18n, finalLang);
   }
   // set i18n language
-  setI18nLanguage(i18n, lang);
+  setI18nLanguage(i18n, finalLang);
 };
 
 export const i18n = setupI18n();
