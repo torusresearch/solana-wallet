@@ -10,4 +10,5 @@ interface VuexState {
 }
 
 const store = createStore<VuexState>({});
+
 export default store;
