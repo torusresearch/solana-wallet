@@ -5,7 +5,9 @@ import dateFormat from "dateformat";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import SolanaLogoURL from "@/assets/solana-mascot.svg";
+import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
+import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
+import ControllerModule from "@/modules/controllers";
 
 const props = defineProps<{
   activity: SolanaTransactionActivity;
@@ -54,7 +56,12 @@ const amountIsVisible = computed(() => {
     >
       <div class="flex items-center">
         <div class="logo-container">
-          <img class="block h-7 w-auto" :src="activity.logoURI || SolanaLogoURL" alt="Solana Logo" />
+          <img
+            class="block h-7 w-auto"
+            :src="activity.logoURI || (ControllerModule.isDarkMode ? SolanaLogoLight : SolanaLogoDark)"
+            :class="activity.logoURI ? '' : 'rounded-full'"
+            alt="Solana Logo"
+          />
         </div>
         <div class="text-left ml-4 break-words overflow-hidden">
           <div v-if="activity.type === 'unknown'" class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">

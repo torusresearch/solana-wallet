@@ -89,9 +89,9 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
   return finalAuthenticators.join(", ");
 }
 
-export const supportedCurrencies = (ticker: string): string[] => {
+export const supportedCurrencies = (): string[] => {
   const returnArr = [...config.supportedCurrencies];
-  returnArr.unshift(ticker);
+  // returnArr.unshift(ticker); // add sol in dropdown, disabled for now
   return returnArr;
 };
 

@@ -78,7 +78,7 @@ const logout = async () => {
 
     <div class="py-6">
       <header v-if="props.showHeader">
-        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lt-sm:flex-col lt-sm:items-start">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
