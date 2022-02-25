@@ -364,7 +364,7 @@ export const constructTokenData = (
 
         const price = infoState.tokenPriceMap[tokenState.mintAddress];
         return {
-          tokenName: symbol || "unknown",
+          tokenName: symbol,
           amount: decoded.data.amount as number,
           decimals: tokenState.balance?.decimals as number,
           from: new PublicKey(decoded.data.owner || "").toBase58(),
