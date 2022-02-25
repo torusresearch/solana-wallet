@@ -6,6 +6,7 @@
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
+  "ignorePatterns": ["tests/setup.js"],
   "rules": {
     "camelcase": 0,
     "no-new": 0,

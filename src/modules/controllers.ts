@@ -3,6 +3,7 @@ import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
+  addressSlicer,
   BasePopupChannelData,
   BillboardEvent,
   BROADCAST_CHANNELS,
@@ -115,6 +116,10 @@ class ControllerModule extends VuexModule {
             };
           }
         }
+        return {
+          ...item,
+          cryptoCurrency: addressSlicer(item.mintAddress),
+        };
       }
       return item;
     });
@@ -163,7 +168,7 @@ class ControllerModule extends VuexModule {
   // get selectedBalance(): string {}
 
   get selectedNetworkDisplayName(): string {
-    return this.torusState.NetworkControllerState.providerConfig.displayName;
+    return this.torusState.NetworkControllerState.network;
   }
 
   get contacts(): Contact[] {
@@ -701,6 +706,6 @@ class ControllerModule extends VuexModule {
   }
 }
 
-const module = getModule(ControllerModule);
+const module1 = getModule(ControllerModule);
 
-export default module;
+export default module1;
