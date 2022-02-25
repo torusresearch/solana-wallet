@@ -7,8 +7,8 @@ dotenv.config({ path: ".env.testing" });
 
 export async function clickTokenIfAvailable(page: Page) {
   const token_locator = page.locator("text=/\\s\\≈\\s/");
-  if ((await token_locator.isVisible()) === true) {
-    await token_locator.first().click();
+  if ((await token_locator.count()) > 1) {
+    await token_locator.nth(1).click();
     await wait(1000);
     await ensureTextualElementExists(page, "Transfer Details");
   }
