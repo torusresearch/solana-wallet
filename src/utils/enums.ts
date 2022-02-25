@@ -21,9 +21,6 @@ import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@t
 import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Network/NetworkController";
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
-// import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
-// import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
-// import { DatabaseIcon } from "@toruslabs/vue-icons/software";
 import { defineAsyncComponent } from "vue";
 
 const { ArrowBoldForvardIcon } = defineAsyncComponent({
