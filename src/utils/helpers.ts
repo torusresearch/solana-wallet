@@ -1,6 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import axios from "axios";
 import copyToClipboard from "copy-to-clipboard";
+import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
@@ -206,6 +207,14 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
     return validator(value, debounce);
   };
 };
+
+export async function recordDapp(origin: string) {
+  try {
+    await axios.post(`${config.api}/dapps/record`, { origin });
+  } catch (e) {
+    log.error("ERROR RECORDING DAPP", e);
+  }
+}
 
 export const backendStatePromise = promiseCreator();
 export const getRandomWindowId = () => Math.random().toString(36).slice(2);

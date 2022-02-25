@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { backendStatePromise, isMain, promiseCreator } from "@/utils/helpers";
+import { backendStatePromise, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -35,6 +35,7 @@ function startLogin() {
     const handleMessage = (ev: MessageEvent) => {
       const { origin, data } = ev;
       if (origin === specifiedOrigin) {
+        recordDapp(origin);
         window.removeEventListener("message", handleMessage);
         log.info("received info from origin", origin, data);
         // Add torus controller origin setup
