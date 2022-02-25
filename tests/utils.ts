@@ -34,11 +34,6 @@ export async function getInnerText(page: Page, selector: string): Promise<string
   return page.locator(selector)?.first()?.innerText();
 }
 
-export async function getControllerState(page: Page) {
-  // eslint-disable-next-line no-underscore-dangle
-  return page.evaluate(() => (window as any).$store._state.data.controllerModule);
-}
-
 export async function switchTab(page: Page, tab: Tabs) {
   const tabHeaders = {
     home: "Account Balance",
@@ -78,41 +73,12 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
     spanish: "Spanish (Español)",
   };
 
-  const languages = {
-    english: "en",
-    german: "de",
-    japanese: "ja",
-    korean: "ko",
-    mandarin: "zh",
-    spanish: "es",
-  };
-
   await page.click("nav button[id^='headlessui-listbox-button'][aria-haspopup='true']");
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
-  // wait for controllerModule language to update
-  await page.waitForFunction(
-    (locale) => {
-      // eslint-disable-next-line no-underscore-dangle
-      const { controllerModule } = (window as any).$store._state.data;
-      if (
-        controllerModule?.torusState?.PreferencesControllerState?.identities[
-          controllerModule?.torusState?.PreferencesControllerState?.selectedAddress
-        ]?.locale === locale
-      )
-        return true;
-      return false;
-    },
-    languages[language],
-    { polling: 500, timeout: 5_000 }
-  );
 }
 
 export async function importAccount(page: Page, privKey: string) {
-  const controllerModule = await getControllerState(page);
-  const username =
-    controllerModule?.torusState?.PreferencesControllerState?.identities[controllerModule?.torusState?.PreferencesControllerState?.selectedAddress]
-      ?.userInfo?.name;
-  await page.click(`nav >> text=${username}`);
+  await page.click("nav >> text=Open User Menu");
   await page.click("nav >> text=Import Account");
   await page.fill("input[placeholder='Private Key']", privKey);
   await page.click("button >> text=Import");

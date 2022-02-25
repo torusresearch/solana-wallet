@@ -78,6 +78,35 @@ test.describe("Home Page", async () => {
     await ensureTextualElementExists(page, "Tokens");
     await wait(1000);
     await clickTokenIfAvailable(page);
+    await wait(1000);
+    await ensureTextualElementExists(page, "Transfer Details");
+  });
+
+  test("Language change should work", async () => {
+    // see navigation works correctly
+    await switchTab(page, "home");
+
+    await changeLanguage(page, "german");
+    await wait(500);
+    await ensureTextualElementExists(page, "Kontostand");
+
+    await changeLanguage(page, "japanese");
+    await wait(500);
+    await ensureTextualElementExists(page, "残高");
+
+    await changeLanguage(page, "korean");
+    await wait(500);
+    await ensureTextualElementExists(page, "계정 잔액");
+
+    await changeLanguage(page, "mandarin");
+    await wait(500);
+    await ensureTextualElementExists(page, "账户余额");
+
+    await changeLanguage(page, "spanish");
+    await wait(500);
+    await ensureTextualElementExists(page, "Balance de Cuenta");
+
+    await changeLanguage(page, "english");
   });
 
   test("clicking on public key icon copies public key to clipboard", async () => {
@@ -86,29 +115,6 @@ test.describe("Home Page", async () => {
     // ENSURE clicking on public key icon on home page copies key to clipboard
     await clickPubKeyIcon(page);
     await ensureCopiedToastDisplayed(page);
-  });
-
-  // below test will to be moved to header test file once ready
-  test("Language change should work", async () => {
-    // see navigation works correctly
-    await switchTab(page, "home");
-
-    await changeLanguage(page, "german");
-    await ensureTextualElementExists(page, "Kontostand");
-
-    await changeLanguage(page, "japanese");
-    await ensureTextualElementExists(page, "残高");
-
-    await changeLanguage(page, "korean");
-    await ensureTextualElementExists(page, "계정 잔액");
-
-    await changeLanguage(page, "mandarin");
-    await ensureTextualElementExists(page, "账户余额");
-
-    await changeLanguage(page, "spanish");
-    await ensureTextualElementExists(page, "Balance de Cuenta");
-
-    await changeLanguage(page, "english");
   });
 });
 
@@ -183,6 +189,7 @@ test.describe("Home Page with Imported Account", async () => {
     await ensureTextualElementExists(page, "Tokens");
     await wait(1000);
     await clickTokenIfAvailable(page);
+    await wait(1000);
     await ensureTextualElementExists(page, "Transfer Details");
   });
 
