@@ -10,6 +10,7 @@ const config: PlaywrightTestConfig = {
         browserName: "chromium",
         channel: "chrome",
       },
+      testDir: "tests/e2e",
     },
   ],
 };

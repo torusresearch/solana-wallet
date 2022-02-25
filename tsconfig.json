@@ -21,6 +21,6 @@
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/*.tsx", "playwright.config.ts", "src/scripts/*.js"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "tests/**/*.ts", "tests/**/*.tsx", "playwright.config.ts", "src/scripts/*.js"],
   "exclude": ["node_modules", "dist"]
 }
