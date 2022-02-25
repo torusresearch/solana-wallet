@@ -6,7 +6,6 @@ import { ensureTextualElementExists, wait } from "./utils";
 dotenv.config({ path: ".env.testing" });
 
 export async function clickTokenIfAvailable(page: Page) {
-  // const token_locator = page.locator("//div/h2[contains(text(),'Tokens')]/..//span/p");
   const token_locator = page.locator("text=/\\s\\≈\\s/");
   if ((await token_locator.isVisible()) === true) {
     await token_locator.first().click();

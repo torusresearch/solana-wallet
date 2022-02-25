@@ -78,8 +78,6 @@ test.describe("Home Page", async () => {
     await ensureTextualElementExists(page, "Tokens");
     await wait(1000);
     await clickTokenIfAvailable(page);
-    await wait(1000);
-    await ensureTextualElementExists(page, "Transfer Details");
   });
 
   test("Language change should work", async () => {
@@ -107,6 +105,7 @@ test.describe("Home Page", async () => {
     await ensureTextualElementExists(page, "Balance de Cuenta");
 
     await changeLanguage(page, "english");
+    await wait(500);
   });
 
   test("clicking on public key icon copies public key to clipboard", async () => {
@@ -189,8 +188,6 @@ test.describe("Home Page with Imported Account", async () => {
     await ensureTextualElementExists(page, "Tokens");
     await wait(1000);
     await clickTokenIfAvailable(page);
-    await wait(1000);
-    await ensureTextualElementExists(page, "Transfer Details");
   });
 
   test("clicking on public key icon copies public key to clipboard", async () => {
