@@ -1,5 +1,5 @@
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
-import { PopupWithBcHandler } from "@toruslabs/base-controllers";
+import { KeyPair, PopupWithBcHandler } from "@toruslabs/base-controllers";
 import OpenLogin from "@toruslabs/openlogin";
 import { AccountTrackerController, NetworkController, PreferencesController } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
@@ -83,7 +83,7 @@ describe("Controller Module", () => {
 
   // Initialization
   describe("#Initialization, login logout flow", () => {
-    it("trigger login flow", async () => {
+    it("trigger login/logout flow", async () => {
       const account = await accountInfoPromise;
       sandbox.stub(mockData, "openLoginHandler").get(() => openloginFaker[0]);
 
@@ -97,7 +97,14 @@ describe("Controller Module", () => {
 
       // validate login state
       const checkIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
+
       assert.deepStrictEqual(checkIdentities.userInfo, mockData.openLoginHandler.userInfo);
+      assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 1);
+      assert.equal((controllerModule.torusState.KeyringControllerState.wallets[0] as KeyPair).publicKey, sKeyPair[0].publicKey.toBase58());
+      assert.equal((controllerModule.torusState.KeyringControllerState.wallets[0] as KeyPair).privateKey, base58.encode(sKeyPair[0].secretKey));
+      assert.equal(controllerModule.selectedAddress, sKeyPair[0].publicKey.toBase58());
+      assert.equal(controllerModule.solBalance, account[sKeyPair[0].publicKey.toBase58()].lamports / LAMPORTS_PER_SOL);
+
       checkIdentities.contacts.forEach((item, idx) => {
         assert.deepStrictEqual(item, mockData.backend.user.data.contacts[idx]);
       });
@@ -120,21 +127,6 @@ describe("Controller Module", () => {
     // const dappOrigin = "localhost";
     it("login via embed", async () => {
       const accountInfo = await accountInfoPromise;
-      // controllerModule.init({
-      //   state: {
-      //     EmbedControllerState: {
-      //       buttonPosition: initParams.buttonPosition,
-      //       isIFrameFullScreen: true,
-      //       apiKey: initParams.apiKey,
-      //       oauthModalVisibility: false,
-      //       loginInProgress: false,
-      //       dappMetadata: { name: "", icon: "" },
-      //     },
-      //   },
-      //   origin: dappOrigin,
-      // });
-      // controllerModule.setupCommunication(dappOrigin);
-
       assert.equal(Object.keys(controllerModule.torusState.AccountTrackerState.accounts).length, 0);
       assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 0);
 
@@ -221,7 +213,7 @@ describe("Controller Module", () => {
       assert.equal(controllerModule.selectedNetworkTransactions.length, 1);
       // check state
     });
-    it("Spl Transfer", async () => {
+    it("SPL Transfer", async () => {
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
       assert.equal(controllerModule.selectedNetworkTransactions.length, 0);
       const selectedToken: SolAndSplToken = {
@@ -243,7 +235,7 @@ describe("Controller Module", () => {
   });
 
   // Embed API call
-  describe("#Embeded Solana API flow", () => {
+  describe("#Embedded Solana API flow", () => {
     const transferInstruction = () => {
       return SystemProgram.transfer({
         fromPubkey: sKeyPair[0].publicKey,
@@ -254,9 +246,6 @@ describe("Controller Module", () => {
 
     beforeEach(async () => {
       sandbox.stub(helper, "isMain").get(() => false);
-      // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https//localhost" });
-      // controllerModule.resetTorusController();
-      // log.error(controllerModule.torusState);
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
     });
 

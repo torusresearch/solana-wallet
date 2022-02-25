@@ -1,4 +1,3 @@
-// import { Connection } from "@solana/web3.js";
 import { PopupWithBcHandler } from "@toruslabs/base-controllers";
 import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS, TokenInfoController } from "@toruslabs/solana-controllers";
 import assert from "assert";
@@ -40,6 +39,7 @@ describe("TorusController", () => {
       });
       setTimeout(() => reject(Error("no network emited")), 5000);
     });
+
   const waitBlock = () =>
     new Promise<void>((resolve, reject) => {
       torusController.once("newBlock", (_msg) => {
@@ -150,7 +150,7 @@ describe("TorusController", () => {
 
   // Wallet Api
   // Provider API tests
-  describe("#Embeded Wallet Api", () => {
+  describe("#Embedded Wallet API", () => {
     //  "logout" is covered in login logout flow
 
     it("returns first address when dapp calls getAccounts", async () => {
@@ -274,11 +274,3 @@ describe("TorusController", () => {
   //   //   })
   //   // })
 });
-
-// function deferredPromise () {
-//   let resolve
-//   const promise = new Promise((_resolve) => {
-//     resolve = _resolve
-//   })
-//   return { promise, resolve }
-// }

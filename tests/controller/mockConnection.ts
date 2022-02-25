@@ -1,6 +1,6 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
 import { MintInfo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AccountInfo, Commitment, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { AccountInfo, Commitment, Connection, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
 import BN from "bn.js";
 import base58 from "bs58";
 import crypto from "crypto";
@@ -31,7 +31,7 @@ export const mockMintInfo: Record<string, MintInfo> = {
   },
 };
 
-const genAccountInfo = async () => {
+const generateAccountInfo = async () => {
   // mint buf len 82
   const genMintLayout = (mintInfo: MintInfo) => {
     const buf = Buffer.alloc(82);
@@ -146,9 +146,9 @@ const genAccountInfo = async () => {
   };
   return account;
 };
-export const accountInfoPromise = genAccountInfo();
+export const accountInfoPromise = generateAccountInfo();
 
-const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<any> }[] = [
+const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAccountData> }[] = [
   {
     account: {
       data: {
