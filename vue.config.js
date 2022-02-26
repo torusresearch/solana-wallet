@@ -1,7 +1,7 @@
 const path = require("path");
 const pkg = require("./package.json");
 const {ProvidePlugin} = require("webpack");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const p = require('path');
 module.exports = {
@@ -27,7 +27,6 @@ module.exports = {
         }
         config.plugins.push(new ProvidePlugin({Buffer: ["buffer", "Buffer"]}));
         config.plugins.push(new ProvidePlugin({ process: ["process/browser"] }));
-        config.plugins.push(new BundleAnalyzerPlugin());
         },
     pwa: {
         name: "Solana Wallet",

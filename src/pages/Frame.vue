@@ -92,6 +92,8 @@ onMounted(async () => {
             chainId: initParams.network.chainId,
             properties: {},
             providerConfig: initParams.network,
+            isCustomNetwork: false,
+            network: "loading",
           },
         }),
       },

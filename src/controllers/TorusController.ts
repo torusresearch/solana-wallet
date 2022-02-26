@@ -623,7 +623,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   setSelectedAccount(address: string): void {
     this.preferencesController.setSelectedAddress(address);
-    this.preferencesController.sync(address);
+    // this.preferencesController.sync(address);
 
     // set account in accountTracker
     this.accountTracker.syncAccounts();

@@ -26,7 +26,6 @@
     "@sentry/vue": "^6.17.9",
     "@solana/spl-name-service": "^0.1.3",
     "@solana/spl-token": "^0.1.8",
-    "@solana/spl-token-registry": "^0.2.1281",
     "@solana/web3.js": "^1.34.0",
     "@toruslabs/base-controllers": "^1.6.4",
     "@toruslabs/http-helpers": "^2.1.4",
