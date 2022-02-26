@@ -9,7 +9,6 @@ import {
   BaseState,
   KeyringControllerState,
   NetworkConfig,
-  NetworkState,
   ProviderConfig,
   // PreferencesConfig,
   // PreferencesState,
@@ -19,11 +18,22 @@ import {
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Network/NetworkController";
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
-import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
-import { ListIcon, PlusIcon, SettingsIcon } from "@toruslabs/vue-icons/basic";
-import { DatabaseIcon } from "@toruslabs/vue-icons/software";
+import { defineAsyncComponent } from "vue";
+
+const { ArrowBoldForvardIcon } = defineAsyncComponent({
+  loader: () => import("@toruslabs/vue-icons/arrows"),
+});
+
+const { ListIcon, PlusIcon, SettingsIcon } = defineAsyncComponent({
+  loader: () => import("@toruslabs/vue-icons/basic"),
+});
+
+const { DatabaseIcon } = defineAsyncComponent({
+  loader: () => import("@toruslabs/vue-icons/software"),
+});
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
@@ -41,7 +51,7 @@ export interface KeyState {
 }
 
 export interface TorusControllerState extends BaseState {
-  NetworkControllerState: NetworkState;
+  NetworkControllerState: SolanaNetworkState;
   CurrencyControllerState: BaseCurrencyControllerState;
   PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;

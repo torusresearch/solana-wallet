@@ -1,0 +1,7 @@
+{
+  "node-option": ["experimental-specifier-resolution=node", "loader=ts-node/esm"],
+  "extension": ["ts", "js"],
+  "require" : "./tests/setup.js",
+  "timeout": 0,
+  "exit": true
+}

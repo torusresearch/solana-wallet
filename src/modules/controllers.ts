@@ -3,6 +3,7 @@ import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
+  addressSlicer,
   BasePopupChannelData,
   BillboardEvent,
   BROADCAST_CHANNELS,
@@ -115,6 +116,10 @@ class ControllerModule extends VuexModule {
             };
           }
         }
+        return {
+          ...item,
+          cryptoCurrency: addressSlicer(item.mintAddress),
+        };
       }
       return item;
     });
@@ -139,8 +144,21 @@ class ControllerModule extends VuexModule {
     return this.torus.lastTokenRefreshDate;
   }
 
+  get totalBalance(): string {
+    let balance = new BigNumber(0);
+    const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
+    balance = balance.plus(
+      this.fungibleTokens.reduce((sum, curr) => {
+        return sum.plus(new BigNumber((curr.balance?.uiAmount ?? 0) * (curr?.price?.[selectedCurrency.toLowerCase()] ?? 0)));
+      }, new BigNumber(0))
+    );
+    const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    balance = balance.plus(this.solBalance.times(new BigNumber(pricePerToken)));
+    return balance.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString();
+  }
+
   // user balance in equivalent selected currency
-  get userBalance(): string {
+  get convertedSolBalance(): string {
     const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
     const value = this.solBalance.times(new BigNumber(pricePerToken));
@@ -150,7 +168,7 @@ class ControllerModule extends VuexModule {
   // get selectedBalance(): string {}
 
   get selectedNetworkDisplayName(): string {
-    return this.torusState.NetworkControllerState.providerConfig.displayName;
+    return this.torusState.NetworkControllerState.network;
   }
 
   get contacts(): Contact[] {
@@ -473,7 +491,11 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
-    window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+    try {
+      window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+    } catch (error) {
+      log.error("LocalStorage unavailable");
+    }
   }
 
   @Action
@@ -615,8 +637,8 @@ class ControllerModule extends VuexModule {
       priv_key: base58.encode(tempKey),
       pub_key: base58.encode(publicKey),
     };
-    window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
     try {
+      window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
       const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
       const stateString = stringify({ ...saveState, private_key: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
@@ -636,15 +658,15 @@ class ControllerModule extends VuexModule {
 
   @Action
   async restoreFromBackend() {
-    const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
-    const keyState: KeyState =
-      typeof value === "string"
-        ? JSON.parse(value)
-        : {
-            priv_key: "",
-            pub_key: "",
-          };
     try {
+      const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
+      const keyState: KeyState =
+        typeof value === "string"
+          ? JSON.parse(value)
+          : {
+              priv_key: "",
+              pub_key: "",
+            };
       if (keyState.priv_key && keyState.pub_key) {
         const pubKey = keyState.pub_key;
         let res;
@@ -684,6 +706,6 @@ class ControllerModule extends VuexModule {
   }
 }
 
-const module = getModule(ControllerModule);
+const module1 = getModule(ControllerModule);
 
-export default module;
+export default module1;

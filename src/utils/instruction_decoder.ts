@@ -1,9 +1,11 @@
 import * as bors from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { addressSlicer } from "@toruslabs/base-controllers";
 import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
 import BN from "bignumber.js";
-// import log from "loglevel";
+import log from "loglevel";
+
 export type DecodedDataType = {
   type: string;
   data: { [key: string]: string | PublicKey | number | undefined | null };
@@ -308,14 +310,18 @@ function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDat
 }
 
 export const decodeInstruction = (instruction: TransactionInstruction): DecodedDataType => {
-  if (instruction.programId.equals(SystemProgram.programId)) {
-    return decodeSystemInstruction(instruction);
-  }
-  if (instruction.programId.equals(StakeProgram.programId)) {
-    return decodeStakeInstruction(instruction);
-  }
-  if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
-    return decodeTokenInstruction(instruction);
+  try {
+    if (instruction.programId.equals(SystemProgram.programId)) {
+      return decodeSystemInstruction(instruction);
+    }
+    if (instruction.programId.equals(StakeProgram.programId)) {
+      return decodeStakeInstruction(instruction);
+    }
+    if (instruction.programId.equals(TOKEN_PROGRAM_ID)) {
+      return decodeTokenInstruction(instruction);
+    }
+  } catch (err) {
+    log.error(err);
   }
   return decodeUnknownInstruction(instruction);
 };
@@ -347,17 +353,18 @@ export const constructTokenData = (
         // if tokenState (info) not found, assume unknown transaction
         if (!tokenState) return undefined;
         // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
-        const symbol = tokenState.isFungible
-          ? infoState.tokenInfoMap[tokenState.mintAddress].symbol
-          : infoState.metaplexMetaMap[tokenState.mintAddress].symbol;
+        let symbol = tokenState.isFungible
+          ? infoState.tokenInfoMap[tokenState.mintAddress]?.symbol
+          : infoState.metaplexMetaMap[tokenState.mintAddress]?.symbol;
+        if (!symbol) symbol = addressSlicer(tokenState.mintAddress);
 
         const logoURI = tokenState.isFungible
-          ? infoState.tokenInfoMap[tokenState.mintAddress].logoURI
-          : infoState.metaplexMetaMap[tokenState.mintAddress].offChainMetaData?.image;
+          ? infoState.tokenInfoMap[tokenState.mintAddress]?.logoURI
+          : infoState.metaplexMetaMap[tokenState.mintAddress]?.offChainMetaData?.image;
 
         const price = infoState.tokenPriceMap[tokenState.mintAddress];
         return {
-          tokenName: symbol as string | "unknown",
+          tokenName: symbol,
           amount: decoded.data.amount as number,
           decimals: tokenState.balance?.decimals as number,
           from: new PublicKey(decoded.data.owner || "").toBase58(),
