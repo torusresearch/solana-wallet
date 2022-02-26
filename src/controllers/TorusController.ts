@@ -66,7 +66,7 @@ import {
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
-import { cloneDeep } from "lodash-es";
+import cloneDeep from "lodash-es/cloneDeep";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
