@@ -46,17 +46,16 @@
     "broadcast-channel": "^4.10.0",
     "bs58": "^4.0.1",
     "copy-to-clipboard": "^3.3.1",
-    "core-js": "^3.21.1",
     "dateformat": "^5.0.3",
     "eslint-plugin-node": "^11.1.0",
     "eth-rpc-errors": "^4.0.3",
     "lodash-es": "^4.17.21",
     "loglevel": "^1.8.0",
-    "pify": "^5.0.0",
     "pump": "^3.0.0",
     "readable-stream": "^3.6.0",
     "safe-stable-stringify": "^2.3.1",
     "vue": "^3.2.31",
+    "vue-eslint-parser": "^8.3.0",
     "vue-i18n": "^9.1.9",
     "vue-router": "^4.0.12",
     "vuex": "^4.0.2",
@@ -128,8 +127,7 @@
     "stream-http": "^3.2.0",
     "tailwindcss": "^3.0.23",
     "ts-node": "^10.5.0",
-    "typescript": "^4.5.5",
-    "workbox-webpack-plugin": "^6.4.2"
+    "typescript": "^4.5.5"
   },
   "engines": {
     "node": ">=14.17.0",
