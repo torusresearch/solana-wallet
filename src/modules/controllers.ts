@@ -42,12 +42,14 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/To
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, SaveState, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, SaveState, TorusControllerState } from "@/utils/enums";
 import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
 import { addToast } from "./app";
+
+const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 
 @Module({
   name: CONTROLLER_MODULE_KEY,
@@ -64,6 +66,8 @@ class ControllerModule extends VuexModule {
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
   public instanceId = "";
+
+  public backendRestored = false;
 
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
@@ -238,6 +242,11 @@ class ControllerModule extends VuexModule {
   }
 
   @Mutation
+  public setbackendRestored(value: boolean) {
+    this.backendRestored = value;
+  }
+
+  @Mutation
   public updateTorusState(state: TorusControllerState): void {
     this.torusState = { ...state };
   }
@@ -390,6 +399,7 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
+    this.setbackendRestored(false);
     this.torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
@@ -412,7 +422,6 @@ class ControllerModule extends VuexModule {
       this.logout();
     });
     this.setInstanceId(randomId());
-    this.restoreFromBackend();
 
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
@@ -494,8 +503,7 @@ class ControllerModule extends VuexModule {
     }
     try {
       window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
-      window.localStorage?.removeItem(`${CONTROLLER_MODULE_KEY}-publicKey`);
-      window.sessionStorage?.removeItem(CONTROLLER_MODULE_KEY);
+      window.localStorage?.removeItem(EPHERMAL_KEY);
     } catch (error) {
       log.error("LocalStorage unavailable");
     }
@@ -641,8 +649,7 @@ class ControllerModule extends VuexModule {
       pub_key: base58.encode(publicKey),
     };
     try {
-      window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
-      window.localStorage?.setItem(`${CONTROLLER_MODULE_KEY}-publicKey`, saveState.publicKey || "");
+      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
       const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
       const stateString = stringify({ saveState, private_key: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
@@ -662,10 +669,10 @@ class ControllerModule extends VuexModule {
 
   @Action
   async restoreFromBackend() {
+    if (this.backendRestored) return;
+    this.setbackendRestored(true);
     try {
-      const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
-      const publicKey = window.localStorage?.getItem(`${CONTROLLER_MODULE_KEY}-publicKey`);
-      if (publicKey) this.torus.setSelectedAccount(publicKey);
+      const value = window.localStorage?.getItem(EPHERMAL_KEY);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -697,8 +704,9 @@ class ControllerModule extends VuexModule {
             throw new Error("Private key not found in state");
           }
 
+          if (decryptedState.saveState.publicKey !== this.selectedAddress) throw new Error("Discrepancy public address");
           // assume valid private key
-          await this.torus.addAccount(base58.decode(decryptedState.private_key).toString("hex").slice(0, 64), decryptedState.saveState.userInfo);
+          await this.torus.addAccount(base58.decode(decryptedState.private_key).toString("hex").slice(0, 64));
           // this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
         }
       }
@@ -711,11 +719,10 @@ class ControllerModule extends VuexModule {
   }
 }
 
-const module1 = getModule(ControllerModule);
 const moduleName = `${CONTROLLER_MODULE_KEY}`;
 installStorePlugin({
   key: moduleName,
-  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
+  storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.torusState.KeyringControllerState`]);
     storage?.setItem(key, JSON.stringify(requiredState));
@@ -736,4 +743,5 @@ installStorePlugin({
   },
 });
 
+const module1 = getModule(ControllerModule);
 export default module1;

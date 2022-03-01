@@ -10,11 +10,9 @@ import {
   KeyringControllerState,
   NetworkConfig,
   ProviderConfig,
-  // PreferencesConfig,
-  // PreferencesState,
-  // SafeEventEmitterProvider,
   TransactionConfig,
   TransactionState,
+  UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
 import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
@@ -48,6 +46,11 @@ export type OpenLoginPopupResponse = {
 export interface KeyState {
   priv_key: string;
   pub_key: string;
+}
+
+export interface SaveState {
+  userInfo?: UserInfo;
+  publicKey?: string;
 }
 
 export interface TorusControllerState extends BaseState {
