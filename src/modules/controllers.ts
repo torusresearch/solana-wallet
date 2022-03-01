@@ -687,7 +687,7 @@ class ControllerModule extends VuexModule {
         try {
           res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
         } catch (e) {
-          this.logout();
+          log.info(e);
           throw e;
         }
         if (Object.keys(res).length && res.state && res.nonce) {
@@ -706,8 +706,8 @@ class ControllerModule extends VuexModule {
 
           if (decryptedState.saveState.publicKey !== this.selectedAddress) throw new Error("Discrepancy public address");
           // assume valid private key
-          await this.torus.addAccount(base58.decode(decryptedState.private_key).toString("hex").slice(0, 64));
-          // this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
+          const address = await this.torus.addAccount(base58.decode(decryptedState.private_key).toString("hex").slice(0, 64));
+          this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
         }
       }
     } catch (error) {
