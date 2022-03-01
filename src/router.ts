@@ -23,7 +23,7 @@ import Settings from "@/pages/wallet/Settings.vue";
 import TopupPage from "@/pages/wallet/TopUp.vue";
 import Transfer from "@/pages/wallet/Transfer.vue";
 
-// import { backendStatePromise } from "./utils/helpers";
+import { backendStatePromise } from "./utils/helpers";
 import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
 
 const enum AuthStates {
@@ -231,14 +231,14 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
-  // const authMeta = to.meta.auth;
+  const authMeta = to.meta.auth;
   const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
-  // if (!["frame", "redirect", "start", "end"].includes(to.name?.toString() || "")) await backendStatePromise.promise;
+  if (!["frame", "redirect", "start", "end"].includes(to.name?.toString() || "")) await backendStatePromise.promise;
   if (to.name === "404") return next(); // to prevent 404 redirecting to 404
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
-  // if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
-  // if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
+  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
   return next();
 });
 
