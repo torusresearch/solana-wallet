@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
+import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -40,8 +40,9 @@ import OpenLoginFactory from "@/auth/OpenLogin";
 import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
+import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, SaveState, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -446,7 +447,7 @@ class ControllerModule extends VuexModule {
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
-    this.saveToBackend({ private_key: res.privKey, saveState: res.userInfo });
+    this.saveToBackend({ private_key: res.privKey, saveState: { userInfo: res.userInfo, publicKey: this.selectedAddress } });
   }
 
   @Action
@@ -493,6 +494,8 @@ class ControllerModule extends VuexModule {
     }
     try {
       window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+      window.localStorage?.removeItem(`${CONTROLLER_MODULE_KEY}-publicKey`);
+      window.sessionStorage?.removeItem(CONTROLLER_MODULE_KEY);
     } catch (error) {
       log.error("LocalStorage unavailable");
     }
@@ -629,7 +632,7 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async saveToBackend({ private_key = "", saveState = {} }) {
+  async saveToBackend({ private_key = "", saveState = {} }: { private_key?: string; saveState: SaveState }) {
     const tempKey = new Keypair().secretKey.slice(32, 64);
     const { pk: publicKey, sk: secretKey } = getED25519Key(private_key.padStart(64, "0"));
     // (ephemeral private key, user public key)
@@ -639,8 +642,9 @@ class ControllerModule extends VuexModule {
     };
     try {
       window.localStorage?.setItem(CONTROLLER_MODULE_KEY, stringify(keyState));
+      window.localStorage?.setItem(`${CONTROLLER_MODULE_KEY}-publicKey`, saveState.publicKey || "");
       const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
-      const stateString = stringify({ ...saveState, private_key: base58.encode(secretKey) });
+      const stateString = stringify({ saveState, private_key: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
       const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
 
@@ -660,6 +664,9 @@ class ControllerModule extends VuexModule {
   async restoreFromBackend() {
     try {
       const value = window.localStorage?.getItem(CONTROLLER_MODULE_KEY);
+      const publicKey = window.localStorage?.getItem(`${CONTROLLER_MODULE_KEY}-publicKey`);
+      if (publicKey) this.torus.setSelectedAccount(publicKey);
+
       const keyState: KeyState =
         typeof value === "string"
           ? JSON.parse(value)
@@ -673,7 +680,7 @@ class ControllerModule extends VuexModule {
         try {
           res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
         } catch (e) {
-          window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
+          this.logout();
           throw e;
         }
         if (Object.keys(res).length && res.state && res.nonce) {
@@ -684,22 +691,20 @@ class ControllerModule extends VuexModule {
           const decryptedStateArray = nacl.secretbox.open(Buffer.from(encryptedState, "hex"), nonce, ephermalPrivateKey.slice(0, 32));
           if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
-          const decryptedState = JSON.parse(decryptedStateString);
+          const decryptedState: { saveState: SaveState; private_key: string } = JSON.parse(decryptedStateString);
 
-          if (!decryptedState.private_key) {
+          if (!decryptedState.private_key || !decryptedState.saveState.userInfo) {
             throw new Error("Private key not found in state");
           }
 
           // assume valid private key
-          const address = await this.torus.addAccount(
-            base58.decode(decryptedState.private_key).toString("hex").slice(0, 64),
-            omit(decryptedState, "private_key") as UserInfo
-          );
-          this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
+          await this.torus.addAccount(base58.decode(decryptedState.private_key).toString("hex").slice(0, 64), decryptedState.saveState.userInfo);
+          // this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
         }
       }
     } catch (error) {
       log.error("Error restoring state!", error);
+      this.logout();
     } finally {
       if (backendStatePromise.resolve) backendStatePromise.resolve("");
     }
@@ -707,5 +712,28 @@ class ControllerModule extends VuexModule {
 }
 
 const module1 = getModule(ControllerModule);
+const moduleName = `${CONTROLLER_MODULE_KEY}`;
+installStorePlugin({
+  key: moduleName,
+  storage: config.dappStorageKey ? LOCAL_STORAGE_KEY : SESSION_STORAGE_KEY,
+  saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
+    const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.torusState.KeyringControllerState`]);
+    storage?.setItem(key, JSON.stringify(requiredState));
+  },
+  restoreState: (key: string, storage?: Storage) => {
+    const value = storage?.getItem(key);
+    if (typeof value === "string") {
+      // If string, parse, or else, just return
+      const parsedValue = JSON.parse(value || "{}");
+      return {
+        [moduleName]: {
+          torus: new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) }),
+          ...(parsedValue[moduleName] || {}),
+        },
+      };
+    }
+    return value || {};
+  },
+});
 
 export default module1;
