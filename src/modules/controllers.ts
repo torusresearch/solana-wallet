@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
+import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -21,13 +21,13 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
+import { get, post } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
-import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
@@ -288,10 +288,10 @@ class ControllerModule extends VuexModule {
       const pdaInfo = await connection.getAccountInfo(pda);
       if (pdaInfo) {
         const metadata = new Metadata(pda, pdaInfo);
-        const response = await axios.get(metadata.data.data.uri);
+        const response = await get(metadata.data.data.uri);
         return {
           ...metadata.data.data,
-          offChainMetaData: response.data,
+          offChainMetaData: response as NFTInfo["offChainMetaData"],
         };
       }
       throw new Error();
@@ -656,7 +656,7 @@ class ControllerModule extends VuexModule {
       const signature = nacl.sign.detached(dataHash, secretKey);
       const signatureString = Buffer.from(signature).toString("hex");
 
-      await axios.post(`${config.openloginStateAPI}/set`, { pub_key: keyState.pub_key, signature: signatureString, set_data: setData });
+      await post(`${config.openloginStateAPI}/set`, { pub_key: keyState.pub_key, signature: signatureString, set_data: setData });
     } catch (error) {
       log.error("Error saving state!", error);
     }
@@ -675,9 +675,9 @@ class ControllerModule extends VuexModule {
             };
       if (keyState.priv_key && keyState.pub_key) {
         const pubKey = keyState.pub_key;
-        let res;
+        let res: { state?: string; nonce?: string };
         try {
-          res = (await axios.post(`${config.openloginStateAPI}/get`, { pub_key: pubKey })).data;
+          res = await post(`${config.openloginStateAPI}/get`, { pub_key: pubKey });
         } catch (e) {
           window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
           throw e;
