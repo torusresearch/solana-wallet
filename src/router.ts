@@ -1,9 +1,29 @@
+// import Nft from "@pages/wallet/Nft.vue";
+// import NftPage from "@pages/wallet/NftDetail.vue";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
+import Page404 from "@/pages/404.vue";
+import Confirm from "@/pages/Confirm.vue";
+import ConfirmNft from "@/pages/ConfirmNft.vue";
+import ConfirmSpl from "@/pages/ConfirmSpl.vue";
+import End from "@/pages/End.vue";
+import Frame from "@/pages/Frame.vue";
+import Login from "@/pages/Login.vue";
+import Logout from "@/pages/Logout.vue";
+import ProviderChange from "@/pages/ProviderChange.vue";
+import RedirectFlow from "@/pages/RedirectFlowHandler.vue";
+import RedirectUrl from "@/pages/RedirectHandler.vue";
+import Start from "@/pages/Start.vue";
+import Activity from "@/pages/wallet/Activity.vue";
+import Base from "@/pages/wallet/Base.vue";
+import Home from "@/pages/wallet/Home.vue";
+import Settings from "@/pages/wallet/Settings.vue";
+import TopupPage from "@/pages/wallet/TopUp.vue";
+import Transfer from "@/pages/wallet/Transfer.vue";
 
-import { backendStatePromise } from "./utils/helpers";
+// import { backendStatePromise } from "./utils/helpers";
 import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
 
 const enum AuthStates {
@@ -26,33 +46,33 @@ const router = createRouter({
     {
       name: "login",
       path: "/login",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGIN" */ "@/pages/Login.vue"),
+      component: Login, // import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGIN" */ "@/pages/Login.vue"),
       meta: { title: "Login", auth: AuthStates.NON_AUTHENTICATED },
     },
     // AUTHENTICATED ROUTES
     {
       name: "walletBase",
       path: "/wallet",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WALLET" */ "@/pages/wallet/Base.vue"),
+      component: Base, // import(/* webpackPrefetch: true */ /* webpackChunkName: "WALLET" */ "@/pages/wallet/Base.vue"),
       meta: { title: "Solana Wallet", auth: AuthStates.AUTHENTICATED },
       redirect: "/wallet/home",
       children: [
         {
           name: "walletHome",
           path: "home",
-          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
+          component: Home, // import(/* webpackPrefetch: true */ /* webpackChunkName: "HOME" */ "@/pages/wallet/Home.vue"),
           meta: { title: "Home", tab: "home", tabHeader: "false" },
         },
         {
           name: "walletTransfer",
           path: "transfer",
-          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TRANSFER" */ "@/pages/wallet/Transfer.vue"),
+          component: Transfer, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TRANSFER" */ "@/pages/wallet/Transfer.vue"),
           meta: { title: "Transfer", tab: "transfer" },
         },
         {
           name: "walletTopup",
           path: "topup",
-          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP" */ "@/pages/wallet/TopUp.vue"),
+          component: TopupPage, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP" */ "@/pages/wallet/TopUp.vue"),
           meta: { title: "Top Up", tab: "topup" },
           children: [
             // {
@@ -74,13 +94,13 @@ const router = createRouter({
         {
           name: "walletActivity",
           path: "activity",
-          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "ACTIVITY" */ "@/pages/wallet/Activity.vue"),
+          component: Activity, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "ACTIVITY" */ "@/pages/wallet/Activity.vue"),
           meta: { title: "Activity", tab: "activity" },
         },
         {
           name: "walletSettings",
           path: "settings",
-          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "SETTINGS" */ "@/pages/wallet/Settings.vue"),
+          component: Settings, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "SETTINGS" */ "@/pages/wallet/Settings.vue"),
           meta: { title: "Settings", tab: "settings" },
         },
         {
@@ -101,37 +121,37 @@ const router = createRouter({
     {
       name: "logout",
       path: "/logout",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),
+      component: Logout, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "LOGOUT" */ "@/pages/Logout.vue"),
       meta: { title: "Logout" },
     },
     {
       name: "start",
       path: "/start",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "START" */ "@/pages/Start.vue"),
+      component: Start, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "START" */ "@/pages/Start.vue"),
       meta: { title: "Start" },
     },
     {
       name: "end",
       path: "/end",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "END" */ "@/pages/End.vue"),
+      component: End, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "END" */ "@/pages/End.vue"),
       meta: { title: "End" },
     },
     {
       name: "confirm",
       path: "/confirm",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/Confirm.vue"),
+      component: Confirm, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/Confirm.vue"),
       meta: { title: "Confirm" },
     },
     {
       name: "confirm_nft",
       path: "/confirm_nft",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/ConfirmNft.vue"),
+      component: ConfirmNft, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/ConfirmNft.vue"),
       meta: { title: "Confirm Nft" },
     },
     {
       name: "confirm_spl",
       path: "/confirm_spl",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/ConfirmSpl.vue"),
+      component: ConfirmSpl, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/ConfirmSpl.vue"),
       meta: { title: "Confirm Spl" },
     },
     {
@@ -143,13 +163,13 @@ const router = createRouter({
     {
       name: "redirect",
       path: "/redirect",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectHandler.vue"),
+      component: RedirectUrl, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectHandler.vue"),
       meta: { title: "redirecting" },
     },
     {
       name: "redirectflow",
       path: "/redirectflow",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
+      component: RedirectFlow, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
       meta: { title: "redirecting" },
       beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
         const { method = "" } = getB64DecodedData(to.hash);
@@ -172,19 +192,19 @@ const router = createRouter({
     {
       name: "providerchange",
       path: "/providerchange",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROVIDER_CHANGE" */ "@/pages/ProviderChange.vue"),
+      component: ProviderChange, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROVIDER_CHANGE" */ "@/pages/ProviderChange.vue"),
       meta: { title: "ProviderChange" },
     },
     {
       name: "frame",
       path: "/frame",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
+      component: Frame, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
       meta: { title: "Frame" },
     },
     {
       name: "404",
       path: "/404",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "404" */ "@/pages/404.vue"),
+      component: Page404, // () => import(/* webpackPrefetch: true */ /* webpackChunkName: "404" */ "@/pages/404.vue"),
       meta: { title: "404" },
     },
   ],
@@ -211,14 +231,14 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
-  const authMeta = to.meta.auth;
+  // const authMeta = to.meta.auth;
   const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
-  if (to.name !== "frame") await backendStatePromise.promise;
+  // if (!["frame", "redirect", "start", "end"].includes(to.name?.toString() || "")) await backendStatePromise.promise;
   if (to.name === "404") return next(); // to prevent 404 redirecting to 404
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
-  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+  // if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
+  // if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
   return next();
 });
 
