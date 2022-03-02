@@ -87,13 +87,15 @@ test.describe("Activity Page", async () => {
     // getting list of dates on activity page
     let activityDates = await getDateOfActivities(page);
     let elements = await activityDates.elementHandles();
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementDateText = await element.innerText();
-      const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
-      const elementDate = new Date(date);
-      const lastOneWeekDate = await getLastWeeksDate();
-      expect(elementDate > lastOneWeekDate).toBeTruthy();
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementDateText = await element.innerText();
+        const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
+        const elementDate = new Date(date);
+        const lastOneWeekDate = await getLastWeeksDate();
+        expect(elementDate > lastOneWeekDate).toBeTruthy();
+      })
+    );
 
     // Last 1 month filter
     await selectTimeFilter(page, "Last 1 month");
@@ -101,13 +103,15 @@ test.describe("Activity Page", async () => {
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementDateText = await element.innerText();
-      const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
-      const elementDate = new Date(date);
-      const lastOneMonthDate = await getOlderDate(1);
-      expect(elementDate > lastOneMonthDate).toBeTruthy();
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementDateText = await element.innerText();
+        const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
+        const elementDate = new Date(date);
+        const lastOneMonthDate = await getOlderDate(1);
+        expect(elementDate > lastOneMonthDate).toBeTruthy();
+      })
+    );
 
     // Last 6 months filter
     await selectTimeFilter(page, "Last 6 months");
@@ -115,13 +119,15 @@ test.describe("Activity Page", async () => {
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementDateText = await element.innerText();
-      const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
-      const elementDate = new Date(date);
-      const lastOneMonthDate = await getOlderDate(6);
-      expect(elementDate > lastOneMonthDate).toBeTruthy();
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementDateText = await element.innerText();
+        const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
+        const elementDate = new Date(date);
+        const lastOneMonthDate = await getOlderDate(6);
+        expect(elementDate > lastOneMonthDate).toBeTruthy();
+      })
+    );
     await selectTimeFilter(page, "All");
   });
 
@@ -136,10 +142,12 @@ test.describe("Activity Page", async () => {
     let activitiesList = await getActivities(page);
     let elements = await activitiesList.elementHandles();
     // ensure that only sent activities are displayed
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementText = await element.textContent();
-      expect(elementText).toContain("Sent");
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementText = await element.textContent();
+        expect(elementText).toContain("Sent");
+      })
+    );
 
     // Receive filter
     await selectTransactionTypeFilter(page, "Receive");
@@ -148,10 +156,12 @@ test.describe("Activity Page", async () => {
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
     // ensure only received activities are displayed
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementText = await element.textContent();
-      expect(elementText).toContain("Received");
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementText = await element.textContent();
+        expect(elementText).toContain("Received");
+      })
+    );
 
     // Topup filter
     await selectTransactionTypeFilter(page, "Topup");
@@ -160,10 +170,12 @@ test.describe("Activity Page", async () => {
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
     // ensure only received activities are displayed
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementText = await element.textContent();
-      expect(elementText).toContain("Topup");
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementText = await element.textContent();
+        expect(elementText).toContain("Topup");
+      })
+    );
     await selectTransactionTypeFilter(page, "All Transactions");
   });
 
@@ -273,13 +285,15 @@ test.describe("Activity Page with Imported Account", async () => {
     // getting list of dates on activity page
     let activityDates = await getDateOfActivities(page);
     let elements = await activityDates.elementHandles();
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementDateText = await element.innerText();
-      const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
-      const elementDate = new Date(date);
-      const lastOneWeekDate = await getLastWeeksDate();
-      expect(elementDate > lastOneWeekDate).toBeTruthy();
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementDateText = await element.innerText();
+        const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
+        const elementDate = new Date(date);
+        const lastOneWeekDate = await getLastWeeksDate();
+        expect(elementDate > lastOneWeekDate).toBeTruthy();
+      })
+    );
 
     // Last 1 month filter
     await selectTimeFilter(page, "Last 1 month");
@@ -287,13 +301,15 @@ test.describe("Activity Page with Imported Account", async () => {
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementDateText = await element.innerText();
-      const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
-      const elementDate = new Date(date);
-      const lastOneMonthDate = await getOlderDate(1);
-      expect(elementDate > lastOneMonthDate).toBeTruthy();
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementDateText = await element.innerText();
+        const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
+        const elementDate = new Date(date);
+        const lastOneMonthDate = await getOlderDate(1);
+        expect(elementDate > lastOneMonthDate).toBeTruthy();
+      })
+    );
 
     // Last 6 months filter
     await selectTimeFilter(page, "Last 6 months");
@@ -301,13 +317,15 @@ test.describe("Activity Page with Imported Account", async () => {
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementDateText = await element.innerText();
-      const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
-      const elementDate = new Date(date);
-      const lastOneMonthDate = await getOlderDate(6);
-      expect(elementDate > lastOneMonthDate).toBeTruthy();
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementDateText = await element.innerText();
+        const date = elementDateText.split("\n")[0].replace(/(\d+)(st|nd|rd|th)/g, "$1");
+        const elementDate = new Date(date);
+        const lastOneMonthDate = await getOlderDate(6);
+        expect(elementDate > lastOneMonthDate).toBeTruthy();
+      })
+    );
     await selectTimeFilter(page, "All");
   });
 
@@ -322,10 +340,12 @@ test.describe("Activity Page with Imported Account", async () => {
     let activitiesList = await getActivities(page);
     let elements = await activitiesList.elementHandles();
     // ensure that only sent activities are displayed
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementText = await element.textContent();
-      expect(elementText).toContain("Sent");
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementText = await element.textContent();
+        expect(elementText).toContain("Sent");
+      })
+    );
 
     // Receive filter
     await selectTransactionTypeFilter(page, "Receive");
@@ -334,10 +354,12 @@ test.describe("Activity Page with Imported Account", async () => {
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
     // ensure only received activities are displayed
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementText = await element.textContent();
-      expect(elementText).toContain("Received");
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementText = await element.textContent();
+        expect(elementText).toContain("Received");
+      })
+    );
 
     // Topup filter
     await selectTransactionTypeFilter(page, "Topup");
@@ -346,10 +368,12 @@ test.describe("Activity Page with Imported Account", async () => {
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
     // ensure only received activities are displayed
-    elements.forEach(async function ensureActivityFilteredCorrectly(element) {
-      const elementText = await element.textContent();
-      expect(elementText).toContain("Topup");
-    });
+    await Promise.all(
+      elements.map(async function ensureActivityFilteredCorrectly(element) {
+        const elementText = await element.textContent();
+        expect(elementText).toContain("Topup");
+      })
+    );
     await selectTransactionTypeFilter(page, "All Transactions");
   });
 
