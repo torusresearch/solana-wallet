@@ -26,11 +26,11 @@ module.exports = {
         }
         config.plugins.push(new ProvidePlugin({Buffer: ["buffer", "Buffer"]}));
         config.plugins.push(new ProvidePlugin({process: ["process/browser"]}));
-        config.optimization.splitChunks = {
-              ...config.optimization.splitChunks,
-              minSize: 10000,
-              maxSize: 250000,
-            }
+        // config.optimization.splitChunks = {
+        //       ...config.optimization.splitChunks,
+        //       minSize: 10000,
+        //       maxSize: 250000,
+        //     }
         },
     pwa: {
         name: "Torus Wallet",
