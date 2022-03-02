@@ -119,7 +119,7 @@ const router = createRouter({
       name: "confirm",
       path: "/confirm",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/Confirm.vue"),
-      meta: { title: "Confirm" },
+      meta: { title: "Confirm", auth: AuthStates.AUTHENTICATED },
     },
     {
       name: "confirm_nft",
@@ -137,7 +137,7 @@ const router = createRouter({
       name: "confirm_message",
       path: "/confirm_message",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/ConfirmMessage.vue"),
-      meta: { title: "Sign Message" },
+      meta: { title: "Sign Message", auth: AuthStates.AUTHENTICATED },
     },
     {
       name: "redirect",
