@@ -455,6 +455,8 @@ class ControllerModule extends VuexModule {
 
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+    // do not need to restore beyond login
+    this.setbackendRestored(true);
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
     this.saveToBackend({ private_key: res.privKey, saveState: { userInfo: res.userInfo, publicKey: this.selectedAddress } });
   }
