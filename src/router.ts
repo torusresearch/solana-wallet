@@ -96,7 +96,7 @@ const router = createRouter({
       name: "walletNFT",
       path: "/wallet/nfts/:mint_address",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFT" */ "@/pages/wallet/Nft.vue"),
-      meta: { title: "NFT Details" },
+      meta: { title: "NFT Details", tab: "nfts" },
     },
     {
       name: "logout",

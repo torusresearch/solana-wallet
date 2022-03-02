@@ -122,7 +122,7 @@ const transferNFT = () => {
             @error="setFallbackImg($event.target, FallbackNft)"
           />
         </div>
-        <div class="flex flex-col pt-4 md:pt-14 w-full md:w-[320px] ml-0 md:ml-10">
+        <div class="flex flex-col pt-4 md:pt-14 w-full md:w-[320px] ml-0 md:ml-10 pb-8">
           <div class="w-full flex flex-col">
             <div v-if="nftMetaData.offChainMetaData?.collection" class="flex items-center">
               <img
@@ -187,6 +187,33 @@ const transferNFT = () => {
         <div class="px-4 py-2 bg-app-primary-500 text-app-text-dark-400 rounded-md cursor-pointer" @click="goBack" @keydown="goBack">Back</div>
       </div>
     </main>
+    <div
+      v-if="selectedAddress && user.verifierId"
+      class="md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black fixed bottom-0"
+    >
+      <router-link
+        v-for="(value, key) in tabs"
+        :key="key"
+        :to="`/wallet/${value.route}`"
+        :aria-current="key === 'nfts' ? 'page' : undefined"
+        :class="[value.mobHidden ? 'hidden' : 'block']"
+      >
+        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === tab ? 'active-border' : '']">
+          <img
+            :src="value.icon"
+            alt="link icon"
+            class="h-5"
+            :class="[key === 'nfts' ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
+          />
+          <p
+            class="text-xs text-center leading-none mt-1"
+            :class="[key === 'nfts' ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
+          >
+            {{ t(value.name) || "" }}
+          </p>
+        </div>
+      </router-link>
+    </div>
   </div>
 </template>
 <style scoped>
