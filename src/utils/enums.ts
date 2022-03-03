@@ -19,19 +19,11 @@ import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@t
 import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Network/NetworkController";
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
-import { defineAsyncComponent } from "vue";
 
-const { ArrowBoldForvardIcon } = defineAsyncComponent({
-  loader: () => import("@toruslabs/vue-icons/arrows"),
-});
-
-const { ListIcon, PlusIcon, SettingsIcon } = defineAsyncComponent({
-  loader: () => import("@toruslabs/vue-icons/basic"),
-});
-
-const { DatabaseIcon } = defineAsyncComponent({
-  loader: () => import("@toruslabs/vue-icons/software"),
-});
+import MobActivity from "@/assets/mob-activity.svg";
+import MobHome from "@/assets/mob-home.svg";
+import MobNft from "@/assets/mob-nft.svg";
+import MobSettings from "@/assets/mob-settings.svg";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
@@ -85,42 +77,48 @@ export interface ControllerModuleState {
   torusState: TorusControllerState;
 }
 
-export const NAVIGATION_LIST = {
+export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; route: string; icon: string; mobHidden: boolean } } = {
   home: {
     name: "navBar.home",
     title: "walletHome.walletHome",
     route: "home",
-    icon: PlusIcon,
+    icon: MobHome,
+    mobHidden: false,
   },
   transfer: {
     name: "navBar.transfer",
     title: "walletTransfer.transferDetails",
     route: "transfer",
-    icon: ArrowBoldForvardIcon,
+    icon: MobHome,
+    mobHidden: true,
   },
   topup: {
     name: "navBar.topUp",
     title: "walletTopUp.selectProvider",
     route: "topup",
-    icon: DatabaseIcon,
+    icon: MobHome,
+    mobHidden: true,
   },
   nfts: {
     name: "navBar.nfts",
     title: "navBar.nfts",
     route: "nfts",
-    icon: ListIcon,
+    icon: MobNft,
+    mobHidden: false,
   },
   activity: {
     name: "navBar.activity",
     title: "walletActivity.transactionActivities",
     route: "activity",
-    icon: ListIcon,
+    icon: MobActivity,
+    mobHidden: false,
   },
   settings: {
     name: "navBar.settings",
     title: "walletSettings.settings",
     route: "settings",
-    icon: SettingsIcon,
+    icon: MobSettings,
+    mobHidden: false,
   },
 };
 

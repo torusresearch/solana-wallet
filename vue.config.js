@@ -1,6 +1,6 @@
 const path = require("path");
 const pkg = require("./package.json");
-const {ProvidePlugin} = require("webpack");
+const { ProvidePlugin } = require("webpack");
 
 const p = require('path');
 module.exports = {
@@ -22,13 +22,13 @@ module.exports = {
         };
         config.resolve.alias = {
             ...config.resolve.alias,
-            'bn.js': p.join(__dirname, 'node_modules/bn.js/lib/bn.js'), // used as peer dep multiple times, duplicate present in bundle
+            'bn.js': p.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
         }
-        config.plugins.push(new ProvidePlugin({Buffer: ["buffer", "Buffer"]}));
-        config.plugins.push(new ProvidePlugin({process: ["process/browser"]}));
-        },
+        config.plugins.push(new ProvidePlugin({ Buffer: ["buffer", "Buffer"] }));
+        config.plugins.push(new ProvidePlugin({ process: ["process/browser"] }));
+    },
     pwa: {
-        name: "Solana Wallet",
+        name: "Torus Wallet",
         themeColor: "#70a3ff",
         msTileColor: "#000000",
         appleMobileWebAppCapable: "yes",

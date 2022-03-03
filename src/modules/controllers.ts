@@ -19,7 +19,6 @@ import {
   SelectedAddresssChangeChannelData,
   THEME,
   TX_EVENTS,
-  UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
@@ -31,7 +30,9 @@ import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
-import { cloneDeep, merge, omit } from "lodash-es";
+import cloneDeep from "lodash-es/cloneDeep";
+import merge from "lodash-es/merge";
+import omit from "lodash-es/omit";
 import log from "loglevel";
 import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -43,7 +44,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, SaveState, TorusControllerState } from "@/utils/enums";
-import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
+import { backendStatePromise, delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -242,7 +243,7 @@ class ControllerModule extends VuexModule {
   }
 
   @Mutation
-  public setbackendRestored(value: boolean) {
+  public setBackendStored(value: boolean) {
     this.backendRestored = value;
   }
 
@@ -399,7 +400,7 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
-    this.setbackendRestored(false);
+    this.setBackendStored(false);
     this.torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
@@ -456,7 +457,7 @@ class ControllerModule extends VuexModule {
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
     // do not need to restore beyond login
-    this.setbackendRestored(true);
+    this.setBackendStored(true);
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
     this.saveToBackend({ private_key: res.privKey, saveState: { userInfo: res.userInfo, publicKey: this.selectedAddress } });
   }
@@ -467,21 +468,25 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  async openloginLogout() {
+    try {
+      const openLoginInstance = await OpenLoginFactory.getInstance();
+      if (openLoginInstance.state.support3PC) {
+        // eslint-disable-next-line no-underscore-dangle
+        openLoginInstance._syncState(await openLoginInstance._getData());
+        await openLoginInstance.logout({
+          clientId: config.openLoginClientId,
+        });
+      }
+    } catch (error) {
+      log.warn(error, "unable to logout with openlogin");
+    }
+  }
+
+  @Action
   async logout(): Promise<void> {
     if (isMain && this.selectedAddress) {
-      try {
-        const openLoginInstance = await OpenLoginFactory.getInstance();
-        if (openLoginInstance.state.support3PC) {
-          // eslint-disable-next-line no-underscore-dangle
-          openLoginInstance._syncState(await openLoginInstance._getData());
-          await openLoginInstance.logout({
-            clientId: config.openLoginClientId,
-          });
-        }
-      } catch (error) {
-        log.warn(error, "unable to logout with openlogin");
-        window.location.href = "/";
-      }
+      this.openloginLogout();
     }
     const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
     this.updateTorusState(initialState);
@@ -613,7 +618,7 @@ class ControllerModule extends VuexModule {
         };
         break;
       case "user_info":
-        res = normalizeJson<UserInfo>(this.torus.userInfo);
+        res = this.torus.userInfo;
         break;
       case "get_gasless_public_key":
         res = { pubkey: await this.torus.getGaslessPublicKey() };
@@ -672,7 +677,7 @@ class ControllerModule extends VuexModule {
   @Action
   async restoreFromBackend() {
     if (this.backendRestored) return;
-    this.setbackendRestored(true);
+    this.setBackendStored(true);
     try {
       const value = window.localStorage?.getItem(EPHERMAL_KEY);
 

@@ -2,7 +2,7 @@ import { PopupWithBcHandler } from "@toruslabs/base-controllers";
 import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS, TokenInfoController } from "@toruslabs/solana-controllers";
 import assert from "assert";
 import base58 from "bs58";
-import { cloneDeep } from "lodash-es";
+import cloneDeep from "lodash-es/cloneDeep";
 import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";

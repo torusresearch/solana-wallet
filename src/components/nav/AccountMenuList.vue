@@ -4,16 +4,14 @@ import { QrcodeIcon } from "@heroicons/vue/solid";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
-import { CopyIcon, ExternalLinkIcon, PlusIcon } from "@toruslabs/vue-icons/basic";
+import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import BigNumber from "bignumber.js";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
-import { AccountImport } from "@/components/nav";
 import ControllerModule from "@/modules/controllers";
-import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
 import LanguageSelector from "./LanguageSelector.vue";
@@ -30,24 +28,12 @@ const explorerUrl = computed(() => {
   )}`;
 });
 
-const pageNavigation = Object.values(NAVIGATION_LIST).filter((nav) => nav.route !== "home");
-
 const currency = computed(() => ControllerModule.torus.currentCurrency);
-const modalVisible = ref(false);
-
 const logout = () => {
   emits("onLogout");
 };
 const copySelectedAddress = (address: string) => {
   copyText(address);
-};
-
-const openImportModal = () => {
-  modalVisible.value = true;
-};
-
-const closeImportModal = () => {
-  modalVisible.value = false;
 };
 
 const setSelected = async (address: string) => {
@@ -115,25 +101,6 @@ const getWalletBalance = (address: string): string => {
       </div>
     </div>
     <div
-      class="flex cursor-pointer items-center border-t border-b md:border-b-0 w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
-      @click="openImportModal"
-      @keydown="openImportModal"
-    >
-      <PlusIcon class="w-4 h-4 mr-2" aria-hidden="false" />
-      <div>Import Account</div>
-    </div>
-
-    <!-- Page navigation -->
-    <router-link
-      is="router-link"
-      v-for="nav in pageNavigation"
-      :key="nav.route"
-      :to="`/wallet/${nav.route}`"
-      class="flex cursor-pointer md:hidden items-center w-full text-left px-4 py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
-    >
-      <component :is="nav.icon" class="w-4 h-4 mr-2" aria-hidden="true"></component>{{ t(nav.name) }}
-    </router-link>
-    <div
       class="flex cursor-pointer items-center md:hidden border-t w-full text-left py-4 text-sm font-bold text-app-text-600 dark:text-app-text-dark-500 dark:hover:text-app-text-600 dark:hover:bg-app-gray-400"
     >
       <LanguageSelector />
@@ -162,7 +129,6 @@ const getWalletBalance = (address: string): string => {
     <div class="p-4 border-t">
       <Button class="ml-auto" variant="text" @click="logout">{{ t("accountMenu.logOut") }}</Button>
     </div>
-    <AccountImport :is-open="modalVisible" @on-close="closeImportModal" />
   </div>
 </template>
 

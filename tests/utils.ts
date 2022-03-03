@@ -87,6 +87,17 @@ export async function importAccount(page: Page, privKey: string) {
 
 // TODO: Remove Dummy fn
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getControllerState(page: Page): Promise<unknown> {
+export async function getControllerState(page: Page): Promise<any> {
   return {};
+}
+
+export async function getLastWeeksDate() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+}
+
+export async function getOlderDate(month: number) {
+  const now = new Date();
+  const oldDate = new Date(now.setMonth(now.getMonth() - month));
+  return new Date(oldDate.getFullYear(), oldDate.getMonth(), oldDate.getDate());
 }
