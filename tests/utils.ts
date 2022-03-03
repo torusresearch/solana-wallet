@@ -87,6 +87,6 @@ export async function importAccount(page: Page, privKey: string) {
 
 // TODO: Remove Dummy fn
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getControllerState(page: Page): Promise<unknown> {
+export async function getControllerState(page: Page): Promise<any> {
   return {};
 }
