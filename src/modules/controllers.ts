@@ -457,21 +457,25 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
+  async openloginLogout() {
+    try {
+      const openLoginInstance = await OpenLoginFactory.getInstance();
+      if (openLoginInstance.state.support3PC) {
+        // eslint-disable-next-line no-underscore-dangle
+        openLoginInstance._syncState(await openLoginInstance._getData());
+        await openLoginInstance.logout({
+          clientId: config.openLoginClientId,
+        });
+      }
+    } catch (error) {
+      log.warn(error, "unable to logout with openlogin");
+    }
+  }
+
+  @Action
   async logout(): Promise<void> {
     if (isMain && this.selectedAddress) {
-      try {
-        const openLoginInstance = await OpenLoginFactory.getInstance();
-        if (openLoginInstance.state.support3PC) {
-          // eslint-disable-next-line no-underscore-dangle
-          openLoginInstance._syncState(await openLoginInstance._getData());
-          await openLoginInstance.logout({
-            clientId: config.openLoginClientId,
-          });
-        }
-      } catch (error) {
-        log.warn(error, "unable to logout with openlogin");
-        window.location.href = "/";
-      }
+      this.openloginLogout();
     }
     const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
     this.updateTorusState(initialState);

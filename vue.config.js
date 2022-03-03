@@ -28,7 +28,7 @@ module.exports = {
         config.plugins.push(new ProvidePlugin({ process: ["process/browser"] }));
     },
     pwa: {
-        name: "Solana Wallet",
+        name: "Torus Wallet",
         themeColor: "#70a3ff",
         msTileColor: "#000000",
         appleMobileWebAppCapable: "yes",
