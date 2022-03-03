@@ -459,7 +459,7 @@ class ControllerModule extends VuexModule {
     // do not need to restore beyond login
     this.setRequireKeyRestore(false);
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
-    this.saveToOpenloginBackend({ privateKey: res.privKey, userInfo: res.userInfo, publicKey: this.selectedAddress });
+    this.saveToOpenloginBackend({ privateKey: res.privKey, publicKey: this.selectedAddress });
   }
 
   @Action
