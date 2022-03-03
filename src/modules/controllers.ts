@@ -31,7 +31,9 @@ import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import base58 from "bs58";
-import { cloneDeep, merge, omit } from "lodash-es";
+import cloneDeep from "lodash-es/cloneDeep";
+import merge from "lodash-es/merge";
+import omit from "lodash-es/omit";
 import log from "loglevel";
 import stringify from "safe-stable-stringify";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
@@ -42,7 +44,7 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/To
 import { i18n } from "@/plugins/i18nPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, TorusControllerState } from "@/utils/enums";
-import { backendStatePromise, delay, isMain, normalizeJson } from "@/utils/helpers";
+import { backendStatePromise, delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -604,7 +606,7 @@ class ControllerModule extends VuexModule {
         };
         break;
       case "user_info":
-        res = normalizeJson<UserInfo>(this.torus.userInfo);
+        res = this.torus.userInfo;
         break;
       case "get_gasless_public_key":
         res = { pubkey: await this.torus.getGaslessPublicKey() };
