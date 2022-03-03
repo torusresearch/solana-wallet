@@ -68,7 +68,7 @@ class ControllerModule extends VuexModule {
 
   public instanceId = "";
 
-  public backendRestored = false;
+  public requireKeyRestore = true;
 
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
@@ -244,8 +244,8 @@ class ControllerModule extends VuexModule {
 
   // openlogin backend state
   @Mutation
-  public setBackendStored(value: boolean) {
-    this.backendRestored = value;
+  public setRequireKeyRestore(value: boolean) {
+    this.requireKeyRestore = value;
   }
 
   @Mutation
@@ -401,8 +401,6 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
-    this.setBackendStored(false);
-
     this.torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
@@ -459,7 +457,7 @@ class ControllerModule extends VuexModule {
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
     // do not need to restore beyond login
-    this.setBackendStored(true);
+    this.setRequireKeyRestore(false);
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
     this.saveToBackend({ private_key: res.privKey, saveState: { userInfo: res.userInfo, publicKey: this.selectedAddress } });
   }
@@ -678,11 +676,11 @@ class ControllerModule extends VuexModule {
 
   @Action
   async restoreFromBackend() {
-    if (this.backendRestored) {
+    if (!this.requireKeyRestore) {
       log.warn("backend already restored");
       return;
     }
-    this.setBackendStored(true);
+    this.setRequireKeyRestore(false);
 
     try {
       const value = window.localStorage?.getItem(EPHERMAL_KEY);
@@ -737,7 +735,7 @@ installStorePlugin({
   key: moduleName,
   storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
-    const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.torusState.KeyringControllerState`]);
+    const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.requireKeyRestore`, `${moduleName}.torusState.KeyringControllerState`]);
     storage?.setItem(key, JSON.stringify(requiredState));
   },
   restoreState: (key: string, storage?: Storage) => {
