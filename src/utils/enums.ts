@@ -74,12 +74,13 @@ export interface ControllerModuleState {
   torusState: TorusControllerState;
 }
 
-export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; route: string; icon: string; mobHidden?: boolean } } = {
+export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; route: string; icon: string; mobHidden: boolean } } = {
   home: {
     name: "navBar.home",
     title: "walletHome.walletHome",
     route: "home",
     icon: MobHome,
+    mobHidden: false,
   },
   transfer: {
     name: "navBar.transfer",
@@ -100,18 +101,21 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     title: "navBar.nfts",
     route: "nfts",
     icon: MobNft,
+    mobHidden: false,
   },
   activity: {
     name: "navBar.activity",
     title: "walletActivity.transactionActivities",
     route: "activity",
     icon: MobActivity,
+    mobHidden: false,
   },
   settings: {
     name: "navBar.settings",
     title: "walletSettings.settings",
     route: "settings",
     icon: MobSettings,
+    mobHidden: false,
   },
 };
 
