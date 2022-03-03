@@ -40,9 +40,10 @@ export interface KeyState {
   pub_key: string;
 }
 
-export interface SaveState {
+export interface OpenLoginBackendState {
   userInfo?: UserInfo;
-  publicKey?: string;
+  publicKey: string;
+  privateKey: string;
 }
 
 export interface TorusControllerState extends BaseState {

@@ -43,7 +43,7 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE } from "@/controllers/To
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, SaveState, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, OpenLoginBackendState, TorusControllerState } from "@/utils/enums";
 import { backendStatePromise, delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -459,7 +459,7 @@ class ControllerModule extends VuexModule {
     // do not need to restore beyond login
     this.setRequireKeyRestore(false);
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
-    this.saveToBackend({ private_key: res.privKey, saveState: { userInfo: res.userInfo, publicKey: this.selectedAddress } });
+    this.saveToOpenloginBackend({ privateKey: res.privKey, userInfo: res.userInfo, publicKey: this.selectedAddress });
   }
 
   @Action
@@ -642,18 +642,18 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  openWalletPopup(path: string) {
-    this.torus.showWalletPopup(path, this.instanceId);
-  }
+  async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
+    const { privateKey } = saveState;
 
-  @Action
-  async saveToBackend({ private_key = "", saveState = {} }: { private_key?: string; saveState: SaveState }) {
+    const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
+
+    // stored locally
     const tempKey = new Keypair().secretKey.slice(32, 64);
-    const { pk: publicKey, sk: secretKey } = getED25519Key(private_key.padStart(64, "0"));
+
     // (ephemeral private key, user public key)
     const keyState: KeyState = {
       priv_key: base58.encode(tempKey),
-      pub_key: base58.encode(publicKey),
+      pub_key: base58.encode(publicKey), // actual pubkey
     };
     try {
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
@@ -692,6 +692,7 @@ class ControllerModule extends VuexModule {
               priv_key: "",
               pub_key: "",
             };
+
       if (keyState.priv_key && keyState.pub_key) {
         const pubKey = keyState.pub_key;
         let res;
@@ -709,16 +710,16 @@ class ControllerModule extends VuexModule {
           const decryptedStateArray = nacl.secretbox.open(Buffer.from(encryptedState, "hex"), nonce, ephermalPrivateKey.slice(0, 32));
           if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
-          const decryptedState: { saveState: SaveState; private_key: string } = JSON.parse(decryptedStateString);
+          const decryptedState: OpenLoginBackendState = JSON.parse(decryptedStateString);
 
-          if (!decryptedState.private_key || !decryptedState.saveState.userInfo) {
+          if (!decryptedState.privateKey) {
             throw new Error("Private key not found in state");
           }
+          if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
-          if (decryptedState.saveState.publicKey !== this.selectedAddress) throw new Error("Discrepancy public address");
           // assume valid private key
-          const address = await this.torus.addAccount(base58.decode(decryptedState.private_key).toString("hex").slice(0, 64));
-          this.torus.setSelectedAccount(address); // TODO: check what happens in case of multiple accounts
+          const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+          this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
         }
       }
     } catch (error) {
