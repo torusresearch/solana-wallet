@@ -156,3 +156,20 @@ input[type=number] {
   width: 0px;
   height: 0px;
 }
+.item-gray {
+  /*equivalent of #808080*/
+  filter: brightness(0) saturate(100%) invert(44%) sepia(67%) saturate(0%) hue-rotate(162deg) brightness(100%) contrast(93%);
+}
+.item-white {
+  /*equivalent of white*/
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(186deg) brightness(105%) contrast(102%);
+}
+.item-black {
+  /*equivalent of black*/
+  filter: brightness(0) saturate(100%);
+}
+
+.active-border {
+  border-top: 2px solid #9945ff;
+  border-bottom: 2px solid transparent;
+}
