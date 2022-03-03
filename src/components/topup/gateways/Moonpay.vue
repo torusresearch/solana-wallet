@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { get } from "@toruslabs/http-helpers";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
-import log from "loglevel";
+
+import { TOPUP } from "@/plugins/Topup/interface";
 
 import config from "../../../config";
-import { TOPUP } from "../../../utils/topup";
 import BaseTopup, { QuoteResponse } from "./BaseTopup.vue";
 import { RequestObject } from "./types";
 
 async function getQuote(requestObject: RequestObject): Promise<QuoteResponse> {
   let response: any;
+
   try {
     const options = {
       headers: {
@@ -17,19 +18,15 @@ async function getQuote(requestObject: RequestObject): Promise<QuoteResponse> {
         Accept: "application/json",
       },
     };
-    // response = await get(
-    //   `${config.moonpayApiQuoteHost}/v3/currencies/ask_price?cryptoCurrencies=${requestObject.digital_currency}&apiKey=${config.moonpayTestAPIKEY}` +
-    //     `&fiatCurrency=${requestObject.fiat_currency}&areFeesIncluded=true`,
     response = await get(
       `${config.moonpayApiQuoteHost}/v3/currencies/${requestObject.digital_currency}/buy_quote?apiKey=${config.moonpayLiveAPIKEY}` +
         `&baseCurrencyCode=${requestObject.fiat_currency.toLowerCase()}&baseCurrencyAmount=${requestObject.requested_amount}&areFeesIncluded=true`,
       options
     );
   } catch (error) {
-    log.error(error);
-    throw await error.json();
+    const res = await (error as Response).json();
+    throw new Error(res.message);
   }
-  // log.info(response);
 
   return {
     fee: response.feeAmount + response.networkFeeAmount + response.extraFeeAmount,
