@@ -44,7 +44,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, OpenLoginBackendState, TorusControllerState } from "@/utils/enums";
-import { backendStatePromise, delay, isMain } from "@/utils/helpers";
+import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -658,7 +658,7 @@ class ControllerModule extends VuexModule {
     try {
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
       const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
-      const stateString = stringify({ saveState, private_key: base58.encode(secretKey) });
+      const stateString = stringify({ publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
       const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
 
@@ -721,12 +721,12 @@ class ControllerModule extends VuexModule {
           const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
           this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
         }
+      } else {
+        throw new Error("Invalid or no key in local storage");
       }
     } catch (error) {
       log.error("Error restoring state!", error);
       this.logout();
-    } finally {
-      if (backendStatePromise.resolve) backendStatePromise.resolve("");
     }
   }
 }
