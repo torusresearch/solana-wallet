@@ -290,7 +290,7 @@ test.describe("Settings Page using imported account", async () => {
     await switchTab(page, "settings");
     const elemCount = await page.locator(`span >> text=${PUB_ADDRESS}`).count();
     if (elemCount === 0) {
-      await page.fill("input[placeholder='Enter Contact Name']", "ImportAcc");
+      await page.fill("input[placeholder='Enter Contact Name']", "MainTestAcc");
       await page.fill("input[placeholder='Enter SOL Public Key']", PUB_ADDRESS);
       await page.click("text=Add Contact");
       await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
