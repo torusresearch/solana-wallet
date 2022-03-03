@@ -4,6 +4,8 @@ import LoglevelSentryPlugin, { redactBreadcrumbData } from "@toruslabs/loglevel-
 import log from "loglevel";
 import { App } from "vue";
 
+import { handleExceptions } from "@/utils/ErrorHandler";
+
 function getSampleRate() {
   try {
     return Number.parseFloat(process.env.VUE_APP_SENTRY_SAMPLE_RATE || "");
@@ -27,11 +29,25 @@ export function installSentry(Vue: App) {
       "TypeError: Failed to fetch", // All except iOS and Firefox
       "TypeError: cancelled", // iOS
       "TypeError: NetworkError when attempting to fetch resource.", // Firefox
+      "Error: user closed popup",
     ],
     beforeBreadcrumb(breadcrumb) {
       // eslint-disable-next-line no-param-reassign
       breadcrumb.data = redactBreadcrumbData(breadcrumb.data);
       return breadcrumb;
+    },
+
+    beforeSend(e) {
+      // callback to handle exceptions
+      handleExceptions(e);
+
+      // if not on dev environment, track all events.
+      if (process.env.NODE_ENV !== "development") {
+        return e;
+      }
+
+      // do not track events on dev environment
+      return null;
     },
   });
   // Sentry.setUser({ email: "john.doe@example.com" });
