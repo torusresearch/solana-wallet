@@ -242,6 +242,7 @@ class ControllerModule extends VuexModule {
     this.instanceId = instanceId;
   }
 
+  // openlogin backend state
   @Mutation
   public setBackendStored(value: boolean) {
     this.backendRestored = value;
@@ -401,6 +402,7 @@ class ControllerModule extends VuexModule {
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
     this.setBackendStored(false);
+
     this.torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
@@ -676,8 +678,12 @@ class ControllerModule extends VuexModule {
 
   @Action
   async restoreFromBackend() {
-    if (this.backendRestored) return;
+    if (this.backendRestored) {
+      log.warn("backend already restored");
+      return;
+    }
     this.setBackendStored(true);
+
     try {
       const value = window.localStorage?.getItem(EPHERMAL_KEY);
 
