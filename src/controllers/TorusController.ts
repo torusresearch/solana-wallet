@@ -256,6 +256,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
   }
 
+  get hasKeyPair(): boolean {
+    return this.keyringController?.state.wallets.length > 0 || false;
+  }
+
   get embedLoginInProgress(): boolean {
     return this.embedController?.state.loginInProgress || false;
   }
@@ -650,6 +654,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
+    if (!this.hasKeyPair) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
@@ -1203,6 +1208,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
     const accounts = await this.requestAccounts(req);
+
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {
@@ -1292,7 +1298,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
             else resolve([address]);
           });
         }
-      } else if (this.selectedAddress) resolve([this.selectedAddress]);
+      } else if (this.hasKeyPair && this.selectedAddress) resolve([this.selectedAddress]);
       else {
         // We show the modal to login
         this.embedController.update({
@@ -1314,7 +1320,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async getCommProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
     res.result = {
       currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-      isLoggedIn: !!this.selectedAddress,
+      isLoggedIn: !!this.selectedAddress && this.hasKeyPair,
     };
     end();
   }

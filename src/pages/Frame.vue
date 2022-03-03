@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { backendStatePromise, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
+import { isMain, promiseCreator, recordDapp } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -58,7 +58,7 @@ function startLogin() {
 }
 startLogin();
 
-const isLoggedIn = computed(() => !!ControllerModule.torus.selectedAddress);
+const isLoggedIn = computed(() => ControllerModule.torus.hasKeyPair);
 const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
 const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
@@ -100,7 +100,6 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
-    await backendStatePromise.promise;
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
   }

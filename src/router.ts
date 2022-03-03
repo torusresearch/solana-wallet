@@ -119,25 +119,25 @@ const router = createRouter({
       name: "confirm",
       path: "/confirm",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/Confirm.vue"),
-      meta: { title: "Confirm", auth: AuthStates.AUTHENTICATED },
+      meta: { title: "Confirm", redirectFlow: true },
     },
     {
       name: "confirm_nft",
       path: "/confirm_nft",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/ConfirmNft.vue"),
-      meta: { title: "Confirm Nft", auth: AuthStates.AUTHENTICATED },
+      meta: { title: "Confirm Nft", redirectFlow: true },
     },
     {
       name: "confirm_spl",
       path: "/confirm_spl",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/ConfirmSpl.vue"),
-      meta: { title: "Confirm Spl", auth: AuthStates.AUTHENTICATED },
+      meta: { title: "Confirm Spl", redirectFlow: true },
     },
     {
       name: "confirm_message",
       path: "/confirm_message",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/ConfirmMessage.vue"),
-      meta: { title: "Sign Message", auth: AuthStates.AUTHENTICATED },
+      meta: { title: "Sign Message", redirectFlow: true },
     },
     {
       name: "redirect",
@@ -216,7 +216,7 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-  if (authMeta === AuthStates.AUTHENTICATED) ControllerModule.restoreFromBackend();
+  if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.restoreFromBackend();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
   if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
