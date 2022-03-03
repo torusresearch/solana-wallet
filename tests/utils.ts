@@ -85,6 +85,12 @@ export async function importAccount(page: Page, privKey: string) {
   await wait(2000);
 }
 
+// TODO: Remove Dummy fn
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getControllerState(page: Page): Promise<any> {
+  return {};
+}
+
 export async function getLastWeeksDate() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { throttle } from "lodash-es";
+import throttle from "lodash-es/throttle";
 import { computed, defineAsyncComponent } from "vue";
 import { useI18n } from "vue-i18n";
 
