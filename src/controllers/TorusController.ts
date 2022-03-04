@@ -252,8 +252,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   // UNSAFE METHOD: use with caution
-  get privateKey(): string {
-    return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
+  get privateKey(): string | undefined {
+    return this.keyringController?.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey;
+  }
+
+  // has active private key
+  get hasSelectedPrivateKey(): boolean {
+    return !!this.privateKey;
   }
 
   get hasKeyPair(): boolean {
@@ -655,7 +660,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
-    if (!this.hasKeyPair) return undefined;
+    if (!this.hasSelectedPrivateKey) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
@@ -1127,6 +1132,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     login_hint?: string;
   }): Promise<OpenLoginPopupResponse> {
     try {
+      // Embed login might have selectedAddress restored from storage.
+      // Need to clear preference selectedAddress on Login
+      this.preferencesController.setSelectedAddress("");
+
       const handler = new OpenLoginHandler({
         loginProvider,
         extraLoginOptions: login_hint ? { login_hint } : {},
@@ -1299,7 +1308,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
             else resolve([address]);
           });
         }
-      } else if (this.hasKeyPair && this.selectedAddress) resolve([this.selectedAddress]);
+      } else if (this.hasSelectedPrivateKey) resolve([this.selectedAddress]);
       else {
         // We show the modal to login
         this.embedController.update({
@@ -1321,7 +1330,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async getCommProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
     res.result = {
       currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-      isLoggedIn: !!this.selectedAddress && this.hasKeyPair,
+      isLoggedIn: this.hasSelectedPrivateKey,
     };
     end();
   }
