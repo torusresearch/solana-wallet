@@ -28,6 +28,8 @@ onMounted(async () => {
           return { ...val, stats };
         })
         .sort((a: any, b: any) => {
+          if (a.stats === undefined) return 1;
+          if (b.stats === undefined) return -1;
           if (a.stats.weeklyVolume > b.stats.weeklyVolume) return -1;
           if (a.stats.weeklyVolume < b.stats.weeklyVolume) return 1;
           return 0;
