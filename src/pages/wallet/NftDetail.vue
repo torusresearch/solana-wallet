@@ -28,8 +28,8 @@ onMounted(async () => {
           return { ...val, stats };
         })
         .sort((a: any, b: any) => {
-          if (a.stats.weeklyVolume > b.stats.weeklyVolume) return -1;
-          if (a.stats.weeklyVolume < b.stats.weeklyVolume) return 1;
+          if (a.stats?.weeklyVolume > b.stats?.weeklyVolume) return -1;
+          if (a.stats?.weeklyVolume < b.stats?.weeklyVolume) return 1;
           return 0;
         });
       exploreNFTS.value = combinedCollectionObject.slice(0, 10) as any;
