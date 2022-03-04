@@ -112,6 +112,7 @@ test.describe("Settings Page", async () => {
     // Searching with added account name again
     await page.fill("input[placeholder='Search by name']", "ImportAcc");
     await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(1);
+    await page.fill("input[placeholder='Search by name']", "");
     // Deleting address as cleanup
     await page.click("li>div>svg");
     expect(await isContactDeleted(page, IMPORT_ACC_ADDRESS)).toBeTruthy();
@@ -170,7 +171,7 @@ test.describe("Settings Page", async () => {
 
 /** ************************IMPORT ACCOUNT TESTS ****************************** */
 
-test.describe("Settings Page using imported account", async () => {
+test.skip("Settings Page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
