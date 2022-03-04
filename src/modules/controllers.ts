@@ -237,6 +237,10 @@ class ControllerModule extends VuexModule {
     return this.torus.connection;
   }
 
+  get hasSelectedPrivateKey() {
+    return this.torus.hasSelectedPrivateKey;
+  }
+
   @Mutation
   public setInstanceId(instanceId: string) {
     this.instanceId = instanceId;
@@ -269,6 +273,11 @@ class ControllerModule extends VuexModule {
   @Action
   handleSuccess(message: string): void {
     addToast({ type: "success", message: message || "" });
+  }
+
+  @Action
+  openWalletPopup(path: string) {
+    this.torus.showWalletPopup(path, this.instanceId);
   }
 
   @Action
@@ -520,6 +529,7 @@ class ControllerModule extends VuexModule {
   setNetwork(chainId: string): void {
     const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
+
     this.torus.setNetwork(providerConfig);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {

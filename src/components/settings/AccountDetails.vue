@@ -21,7 +21,7 @@ const openModal = () => {
   isOpen.value = true;
 };
 function copyPrivKey() {
-  copyText(key.value);
+  copyText(key.value || "");
 }
 const refDiv = ref(null);
 </script>
@@ -52,6 +52,7 @@ const refDiv = ref(null);
             leave-to="opacity-0 scale-95"
           >
             <div
+              v-if="!!key"
               class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-700 shadow-xl rounded-2xl"
             >
               <DialogTitle
