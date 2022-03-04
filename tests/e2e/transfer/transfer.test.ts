@@ -173,7 +173,7 @@ test.describe("Transfer page", async () => {
 
 /** *****************IMPORT ACCOUNT TESTS********************** */
 
-test.describe("Transfer page using imported account", async () => {
+test.skip("Transfer page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());

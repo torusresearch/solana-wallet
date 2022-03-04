@@ -114,7 +114,7 @@ test.describe("Settings Page", async () => {
 
 /** ************************IMPORT ACCOUNT TESTS ****************************** */
 
-test.describe("Settings Page using imported account", async () => {
+test.skip("Settings Page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
