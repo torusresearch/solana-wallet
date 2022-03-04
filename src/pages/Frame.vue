@@ -58,7 +58,7 @@ function startLogin() {
 }
 startLogin();
 
-const isLoggedIn = computed(() => ControllerModule.torus.hasKeyPair);
+const isLoggedIn = computed(() => ControllerModule.torus.hasKeyPair && !!ControllerModule.selectedAddress);
 const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
 const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
