@@ -1,7 +1,7 @@
 import { BrowserContext, Page } from "@playwright/test";
 import { Keypair } from "@solana/web3.js";
+import { get, post } from "@toruslabs/http-helpers";
 import nacl from "@toruslabs/tweetnacl-js";
-import axios from "axios";
 import base58 from "bs58";
 import stringify from "safe-stable-stringify";
 
@@ -17,9 +17,9 @@ export const IMPORT_ACC_SECRET_KEY = "4md5HAy1iZvyGVuwssQu8Kn78gnm7RHfpC8FLSHcsA
 
 async function getJWT(): Promise<{ success: boolean; token: string }> {
   const { message } = (
-    await axios.post(`${getBackendDomain()}/auth/message`, {
+    (await post(`${getBackendDomain()}/auth/message`, {
       public_address: PUB_ADDRESS,
-    })
+    })) as { data: any }
   ).data;
 
   // SIGN THE MESSAGE USING PRIVATE KEY
@@ -29,21 +29,21 @@ async function getJWT(): Promise<{ success: boolean; token: string }> {
 
   // SEND SIGNED MESSAGE AND GET JWT TOKEN
   return (
-    await axios.post(`${getBackendDomain()}/auth/verify`, {
+    (await post(`${getBackendDomain()}/auth/verify`, {
       public_address: PUB_ADDRESS,
       signed_message: signedMsgToString,
-    })
+    })) as { data: any }
   ).data;
 }
 
 export async function createRedisKey() {
   const { token } = await getJWT();
   const userInfo = (
-    await axios.get(`${getBackendDomain()}/user?fetchTx=false`, {
+    (await get(`${getBackendDomain()}/user?fetchTx=false`, {
       headers: {
         authorization: `Bearer ${token}`,
       },
-    })
+    })) as { data: any }
   ).data;
   const saveState = {
     touchIDPreference: "disabled",
@@ -67,7 +67,7 @@ export async function createRedisKey() {
   const signature = nacl.sign.detached(dataHash, base58.decode(SECRET_KEY));
   const signatureString = Buffer.from(signature).toString("hex");
 
-  await axios.post(`${getStateDomain()}/set`, { pub_key: PUB_ADDRESS, signature: signatureString, set_data: setData });
+  await post(`${getStateDomain()}/set`, { pub_key: PUB_ADDRESS, signature: signatureString, set_data: setData });
 }
 
 export async function login(context: BrowserContext): Promise<Page> {
