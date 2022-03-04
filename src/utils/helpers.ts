@@ -1,6 +1,6 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
-import { get } from "@toruslabs/http-helpers";
+import { get, post } from "@toruslabs/http-helpers";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -211,7 +211,7 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
 
 export async function recordDapp(origin: string) {
   try {
-    await axios.post(`${config.api}/dapps/record`, { origin });
+    await post(`${config.api}/dapps/record`, { origin });
   } catch (e) {
     log.error("ERROR RECORDING DAPP", e);
   }
