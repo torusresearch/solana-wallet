@@ -309,6 +309,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController = new TokenInfoController({
       config: this.config.TokensInfoConfig,
+      state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
     });
     this.currencyController = new CurrencyController({
@@ -414,11 +415,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state2 });
     });
 
-    this.tokensTracker.on("store", (state2) => {
+    this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
+      await this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
