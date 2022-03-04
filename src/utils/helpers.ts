@@ -1,6 +1,6 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
-import { get, post } from "@toruslabs/http-helpers";
+import { post } from "@toruslabs/http-helpers";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -170,15 +170,6 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
 export function setFallbackImg(target: any, src: string) {
   // eslint-disable-next-line no-param-reassign
   (target as { src: string }).src = src;
-}
-
-export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
-  try {
-    const data: any = await get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
-    return data?.[outputCurrencySymbol.toUpperCase()];
-  } catch (e) {
-    return 0;
-  }
 }
 
 export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => Promise<void>) => Promise<boolean>, delayAmount: number) => {

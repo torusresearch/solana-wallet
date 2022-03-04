@@ -4,7 +4,6 @@ import { useI18n } from "vue-i18n";
 
 import { Card, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { convertCurrency } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -21,7 +20,7 @@ const token = computed(() => {
 const conversionRate = ref<number>();
 const setConversionRate = async () => {
   if (props?.selectedToken?.symbol !== "SOL") {
-    if (currency.value === "SOL") conversionRate.value = await convertCurrency(token.value as string, "SOL");
+    if (currency.value === "SOL") conversionRate.value = ControllerModule.torusState.CurrencyControllerState.conversionRate;
     else conversionRate.value = props.selectedToken?.price?.[currency.value.toLowerCase()] || 0;
   } else conversionRate.value = ControllerModule.torus.conversionRate;
 };
