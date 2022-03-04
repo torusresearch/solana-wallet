@@ -93,7 +93,7 @@ const logout = async () => {
         </div>
       </main>
     </div>
-    <div class="md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black">
+    <div class="fixed bottom-0 md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black">
       <router-link
         v-for="(value, key) in tabs"
         :key="key"
