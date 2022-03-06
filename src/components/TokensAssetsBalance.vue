@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 import SplCard from "@/components/home/SplCard.vue";
 import { tokens } from "@/components/transfer/token-helper";
+import ControllerModule from "@/modules/controllers";
 
 const router = useRouter();
-
+const pubKeyOnlyAcc = computed(() => ControllerModule.pubKeyOnlyAcc);
 function transferToken(mint?: string) {
+  if (pubKeyOnlyAcc.value) return;
   if (!mint) router.push("/wallet/transfer");
   else router.push(`/wallet/transfer?mint=${mint}`);
 }

@@ -392,6 +392,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // Listen to controller changes
     this.preferencesController.on("store", (state2) => {
       this.update({ PreferencesControllerState: state2 });
+      if (!this.hasKeyPair && this.selectedAddress) {
+        this.refreshAcc();
+      }
     });
 
     this.currencyController.on("store", (state2) => {
@@ -655,7 +658,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
-    if (!this.hasKeyPair) return undefined;
+    if (!this.hasKeyPair && !this.selectedAddress) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
@@ -676,6 +679,20 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setTheme(theme: THEME): Promise<boolean> {
+    if (!!this.selectedAddress && !this.hasKeyPair) {
+      const currentState = cloneDeep(this.state.PreferencesControllerState);
+      this.preferencesController.update({
+        ...currentState,
+        identities: {
+          ...currentState.identities,
+          [this.selectedAddress]: {
+            ...currentState.identities[this.selectedAddress],
+            theme,
+          },
+        },
+      });
+      return true;
+    }
     return this.preferencesController.setUserTheme(theme);
   }
 
@@ -686,12 +703,40 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
     await this.currencyController.updateConversionRate();
+    if (!!this.selectedAddress && !this.hasKeyPair) {
+      const currentState = cloneDeep(this.state.PreferencesControllerState);
+      this.preferencesController.update({
+        ...currentState,
+        identities: {
+          ...currentState.identities,
+          [this.selectedAddress]: {
+            ...currentState.identities[this.selectedAddress],
+            selectedCurrency: currency,
+          },
+        },
+      });
+      return true;
+    }
     return this.preferencesController.setSelectedCurrency({
       selectedCurrency: currency,
     });
   }
 
   async setLocale(locale: string): Promise<boolean> {
+    if (!!this.selectedAddress && !this.hasKeyPair) {
+      const currentState = cloneDeep(this.state.PreferencesControllerState);
+      this.preferencesController.update({
+        ...currentState,
+        identities: {
+          ...currentState.identities,
+          [this.selectedAddress]: {
+            ...currentState.identities[this.selectedAddress],
+            locale,
+          },
+        },
+      });
+      return true;
+    }
     return this.preferencesController.setUserLocale(locale);
   }
 
@@ -1117,6 +1162,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(err);
       throw err;
     }
+  }
+
+  public async refreshAcc() {
+    await this.accountTracker.refresh();
+    this.accountTracker.syncAccounts();
   }
 
   public async triggerLogin({

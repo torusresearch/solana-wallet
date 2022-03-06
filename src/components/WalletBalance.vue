@@ -14,6 +14,7 @@ defineProps<{
 
 const router = useRouter();
 const currency = computed(() => ControllerModule.torus.currentCurrency);
+const pubKeyOnlyAcc = computed(() => ControllerModule.pubKeyOnlyAcc);
 const token = computed(() => {
   return ControllerModule.torus.nativeCurrency;
 });
@@ -49,7 +50,9 @@ const updateCurrency = (newCurrency: string) => {
     <template v-if="showButtons" #footer>
       <div class="flex w-full justify-between items-center">
         <Button :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
-        <Button :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
+        <Button :block="true" variant="tertiary" :disabled="pubKeyOnlyAcc" class="w-full" @click="router.push('/wallet/transfer')">{{
+          t("walletHome.transfer")
+        }}</Button>
       </div>
     </template>
   </Card>

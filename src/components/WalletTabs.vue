@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BroadcastChannel } from "broadcast-channel";
+import cloneDeep from "lodash-es/cloneDeep";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -29,9 +30,17 @@ const props = withDefaults(
 );
 
 const { t } = useI18n();
-const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
+const hasKeyPair = computed(() => ControllerModule.torus.hasKeyPair);
+const tabs = computed(() => {
+  const list = cloneDeep(NAVIGATION_LIST);
+  const listItems = Object.entries(list);
+  listItems.forEach((value) => {
+    if (value[1].requiresPrivKey && !hasKeyPair.value) delete list[value[0]];
+  });
+  return list;
+});
 const logout = async () => {
   const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
   bc.postMessage("logout");

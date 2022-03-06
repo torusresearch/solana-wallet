@@ -35,11 +35,12 @@ const rules = computed(() => {
 const $v = useVuelidate(rules, { userEmail });
 
 const selectedAddress = computed(() => ControllerModule.selectedAddress);
+const hasKeyPair = computed(() => ControllerModule.hasKeyPair);
 
 onMounted(() => {
   if (selectedAddress.value && isRedirectFlow)
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
-  if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
+  if (selectedAddress.value && hasKeyPair.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {

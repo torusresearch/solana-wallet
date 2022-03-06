@@ -21,13 +21,15 @@ const saveContact = async (contactPayload: ContactPayload): Promise<void> => {
 const deleteContact = async (contactId: number): Promise<void> => {
   await ControllerModule.deleteContact(contactId);
 };
+
+const hasKeyPair = computed(() => ControllerModule.torus.hasKeyPair);
 </script>
 
 <template>
   <WalletTabs tab="settings">
     <div class="py-2">
       <div class="mt-5 grid grid-cols-1 gap-5 gt-sm:grid-cols-2 lg:grid-cols-2">
-        <div>
+        <div v-if="hasKeyPair">
           <div class="mb-4">
             <Panel :title="t('walletSettings.privacySecurity')" disabled>
               <AccountDetails />

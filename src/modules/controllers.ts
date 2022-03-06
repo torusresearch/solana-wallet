@@ -82,6 +82,14 @@ class ControllerModule extends VuexModule {
     return this.torusState.AccountTrackerState.accounts;
   }
 
+  get pubKeyOnlyAcc() {
+    return !!(this.torusState.PreferencesControllerState.selectedAddress && this.torusState.KeyringControllerState.wallets.length === 0);
+  }
+
+  get hasKeyPair() {
+    return this.torus.hasKeyPair;
+  }
+
   get selectedAccountPreferences(): ExtendedAddressPreferences {
     const preferences = this.torus.getAccountPreferences(this.selectedAddress);
     return (
@@ -283,6 +291,13 @@ class ControllerModule extends VuexModule {
     } else {
       this.handleError(t(NAVBAR_MESSAGES.error.CRASH_REPORT_FAILED));
     }
+  }
+
+  @Action
+  public async initializeWithPubKey(pubKey: string) {
+    this.setRequireKeyRestore(false);
+    this.torus.setSelectedAccount(pubKey);
+    await this.refreshUserTokens();
   }
 
   @Action
@@ -678,6 +693,10 @@ class ControllerModule extends VuexModule {
   async restoreFromBackend() {
     if (!this.requireKeyRestore) {
       log.warn("backend already restored");
+      return;
+    }
+    if (this.pubKeyOnlyAcc) {
+      this.setRequireKeyRestore(false);
       return;
     }
     this.setRequireKeyRestore(false);

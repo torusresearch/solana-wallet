@@ -78,13 +78,16 @@ export interface ControllerModuleState {
   torusState: TorusControllerState;
 }
 
-export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; route: string; icon: string; mobHidden: boolean } } = {
+export const NAVIGATION_LIST: {
+  [key: string]: { name: string; title: string; route: string; icon: string; mobHidden: boolean; requiresPrivKey: boolean };
+} = {
   home: {
     name: "navBar.home",
     title: "walletHome.walletHome",
     route: "home",
     icon: MobHome,
     mobHidden: false,
+    requiresPrivKey: false,
   },
   transfer: {
     name: "navBar.transfer",
@@ -92,6 +95,7 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     route: "transfer",
     icon: MobHome,
     mobHidden: true,
+    requiresPrivKey: true,
   },
   topup: {
     name: "navBar.topUp",
@@ -99,6 +103,7 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     route: "topup",
     icon: MobHome,
     mobHidden: true,
+    requiresPrivKey: false,
   },
   nfts: {
     name: "navBar.nfts",
@@ -106,6 +111,7 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     route: "nfts",
     icon: MobNft,
     mobHidden: false,
+    requiresPrivKey: false,
   },
   activity: {
     name: "navBar.activity",
@@ -113,6 +119,7 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     route: "activity",
     icon: MobActivity,
     mobHidden: false,
+    requiresPrivKey: false,
   },
   settings: {
     name: "navBar.settings",
@@ -120,6 +127,7 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     route: "settings",
     icon: MobSettings,
     mobHidden: false,
+    requiresPrivKey: false,
   },
 };
 

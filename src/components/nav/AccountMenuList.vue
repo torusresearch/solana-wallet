@@ -2,7 +2,7 @@
 /* eslint-disable vuejs-accessibility/anchor-has-content */
 import { QrcodeIcon } from "@heroicons/vue/solid";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { UserInfo } from "@toruslabs/base-controllers";
+import { addressSlicer, UserInfo } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
@@ -58,7 +58,9 @@ const getWalletBalance = (address: string): string => {
   <div>
     <div class="flex items-center p-4">
       <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
-      <div class="font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
+      <div class="font-bold text-base text-app-text-600 dark:text-app-text-dark-500">
+        {{ user?.name || addressSlicer(currentAccount) }}'s {{ t("accountMenu.account") }}
+      </div>
     </div>
     <div class="px-3 pb-3">
       <div

@@ -7,11 +7,12 @@ import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpe
 
 const enum AuthStates {
   AUTHENTICATED = "auth",
+  PUB_KEY_ONLY = "pub-key-only",
   NON_AUTHENTICATED = "un-auth",
 }
 
 export function isLoggedIn(): boolean {
-  return !!ControllerModule?.torus?.selectedAddress;
+  return !!ControllerModule?.torus?.selectedAddress && ControllerModule.hasKeyPair;
 }
 
 const router = createRouter({
@@ -20,6 +21,11 @@ const router = createRouter({
     {
       path: "/",
       redirect: "/wallet",
+    },
+    {
+      name: "user",
+      path: "/:address",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "USER" */ "@/pages/User.vue"),
     },
     // UNAUTHENTICATED ROUTES
     {
@@ -33,7 +39,7 @@ const router = createRouter({
       name: "walletBase",
       path: "/wallet",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WALLET" */ "@/pages/wallet/Base.vue"),
-      meta: { title: "Solana Wallet", auth: AuthStates.AUTHENTICATED },
+      meta: { title: "Solana Wallet", auth: AuthStates.PUB_KEY_ONLY },
       redirect: "/wallet/home",
       children: [
         {
@@ -46,7 +52,7 @@ const router = createRouter({
           name: "walletTransfer",
           path: "transfer",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TRANSFER" */ "@/pages/wallet/Transfer.vue"),
-          meta: { title: "Transfer", tab: "transfer" },
+          meta: { title: "Transfer", tab: "transfer", auth: AuthStates.AUTHENTICATED },
         },
         {
           name: "walletTopup",
