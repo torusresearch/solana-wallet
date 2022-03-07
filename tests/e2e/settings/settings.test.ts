@@ -45,12 +45,12 @@ test.describe("Settings Page", async () => {
     // **************DISPLAY CHANGES********
     // CHOOSE LIGHT
     await page.click("text=Light");
-    await wait(3000);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(0);
 
     // CHOOSE DARK
     await page.click("text=Dark");
-    await wait(3000);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(1);
   });
 
