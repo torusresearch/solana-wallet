@@ -1,5 +1,6 @@
 import test, { expect, Page } from "@playwright/test";
 
+import { getActivities } from "../../activity.utils";
 import { IMPORT_ACC_ADDRESS, IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS } from "../../auth-helper";
 import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwork, switchTab, wait } from "../../utils";
 
@@ -7,6 +8,14 @@ test.describe("Transfer page", async () => {
   let page: Page;
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
+  });
+
+  test("Transfer Page Should render", async () => {
+    // see navigation works correctly
+    await switchTab(page, "transfer");
+
+    // ENSURE UI IS INTACT
+    await ensureTextualElementExists(page, "Transfer Details");
   });
 
   test("Checks before transaction should be correct", async () => {
@@ -23,11 +32,22 @@ test.describe("Transfer page", async () => {
     await switchNetwork(page, "testnet");
     // if address is a valid sol address, should show popup
     await page.fill("input[type='text']", IMPORT_ACC_ADDRESS);
+    // if amount is not valid, should show error
+    await page.fill("input[type='number']", "0");
+    await page.click("button >> text=Transfer");
+    await wait(1000);
+    expect(await page.locator("text=Must be greater than 0.0001").elementHandles()).toHaveLength(1);
+    // entering valid amount
     await page.fill("input[type='number']", "0.01");
     await page.click("button >> text=Transfer");
     await wait(1000);
     expect(await page.locator("text=Total Cost").elementHandles()).toHaveLength(1);
     await page.click("button >> text=Cancel");
+    // entering no amount, empty field
+    await page.fill("input[type='number']", "");
+    await wait(1000);
+    expect(await page.locator("text=Must be greater than 0.0001").elementHandles()).toHaveLength(1);
+    expect(await page.locator("button >> text=Transfer").isDisabled()).toBeTruthy();
   });
 
   test("Transaction should happen correctly", async () => {
@@ -60,7 +80,7 @@ test.describe("Transfer page", async () => {
     await page.click("button >> text=Close");
 
     // wait for the first link to be our recent transaction
-    await page.waitForFunction(
+    /* await page.waitForFunction(
       (amount) => {
         const ele = document.querySelector(".transaction-activity");
         const text: string = (ele as any).innerText;
@@ -70,7 +90,12 @@ test.describe("Transfer page", async () => {
       },
       transferAmount,
       { polling: 500 }
-    );
+    ); */
+    // getting list on activities
+    const activitiesList = await getActivities(page);
+    const element = await activitiesList.elementHandles()[0];
+    const elementText = await element.textContent();
+    expect(elementText).toContain(`Sent ${transferAmount} SOL`);
 
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load", { timeout: 10_000 });
@@ -153,18 +178,23 @@ test.describe("Transfer page", async () => {
     await switchTab(page, "transfer");
 
     await changeLanguage(page, "german");
+    await wait(500);
     await ensureTextualElementExists(page, "Übertragungsdetails");
 
     await changeLanguage(page, "japanese");
+    await wait(500);
     await ensureTextualElementExists(page, "送信内容の詳細");
 
     await changeLanguage(page, "korean");
+    await wait(500);
     await ensureTextualElementExists(page, "전송 세부 사항");
 
     await changeLanguage(page, "mandarin");
+    await wait(500);
     await ensureTextualElementExists(page, "转账明细");
 
     await changeLanguage(page, "spanish");
+    await wait(500);
     await ensureTextualElementExists(page, "Detalles de Transferencia");
 
     await changeLanguage(page, "english");
