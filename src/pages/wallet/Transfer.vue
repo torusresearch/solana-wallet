@@ -183,6 +183,7 @@ const rules = computed(() => {
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
+      required: helpers.withMessage(t("walletTransfer.minTransfer"), required),
       greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(isCurrencyFiat.value ? convertCryptoToFiat(0.0001) : 0.0001)),
       lessThanBalance: helpers.withMessage(
         t("walletTransfer.insufficientBalance"),

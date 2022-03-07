@@ -47,7 +47,7 @@ function openLink() {
 <template>
   <div class="w-full h-full overflow-hidden text-left align-middle bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center">
     <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
-      <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4" tabindex="0">
+      <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4">
         <img class="h-7 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
         <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 w-full">
           {{ `${t("dappProvider.confirm")} ${t("dappProvider.permission")}` }}
