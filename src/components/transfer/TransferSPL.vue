@@ -151,15 +151,13 @@ const refDiv = ref(null);
                   <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ totalCostString }}</p>
                 </div>
               </div>
-              <div class="flex flex-row justify-around items-center m-6">
-                <p class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer" @click="onCancel" @keydown="onCancel">
+              <div class="flex flex-row items-center my-6 mx-3">
+                <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
                   {{ t("walletTransfer.cancel") }}
-                </p>
-                <div>
-                  <Button class="ml-auto" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
-                    t("walletTransfer.confirm")
-                  }}</Button>
-                </div>
+                </Button>
+                <Button class="flex-auto mx-2 w-1/2" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
+                  t("walletTransfer.confirm")
+                }}</Button>
               </div>
             </div>
           </TransitionChild>

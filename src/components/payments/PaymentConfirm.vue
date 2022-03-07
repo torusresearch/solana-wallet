@@ -82,10 +82,10 @@ const totalFiatCostString = computed(() => {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-700 flex items-center justify-center"
+    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
   >
-    <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-700 shadow-xl flex flex-col justify-between relative">
-      <div class="shadow dark:shadow-dark text-center py-6" tabindex="0">
+    <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-between relative">
+      <div class="shadow dark:shadow-dark text-center py-6">
         <img class="h-7 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
         <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
           {{ t("walletSettings.paymentConfirmation") }}
@@ -115,7 +115,7 @@ const totalFiatCostString = computed(() => {
           <p
             class="text-right mt-4 text-sm cursor-pointer ml-auto text-app-text-accent"
             @click="() => (expand_inst = !expand_inst)"
-            @keydown="() => (expand_inst = !expand_inst)"
+            @keydown.enter="() => (expand_inst = !expand_inst)"
           >
             {{ expand_inst ? "Hide details" : "View more details" }}
           </p>
