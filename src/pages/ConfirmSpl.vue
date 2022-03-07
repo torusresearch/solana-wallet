@@ -48,16 +48,20 @@ async function cancelTransfer() {
 </script>
 
 <template>
-  <TransferSPL
-    v-if="selectedSplToken?.mintAddress"
-    :is-open="true"
-    :crypto-tx-fee="transactionFee"
-    :crypto-amount="params.amount"
-    :receiver-pub-key="params.receiver_add"
-    :sender-pub-key="params.sender_add"
-    :token="selectedSplToken"
-    @transfer-confirm="confirmTransfer"
-    @transfer-cancel="cancelTransfer"
-  ></TransferSPL>
-  <p v-else>Fetching SPL Tokens..</p>
+  <div
+    class="w-full h-full overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center"
+  >
+    <TransferSPL
+      v-if="selectedSplToken?.mintAddress"
+      :is-open="true"
+      :crypto-tx-fee="transactionFee"
+      :crypto-amount="params.amount"
+      :receiver-pub-key="params.receiver_add"
+      :sender-pub-key="params.sender_add"
+      :token="selectedSplToken"
+      @transfer-confirm="confirmTransfer"
+      @transfer-cancel="cancelTransfer"
+    ></TransferSPL>
+    <p v-else>Fetching SPL Tokens..</p>
+  </div>
 </template>

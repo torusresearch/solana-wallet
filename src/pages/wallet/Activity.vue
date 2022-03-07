@@ -116,10 +116,10 @@ const filteredTransaction = computed(() => {
   </div>
   <Teleport to="#rightPanel">
     <div class="flex ml-auto w-fit">
-      <span>
+      <span class="w-44">
         <SelectField v-model="actionType" :items="actionTypes" />
       </span>
-      <span class="w-44">
+      <span class="w-40">
         <SelectField v-model="period" :items="periods" />
       </span>
     </div>
