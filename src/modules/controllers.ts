@@ -677,7 +677,6 @@ class ControllerModule extends VuexModule {
   @Action
   async restoreFromBackend() {
     if (!this.requireKeyRestore) {
-      log.warn("backend already restored");
       return;
     }
     this.setRequireKeyRestore(false);
@@ -718,8 +717,9 @@ class ControllerModule extends VuexModule {
           if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
           // assume valid private key
-          const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
-          this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
+          const { userInfo } = this.torus;
+          await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), userInfo);
+          // this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
         }
       } else {
         throw new Error("Invalid or no key in local storage");
