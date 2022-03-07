@@ -4,6 +4,7 @@ import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 import ControllerModule from "@/modules/controllers";
+import { logoutWithBC } from "@/utils/helpers";
 
 const router = useRouter();
 
@@ -25,7 +26,7 @@ onMounted(async () => {
       return router.push("/");
     }
   }
-  await ControllerModule.logout();
+  await logoutWithBC();
   await ControllerModule.initializeWithPubKey(address);
   return router.push("/wallet/home");
 });

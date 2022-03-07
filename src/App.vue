@@ -8,11 +8,11 @@ import ControllerModule from "./modules/controllers";
 import { isMain } from "./utils/helpers";
 
 const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-onBeforeMount(() => {
+onBeforeMount(async () => {
   if (isMain) ControllerModule.init({ origin: window.location.origin });
   // since we might be using localstorage, logout from all the tabs open
-  bc.onmessage = (ev) => {
-    if (ev === "logout" && !!ControllerModule.torus.selectedAddress) ControllerModule.logout();
+  bc.onmessage = async (ev) => {
+    if (ev === "logout" && !!ControllerModule.selectedAddress) await ControllerModule.logout();
   };
 });
 </script>

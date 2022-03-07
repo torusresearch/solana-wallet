@@ -83,7 +83,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, logoutWithBC, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
@@ -1185,6 +1185,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationEngine: this.communicationEngine,
         communicationWindowManager: this.communicationManager,
       });
+      await logoutWithBC();
       const { privKey, userInfo } = result;
       const paddedKey = privKey.padStart(64, "0");
       const address = await this.addAccount(paddedKey, userInfo);

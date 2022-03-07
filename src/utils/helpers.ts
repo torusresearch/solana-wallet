@@ -1,6 +1,7 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
 import { get, post } from "@toruslabs/http-helpers";
+import { BroadcastChannel } from "broadcast-channel";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -230,3 +231,11 @@ export const MintLayout = borsh.struct([
   borsh.u32("freezeAuthorityOption"),
   borsh.publicKey("freezeAuthority"),
 ]);
+
+export const logoutWithBC = async () => {
+  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
+  await bc.postMessage("logout");
+  await bc.close();
+  // TODO: wait for logout to finish, using delay is not correct way
+  await delay(500);
+};

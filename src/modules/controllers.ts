@@ -44,7 +44,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, OpenLoginBackendState, TorusControllerState } from "@/utils/enums";
-import { delay, isMain } from "@/utils/helpers";
+import { delay, isMain, logoutWithBC } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -83,7 +83,11 @@ class ControllerModule extends VuexModule {
   }
 
   get pubKeyOnlyAcc() {
-    return !!(this.torusState.PreferencesControllerState.selectedAddress && this.torusState.KeyringControllerState.wallets.length === 0);
+    return !!(
+      this.torusState.PreferencesControllerState.selectedAddress &&
+      this.torusState.KeyringControllerState.wallets.length === 0 &&
+      !this.torus.userInfo.verifierId
+    );
   }
 
   get hasKeyPair() {
@@ -435,7 +439,7 @@ class ControllerModule extends VuexModule {
     });
 
     this.torus.on("logout", () => {
-      this.logout();
+      logoutWithBC();
     });
     this.setInstanceId(randomId());
 
@@ -503,6 +507,7 @@ class ControllerModule extends VuexModule {
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
     }
+
     const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
     this.updateTorusState(initialState);
 
@@ -695,11 +700,11 @@ class ControllerModule extends VuexModule {
       log.warn("backend already restored");
       return;
     }
+    this.setRequireKeyRestore(false);
     if (this.pubKeyOnlyAcc) {
-      this.setRequireKeyRestore(false);
+      log.warn("pubkey only acc, key restoration not needed");
       return;
     }
-    this.setRequireKeyRestore(false);
 
     try {
       const value = window.localStorage?.getItem(EPHERMAL_KEY);

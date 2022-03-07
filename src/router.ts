@@ -12,7 +12,11 @@ const enum AuthStates {
 }
 
 export function isLoggedIn(): boolean {
-  return !!ControllerModule?.torus?.selectedAddress && ControllerModule.hasKeyPair;
+  return !!ControllerModule?.selectedAddress && ControllerModule.hasKeyPair;
+}
+
+export function hasPubKey(): boolean {
+  return !!ControllerModule?.selectedAddress;
 }
 
 const router = createRouter({
@@ -222,9 +226,10 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-  if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.restoreFromBackend();
+  if (authMeta || (to.meta.redirectFlow && isRedirectFlow)) await ControllerModule.restoreFromBackend();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
+  if (authMeta === AuthStates.PUB_KEY_ONLY && !hasPubKey() && !isRedirectFlow) return next("/login");
   if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
   return next();
 });

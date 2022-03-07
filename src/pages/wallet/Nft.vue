@@ -2,7 +2,6 @@
 import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
-import { BroadcastChannel } from "broadcast-channel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -15,7 +14,7 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
-import { setFallbackImg } from "@/utils/helpers";
+import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -23,9 +22,7 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
 };
 
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
