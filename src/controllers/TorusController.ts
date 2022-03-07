@@ -256,6 +256,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
   }
 
+  get hasKeyPair(): boolean {
+    return this.keyringController?.state.wallets.length > 0 || false;
+  }
+
   get embedLoginInProgress(): boolean {
     return this.embedController?.state.loginInProgress || false;
   }
@@ -305,6 +309,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController = new TokenInfoController({
       config: this.config.TokensInfoConfig,
+      state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
     });
     this.currencyController = new CurrencyController({
@@ -410,11 +415,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state2 });
     });
 
-    this.tokensTracker.on("store", (state2) => {
+    this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
+      await this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -611,19 +616,21 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.addAccount(pKey, userInfo);
   }
 
-  async addAccount(privKey: string, userInfo: UserInfo): Promise<string> {
+  async addAccount(privKey: string, userInfo?: UserInfo): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
-    await this.preferencesController.initPreferences({
-      address,
-      calledFromEmbed: false,
-      userInfo,
-    });
+    if (userInfo) {
+      await this.preferencesController.initPreferences({
+        address,
+        calledFromEmbed: false,
+        userInfo,
+      });
+    }
     return address;
   }
 
-  setSelectedAccount(address: string): void {
+  setSelectedAccount(address: string, sync = false): void {
     this.preferencesController.setSelectedAddress(address);
-    // this.preferencesController.sync(address);
+    if (sync) this.preferencesController.sync(address);
 
     // set account in accountTracker
     this.accountTracker.syncAccounts();
@@ -648,6 +655,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
+    if (!this.hasKeyPair) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
@@ -1201,6 +1209,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
     const accounts = await this.requestAccounts(req);
+
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {
@@ -1290,7 +1299,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
             else resolve([address]);
           });
         }
-      } else if (this.selectedAddress) resolve([this.selectedAddress]);
+      } else if (this.hasKeyPair && this.selectedAddress) resolve([this.selectedAddress]);
       else {
         // We show the modal to login
         this.embedController.update({
@@ -1312,7 +1321,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async getCommProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
     res.result = {
       currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-      isLoggedIn: !!this.selectedAddress,
+      isLoggedIn: !!this.selectedAddress && this.hasKeyPair,
     };
     end();
   }

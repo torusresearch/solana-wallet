@@ -45,12 +45,12 @@ test.describe("Settings Page", async () => {
     // **************DISPLAY CHANGES********
     // CHOOSE LIGHT
     await page.click("text=Light");
-    await wait(1000);
+    await wait(3000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(0);
 
     // CHOOSE DARK
     await page.click("text=Dark");
-    await wait(1000);
+    await wait(3000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(1);
   });
 
@@ -138,9 +138,6 @@ test.describe("Settings Page", async () => {
     // ensure only Solana address is displayed
     await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(1);
     // Solana Address filter by SOL Domain
-    await selectAddressBookFilter(page, "SOL Domain");
-    // ensure nothing is displayed as there is no Solana Domain added
-    await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(0);
     await selectAddressBookFilter(page, "All");
     await page.click("li>div>svg");
     expect(await isContactDeleted(page, IMPORT_ACC_ADDRESS)).toBeTruthy();

@@ -52,7 +52,7 @@ async function cancelTransfer() {
     :sender-pub-key="params.sender_add"
     :token="selectedNft"
     @transfer-confirm="confirmTransfer"
-    @transfer-cancel="cancelTransfer"
+    @transfer-reject="cancelTransfer"
   ></TransferNFT>
   <p v-else>Fetching NFTS..</p>
 </template>

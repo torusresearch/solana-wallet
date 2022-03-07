@@ -119,7 +119,7 @@ test.describe("Home Page", async () => {
 
 /** ************IMPORT ACCOUNT TESTS************************** */
 
-test.describe("Home Page with Imported Account", async () => {
+test.skip("Home Page with Imported Account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
