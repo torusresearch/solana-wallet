@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BroadcastChannel } from "broadcast-channel";
-import { onMounted } from "vue";
+import { onBeforeMount } from "vue";
 
 import { Toast } from "@/components/common";
 
@@ -8,7 +8,7 @@ import ControllerModule from "./modules/controllers";
 import { isMain } from "./utils/helpers";
 
 const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-onMounted(() => {
+onBeforeMount(() => {
   if (isMain) ControllerModule.init({ origin: window.location.origin });
   // since we might be using localstorage, logout from all the tabs open
   bc.onmessage = (ev) => {

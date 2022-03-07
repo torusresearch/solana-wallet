@@ -1,6 +1,6 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
-import axios from "axios";
+import { get, post } from "@toruslabs/http-helpers";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -174,7 +174,7 @@ export function setFallbackImg(target: any, src: string) {
 
 export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
   try {
-    const { data } = await axios.get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
+    const data: any = await get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
     return data?.[outputCurrencySymbol.toUpperCase()];
   } catch (e) {
     return 0;
@@ -211,7 +211,7 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
 
 export async function recordDapp(origin: string) {
   try {
-    await axios.post(`${config.api}/dapps/record`, { origin });
+    await post(`${config.api}/dapps/record`, { origin });
   } catch (e) {
     log.error("ERROR RECORDING DAPP", e);
   }

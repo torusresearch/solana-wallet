@@ -40,7 +40,7 @@ const logout = async () => {
 </script>
 
 <template>
-  <div v-if="selectedAddress && user.verifierId" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start">
+  <div v-if="selectedAddress" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start">
     <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30 w-full">
       <div class="flex h-16 px-4 header-border">
         <div class="flex-1 flex items-center mr-auto">
@@ -93,7 +93,7 @@ const logout = async () => {
         </div>
       </main>
     </div>
-    <div class="md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black">
+    <div class="fixed bottom-0 md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black">
       <router-link
         v-for="(value, key) in tabs"
         :key="key"

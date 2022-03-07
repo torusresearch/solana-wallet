@@ -37,27 +37,8 @@ async function getJWT(): Promise<{ success: boolean; token: string }> {
 }
 
 export async function createRedisKey() {
-  const { token } = await getJWT();
-  const userInfo = (
-    await axios.get(`${getBackendDomain()}/user?fetchTx=false`, {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-    })
-  ).data;
-  const saveState = {
-    touchIDPreference: "disabled",
-    email: userInfo.data.verified_id,
-    aggregateVerifier: "tkey-google-lrc",
-    name: "Testing Account",
-    profileImage: "https://lh3.googleusercontent.com/a/AATXAJzAoycX3Gsashp68ugbY1Fss8kpzSIwvfN5KIAr=s96-c",
-    typeOfLogin: "google",
-    verifier: userInfo.data.verifier,
-    verifierId: userInfo.data.verifier_id,
-    appState: "eyJpbnN0YW5jZUlkIjoieHIyM2YyMXRsbyJ9",
-  };
   const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
-  const stateString = stringify({ ...saveState, private_key: SECRET_KEY });
+  const stateString = stringify({ publicKey: PUB_ADDRESS, privateKey: SECRET_KEY });
   const stateByteArray = Buffer.from(stateString, "utf-8");
   const encryptedState = nacl.secretbox(stateByteArray, nonce, base58.decode(EPHEMERAL_SECRET_KEY).slice(0, 32)); // encrypt state with tempKey
 
@@ -72,13 +53,45 @@ export async function createRedisKey() {
 
 export async function login(context: BrowserContext): Promise<Page> {
   await createRedisKey();
-  const stateFunction = `window.localStorage.setItem(
-    "controllerModule",
+  const keyFunction = `window.localStorage.setItem(
+    "controllerModule-ephemeral",
     JSON.stringify({
       "priv_key": "${EPHEMERAL_SECRET_KEY}",
       "pub_key": "${PUB_ADDRESS}",
     })
   )`;
+  const jwt = await getJWT();
+  const stateFunction = `window.localStorage.setItem(
+    "controllerModule",
+    JSON.stringify({
+      controllerModule: {
+        backendRestored: false,
+        torusState: {
+          PreferencesControllerState: {
+            identities: {
+              ${PUB_ADDRESS}: {
+                jwtToken: "${jwt}",
+                userInfo: {
+                  email: "torussolanatesting@gmail.com",
+                  name: "Torus Testing",
+                  profileImage: "https://lh3.googleusercontent.com/a/AATXAJwH-UUrn4YSmInT-o8ptgLTq80TGs9lemvhzXXg=s96-c",
+                  aggregateVerifier: "tkey-google-lrc",
+                  verifier: "torus",
+                  verifierId: "torussolanatesting@gmail.com",
+                  typeOfLogin: "google",
+                },
+                currentNetworkTxsList: [],
+                contacts: [],
+                locale: "en",
+              },
+            },
+            selectedAddress: "${PUB_ADDRESS}",
+          },
+        },
+      },
+    })
+  )`;
+  await context.addInitScript({ content: keyFunction });
   await context.addInitScript({ content: stateFunction });
   await context.grantPermissions(["clipboard-read"]);
   const page = await context.newPage();

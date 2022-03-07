@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { get } from "@toruslabs/http-helpers";
 import { SolanaToken } from "@toruslabs/solana-controllers";
-import axios from "axios";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -17,18 +17,19 @@ const exploreNFTS = ref<any[]>([]);
 onMounted(async () => {
   if (nfts.value.length === 0) {
     try {
-      const [collections, volume] = (
-        await Promise.all([
-          axios.get("https://qzlsklfacc.medianetwork.cloud/get_collections"),
-          axios.get("https://qzlsklfacc.medianetwork.cloud/query_volume_all"),
-        ])
-      ).map((e) => e.data);
+      const [collections, volume]: any[] = await Promise.all([
+        get("https://qzlsklfacc.medianetwork.cloud/get_collections"),
+        get("https://qzlsklfacc.medianetwork.cloud/query_volume_all"),
+      ]);
+
       const combinedCollectionObject = collections
-        .map((val) => {
-          const stats = volume.find((e) => e.collection === val.url);
+        .map((val: any) => {
+          const stats = volume.find((e: any) => e.collection === val.url);
           return { ...val, stats };
         })
-        .sort((a, b) => {
+        .sort((a: any, b: any) => {
+          if (a.stats === undefined) return 1;
+          if (b.stats === undefined) return -1;
           if (a.stats.weeklyVolume > b.stats.weeklyVolume) return -1;
           if (a.stats.weeklyVolume < b.stats.weeklyVolume) return 1;
           return 0;
