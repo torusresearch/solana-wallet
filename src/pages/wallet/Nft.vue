@@ -106,7 +106,9 @@ const transferNFT = () => {
         <div class="h-full w-full bg-gray-800 backdrop-blur-lg bg-opacity-30 absolute top-0 left-0"></div>
       </div>
       <!-- content -->
-      <div class="px-4 gt-xs:px-12 md:px-12 py-8 pb-6 relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start">
+      <div
+        class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[50px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
+      >
         <div class="flex flex-col">
           <div class="flex justify-between px-2 py-4 w-full">
             <div class="cursor-pointer flex items-center" @click="goBack" @keydown="goBack">
