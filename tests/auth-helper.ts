@@ -60,7 +60,7 @@ export async function login(context: BrowserContext): Promise<Page> {
       "pub_key": "${PUB_ADDRESS}",
     })
   )`;
-  const jwt = await getJWT();
+  const { token } = await getJWT();
   const stateFunction = `window.localStorage.setItem(
     "controllerModule",
     JSON.stringify({
@@ -70,7 +70,7 @@ export async function login(context: BrowserContext): Promise<Page> {
           PreferencesControllerState: {
             identities: {
               ${PUB_ADDRESS}: {
-                jwtToken: "${jwt}",
+                jwtToken: "${token}",
                 userInfo: {
                   email: "torussolanatesting@gmail.com",
                   name: "Torus Testing",

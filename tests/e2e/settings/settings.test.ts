@@ -2,6 +2,7 @@
 import test, { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_ADDRESS, IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS, SECRET_KEY } from "../../auth-helper";
+import { isContactDeleted, selectAddressBookFilter } from "../../settings.utils";
 import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwork, switchTab, wait } from "../../utils";
 
 test.describe("Settings Page", async () => {
@@ -67,21 +68,19 @@ test.describe("Settings Page", async () => {
   test("Contact should be added and then deleted", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
-
+    // if contact already exists, delete it
+    const elemCount = await page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`).count();
+    if (elemCount > 0) {
+      await page.click("li>div>svg");
+      expect(await isContactDeleted(page, IMPORT_ACC_ADDRESS)).toBeTruthy();
+    }
     await page.fill("input[placeholder='Enter Contact Name']", "ImportAcc");
     await page.fill("input[placeholder='Enter SOL Public Key']", IMPORT_ACC_ADDRESS);
     await page.click("text=Add Contact");
     await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
     expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS} PUB_ADDRESS,`).first()).toBeTruthy();
     await page.click("li>div>svg");
-    let contactDeleted = false;
-    await page.waitForSelector("text=Successfully deleted contact", { timeout: 10_000 });
-    try {
-      await page.waitForSelector(`span >> text=${IMPORT_ACC_ADDRESS} PUB_ADDRESS,`, { timeout: 2_000 });
-    } catch (e) {
-      contactDeleted = true;
-    }
-    expect(contactDeleted).toBeTruthy();
+    expect(await isContactDeleted(page, IMPORT_ACC_ADDRESS)).toBeTruthy();
   });
 
   test("Crash reporting should update", async () => {
@@ -94,26 +93,81 @@ test.describe("Settings Page", async () => {
     await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
   });
 
+  test("Search address book should work", async () => {
+    // see navigation works correctly
+    await switchTab(page, "settings");
+    const elemCount = await page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`).count();
+    if (elemCount === 0) {
+      await page.fill("input[placeholder='Enter Contact Name']", "ImportAcc");
+      await page.fill("input[placeholder='Enter SOL Public Key']", IMPORT_ACC_ADDRESS);
+      await page.click("text=Add Contact");
+      await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
+    }
+    // Searching with added account name
+    await page.fill("input[placeholder='Search by name']", "ImportAcc");
+    await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(1);
+    // Searching with non-existing account name
+    await page.fill("input[placeholder='Search by name']", "non-existing");
+    await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(0);
+    // Searching with added account name again
+    await page.fill("input[placeholder='Search by name']", "ImportAcc");
+    await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(1);
+    await page.fill("input[placeholder='Search by name']", "");
+    // Deleting address as cleanup
+    await page.click("li>div>svg");
+    expect(await isContactDeleted(page, IMPORT_ACC_ADDRESS)).toBeTruthy();
+  });
+
+  test("Address book filter should work", async () => {
+    // see navigation works correctly
+    await switchTab(page, "settings");
+    const elemCount = await page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`).count();
+    if (elemCount === 0) {
+      await page.fill("input[placeholder='Enter Contact Name']", "ImportAcc");
+      await page.fill("input[placeholder='Enter SOL Public Key']", IMPORT_ACC_ADDRESS);
+      await page.click("text=Add Contact");
+      await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
+    }
+
+    // Solana Address filter by All
+    await selectAddressBookFilter(page, "All");
+    // ensure All addresses are displayed
+    await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(1);
+    // Solana Address filter by Solana address
+    await selectAddressBookFilter(page, "Solana address");
+    // ensure only Solana address is displayed
+    await expect(page.locator(`span >> text=${IMPORT_ACC_ADDRESS}`)).toHaveCount(1);
+    // Solana Address filter by SOL Domain
+    await selectAddressBookFilter(page, "All");
+    await page.click("li>div>svg");
+    expect(await isContactDeleted(page, IMPORT_ACC_ADDRESS)).toBeTruthy();
+  });
+
   test("Language change should work", async () => {
     // see navigation works correctly
     await switchTab(page, "settings");
 
     await changeLanguage(page, "german");
+    await wait(500);
     await ensureTextualElementExists(page, "die Einstellungen");
     await changeLanguage(page, "japanese");
+    await wait(500);
     await ensureTextualElementExists(page, "設定");
     await changeLanguage(page, "korean");
+    await wait(500);
     await ensureTextualElementExists(page, "설정");
     await changeLanguage(page, "mandarin");
+    await wait(500);
     await ensureTextualElementExists(page, "设定");
     await changeLanguage(page, "spanish");
+    await wait(500);
     await ensureTextualElementExists(page, "Configuraciones");
     await changeLanguage(page, "english");
   });
 });
 
 /** ************************IMPORT ACCOUNT TESTS ****************************** */
-
+// Skipped because "Import Account" feature is no more supported
 test.skip("Settings Page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser }) => {
@@ -180,30 +234,80 @@ test.skip("Settings Page using imported account", async () => {
   test("Contact should be added and then deleted", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
-
+    // if contact already exists, delete it
+    const elemCount = await page.locator(`span >> text=${PUB_ADDRESS}`).count();
+    if (elemCount > 0) {
+      await page.click("li>div>svg");
+      expect(await isContactDeleted(page, PUB_ADDRESS)).toBeTruthy();
+    }
     await page.fill("input[placeholder='Enter Contact Name']", "MainTestAcc");
     await page.fill("input[placeholder='Enter SOL Public Key']", PUB_ADDRESS);
     await page.click("text=Add Contact");
     await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
     expect(page.locator(`span >> text=${PUB_ADDRESS} PUB_ADDRESS,`).first()).toBeTruthy();
     await page.click("li>div>svg");
-    let contactDeleted = false;
-    await page.waitForSelector("text=Successfully deleted contact", { timeout: 10_000 });
-    try {
-      await page.waitForSelector(`span >> text=${PUB_ADDRESS} PUB_ADDRESS,`, { timeout: 2000 });
-    } catch (e) {
-      contactDeleted = true;
-    }
-    expect(contactDeleted).toBeTruthy();
+    expect(await isContactDeleted(page, PUB_ADDRESS)).toBeTruthy();
   });
 
   test("Crash reporting should update", async () => {
-    // // see navigation works correctly
+    // see navigation works correctly
     await switchTab(page, "settings");
 
     await page.click("button[role='switch']");
     await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
     await page.click("button[role='switch']");
     await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
+  });
+
+  test("Search address book should work", async () => {
+    // see navigation works correctly
+    await switchTab(page, "settings");
+    const elemCount = await page.locator(`span >> text=${PUB_ADDRESS}`).count();
+    if (elemCount === 0) {
+      await page.fill("input[placeholder='Enter Contact Name']", "MainTestAcc");
+      await page.fill("input[placeholder='Enter SOL Public Key']", PUB_ADDRESS);
+      await page.click("text=Add Contact");
+      await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
+    }
+    // Searching with added account name
+    await page.fill("input[placeholder='Search by name']", "MainTestAcc");
+    await expect(page.locator(`span >> text=${PUB_ADDRESS}`)).toHaveCount(1);
+    // Searching with non-existing account name
+    await page.fill("input[placeholder='Search by name']", "non-existing");
+    await expect(page.locator(`span >> text=${PUB_ADDRESS}`)).toHaveCount(0);
+    // Searching with added account name again
+    await page.fill("input[placeholder='Search by name']", "MainTestAcc");
+    await expect(page.locator(`span >> text=${PUB_ADDRESS}`)).toHaveCount(1);
+    // Deleting address as cleanup
+    await page.click("li>div>svg");
+    expect(await isContactDeleted(page, PUB_ADDRESS)).toBeTruthy();
+  });
+
+  test("Address book filter should work", async () => {
+    // see navigation works correctly
+    await switchTab(page, "settings");
+    const elemCount = await page.locator(`span >> text=${PUB_ADDRESS}`).count();
+    if (elemCount === 0) {
+      await page.fill("input[placeholder='Enter Contact Name']", "MainTestAcc");
+      await page.fill("input[placeholder='Enter SOL Public Key']", PUB_ADDRESS);
+      await page.click("text=Add Contact");
+      await page.waitForSelector("text=Successfully added contact", { timeout: 10_000 });
+    }
+
+    // Solana Address filter by All
+    await selectAddressBookFilter(page, "All");
+    // ensure All addresses are displayed
+    await expect(page.locator(`span >> text=${PUB_ADDRESS}`)).toHaveCount(1);
+    // Solana Address filter by Solana address
+    await selectAddressBookFilter(page, "Solana address");
+    // ensure only Solana address is displayed
+    await expect(page.locator(`span >> text=${PUB_ADDRESS}`)).toHaveCount(1);
+    // Solana Address filter by SOL Domain
+    await selectAddressBookFilter(page, "SOL Domain");
+    // ensure nothing is displayed as there is no Solana Domain added
+    await expect(page.locator(`span >> text=${PUB_ADDRESS}`)).toHaveCount(0);
+    await selectAddressBookFilter(page, "All");
+    await page.click("li>div>svg");
+    expect(await isContactDeleted(page, PUB_ADDRESS)).toBeTruthy();
   });
 });
