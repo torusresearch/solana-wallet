@@ -1,7 +1,7 @@
 import test, { expect, Page } from "@playwright/test";
 
-import { getActivities } from "../../activity.utils";
-import { IMPORT_ACC_ADDRESS, IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS } from "../../auth-helper";
+import { IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS } from "../../auth-helper";
+import { ensureFirstActivityIsRecentTransaction } from "../../transfer.utils";
 import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwork, switchTab, wait } from "../../utils";
 
 test.describe("Transfer page", async () => {
@@ -31,7 +31,7 @@ test.describe("Transfer page", async () => {
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
     // if address is a valid sol address, should show popup
-    await page.fill("input[type='text']", IMPORT_ACC_ADDRESS);
+    await page.fill("input[type='text']", PUB_ADDRESS);
     // if amount is not valid, should show error
     await page.fill("input[type='number']", "0");
     await page.click("button >> text=Transfer");
@@ -64,7 +64,7 @@ test.describe("Transfer page", async () => {
     await Promise.all([page.click("text=Transfer"), wait(1000)]);
 
     // Fill a valid sol address
-    await page.fill(".combo-input-field[aria-label='Select field']", IMPORT_ACC_ADDRESS);
+    await page.fill(".combo-input-field[aria-label='Select field']", PUB_ADDRESS);
 
     // Fill a unique random amount
     await page.fill("input[type='number']", transferAmount);
@@ -79,23 +79,8 @@ test.describe("Transfer page", async () => {
 
     await page.click("button >> text=Close");
 
-    // wait for the first link to be our recent transaction
-    /* await page.waitForFunction(
-      (amount) => {
-        const ele = document.querySelector(".transaction-activity");
-        const text: string = (ele as any).innerText;
-        const val = text.match(/ ([0-9.]*) SOL/)?.[1];
-        if (Number(val) === Number(amount)) return true;
-        return false;
-      },
-      transferAmount,
-      { polling: 500 }
-    ); */
-    // getting list on activities
-    const activitiesList = await getActivities(page);
-    const element = await activitiesList.elementHandles()[0];
-    const elementText = await element.textContent();
-    expect(elementText).toContain(`Sent ${transferAmount} SOL`);
+    // ensure first activity to be our recent transaction
+    await ensureFirstActivityIsRecentTransaction(page, `Sent ${parseFloat(transferAmount)} SOL`);
 
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load", { timeout: 10_000 });
@@ -113,25 +98,16 @@ test.describe("Transfer page", async () => {
 
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
-
     await page.click("button >> text=Solana");
     await page.click("p >> text=USD Coin (USDC)");
-    await page.fill("input.combo-input-field", IMPORT_ACC_ADDRESS);
+    await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.fill("input[type='number']", "0.01");
     await page.click("button >> text=Transfer");
     await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
-    await page.waitForFunction(
-      () => {
-        const ele = document.querySelector(".transaction-activity");
-        const text: string = (ele as any).innerText;
-        const val = text.match(/ ([0-9.]*) USDC/)?.[1];
-        if (Number(val) === 0.01) return true;
-        return false;
-      },
-      { polling: 500 }
-    );
+    // ensure first activity to be our recent transaction
+    await ensureFirstActivityIsRecentTransaction(page, "Sent 0.01 USDC");
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load", { timeout: 10_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
@@ -142,31 +118,19 @@ test.describe("Transfer page", async () => {
     test.slow();
     // see navigation works correctly
     await switchTab(page, "transfer");
-
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
-
     await page.click("button >> text=Solana");
-    const nft = page.locator(".nft-group + li").first();
+    const nft = page.locator("li.pl-9").first();
     const nft_symbol = (await nft.innerText()).match(/\((.*)\)/)?.[1] as string;
     await nft.click();
-    await page.fill("input.combo-input-field", IMPORT_ACC_ADDRESS);
+    await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.click("button >> text=Transfer");
     await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
-
-    await page.waitForFunction(
-      (symbol) => {
-        const ele = document.querySelector(".transaction-activity");
-        const text: string = (ele as any).innerText;
-        const nftSent = text.includes(`Sent 1 ${symbol}`);
-        if (nftSent) return true;
-        return false;
-      },
-      nft_symbol,
-      { polling: 500 }
-    );
+    // ensure first activity to be our recent transaction
+    await ensureFirstActivityIsRecentTransaction(page, `Sent 1 ${nft_symbol}`);
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
     await page2.waitForEvent("load", { timeout: 10_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+1");
