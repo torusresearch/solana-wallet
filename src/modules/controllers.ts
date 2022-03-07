@@ -722,7 +722,7 @@ class ControllerModule extends VuexModule {
           if (expire < Date.now() / 1000) {
             const { userInfo } = this.torus;
             this.torus.state.PreferencesControllerState.identities[this.selectedAddress].jwtToken = undefined;
-            await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), userInfo);
+            await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), userInfo, true);
           } else {
             const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
             this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
