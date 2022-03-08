@@ -44,7 +44,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, OpenLoginBackendState, TorusControllerState } from "@/utils/enums";
-import { delay, isMain } from "@/utils/helpers";
+import { delay, isMain, parseJwt } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -716,10 +716,18 @@ class ControllerModule extends VuexModule {
           }
           if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
-          // assume valid private key
-          const { userInfo } = this.torus;
-          await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), userInfo);
-          // this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
+          // Restore keyringController only ( no Sync / initPreferenes )
+          const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+
+          // valid private key needed to refreshJwt,
+          const jwt = this.torus.state.PreferencesControllerState.identities[this.selectedAddress].jwtToken;
+          const expire = parseJwt(jwt || "").exp;
+          if (expire < Date.now() / 1000) {
+            await this.torus.refreshJwt();
+          }
+
+          // This call sync and refresh blockchain state
+          this.torus.setSelectedAccount(address, true);
         }
       } else {
         throw new Error("Invalid or no key in local storage");

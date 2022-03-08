@@ -616,13 +616,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.addAccount(pKey, userInfo);
   }
 
-  async addAccount(privKey: string, userInfo?: UserInfo): Promise<string> {
+  async addAccount(privKey: string, userInfo?: UserInfo, rehydrate?: boolean): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
     if (userInfo) {
       await this.preferencesController.initPreferences({
         address,
         calledFromEmbed: false,
         userInfo,
+        rehydrate,
       });
     }
     return address;
@@ -677,6 +678,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async setTheme(theme: THEME): Promise<boolean> {
     return this.preferencesController.setUserTheme(theme);
+  }
+
+  async refreshJwt(): Promise<void> {
+    return this.preferencesController.refreshJwt();
   }
 
   async setDefaultCurrency(currency: string): Promise<boolean> {
