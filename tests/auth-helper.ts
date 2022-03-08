@@ -67,6 +67,13 @@ export async function login(context: BrowserContext): Promise<Page> {
       controllerModule: {
         backendRestored: false,
         torusState: {
+          "AccountTrackerState": {
+            "accounts": {
+              "${PUB_ADDRESS}": {
+                "balance": "0"
+              }
+            }
+          },
           PreferencesControllerState: {
             identities: {
               ${PUB_ADDRESS}: {
