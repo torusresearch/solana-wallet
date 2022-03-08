@@ -716,17 +716,18 @@ class ControllerModule extends VuexModule {
           }
           if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
-          // assume valid private key
+          // Restore keyringController only ( no Sync / initPreferenes )
+          const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+
+          // valid private key needed to refreshJwt,
           const jwt = this.torus.state.PreferencesControllerState.identities[this.selectedAddress].jwtToken;
           const expire = parseJwt(jwt || "").exp;
           if (expire < Date.now() / 1000) {
-            const { userInfo } = this.torus;
-            this.torus.state.PreferencesControllerState.identities[this.selectedAddress].jwtToken = undefined;
-            await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), userInfo, true);
-          } else {
-            const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
-            this.torus.setSelectedAccount(address, true); // TODO: check what happens in case of multiple accounts
+            await this.torus.refreshJwt();
           }
+
+          // This call sync and refresh blockchain state
+          this.torus.setSelectedAccount(address, true);
         }
       } else {
         throw new Error("Invalid or no key in local storage");

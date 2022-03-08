@@ -680,6 +680,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController.setUserTheme(theme);
   }
 
+  async refreshJwt(): Promise<void> {
+    return this.preferencesController.refreshJwt();
+  }
+
   async setDefaultCurrency(currency: string): Promise<boolean> {
     const { ticker } = this.networkController.getProviderConfig();
     // This is SOL
