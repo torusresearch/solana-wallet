@@ -121,11 +121,7 @@ test.describe("Transfer page", async () => {
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
     await page.click("button >> text=Solana");
-    // await wait(500000);
-    // const nft = page.locator("li.pl-9").first();
-    // const nft = page.locator(".nft-group + li").first();
     const nft = page.locator("p >> text=I WANT UR NFT (WTB_NFT)").first();
-    // console.log(`COUNT: ${await nft.count()}`);
     const nft_symbol = (await nft.innerText()).match(/\((.*)\)/)?.[1] as string;
     await nft.click();
     await page.fill("input.combo-input-field", PUB_ADDRESS);
