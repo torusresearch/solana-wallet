@@ -225,7 +225,8 @@ describe("Controller Module", () => {
         isFungible: false,
         balance: { decimals: mockMintInfo[mockMintAddress[1]].decimals, amount: "0", uiAmount: 0, uiAmountString: "0" },
       };
-      const result = await controllerModule.torus.transferSpl(sKeyPair[0].publicKey.toBase58(), 0, selectedToken);
+      const splTransaction = await controllerModule.torus.getTransferSplTransaction(sKeyPair[0].publicKey.toBase58(), 0, selectedToken);
+      const result = await controllerModule.torus.transfer(splTransaction);
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 1);
       assert.equal(controllerModule.selectedNetworkTransactions.length, 1);
       log.info(result);

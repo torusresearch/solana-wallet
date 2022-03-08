@@ -263,7 +263,7 @@ const rejectTxn = async () => {
 <template>
   <div
     :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
+    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-600 flex items-center justify-center"
   >
     <PermissionsInvalid v-if="signatureNotRequired" :origin="origin" @on-close-modal="rejectTxn()" />
     <!-- <PaymentConfirm

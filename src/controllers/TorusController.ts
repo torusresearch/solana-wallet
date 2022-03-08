@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { TokenAccount } from "@metaplex-foundation/mpl-core";
+import { TokenAccount } from "@metaplex-foundation/mpl-core/dist/src/accounts/TokenAccount";
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, MintInfo, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AccountInfo, Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
@@ -72,7 +72,6 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
-import { BigNumber } from "bignumber.js";
 import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
@@ -217,7 +216,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   get userSOLBalance(): string {
     const balance = this.accountTracker.state.accounts[this.selectedAddress]?.balance || "0x0";
-    const value = new BigNumber(balance).div(new BigNumber(LAMPORTS_PER_SOL));
+    const value = new BN(balance).div(new BN(LAMPORTS_PER_SOL));
     return value.toString();
   }
 
