@@ -92,7 +92,7 @@ const amountIsVisible = computed(() => {
     <!-- Amount -->
     <div
       v-if="amountIsVisible"
-      class="col-span-4 order-2 text-right sm:col-span-2 sm:order-3 sm:text-left sm:flex sm:items-center sm:justify-center xl:col-span-2"
+      class="col-span-4 order-2 text-right sm:col-span-2 sm:order-3 sm:text-left sm:flex sm:items-center xl:col-span-2 pl-4"
     >
       <div>
         <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
