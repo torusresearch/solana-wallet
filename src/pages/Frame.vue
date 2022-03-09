@@ -43,9 +43,14 @@ function startLogin() {
           dappOrigin = origin;
         }
         const { buttonPosition, apiKey, network, dappMetadata, extraParams } = data;
+        if (typeof network === "string") {
+          if (network === "mainnet-beta") initParams.network = WALLET_SUPPORTED_NETWORKS.mainnet;
+          else if (network === "mainnet" || network === "testnet" || network === "devnet") initParams.network = WALLET_SUPPORTED_NETWORKS[network];
+        } else {
+          initParams.network = network;
+        }
         initParams.buttonPosition = buttonPosition;
         initParams.apiKey = apiKey;
-        initParams.network = network;
         initParams.dappMetadata = dappMetadata;
         initParams.extraParams = extraParams;
         if (resolve) resolve();

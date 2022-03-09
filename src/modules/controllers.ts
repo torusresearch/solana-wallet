@@ -720,10 +720,15 @@ class ControllerModule extends VuexModule {
           const address = await this.torus.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
 
           // valid private key needed to refreshJwt,
-          const jwt = this.torus.state.PreferencesControllerState.identities[this.selectedAddress].jwtToken;
-          const expire = parseJwt(jwt || "").exp;
-          if (expire < Date.now() / 1000) {
-            await this.torus.refreshJwt();
+          const jwt = this.torus.state.PreferencesControllerState.identities[this.selectedAddress]?.jwtToken;
+
+          if (jwt) {
+            const expire = parseJwt(jwt).exp;
+            if (expire < Date.now() / 1000) {
+              await this.torus.refreshJwt();
+            }
+          } else {
+            throw new Error("Previous JWT not found");
           }
 
           // This call sync and refresh blockchain state
