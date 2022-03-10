@@ -146,6 +146,7 @@ export const DEFAULT_STATE = {
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
+    fallback: false,
   },
   TransactionControllerState: {
     transactions: {},
@@ -227,7 +228,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get conversionRate(): number {
-    return this.currencyController.state.conversionRate;
+    if (!this.tokenInfoController.state.tokenPriceMap.solana) return 0;
+    return this.tokenInfoController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 
   get userInfo(): UserInfo {
@@ -303,6 +305,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.lastTokenRefresh;
   }
 
+  getConversionRate() {
+    return this.conversionRate;
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -335,8 +341,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
     });
-    this.currencyController.updateConversionRate();
-    this.currencyController.scheduleConversionInterval();
+    // this.currencyController.updateConversionRate();
+    // this.currencyController.scheduleConversionInterval();
 
     // key mgmt
     this.keyringController = new KeyringController({
@@ -351,7 +357,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
-      getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      // getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      getConversionRate: this.getConversionRate.bind(this),
       getConnection: this.networkController.getConnection.bind(this),
     });
 
@@ -638,12 +645,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async addAccount(privKey: string, userInfo?: UserInfo, rehydrate?: boolean): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
     if (userInfo) {
-      await this.preferencesController.initPreferences({
-        address,
-        calledFromEmbed: false,
-        userInfo,
-        rehydrate,
-      });
+      // try catch to prevent breaking login flow
+      try {
+        await this.preferencesController.initPreferences({
+          address,
+          calledFromEmbed: false,
+          userInfo,
+          rehydrate,
+        });
+      } catch (e) {
+        log.error(e);
+        await this.preferencesController.backendFallback(address, userInfo);
+      }
     }
     return address;
   }
@@ -652,6 +665,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController.setSelectedAddress(address);
     if (sync) this.preferencesController.sync(address);
 
+    log.info(this.preferencesController.state);
     // set account in accountTracker
     this.accountTracker.syncAccounts();
     // get state from chain
