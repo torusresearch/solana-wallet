@@ -1137,10 +1137,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     login_hint?: string;
   }): Promise<OpenLoginPopupResponse> {
     try {
-      // Embed login might have selectedAddress restored from storage.
-      // Need to clear preference selectedAddress on Login
-      this.preferencesController.setSelectedAddress("");
-
       const handler = new OpenLoginHandler({
         loginProvider,
         extraLoginOptions: login_hint ? { login_hint } : {},
@@ -1151,6 +1147,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       const { privKey, userInfo } = result;
       const paddedKey = privKey.padStart(64, "0");
+
+      // Embed login might have selectedAddress restored from storage.
+      // Need to clear preference selectedAddress on Login
+      this.preferencesController.setSelectedAddress("");
+
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);

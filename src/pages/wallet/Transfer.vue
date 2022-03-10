@@ -426,7 +426,9 @@ watch(transferTo, () => {
           </div>
         </form>
       </Card>
-      <AsyncTokenBalance v-if="selectedToken.isFungible" class="w-full" :selected-token="selectedToken" />
+      <div>
+        <AsyncTokenBalance v-if="selectedToken.isFungible" class="w-full" :selected-token="selectedToken" />
+      </div>
     </div>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
