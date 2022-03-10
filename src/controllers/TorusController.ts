@@ -305,6 +305,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.lastTokenRefresh;
   }
 
+  getConversionRate() {
+    return this.conversionRate;
+  }
+
   /**
    * Always call init function before using this controller
    */
@@ -661,6 +665,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController.setSelectedAddress(address);
     if (sync) this.preferencesController.sync(address);
 
+    log.info(this.preferencesController.state);
     // set account in accountTracker
     this.accountTracker.syncAccounts();
     // get state from chain
