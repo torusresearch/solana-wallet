@@ -514,7 +514,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }
 
-  async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
+  async transfer(tx: Transaction, req?: Ihandler<SendTransactionParams>): Promise<string> {
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     try {
       await signedTransaction.result;
@@ -1261,6 +1261,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
+    log.info(message);
     let tx: Transaction;
     if (req.params?.messageOnly) {
       tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
@@ -1268,6 +1269,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       tx = Transaction.from(Buffer.from(message, "hex"));
     }
 
+    log.info(tx);
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     try {
       await ret_signed.result;
@@ -1290,13 +1292,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return signed_tx;
   }
 
-  private async sendTransaction(req: JRPCRequest<any>) {
+  private async sendTransaction(req: JRPCRequest<SendTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
 
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
-    const tx = Transaction.from(Buffer.from(message, "hex"));
+    let tx: Transaction;
+    if (req.params?.messageOnly) tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
+    else tx = Transaction.from(Buffer.from(message, "hex"));
 
     return this.transfer(tx, req);
   }
