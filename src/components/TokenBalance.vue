@@ -49,9 +49,11 @@ watch(
     <div class="flex w-full justify-between items-center">
       <div class="amount-container">
         <span class="mr-2 font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
-        <span class="uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{ token }}</span>
+        <span class="uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{
+          !selectedToken?.isFungible ? selectedToken?.name : token
+        }}</span>
       </div>
-      <div class="mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">
+      <div v-if="selectedToken?.isFungible" class="mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">
         1 {{ token }} =
         <span id="conversionRate">{{ conversionRate }}</span>
         {{ currency }}
