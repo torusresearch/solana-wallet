@@ -169,6 +169,10 @@ class ControllerModule extends VuexModule {
     return this.torusState.NetworkControllerState.network;
   }
 
+  get selectedProviderConfig(): ProviderConfig {
+    return this.torusState.NetworkControllerState.providerConfig;
+  }
+
   get contacts(): Contact[] {
     return [...this.selectedAccountPreferences.contacts];
   }

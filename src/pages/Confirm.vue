@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
-import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import {
+  addressSlicer,
+  BROADCAST_CHANNELS,
+  BroadcastChannelHandler,
+  broadcastChannelOptions,
+  POPUP_RESULT,
+  ProviderConfig,
+} from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
@@ -46,9 +53,42 @@ const finalTxData = reactive<FinalTxData>({
 });
 
 const tx = ref<Transaction>();
-const decodedInst = ref<DecodedDataType[]>();
+const decodedInst = ref<DecodedDataType[]>([]);
 const origin = ref("");
 const network = ref("");
+
+watch([finalTxData.totalSolAmount], () => {
+  finalTxData.totalSolCost = (finalTxData.totalSolFee + finalTxData.totalSolAmount).toString();
+});
+
+const closeModal = async () => {
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
+  bc.close();
+};
+
+const rejectTxn = async () => {
+  if (!isRedirectFlow) {
+    closeModal();
+  } else {
+    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
+  }
+};
+
+const calculateFee = async (providerConfig?: ProviderConfig) => {
+  try {
+    if (!providerConfig) {
+      throw new Error("Invalid Solana Network");
+    }
+    const connection = new Connection(providerConfig.rpcTarget);
+    const block = await connection.getRecentBlockhash("finalized");
+    const txFee = finalTxData.isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
+    finalTxData.totalSolFee = txFee / LAMPORTS_PER_SOL;
+  } catch (e) {
+    rejectTxn();
+    log.error(e);
+  }
+};
 
 onMounted(async () => {
   try {
@@ -62,6 +102,8 @@ onMounted(async () => {
         message: params?.message,
         signer: ControllerModule.selectedAddress,
         origin: window.origin,
+        network: ControllerModule.selectedNetworkDisplayName,
+        networkDetails: ControllerModule.selectedProviderConfig,
       };
     } else {
       redirectToResult(jsonrpc, { message: "Invalid or Missing Params", method }, req_id, resolveRoute);
@@ -94,11 +136,9 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
-
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
-
+    finalTxData.isGasless = isGasless;
+    calculateFee(txData.networkDetails);
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
         return decodeInstruction(inst);
@@ -117,15 +157,11 @@ onMounted(async () => {
 
       const txAmount = decoded[0].lamports;
 
-      const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
+
       finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
-      finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
-      finalTxData.isGasless = isGasless;
     } catch (e) {
       log.error(e);
     }
@@ -164,25 +200,11 @@ const approveTxn = async (): Promise<void> => {
     }
   }
 };
-
-const closeModal = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
-};
-
-const rejectTxn = async () => {
-  if (!isRedirectFlow) {
-    closeModal();
-  } else {
-    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
-  }
-};
 </script>
 
 <template>
   <PaymentConfirm
-    v-if="finalTxData.totalSolAmount"
+    v-if="finalTxData.slicedSenderAddress"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
