@@ -216,7 +216,7 @@ class ControllerModule extends VuexModule {
               {
                 ...current,
                 data,
-                price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+                price: this.torusState.CurrencyControllerState.tokenPriceMap[current.mintAddress] || {},
               },
             ];
           }
