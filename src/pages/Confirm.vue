@@ -85,7 +85,6 @@ const calculateFee = async (providerConfig?: ProviderConfig) => {
     const txFee = finalTxData.isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
     finalTxData.totalSolFee = txFee / LAMPORTS_PER_SOL;
   } catch (e) {
-    rejectTxn();
     log.error(e);
   }
 };
