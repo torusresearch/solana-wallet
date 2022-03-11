@@ -1261,7 +1261,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
-    log.info(message);
     let tx: Transaction;
     if (req.params?.messageOnly) {
       tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
@@ -1269,7 +1268,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       tx = Transaction.from(Buffer.from(message, "hex"));
     }
 
-    log.info(tx);
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     try {
       await ret_signed.result;
