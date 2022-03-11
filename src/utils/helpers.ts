@@ -1,6 +1,7 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
 import { get, post } from "@toruslabs/http-helpers";
+import { BroadcastChannel } from "broadcast-channel";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 
@@ -245,4 +246,10 @@ export const parseJwt = (token: string) => {
   );
 
   return JSON.parse(jsonPayload);
+};
+
+export const logoutWithBC = async () => {
+  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
+  await bc.postMessage("logout");
+  bc.close();
 };
