@@ -497,7 +497,7 @@ class ControllerModule extends VuexModule {
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
     }
-    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    const initialState = { ...cloneDeep(DEFAULT_STATE) };
     this.updateTorusState(initialState);
 
     const { origin } = this.torus;
