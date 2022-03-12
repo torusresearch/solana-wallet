@@ -1,6 +1,7 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
 import { get, post } from "@toruslabs/http-helpers";
+import bowser from "bowser";
 import { BroadcastChannel } from "broadcast-channel";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
@@ -210,14 +211,34 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
   };
 };
 
+export const getCustomDeviceInfo = (browser: any): any => {
+  if ((navigator as any)?.brave) {
+    return {
+      browser: "Brave",
+    };
+  }
+  return {
+    browser: browser.getBrowserName(),
+  };
+};
+
 export async function recordDapp(origin: string) {
   try {
-    await post(`${config.api}/dapps/record`, { origin });
+    const browser = bowser.getParser(window.navigator.userAgent);
+    const browserInfo = getCustomDeviceInfo(browser);
+    const recordLoginPayload = {
+      os: browser.getOSName(),
+      os_version: browser.getOSVersion() || "unidentified",
+      browser: browserInfo?.browser || "unidentified",
+      browser_version: browser.getBrowserVersion() || "unidentified",
+      platform: browser.getPlatform().type || "desktop",
+      origin,
+    };
+    await post(`${config.api}/dapps/record`, { ...recordLoginPayload });
   } catch (e) {
     log.error("ERROR RECORDING DAPP", e);
   }
 }
-
 export const backendStatePromise = promiseCreator();
 export const getRandomWindowId = () => Math.random().toString(36).slice(2);
 
