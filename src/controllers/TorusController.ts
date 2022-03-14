@@ -22,6 +22,8 @@ import {
   FEATURES_PROVIDER_CHANGE_WINDOW,
   getPopupFeatures,
   ICommunicationProviderHandlers,
+  IEhandler,
+  LoginWithPrivateKeyParams,
   PaymentParams,
   PopupHandler,
   PopupWithBcHandler,
@@ -1354,6 +1356,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     end();
   }
 
+  private async loginWithPrivateKey(req: IEhandler<LoginWithPrivateKeyParams>): Promise<{ success: boolean }> {
+    if (!req.params?.privateKey) throw new Error("Invalid Private Key");
+    const address = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
+    log.info(address);
+    return { success: true };
+  }
+
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
@@ -1383,6 +1392,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       topup: this.topup.bind(this),
       handleWindowRpc: this.communicationManager.handleWindowRpc,
       getProviderState: this.getCommProviderState.bind(this),
+      loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }
