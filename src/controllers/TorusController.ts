@@ -1222,9 +1222,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
       if (req.params?.messageOnly) {
-        let tx = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
-        tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-        return JSON.stringify({ publicKey: this.selectedAddress, signature: tx.signature?.toString("hex") });
+        // let tx = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
+        const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
       }
       let tx = Transaction.from(Buffer.from(msg, "hex"));
       tx = this.keyringController.signTransaction(tx, this.selectedAddress);
@@ -1261,12 +1261,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
-    let tx: Transaction;
     if (req.params?.messageOnly) {
-      tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
-    } else {
-      tx = Transaction.from(Buffer.from(message, "hex"));
+      const approved = await this.handleTransactionPopup("", req);
+      if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
+      const signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
+
+      return JSON.stringify({
+        publicKey: this.selectedAddress,
+        signature: Buffer.from(signature).toString("hex"),
+      });
     }
+
+    const tx = Transaction.from(Buffer.from(message, "hex"));
 
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     try {
@@ -1281,12 +1288,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
     }
 
-    if (req.params?.messageOnly) {
-      return JSON.stringify({
-        publicKey: this.selectedAddress,
-        signature: ret_signed.transactionMeta.transaction.signature?.toString("hex"),
-      });
-    }
     return signed_tx;
   }
 
