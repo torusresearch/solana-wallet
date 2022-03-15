@@ -44,7 +44,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, OpenLoginBackendState, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, parseJwt } from "@/utils/helpers";
+import { delay, isMain, logoutWithBC, parseJwt } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -237,6 +237,10 @@ class ControllerModule extends VuexModule {
     return this.torus.connection;
   }
 
+  get hasSelectedPrivateKey() {
+    return this.torus.hasSelectedPrivateKey;
+  }
+
   @Mutation
   public setInstanceId(instanceId: string) {
     this.instanceId = instanceId;
@@ -269,6 +273,11 @@ class ControllerModule extends VuexModule {
   @Action
   handleSuccess(message: string): void {
     addToast({ type: "success", message: message || "" });
+  }
+
+  @Action
+  openWalletPopup(path: string) {
+    this.torus.showWalletPopup(path, this.instanceId);
   }
 
   @Action
@@ -420,7 +429,7 @@ class ControllerModule extends VuexModule {
     });
 
     this.torus.on("logout", () => {
-      this.logout();
+      logoutWithBC();
     });
     this.setInstanceId(randomId());
 
@@ -488,7 +497,7 @@ class ControllerModule extends VuexModule {
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
     }
-    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    const initialState = { ...cloneDeep(DEFAULT_STATE) };
     this.updateTorusState(initialState);
 
     const { origin } = this.torus;
@@ -520,6 +529,7 @@ class ControllerModule extends VuexModule {
   setNetwork(chainId: string): void {
     const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
+
     this.torus.setNetwork(providerConfig);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {

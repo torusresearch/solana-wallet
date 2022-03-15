@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { BroadcastChannel } from "broadcast-channel";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -10,6 +9,7 @@ import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/enums";
+import { logoutWithBC } from "@/utils/helpers";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
@@ -33,14 +33,12 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
 };
 </script>
 
 <template>
-  <div v-if="selectedAddress" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start lt-md:pb-[50px]">
+  <div v-if="selectedAddress" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start pb-[50px] md:pb-0">
     <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30 w-full">
       <div class="flex h-16 px-4 header-border">
         <div class="flex-1 flex items-center mr-auto">
