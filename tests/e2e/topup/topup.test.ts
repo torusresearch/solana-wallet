@@ -2,6 +2,7 @@
 import test, { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
+import { changeFiatCurrency, switchCryptoCurrency } from "../../topup.utils";
 import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
 
 test("Popup Page Should render", async ({ context }) => {
@@ -22,6 +23,7 @@ test("Popup Page Should render", async ({ context }) => {
   await page.fill("input[type='number']", "200");
   const usdToSol200 = Number(await getInnerText(page, "#resCryptoAmt"));
   expect(usdToSol200).toBeGreaterThan(0);
+  expect(usdToSol200).toBeGreaterThan(usdToSol100);
 
   // ensure that on clicking Top up, it is redirected to MoonPay Payment page
   const [page2] = await Promise.all([page.waitForEvent("popup"), page.click("button:has-text('Top up')")]);
@@ -29,6 +31,36 @@ test("Popup Page Should render", async ({ context }) => {
   page2.close();
   await wait(500);
   await ensureTextualElementExists(page, "Transaction could not complete.");
+});
+
+test("Changing of crypto/fiat currency changes the value you receive correctly", async ({ context }) => {
+  const page = await login(context);
+
+  // // see navigation works correctly
+  await switchTab(page, "topup");
+
+  // change crypto currency to USDC (SOL)
+  const USDYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
+  await switchCryptoCurrency(page, "USDC");
+  const USDCYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
+  // ensure USDCYouReceive value is greater than USDYouReceive
+  expect(USDCYouReceive).toBeGreaterThan(USDYouReceive);
+  await switchCryptoCurrency(page, "SOL");
+
+  // change fiat currency EUR
+  const USDFiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
+  await changeFiatCurrency(page, "EUR");
+  const EURFiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
+  // ensure EURFiatYouReceive value is greater than USDFiatYouReceive
+  expect(EURFiatYouReceive).toBeGreaterThan(USDFiatYouReceive);
+
+  // change fiat currency GBP
+  await changeFiatCurrency(page, "GBP");
+  const GBPfiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
+  // ensure GBPfiatYouReceive value is greater than EURFiatYouReceive
+  expect(GBPfiatYouReceive).toBeGreaterThan(EURFiatYouReceive);
+
+  await changeFiatCurrency(page, "USD");
 });
 
 test("Language change should work", async ({ context }) => {
