@@ -120,7 +120,7 @@ const refDiv = ref(null);
             <div
               class="relative inline-block w-full max-w-sm text-left align-middle transition-all transform bg-white dark:bg-app-gray-700 shadow-xl rounded-md"
             >
-              <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6" tabindex="0">
+              <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6">
                 <div>
                   <img class="h-7 mx-auto w-auto mb-1" :src="SolanaLogoURL" alt="Solana Logo" />
                 </div>

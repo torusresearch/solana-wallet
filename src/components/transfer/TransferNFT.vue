@@ -152,13 +152,9 @@ const refDiv = ref(null);
                 </div>
               </div>
               <div class="flex flex-row items-center my-6 mx-3">
-                <p
-                  class="text-sm text-app-text-500 dark:text-app-text-dark-500 cursor-pointer flex-auto w-1/2 mx-2 text-center"
-                  @click="onCancel"
-                  @keydown="onCancel"
-                >
+                <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
                   {{ t("walletTransfer.cancel") }}
-                </p>
+                </Button>
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
                   t("walletTransfer.confirm")
                 }}</Button>

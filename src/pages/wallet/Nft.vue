@@ -2,7 +2,6 @@
 import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
-import { BroadcastChannel } from "broadcast-channel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -15,7 +14,7 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
-import { setFallbackImg } from "@/utils/helpers";
+import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -23,9 +22,7 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
 };
 
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
@@ -106,7 +103,9 @@ const transferNFT = () => {
         <div class="h-full w-full bg-gray-800 backdrop-blur-lg bg-opacity-30 absolute top-0 left-0"></div>
       </div>
       <!-- content -->
-      <div class="px-4 gt-xs:px-12 md:px-12 py-8 pb-6 relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start">
+      <div
+        class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[50px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
+      >
         <div class="flex flex-col">
           <div class="flex justify-between px-2 py-4 w-full">
             <div class="cursor-pointer flex items-center" @click="goBack" @keydown="goBack">
@@ -122,7 +121,7 @@ const transferNFT = () => {
             @error="setFallbackImg($event.target, FallbackNft)"
           />
         </div>
-        <div class="flex flex-col pt-4 md:pt-14 w-full md:w-[320px] ml-0 md:ml-10">
+        <div class="flex flex-col pt-4 md:pt-14 w-full md:w-[320px] ml-0 md:ml-10 pb-8">
           <div class="w-full flex flex-col">
             <div v-if="nftMetaData.offChainMetaData?.collection" class="flex items-center">
               <img
@@ -187,6 +186,33 @@ const transferNFT = () => {
         <div class="px-4 py-2 bg-app-primary-500 text-app-text-dark-400 rounded-md cursor-pointer" @click="goBack" @keydown="goBack">Back</div>
       </div>
     </main>
+    <div
+      v-if="selectedAddress && user.verifierId"
+      class="md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black fixed bottom-0"
+    >
+      <router-link
+        v-for="(value, key) in tabs"
+        :key="key"
+        :to="`/wallet/${value.route}`"
+        :aria-current="key === 'nfts' ? 'page' : undefined"
+        :class="[value.mobHidden ? 'hidden' : 'block']"
+      >
+        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === tab ? 'active-border' : '']">
+          <img
+            :src="value.icon"
+            alt="link icon"
+            class="h-5"
+            :class="[key === 'nfts' ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
+          />
+          <p
+            class="text-xs text-center leading-none mt-1"
+            :class="[key === 'nfts' ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
+          >
+            {{ t(value.name) || "" }}
+          </p>
+        </div>
+      </router-link>
+    </div>
   </div>
 </template>
 <style scoped>

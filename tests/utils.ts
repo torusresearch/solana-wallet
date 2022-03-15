@@ -13,6 +13,10 @@ export function getBackendDomain(): string {
   return `${process.env.BACKEND_DOMAIN}`;
 }
 
+export function getStateDomain(): string {
+  return `${process.env.STATE_DOMAIN}`;
+}
+
 export function wait(millSeconds = 1000) {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -28,14 +32,6 @@ export async function ensureTextualElementExists(page: Page, text: string) {
 
 export async function getInnerText(page: Page, selector: string): Promise<string | undefined> {
   return page.locator(selector)?.first()?.innerText();
-}
-
-export async function getControllerState(page: Page) {
-  const sessionState = await page.evaluate(() => window.sessionStorage.getItem("controllerModule"));
-  const localState = await page.evaluate(() => window.localStorage.getItem("controllerModule"));
-  const state = sessionState || localState;
-  if (state) return JSON.parse(state)?.controllerModule;
-  return {};
 }
 
 export async function switchTab(page: Page, tab: Tabs) {
@@ -77,43 +73,31 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
     spanish: "Spanish (Español)",
   };
 
-  const languages = {
-    english: "en",
-    german: "de",
-    japanese: "ja",
-    korean: "ko",
-    mandarin: "zh",
-    spanish: "es",
-  };
-
   await page.click("nav button[id^='headlessui-listbox-button'][aria-haspopup='true']");
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
-  // wait for controllerModule language to update
-  await page.waitForFunction(
-    async (locale) => {
-      const state = window.sessionStorage.getItem("controllerModule") || window.localStorage.getItem("controllerModule");
-      const controllerModule = await JSON.parse(state as string)?.controllerModule;
-      if (
-        controllerModule?.torusState?.PreferencesControllerState?.identities[
-          controllerModule?.torusState?.PreferencesControllerState?.selectedAddress
-        ]?.locale === locale
-      )
-        return true;
-      return false;
-    },
-    languages[language],
-    { polling: 500, timeout: 5_000 }
-  );
 }
 
 export async function importAccount(page: Page, privKey: string) {
-  const controllerModule = await getControllerState(page);
-  const username =
-    controllerModule?.torusState?.PreferencesControllerState?.identities[controllerModule?.torusState?.PreferencesControllerState?.selectedAddress]
-      ?.userInfo?.name;
-  await page.click(`nav >> text=${username}`);
+  await page.click("nav >> text=Open User Menu");
   await page.click("nav >> text=Import Account");
   await page.fill("input[placeholder='Private Key']", privKey);
   await page.click("button >> text=Import");
   await wait(2000);
+}
+
+// TODO: Remove Dummy fn
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getControllerState(page: Page): Promise<any> {
+  return {};
+}
+
+export async function getLastWeeksDate() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+}
+
+export async function getOlderDate(month: number) {
+  const now = new Date();
+  const oldDate = new Date(now.setMonth(now.getMonth() - month));
+  return new Date(oldDate.getFullYear(), oldDate.getMonth(), oldDate.getDate());
 }

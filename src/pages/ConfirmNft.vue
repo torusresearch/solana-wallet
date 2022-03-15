@@ -44,15 +44,19 @@ async function cancelTransfer() {
 </script>
 
 <template>
-  <TransferNFT
-    v-if="selectedNft?.mintAddress"
-    :is-open="true"
-    :crypto-tx-fee="transactionFee"
-    :receiver-pub-key="params.receiver_add"
-    :sender-pub-key="params.sender_add"
-    :token="selectedNft"
-    @transfer-confirm="confirmTransfer"
-    @transfer-cancel="cancelTransfer"
-  ></TransferNFT>
-  <p v-else>Fetching NFTS..</p>
+  <div
+    class="w-full h-full overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center"
+  >
+    <TransferNFT
+      v-if="selectedNft?.mintAddress"
+      :is-open="true"
+      :crypto-tx-fee="transactionFee"
+      :receiver-pub-key="params.receiver_add"
+      :sender-pub-key="params.sender_add"
+      :token="selectedNft"
+      @transfer-confirm="confirmTransfer"
+      @transfer-reject="cancelTransfer"
+    ></TransferNFT>
+    <p v-else>Fetching NFTS..</p>
+  </div>
 </template>

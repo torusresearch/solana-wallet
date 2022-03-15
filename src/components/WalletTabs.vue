@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { BroadcastChannel } from "broadcast-channel";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -10,6 +9,7 @@ import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/enums";
+import { logoutWithBC } from "@/utils/helpers";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
@@ -33,15 +33,13 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
 };
 </script>
 
 <template>
-  <div v-if="selectedAddress && user.verifierId" class="min-h-screen bg-white dark:bg-app-gray-800">
-    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30">
+  <div v-if="selectedAddress" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start pb-[50px] md:pb-0">
+    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30 w-full">
       <div class="flex h-16 px-4 header-border">
         <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
@@ -76,9 +74,9 @@ const logout = async () => {
       </div>
     </nav>
 
-    <div class="py-6">
+    <div class="flex-1 overflow-y-auto w-full py-2">
       <header v-if="props.showHeader">
-        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lt-sm:flex-col lt-sm:items-start">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
@@ -88,10 +86,34 @@ const logout = async () => {
         </div>
       </header>
       <main>
-        <div class="max-w-7xl mx-4 sm:mx-auto sm:px-6 lg:px-8">
+        <div class="mx-4 sm:mx-auto sm:px-6 lg:px-8 max-w-7xl">
           <slot />
         </div>
       </main>
+    </div>
+    <div class="fixed bottom-0 md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black">
+      <router-link
+        v-for="(value, key) in tabs"
+        :key="key"
+        :to="`/wallet/${value.route}`"
+        :aria-current="key === tab ? 'page' : undefined"
+        :class="[value.mobHidden ? 'hidden' : 'block']"
+      >
+        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === tab ? 'active-border' : '']">
+          <img
+            :src="value.icon"
+            alt="link icon"
+            class="h-5"
+            :class="[key === tab ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
+          />
+          <p
+            class="text-xs text-center leading-none mt-1"
+            :class="[key === tab ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
+          >
+            {{ t(value.name) || "" }}
+          </p>
+        </div>
+      </router-link>
     </div>
   </div>
 </template>

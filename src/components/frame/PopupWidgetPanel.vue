@@ -18,7 +18,7 @@ import ControllerModule from "@/modules/controllers";
 const { t } = useI18n();
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllerModule.selectedAddress);
-const formattedBalance = computed(() => ControllerModule.userBalance);
+const formattedBalance = computed(() => ControllerModule.totalBalance);
 const currentFiatCurrency = computed(() => ControllerModule.torus.currentCurrency);
 const userInfo = computed(() => ControllerModule.torus.userInfo);
 

@@ -89,11 +89,11 @@ onMounted(async () => {
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
 
-    decodedInst.value = tx.value.instructions.map((inst) => {
-      return decodeInstruction(inst);
-    });
-
     try {
+      decodedInst.value = tx.value.instructions.map((inst) => {
+        return decodeInstruction(inst);
+      });
+
       if (tx.value.instructions.length > 1) return;
       if (!tx.value.instructions[0].programId.equals(SystemProgram.programId)) return;
       if (SystemInstruction.decodeInstructionType(tx.value.instructions[0]) !== "Transfer") return;

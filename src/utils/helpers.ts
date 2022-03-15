@@ -1,6 +1,10 @@
+import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
-import axios from "axios";
+import { get, post } from "@toruslabs/http-helpers";
+import bowser from "bowser";
+import { BroadcastChannel } from "broadcast-channel";
 import copyToClipboard from "copy-to-clipboard";
+import log from "loglevel";
 
 import config from "@/config";
 import { addToast } from "@/modules/app";
@@ -89,9 +93,9 @@ export function thirdPartyAuthenticators(loginButtons: LOGIN_CONFIG[]): string {
   return finalAuthenticators.join(", ");
 }
 
-export const supportedCurrencies = (ticker: string): string[] => {
+export const supportedCurrencies = (): string[] => {
   const returnArr = [...config.supportedCurrencies];
-  returnArr.unshift(ticker);
+  // returnArr.unshift(ticker); // add sol in dropdown, disabled for now
   return returnArr;
 };
 
@@ -172,7 +176,7 @@ export function setFallbackImg(target: any, src: string) {
 
 export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
   try {
-    const { data } = await axios.get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
+    const data: any = await get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
     return data?.[outputCurrencySymbol.toUpperCase()];
   } catch (e) {
     return 0;
@@ -207,5 +211,66 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
   };
 };
 
+export const getCustomDeviceInfo = (browser: any): any => {
+  if ((navigator as any)?.brave) {
+    return {
+      browser: "Brave",
+    };
+  }
+  return {
+    browser: browser.getBrowserName(),
+  };
+};
+
+export async function recordDapp(origin: string) {
+  try {
+    const browser = bowser.getParser(window.navigator.userAgent);
+    const browserInfo = getCustomDeviceInfo(browser);
+    const recordLoginPayload = {
+      os: browser.getOSName(),
+      os_version: browser.getOSVersion() || "unidentified",
+      browser: browserInfo?.browser || "unidentified",
+      browser_version: browser.getBrowserVersion() || "unidentified",
+      platform: browser.getPlatform().type || "desktop",
+      origin,
+    };
+    await post(`${config.api}/dapps/record`, { ...recordLoginPayload });
+  } catch (e) {
+    log.error("ERROR RECORDING DAPP", e);
+  }
+}
 export const backendStatePromise = promiseCreator();
 export const getRandomWindowId = () => Math.random().toString(36).slice(2);
+
+// Layout
+export const MintLayout = borsh.struct([
+  borsh.u32("mintAuthorityOption"),
+  borsh.publicKey("mintAuthority"),
+  borsh.u64("supply"),
+  borsh.u8("decimals"),
+  borsh.u8("isInitialized"),
+  borsh.u32("freezeAuthorityOption"),
+  borsh.publicKey("freezeAuthority"),
+]);
+
+export const parseJwt = (token: string) => {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    Buffer.from(base64, "base64")
+      .toString()
+      .split("")
+      .map((c) => {
+        return `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`;
+      })
+      .join("")
+  );
+
+  return JSON.parse(jsonPayload);
+};
+
+export const logoutWithBC = async () => {
+  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
+  await bc.postMessage("logout");
+  bc.close();
+};

@@ -57,7 +57,7 @@ const value = computed({
   >
     <input
       v-model="value"
-      class="border-0 bg-transparent focus:outline-none focus:ring-0 text-app-text-500 dark:text-app-text-dark-500 w-7/12"
+      class="border-0 bg-transparent focus:outline-none focus:ring-0 text-app-text-500 dark:text-app-text-dark-500"
       :class="[size === 'small' ? 'text-xs' : 'text-base', $slots.default ? 'w-7/12' : 'w-full']"
       :type="type"
       :placeholder="placeholder"
@@ -66,7 +66,7 @@ const value = computed({
       :disabled="disabled"
     />
 
-    <div class="p-1 h-full"><slot></slot></div>
+    <div v-if="$slots.default" class="p-1 h-full"><slot></slot></div>
   </div>
   <div class="flex mt-1 px-1">
     <div v-if="errors.length" class="text-app-error text-xs">{{ errors[0].$message }}</div>

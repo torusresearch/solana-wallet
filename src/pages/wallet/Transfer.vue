@@ -183,6 +183,7 @@ const rules = computed(() => {
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
     },
     sendAmount: {
+      required: helpers.withMessage(t("walletTransfer.minTransfer"), required),
       greaterThanZero: helpers.withMessage(t("walletTransfer.minTransfer"), minValue(isCurrencyFiat.value ? convertCryptoToFiat(0.0001) : 0.0001)),
       lessThanBalance: helpers.withMessage(
         t("walletTransfer.insufficientBalance"),
@@ -373,7 +374,7 @@ watch(transferTo, () => {
 <template>
   <div class="py-2">
     <div class="mt-5 flex flex-row justify-around items-start gt-sm:space-x-5 lt-sm:flex-col-reverse lt-sm:justify-start">
-      <Card class="w-1/2 lt-sm:mt-4" :class="[selectedToken.isFungible ? '!w-full' : 'gt-sm:w-1/2 lt-sm:w-full mr-auto']">
+      <Card class="w-full lt-sm:mt-4">
         <form action="#" method="POST" class="w-full">
           <div class="flex flex-col justify-around items-start space-y-9">
             <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
@@ -425,7 +426,7 @@ watch(transferTo, () => {
           </div>
         </form>
       </Card>
-      <AsyncTokenBalance v-if="selectedToken.isFungible" class="w-full" :selected-token="selectedToken" />
+      <AsyncTokenBalance class="w-full" :selected-token="selectedToken" />
     </div>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"

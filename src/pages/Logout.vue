@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { BroadcastChannel } from "broadcast-channel";
 import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
-import ControllerModule from "../modules/controllers";
+import { logoutWithBC } from "@/utils/helpers";
+
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
@@ -11,9 +11,7 @@ const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlo
 const { t } = useI18n();
 
 onMounted(async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
   if (isRedirectFlow) {
     redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
   }

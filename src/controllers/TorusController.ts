@@ -3,7 +3,6 @@
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { TokenInfo } from "@solana/spl-token-registry";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -64,11 +63,10 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
-import axios from "axios";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
-import { cloneDeep } from "lodash-es";
+import cloneDeep from "lodash-es/cloneDeep";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -108,12 +106,13 @@ export const DEFAULT_CONFIG = {
   },
   TransactionControllerConfig: { txHistoryLimit: 40 },
   RelayHost: {
-    torus: "https://solana-relayer.tor.us/relayer",
+    // torus: "https://solana-relayer.tor.us/relayer",
     // local: "http://localhost:4422/relayer",
   },
   TokensTrackerConfig: { supportedCurrencies: config.supportedCurrencies },
   TokensInfoConfig: {
     supportedCurrencies: config.supportedCurrencies,
+    api: config.api,
   },
 };
 export const DEFAULT_STATE = {
@@ -127,9 +126,11 @@ export const DEFAULT_STATE = {
     ticker: "sol",
   },
   NetworkControllerState: {
-    chainId: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK]?.chainId,
+    chainId: "loading",
     properties: {},
     providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
+    network: "loading",
+    isCustomNetwork: false,
   },
   PreferencesControllerState: {
     identities: {},
@@ -156,6 +157,7 @@ export const DEFAULT_STATE = {
     tokenInfoMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
+    unknownTokenInfo: [],
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -250,8 +252,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   // UNSAFE METHOD: use with caution
-  get privateKey(): string {
-    return this.keyringController.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || "private_key_undefined";
+  get privateKey(): string | undefined {
+    return this.keyringController?.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey;
+  }
+
+  // has active private key
+  get hasSelectedPrivateKey(): boolean {
+    return !!this.privateKey;
+  }
+
+  get hasKeyPair(): boolean {
+    return this.keyringController?.state.wallets.length > 0 || false;
   }
 
   get embedLoginInProgress(): boolean {
@@ -267,8 +278,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get connection(): Connection {
-    // return await getSolanaConnection(this.networkController._providerProxy);
-    return new Connection(this.networkController.getProviderConfig().rpcTarget);
+    return this.networkController.getConnection();
   }
 
   get blockExplorerUrl(): string {
@@ -304,6 +314,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController = new TokenInfoController({
       config: this.config.TokensInfoConfig,
+      state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
     });
     this.currencyController = new CurrencyController({
@@ -357,13 +368,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
     });
 
-    this.networkController._blockTrackerProxy.on("latest", () => {
+    this.networkController._blockTrackerProxy.on("latest", (block) => {
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.accountTracker.refresh();
         this.tokensTracker.updateSolanaTokens();
         this.preferencesController.updateDisplayActivities();
       }
+      this.emit("newBlock", block);
     });
 
     // ensure accountTracker updates balances after network change
@@ -378,10 +390,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
           chainId: this.networkController.state.chainId,
         },
       });
+      // emit event from toruscontroller, network controller is private
+      this.emit("networkDidChange", this.state.NetworkControllerState.network);
     });
-
-    // TODO: this returns a promise
-    this.networkController.lookupNetwork();
 
     // Listen to controller changes
     this.preferencesController.on("store", (state2) => {
@@ -409,9 +420,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ KeyringControllerState: state2 });
     });
 
-    this.tokensTracker.on("store", (state2) => {
+    this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
+      await this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -437,7 +449,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.updateRelayMap();
-    this.updateTokenInfoMap();
   }
 
   updateRelayMap = async (): Promise<void> => {
@@ -462,25 +473,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       RelayMap: relayMap,
       RelayKeyHostMap: relayKeyHost,
     });
-  };
-
-  // TODO: shift to TokenInfo controller if possible
-  updateTokenInfoMap = async (): Promise<void> => {
-    if (!this.tokens[this.selectedAddress]) return;
-    let tokenInfoMap: { [mintAddress: string]: TokenInfo } = {};
-    try {
-      tokenInfoMap = (
-        await axios.post(`${config.api}/tokeninfo`, {
-          mint_addresses: this.tokens[this.selectedAddress].map((e) => e.mintAddress),
-        })
-      ).data;
-      this.tokenInfoController.update({
-        tokenInfoMap,
-      });
-      this.lastTokenRefresh = new Date();
-    } catch (e) {
-      log.error(e);
-    }
   };
 
   setOrigin(origin: string): void {
@@ -629,19 +621,22 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.addAccount(pKey, userInfo);
   }
 
-  async addAccount(privKey: string, userInfo: UserInfo): Promise<string> {
+  async addAccount(privKey: string, userInfo?: UserInfo, rehydrate?: boolean): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
-    await this.preferencesController.initPreferences({
-      address,
-      calledFromEmbed: false,
-      userInfo,
-    });
+    if (userInfo) {
+      await this.preferencesController.initPreferences({
+        address,
+        calledFromEmbed: false,
+        userInfo,
+        rehydrate,
+      });
+    }
     return address;
   }
 
-  setSelectedAccount(address: string): void {
+  setSelectedAccount(address: string, sync = false): void {
     this.preferencesController.setSelectedAddress(address);
-    this.preferencesController.sync(address);
+    if (sync) this.preferencesController.sync(address);
 
     // set account in accountTracker
     this.accountTracker.syncAccounts();
@@ -666,6 +661,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
+    if (!this.hasSelectedPrivateKey) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
@@ -687,6 +683,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async setTheme(theme: THEME): Promise<boolean> {
     return this.preferencesController.setUserTheme(theme);
+  }
+
+  async refreshJwt(): Promise<void> {
+    return this.preferencesController.refreshJwt();
   }
 
   async setDefaultCurrency(currency: string): Promise<boolean> {
@@ -1147,6 +1147,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       const { privKey, userInfo } = result;
       const paddedKey = privKey.padStart(64, "0");
+
+      // Embed login might have selectedAddress restored from storage.
+      // Need to clear preference selectedAddress on Login
+      this.preferencesController.setSelectedAddress("");
+
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
       this.emit("LOGIN_RESPONSE", null, address);
@@ -1219,6 +1224,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
     const accounts = await this.requestAccounts(req);
+
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {
@@ -1308,7 +1314,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
             else resolve([address]);
           });
         }
-      } else if (this.selectedAddress) resolve([this.selectedAddress]);
+      } else if (this.hasSelectedPrivateKey) resolve([this.selectedAddress]);
       else {
         // We show the modal to login
         this.embedController.update({
@@ -1330,7 +1336,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async getCommProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
     res.result = {
       currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
-      isLoggedIn: !!this.selectedAddress,
+      isLoggedIn: this.hasSelectedPrivateKey,
     };
     end();
   }

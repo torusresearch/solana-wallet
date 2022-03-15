@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { backendStatePromise, isMain, promiseCreator } from "@/utils/helpers";
+import { isMain, promiseCreator, recordDapp } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -35,6 +35,7 @@ function startLogin() {
     const handleMessage = (ev: MessageEvent) => {
       const { origin, data } = ev;
       if (origin === specifiedOrigin) {
+        recordDapp(origin);
         window.removeEventListener("message", handleMessage);
         log.info("received info from origin", origin, data);
         // Add torus controller origin setup
@@ -42,9 +43,14 @@ function startLogin() {
           dappOrigin = origin;
         }
         const { buttonPosition, apiKey, network, dappMetadata, extraParams } = data;
+        if (typeof network === "string") {
+          if (network === "mainnet-beta") initParams.network = WALLET_SUPPORTED_NETWORKS.mainnet;
+          else if (network === "mainnet" || network === "testnet" || network === "devnet") initParams.network = WALLET_SUPPORTED_NETWORKS[network];
+        } else {
+          initParams.network = network;
+        }
         initParams.buttonPosition = buttonPosition;
         initParams.apiKey = apiKey;
-        initParams.network = network;
         initParams.dappMetadata = dappMetadata;
         initParams.extraParams = extraParams;
         if (resolve) resolve();
@@ -57,7 +63,7 @@ function startLogin() {
 }
 startLogin();
 
-const isLoggedIn = computed(() => !!ControllerModule.torus.selectedAddress);
+const isLoggedIn = computed(() => ControllerModule.hasSelectedPrivateKey);
 const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
 const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
@@ -92,14 +98,21 @@ onMounted(async () => {
             chainId: initParams.network.chainId,
             properties: {},
             providerConfig: initParams.network,
+            isCustomNetwork: false,
+            network: "loading",
           },
         }),
       },
       origin: dappOrigin,
     });
-    await backendStatePromise.promise;
-    ControllerModule.setupCommunication(dappOrigin);
-    showUI.value = true;
+    try {
+      await ControllerModule.restoreFromBackend();
+    } catch (error) {
+      log.error(error);
+    } finally {
+      ControllerModule.setupCommunication(dappOrigin);
+      showUI.value = true;
+    }
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
