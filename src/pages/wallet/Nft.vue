@@ -104,7 +104,7 @@ const transferNFT = () => {
       </div>
       <!-- content -->
       <div
-        class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[50px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
+        class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[56px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
       >
         <div class="flex flex-col">
           <div class="flex justify-between px-2 py-4 w-full">
@@ -188,7 +188,7 @@ const transferNFT = () => {
     </main>
     <div
       v-if="selectedAddress && user.verifierId"
-      class="md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black fixed bottom-0"
+      class="md:hidden w-full h-14 pb-[10px] flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black fixed bottom-0"
     >
       <router-link
         v-for="(value, key) in tabs"
