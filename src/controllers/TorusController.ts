@@ -1358,9 +1358,22 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async loginWithPrivateKey(req: IEhandler<LoginWithPrivateKeyParams>): Promise<{ success: boolean }> {
     if (!req.params?.privateKey) throw new Error("Invalid Private Key");
-    const address = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
-    this.setSelectedAccount(address);
-    log.info(address);
+    const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
+    this.setSelectedAccount(publicKey);
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+      params: {
+        accounts: [publicKey],
+        isUnlocked: true,
+      },
+    });
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+      params: {
+        currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      },
+    });
+    log.info(publicKey);
     return { success: true };
   }
 
