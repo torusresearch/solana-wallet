@@ -17,9 +17,9 @@ import {
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
-  FEATURES_CONFIRM_WINDOW,
+  // FEATURES_CONFIRM_WINDOW,
   FEATURES_DEFAULT_WALLET_WINDOW,
-  FEATURES_PROVIDER_CHANGE_WINDOW,
+  // FEATURES_PROVIDER_CHANGE_WINDOW,
   getPopupFeatures,
   ICommunicationProviderHandlers,
   PaymentParams,
@@ -957,8 +957,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const { windowId } = req.params as unknown as ProviderConfig & {
       windowId: string;
     };
-    const channelName = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${windowId}`;
-    const finalUrl = new URL(`${config.baseRoute}providerchange?integrity=true&instanceId=${windowId}`);
+    const channelId = windowId || getRandomWindowId();
+    const channelName = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${channelId}`;
+    const finalUrl = new URL(`${config.baseRoute}providerchange?integrity=true&instanceId=${channelId}`);
     const providerChangeWindow = new PopupWithBcHandler({
       state: {
         url: finalUrl,
@@ -969,7 +970,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationEngine: this.communicationEngine as JRPCEngine,
         communicationWindowManager: this.communicationManager,
         target: "_blank",
-        features: getPopupFeatures(FEATURES_PROVIDER_CHANGE_WINDOW),
+        // features: getPopupFeatures(FEATURES_PROVIDER_CHANGE_WINDOW),
+        features: getPopupFeatures({ height: 600, width: 400 }),
       },
       instanceId: channelName,
     });
@@ -989,8 +991,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async handleTransactionPopup(txId: string, req: Ihandler<{ message: string | string[] | undefined }>): Promise<boolean> {
     try {
       const { windowId } = req;
-      const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
-      const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
+      const channelId = windowId || getRandomWindowId();
+      const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${channelId}`;
+      const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${channelId}&integrity=true&id=${channelId}`);
 
       const popupPayload: TransactionChannelDataType = {
         type: req.method,
@@ -1015,7 +1018,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
           communicationEngine: this.communicationEngine,
           communicationWindowManager: this.communicationManager,
           target: "_blank",
-          features: getPopupFeatures(FEATURES_CONFIRM_WINDOW),
+          // features: getPopupFeatures(FEATURES_CONFIRM_WINDOW),
+          features: getPopupFeatures({ height: 600, width: 400 }),
         },
         instanceId: channelName,
       });
@@ -1043,8 +1047,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<boolean> {
     try {
       const { windowId } = req;
-      const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
-      const finalUrl = new URL(`${config.baseRoute}confirm_message?instanceId=${windowId}&integrity=true&id=${windowId}`);
+      const channelId = windowId || getRandomWindowId();
+      const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${channelId}`;
+      const finalUrl = new URL(`${config.baseRoute}confirm_message?instanceId=${channelId}&integrity=true&id=${channelId}`);
 
       const popupPayload: SignMessageChannelDataType = {
         type: req.method,
@@ -1071,6 +1076,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           communicationEngine: this.communicationEngine,
           communicationWindowManager: this.communicationManager,
           target: "_blank",
+          features: getPopupFeatures({ height: 600, width: 400 }),
         },
         instanceId: channelName,
       });
