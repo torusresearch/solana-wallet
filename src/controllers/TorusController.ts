@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -38,7 +38,9 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
+import { post } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   createEngineStream,
   JRPCEngine,
@@ -64,6 +66,7 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import nacl from "@toruslabs/tweetnacl-js";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
@@ -71,6 +74,7 @@ import cloneDeep from "lodash-es/cloneDeep";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
+import stringify from "safe-stable-stringify";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
@@ -78,13 +82,16 @@ import topupPlugin from "@/plugins/Topup";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
+  CONTROLLER_MODULE_KEY,
+  KeyState,
+  OpenLoginBackendState,
   OpenLoginPopupResponse,
   SignMessageChannelDataType,
   TorusControllerConfig,
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
@@ -164,8 +171,11 @@ export const DEFAULT_STATE = {
   RelayKeyHostMap: {},
 };
 
+export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
+
+  public requireKeyRestore = true;
 
   private tokenInfoController!: TokenInfoController;
 
@@ -1223,6 +1233,110 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return allTransactions;
   }
 
+  async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
+    const { privateKey } = saveState;
+
+    const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
+
+    // stored locally
+    const tempKey = new Keypair().secretKey.slice(32, 64);
+
+    // (ephemeral private key, user public key)
+    const keyState: KeyState = {
+      priv_key: base58.encode(tempKey),
+      pub_key: base58.encode(publicKey), // actual pubkey
+    };
+    try {
+      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
+      const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
+      const stateString = stringify({ publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) });
+      const stateByteArray = Buffer.from(stateString, "utf-8");
+      const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
+
+      const timestamp = Date.now();
+      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") }; // tkey metadata structure
+      const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
+      const signature = nacl.sign.detached(dataHash, secretKey);
+      const signatureString = Buffer.from(signature).toString("hex");
+
+      await post(`${config.openloginStateAPI}/set`, { pub_key: keyState.pub_key, signature: signatureString, set_data: setData });
+    } catch (error) {
+      log.error("Error saving state!", error);
+    }
+  }
+
+  public setRequireKeyRestore(value: boolean) {
+    this.requireKeyRestore = value;
+  }
+
+  async restoreFromBackend() {
+    if (!this.requireKeyRestore) {
+      return;
+    }
+    this.setRequireKeyRestore(false);
+
+    try {
+      const value = window.localStorage?.getItem(EPHERMAL_KEY);
+
+      const keyState: KeyState =
+        typeof value === "string"
+          ? JSON.parse(value)
+          : {
+              priv_key: "",
+              pub_key: "",
+            };
+
+      if (keyState.priv_key && keyState.pub_key) {
+        const pubKey = keyState.pub_key;
+        let res: { state?: string; nonce?: string };
+        try {
+          res = await post(`${config.openloginStateAPI}/get`, { pub_key: pubKey });
+        } catch (e) {
+          log.info(e);
+          throw e;
+        }
+        if (Object.keys(res).length && res.state && res.nonce) {
+          const encryptedState = res.state;
+          const nonce = Buffer.from(res.nonce, "hex");
+          const ephermalPrivateKey = base58.decode(keyState.priv_key);
+
+          const decryptedStateArray = nacl.secretbox.open(Buffer.from(encryptedState, "hex"), nonce, ephermalPrivateKey.slice(0, 32));
+          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
+          const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
+          const decryptedState: OpenLoginBackendState = JSON.parse(decryptedStateString);
+
+          if (!decryptedState.privateKey) {
+            throw new Error("Private key not found in state");
+          }
+          if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+
+          // Restore keyringController only ( no Sync / initPreferenes )
+          const address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+
+          // valid private key needed to refreshJwt,
+          const jwt = this.preferencesController.state.identities[this.selectedAddress]?.jwtToken;
+
+          if (jwt) {
+            const expire = parseJwt(jwt).exp;
+            if (expire < Date.now() / 1000) {
+              await this.refreshJwt();
+            }
+          } else {
+            throw new Error("Previous JWT not found");
+          }
+
+          // This call sync and refresh blockchain state
+          this.setSelectedAccount(address, true);
+        }
+      } else {
+        throw new Error("Invalid or no key in local storage");
+      }
+    } catch (error) {
+      log.error("Error restoring state!", error);
+      this.handleLogout();
+    }
+  }
+
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
     const accounts = await this.requestAccounts(req);
 
@@ -1359,6 +1473,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (!req.params?.privateKey) throw new Error("Invalid Private Key");
     const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
     this.setSelectedAccount(publicKey);
+
+    if (!this.privateKey) throw new Error("Waller Error");
+    this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress });
+
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {
