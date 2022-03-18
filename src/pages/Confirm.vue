@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Connection, LAMPORTS_PER_SOL, SignaturePubkeyPair, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, SignaturePubkeyPair, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import {
   addressSlicer,
   BROADCAST_CHANNELS,
@@ -77,15 +77,10 @@ const estimate = async (conn: Connection, estimateTx: Transaction, signer: strin
   estimationInProgress.value = false;
 };
 
-// TODO: Mainnet not yet support latest rpc spec, temp solution
-// const getFees = async (conn: Connection, messages: Message[]) => {
-//   const feePromises = messages.map((item) => conn.getFeeForMessage(item, "max"));
-//   const fees = await Promise.all(feePromises);
-//   finalTxData.totalNetworkFee = fees.reduce((acc, item) => acc + item.value, 0) / LAMPORTS_PER_SOL;
-// };
-const getFees = async (conn: Connection, messages: Transaction[]) => {
-  const numSigner = messages.reduce((acc, item) => acc + item.signatures.length, 0);
-  finalTxData.totalNetworkFee = (numSigner * 5000) / LAMPORTS_PER_SOL;
+const getFees = async (conn: Connection, messages: Message[]) => {
+  const feePromises = messages.map((item) => conn.getFeeForMessage(item, "max"));
+  const fees = await Promise.all(feePromises);
+  finalTxData.totalNetworkFee = fees.reduce((acc, item) => acc + item.value, 0) / LAMPORTS_PER_SOL;
 };
 
 onMounted(async () => {
@@ -119,8 +114,7 @@ onMounted(async () => {
       const decoded: DecodedDataType[] = [];
       const signer: SignaturePubkeyPair[] = [];
 
-      // const messages: Message[] = [];
-      const messages: Transaction[] = [];
+      const transactionList: Transaction[] = [];
 
       (txData.message as string[]).forEach((msg) => {
         let tx2: Transaction;
@@ -133,9 +127,9 @@ onMounted(async () => {
           decoded.push(decodeInstruction(inst));
         });
 
-        const isGasless = transactionItem.feePayer ? transactionItem.feePayer.toBase58() !== txData.signer : false;
+        const isGasless = tx2.feePayer ? tx2.feePayer.toBase58() !== txData.signer : false;
         // if (!isGasless) messages.push(transactionItem.compileMessage());
-        if (!isGasless) messages.push(transactionItem);
+        if (!isGasless) transactionList.push(tx2);
 
         // check for signer is wallet address
         signer.push(
@@ -145,11 +139,11 @@ onMounted(async () => {
         );
       });
 
-      // compute fee
-      getFees(conn, messages);
+      getFees(
+        conn,
+        transactionList.map((item) => item.compileMessage())
+      );
 
-      signatureNotRequired.value = signer.length === 0;
-      // Could not estimate balance for multiple Transactions
       hasEstimationError.value = "Unable estimate changes";
       decodedInst.value = decoded;
       return;
@@ -161,15 +155,10 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    // Check if wallet signer is required
-    signatureNotRequired.value = tx.value.signatures.filter((signValue) => signValue.publicKey.toBase58() === txData.signer).length === 0;
-    if (signatureNotRequired.value) return;
-
     // estimate balance changes
     estimate(conn, tx.value, txData.signer || "");
     // compute fees
-    // getFees(conn, [tx.value.compileMessage()]);
-    getFees(conn, [tx.value]);
+    getFees(conn, [tx.value.compileMessage()]);
 
     const isGasless = tx.value.feePayer ? tx.value.feePayer.toBase58() !== txData.signer : false;
     finalTxData.isGasless = isGasless;
