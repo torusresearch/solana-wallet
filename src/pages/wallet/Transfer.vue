@@ -374,7 +374,7 @@ watch(transferTo, () => {
 <template>
   <div class="py-2">
     <div class="mt-5 flex flex-row justify-around items-start md:space-x-5 lt-md:flex-col-reverse lt-md:justify-start">
-      <Card class="w-1/2 lt-md:mt-4">
+      <Card class="w-full lt-md:mt-4">
         <form action="#" method="POST" class="w-full">
           <div class="flex flex-col justify-around items-start space-y-9">
             <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
@@ -471,6 +471,6 @@ watch(transferTo, () => {
   @apply dark:bg-app-gray-700;
 }
 .currency-selector {
-  @apply py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+  @apply py-1 px-4 uppercase text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
 }
 </style>
