@@ -216,7 +216,7 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-  if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.restoreFromBackend();
+  if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.torus.restoreFromBackend();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
   if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
