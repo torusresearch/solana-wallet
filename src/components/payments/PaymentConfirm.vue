@@ -66,7 +66,8 @@ const getTotalInSol = () => {
     const solChanges = props.estimatedBalanceChange.find((item) => item.address === ControllerModule.selectedAddress);
     if (solChanges) return Math.abs(solChanges.changes);
   }
-  return new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
+  if (props.token === "SOL") return props.cryptoAmount + props.cryptoTxFee;
+  return props.cryptoTxFee;
 };
 
 const totalCryptoCostString = computed(() => {

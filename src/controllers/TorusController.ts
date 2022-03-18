@@ -520,10 +520,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return 5000 / LAMPORTS_PER_SOL;
   }
 
-  // TODO: Mainnet not yet support latest rpc spec, temp solution
   async getBlockhash() {
-    const resp = await this.connection.getRecentBlockhash("finalized");
-    // const resp = await this.connection.getLatestBlockhash("finalized");
+    const resp = await this.connection.getLatestBlockhash("finalized");
     return resp.blockhash;
   }
 
@@ -619,7 +617,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   // TODO: Try take this function out of toruscontroller
   async getEstimateBalanceChange(connection: Connection, tx: Transaction, signer = this.selectedAddress): Promise<AccountEstimation[]> {
-    // const connection = new Connection(this.networkController.state.providerConfig.rpcTarget);
     try {
       // get writeable accounts from all instruction
       const accounts = tx.instructions.reduce((prev, current) => {
@@ -633,11 +630,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       }, new Map<string, PublicKey>());
 
       log.info(tx);
+      log.info(tx instanceof Transaction);
       // add selected Account incase signer is just fee payer (instruction will not track fee payer)
       accounts.set(signer, new PublicKey(signer));
 
       // Simulate Transaction with Accounts
-      const result = await connection.simulateTransaction(tx, undefined, Array.from(accounts.values()));
+      const result = await connection.simulateTransaction(tx.compileMessage(), undefined, Array.from(accounts.values()));
+      // const result = await connection.simulateTransaction(tx, undefined, Array.from(accounts.values()));
 
       // calculate diff of the token and sol
       return this.calculateChanges(connection, result.value, signer, Array.from(accounts.keys()));
@@ -661,6 +660,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const mintTokenAddress: string[] = [];
     const postTokenDetails: TokenAccount[] = [];
     result.accounts?.forEach((item, idx) => {
+      if (!item) return;
       // there is possibility the account is a mintAccount which is also owned by TOKEN PROGRAM. Check data length to filter out
       if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner)) && item.data[0].length > 128) {
         const tokenDetail = new TokenAccount(accountKeys[idx], {

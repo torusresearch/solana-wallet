@@ -55,7 +55,8 @@ function getSolCost(): number {
     const solChanges = props.estimatedBalanceChange.find((item) => item.symbol === "SOL");
     if (solChanges) return Math.abs(solChanges.changes);
   }
-  return props.cryptoTxFee + props.cryptoAmount;
+  if (props.tokenSymbol === "SOL") return props.cryptoTxFee + props.cryptoAmount;
+  return props.cryptoTxFee;
 }
 function getTokenChanges(): number {
   if (!props.hasEstimationError) {
@@ -103,7 +104,7 @@ const totalCryptoCostString = computed(() => {
   if (isSPLToken()) {
     return `${getTokenChanges()} ${props.tokenSymbol} + ${getSolCost()} SOL`;
   }
-  const totalCost = significantDigits(getSolCost(), false, 2);
+  const totalCost = significantDigits(getSolCost(), false, 6);
   return `${totalCost.toString(10)} ${props.tokenSymbol}`;
 });
 

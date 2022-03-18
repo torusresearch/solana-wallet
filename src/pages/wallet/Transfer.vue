@@ -221,6 +221,8 @@ const onMessageModalClosed = () => {
 
 const closeModal = () => {
   isOpen.value = false;
+  hasEstimationError.value = "";
+  estimatedBalanceChange.value = [];
 };
 
 /**
