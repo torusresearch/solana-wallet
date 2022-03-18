@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import { BroadcastChannel } from "broadcast-channel";
@@ -74,7 +74,12 @@ onMounted(async () => {
     if (txData.type === "sign_all_transactions") {
       const decoded: DecodedDataType[] = [];
       (txData.message as string[]).forEach((msg) => {
-        const tx2 = Transaction.from(Buffer.from(msg, "hex"));
+        let tx2: Transaction;
+        if (txData.messageOnly) {
+          tx2 = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
+        } else {
+          tx2 = Transaction.from(Buffer.from(msg, "hex"));
+        }
         tx2.instructions.forEach((inst) => {
           decoded.push(decodeInstruction(inst));
         });
@@ -83,7 +88,12 @@ onMounted(async () => {
       return;
     }
 
-    tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+    if (txData.messageOnly) {
+      tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
+    } else {
+      tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+    }
+
     const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;

@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -61,6 +61,9 @@ import {
   KeyringController,
   NetworkController,
   PreferencesController,
+  SendTransactionParams,
+  SignAllTransactionParams,
+  SignTransactionParams,
   SolanaToken,
   TokenInfoController,
   TokensTrackerController,
@@ -522,7 +525,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }
 
-  async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
+  async transfer(tx: Transaction, req?: Ihandler<SendTransactionParams>): Promise<string> {
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     try {
       await signedTransaction.result;
@@ -997,7 +1000,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     throw new Error("user denied provider change request");
   }
 
-  async handleTransactionPopup(txId: string, req: Ihandler<{ message: string | string[] | undefined }>): Promise<boolean> {
+  async handleTransactionPopup(
+    txId: string,
+    req: Ihandler<SendTransactionParams | SignTransactionParams | SignAllTransactionParams>
+  ): Promise<boolean> {
     try {
       const { windowId } = req;
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
@@ -1006,6 +1012,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const popupPayload: TransactionChannelDataType = {
         type: req.method,
         message: req.params?.message || "",
+        messageOnly: req.params?.messageOnly || false,
         signer: this.selectedAddress,
         // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
         origin: this.preferencesController.iframeOrigin,
@@ -1204,25 +1211,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return relayPublicKey;
   }
 
+  // Only called in redirect flow
   async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
-    // sign all transaction
-    const allTransactions = req.params?.message?.map((msg) => {
-      let tx = Transaction.from(Buffer.from(msg, "hex"));
-      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
-      return signedMessage;
-    });
-    return allTransactions;
-  }
-
-  async providerSignAllTransaction(req: Ihandler<{ message: string[] | undefined }>) {
-    if (!this.selectedAddress) throw new Error("Not logged in");
-
-    const approved = await this.handleTransactionPopup("", req);
-
-    // throw error on reject
-    if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
-
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
       let tx = Transaction.from(Buffer.from(msg, "hex"));
@@ -1358,11 +1348,49 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
   }
 
-  private async providerSignTransaction(req: JRPCRequest<any>) {
+  private async providerSignAllTransaction(req: Ihandler<SignAllTransactionParams>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+    const message = req.params?.message;
+    if (!message?.length) throw new Error("Empty message from embed");
+
+    const approved = await this.handleTransactionPopup("", req);
+
+    // throw error on reject
+    if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
+    // sign all transaction
+    const allTransactions = req.params?.message?.map((msg) => {
+      if (req.params?.messageOnly) {
+        // fix for inconsistent account serialization
+        const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
+      }
+
+      let tx = Transaction.from(Buffer.from(msg, "hex"));
+      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      return signedMessage;
+    });
+    return allTransactions;
+  }
+
+  private async providerSignTransaction(req: JRPCRequest<SignTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
 
     const message = req.params?.message;
-    if (!message) throw new Error("empty error message");
+    if (!message) throw new Error("Empty message from embed");
+
+    if (req.params?.messageOnly) {
+      const approved = await this.handleTransactionPopup("", req);
+      if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
+      const signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
+
+      return JSON.stringify({
+        publicKey: this.selectedAddress,
+        signature: Buffer.from(signature).toString("hex"),
+      });
+    }
 
     const tx = Transaction.from(Buffer.from(message, "hex"));
 
@@ -1378,16 +1406,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (gaslessHost) {
       signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
     }
+
     return signed_tx;
   }
 
-  private async sendTransaction(req: JRPCRequest<any>) {
+  private async sendTransaction(req: JRPCRequest<SendTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
 
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
-    const tx = Transaction.from(Buffer.from(message, "hex"));
+    let tx: Transaction;
+    if (req.params?.messageOnly) tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
+    else tx = Transaction.from(Buffer.from(message, "hex"));
 
     return this.transfer(tx, req);
   }
