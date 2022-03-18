@@ -26,7 +26,7 @@ const deleteContact = async (contactId: number): Promise<void> => {
 <template>
   <WalletTabs tab="settings">
     <div class="py-2">
-      <div class="mt-5 grid grid-cols-1 gap-5 gt-sm:grid-cols-2 lg:grid-cols-2">
+      <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-2">
         <div>
           <div class="mb-4">
             <Panel :title="t('walletSettings.privacySecurity')" disabled>

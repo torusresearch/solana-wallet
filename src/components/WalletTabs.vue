@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { BroadcastChannel } from "broadcast-channel";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -10,6 +9,7 @@ import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/enums";
+import { logoutWithBC } from "@/utils/helpers";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
@@ -33,14 +33,12 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
 };
 </script>
 
 <template>
-  <div v-if="selectedAddress" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start pb-[50px] md:pb-0">
+  <div v-if="selectedAddress" class="h-screen bg-white dark:bg-app-gray-800 flex flex-col items-start justify-start pb-[56px] md:pb-0">
     <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30 w-full">
       <div class="flex h-16 px-4 header-border">
         <div class="flex-1 flex items-center mr-auto">
@@ -78,7 +76,7 @@ const logout = async () => {
 
     <div class="flex-1 overflow-y-auto w-full py-2">
       <header v-if="props.showHeader">
-        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lt-sm:flex-col lt-sm:items-start">
+        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lt-md:flex-col lt-md:items-start">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
@@ -93,7 +91,9 @@ const logout = async () => {
         </div>
       </main>
     </div>
-    <div class="fixed bottom-0 md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black">
+    <div
+      class="fixed bottom-0 md:hidden w-full h-14 pb-[10px] flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black"
+    >
       <router-link
         v-for="(value, key) in tabs"
         :key="key"

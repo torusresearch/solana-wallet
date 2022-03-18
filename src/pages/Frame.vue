@@ -105,8 +105,14 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
-    ControllerModule.setupCommunication(dappOrigin);
-    showUI.value = true;
+    try {
+      await ControllerModule.restoreFromBackend();
+    } catch (error) {
+      log.error(error);
+    } finally {
+      ControllerModule.setupCommunication(dappOrigin);
+      showUI.value = true;
+    }
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {

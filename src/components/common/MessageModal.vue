@@ -45,7 +45,7 @@ const refDiv = ref(null);
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="relative inline-block gt-sm:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md">
+            <div class="relative inline-block md:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md">
               <DialogTitle
                 as="div"
                 class="bg-white dark:bg-app-gray-700 shadow dark:shadow-dark rounded-md flex justify-center py-8 relative"

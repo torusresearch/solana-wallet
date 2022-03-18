@@ -44,7 +44,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, KeyState, LOCAL_STORAGE_KEY, OpenLoginBackendState, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, parseJwt } from "@/utils/helpers";
+import { delay, isMain, logoutWithBC, parseJwt } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -429,7 +429,7 @@ class ControllerModule extends VuexModule {
     });
 
     this.torus.on("logout", () => {
-      this.logout();
+      logoutWithBC();
     });
     this.setInstanceId(randomId());
 
@@ -497,7 +497,7 @@ class ControllerModule extends VuexModule {
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
     }
-    const initialState = { ...cloneDeep(DEFAULT_STATE), NetworkControllerState: cloneDeep(this.torus.state.NetworkControllerState) };
+    const initialState = { ...cloneDeep(DEFAULT_STATE) };
     this.updateTorusState(initialState);
 
     const { origin } = this.torus;

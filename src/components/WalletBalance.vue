@@ -37,7 +37,7 @@ const updateCurrency = (newCurrency: string) => {
     </div>
     <div class="flex w-full justify-between items-center">
       <div class="amount-container">
-        <span class="mr-2 font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
+        <span class="mr-2 font-bold text-5xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />
       </div>
       <div class="mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">

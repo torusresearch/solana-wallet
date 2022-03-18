@@ -2,7 +2,6 @@
 import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
-import { BroadcastChannel } from "broadcast-channel";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -15,7 +14,7 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
-import { setFallbackImg } from "@/utils/helpers";
+import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -23,9 +22,7 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  bc.postMessage("logout");
-  await ControllerModule.logout();
+  await logoutWithBC();
 };
 
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
@@ -107,7 +104,7 @@ const transferNFT = () => {
       </div>
       <!-- content -->
       <div
-        class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[50px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
+        class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[56px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
       >
         <div class="flex flex-col">
           <div class="flex justify-between px-2 py-4 w-full">
@@ -191,7 +188,7 @@ const transferNFT = () => {
     </main>
     <div
       v-if="selectedAddress && user.verifierId"
-      class="md:hidden w-full h-12 flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black fixed bottom-0"
+      class="md:hidden w-full h-14 pb-[10px] flex flex-row align-center justify-around dark:bg-black bg-white border-t border-black fixed bottom-0"
     >
       <router-link
         v-for="(value, key) in tabs"

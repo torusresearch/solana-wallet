@@ -373,8 +373,8 @@ watch(transferTo, () => {
 
 <template>
   <div class="py-2">
-    <div class="mt-5 flex flex-row justify-around items-start gt-sm:space-x-5 lt-sm:flex-col-reverse lt-sm:justify-start">
-      <Card class="w-1/2 lt-sm:mt-4" :class="[selectedToken.isFungible ? '!w-full' : 'gt-sm:w-1/2 lt-sm:w-full mr-auto']">
+    <div class="mt-5 flex flex-row justify-around items-start md:space-x-5 lt-md:flex-col-reverse lt-md:justify-start">
+      <Card class="w-1/2 lt-md:mt-4">
         <form action="#" method="POST" class="w-full">
           <div class="flex flex-col justify-around items-start space-y-9">
             <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
@@ -426,9 +426,7 @@ watch(transferTo, () => {
           </div>
         </form>
       </Card>
-      <div>
-        <AsyncTokenBalance v-if="selectedToken.isFungible" class="w-full" :selected-token="selectedToken" />
-      </div>
+      <AsyncTokenBalance class="w-full" :selected-token="selectedToken" />
     </div>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
