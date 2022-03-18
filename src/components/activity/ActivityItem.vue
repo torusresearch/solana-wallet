@@ -43,7 +43,7 @@ const amountIsVisible = computed(() => {
   >
     <!-- date -->
     <div class="col-span-8 order-3 pl-9 flex items-center justify-start sm:order-1 sm:col-span-2 sm:border-r sm:pl-0 xl:col-span-1">
-      <div class="text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-sm:ml-3">
+      <div class="text-xxs text-app-text-400 dark:text-app-text-dark-600 lt-md:ml-3">
         {{ dateFormat(new Date(activity.updatedAt || 0), "dS mmm, yyyy") }}
         <br />
         at {{ dateFormat(new Date(activity.updatedAt || 0), "H:MM:ss") }}
