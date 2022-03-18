@@ -219,6 +219,7 @@ export interface EmbedInitParams {
 export type TransactionChannelDataType = {
   type: string;
   message: string | string[];
+  messageOnly?: boolean;
   origin: string;
   signer: string;
   balance: string;
