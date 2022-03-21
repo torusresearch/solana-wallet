@@ -744,6 +744,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   public handleLogout(): void {
     this.emit("logout");
+    this.notifyEmbedLogout();
+  }
+
+  public notifyEmbedLogout(): void {
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.ACCOUNTS_CHANGED,
       params: [],
@@ -1229,15 +1233,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
 
     // stored locally
-    const tempKey = new Keypair().secretKey.slice(32, 64);
+    // const tempKey = new Keypair().secretKey.slice(32, 64);
+    const tempKeyPair = new Keypair(); // .secretKey.slice(32, 64);
+    const tempKey = tempKeyPair.secretKey.slice(32, 64);
 
     // (ephemeral private key, user public key)
     const keyState: KeyState = {
       priv_key: base58.encode(tempKey),
-      pub_key: base58.encode(publicKey), // actual pubkey
+      // pub_key: base58.encode(publicKey), // actual pubkey
+      pub_key: tempKeyPair.publicKey.toBase58(), // actual pubkey
     };
+
     try {
-      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
+      // window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
       const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
       const stateString = stringify({ publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
@@ -1246,10 +1254,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const timestamp = Date.now();
       const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") }; // tkey metadata structure
       const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
-      const signature = nacl.sign.detached(dataHash, secretKey);
+      const signature = nacl.sign.detached(dataHash, tempKeyPair.secretKey);
       const signatureString = Buffer.from(signature).toString("hex");
 
-      await post(`${config.openloginStateAPI}/set`, { pub_key: keyState.pub_key, signature: signatureString, set_data: setData });
+      await post(`${config.openloginStateAPI}/set`, { pub_key: tempKeyPair.publicKey, signature: signatureString, set_data: setData });
+      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
       log.error("Error saving state!", error);
     }
