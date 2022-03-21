@@ -54,6 +54,7 @@ const AsyncTransferTokenSelect = defineAsyncComponent({
 const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
+const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!selectedToken.value.price?.usd);
 
 onMounted(() => {
   const { query } = route;
@@ -400,7 +401,7 @@ watch(transferTo, () => {
                 type="number"
                 @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
               >
-                <div class="flex flex-row items-center justify-around h-full select-none">
+                <div v-if="hasGeckoPrice" class="flex flex-row items-center justify-around h-full select-none">
                   <div
                     class="currency-selector mr-1"
                     :class="[!isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"

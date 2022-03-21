@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
+
+const { t } = useI18n();
 
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 
@@ -15,11 +18,12 @@ const conversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
 });
 
-defineProps<{
+const props = defineProps<{
   splToken: Partial<SolAndSplToken>;
 }>();
 
 const emits = defineEmits(["splClicked"]);
+const hasGeckoPrice = computed(() => props.splToken.symbol === "SOL" || !!props.splToken?.price?.usd);
 
 function splClicked() {
   emits("splClicked");
@@ -42,12 +46,15 @@ function splClicked() {
       </p>
     </div>
     <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">
-      <p>
+      <p v-if="hasGeckoPrice">
         1 {{ splToken?.symbol }} ≈
         {{ !splToken.mintAddress ? conversionRate : (splToken?.price?.[currency === "sol" ? "usd" : currency] || 0).toFixed(3) }}
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
-      <p>
+      <p v-if="!hasGeckoPrice">
+        {{ t("homeToken.noRate") }}
+      </p>
+      <p v-if="hasGeckoPrice">
         ~{{
           !splToken.mintAddress
             ? formattedSOLBalance
