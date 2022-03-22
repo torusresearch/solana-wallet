@@ -305,10 +305,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.lastTokenRefresh;
   }
 
-  getConversionRate() {
-    return this.conversionRate;
-  }
-
   /**
    * Always call init function before using this controller
    */
@@ -358,7 +354,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       // getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
-      getConversionRate: this.getConversionRate.bind(this),
+      getConversionRate: () => this.conversionRate,
       getConnection: this.networkController.getConnection.bind(this),
     });
 
