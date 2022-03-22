@@ -1235,7 +1235,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // stored locally
     // const tempKey = new Keypair().secretKey.slice(32, 64);
     const tempKeyPair = new Keypair(); // .secretKey.slice(32, 64);
-    const tempKey = tempKeyPair.secretKey.slice(32, 64);
+    const tempKey = tempKeyPair.secretKey.slice(0, 32);
 
     // (ephemeral private key, user public key)
     const keyState: KeyState = {
