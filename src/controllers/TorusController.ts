@@ -306,10 +306,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return new Date(Number(this.currencyController.state.conversionDate) * 1000);
   }
 
-  getConversionRate() {
-    return this.conversionRate;
-  }
-
   /**
    * Always call init function before using this controller
    */
