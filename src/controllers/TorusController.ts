@@ -664,7 +664,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController.setSelectedAddress(address);
     if (sync) this.preferencesController.sync(address);
 
-    log.info(this.preferencesController.state);
     // set account in accountTracker
     this.accountTracker.syncAccounts();
     // get state from chain
