@@ -135,6 +135,7 @@ export const DEFAULT_STATE = {
     currentCurrency: "usd",
     nativeCurrency: "sol",
     ticker: "sol",
+    tokenPriceMap: {},
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -228,8 +229,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get conversionRate(): number {
-    if (!this.tokenInfoController.state.tokenPriceMap.solana) return 0;
-    return this.tokenInfoController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
+    if (!this.currencyController.state.tokenPriceMap.solana) return 0;
+    return this.currencyController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 
   get userInfo(): UserInfo {
@@ -302,7 +303,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get lastTokenRefreshDate(): Date {
-    return this.lastTokenRefresh;
+    return new Date(Number(this.currencyController.state.conversionDate) * 1000);
   }
 
   /**
@@ -337,8 +338,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
     });
-    // this.currencyController.updateConversionRate();
-    // this.currencyController.scheduleConversionInterval();
+    this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
+    this.currencyController.scheduleConversionInterval();
+    this.currencyController.updateConversionRate();
 
     // key mgmt
     this.keyringController = new KeyringController({
@@ -430,7 +432,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
-      this.lastTokenRefresh = new Date(); // useful in UI
+      this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
     });
 
     this.keyringController.on("store", (state2) => {
@@ -440,8 +442,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      await this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+      // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -450,6 +452,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
           const tokenTransfer = constructTokenData(
+            this.currencyController.state.tokenPriceMap,
             this.tokenInfoController.state,
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
@@ -661,6 +664,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.preferencesController.setSelectedAddress(address);
     if (sync) this.preferencesController.sync(address);
 
+    log.info(this.preferencesController.state);
     // set account in accountTracker
     this.accountTracker.syncAccounts();
     // get state from chain
@@ -675,7 +679,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
+    // await this.currencyController.updateConversionRate();
     // TODO: store this in prefsController
   }
 
@@ -718,7 +722,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
+    // await this.currencyController.updateConversionRate();
     return this.preferencesController.setSelectedCurrency({
       selectedCurrency: currency,
     });
@@ -733,7 +737,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async refreshUserTokens(): Promise<void> {
-    await this.tokensTracker.updateSolanaTokens();
+    this.currencyController.scheduleConversionInterval();
+    await this.currencyController.updateConversionRate();
+    // await this.tokensTracker.updateSolanaTokens();
   }
 
   setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean; rid?: string }>): void {
@@ -1031,7 +1037,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
-        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
         networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
@@ -1087,7 +1093,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
-        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
         networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
