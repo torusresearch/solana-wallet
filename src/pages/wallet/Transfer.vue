@@ -126,7 +126,7 @@ const tokenAddressVerifier = async (value: string) => {
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
-    if (new PublicKey(data.parsed.info.mint) === mintAddress) {
+    if (new PublicKey(data.parsed.info.mint).equals(mintAddress)) {
       return true;
     }
   }
