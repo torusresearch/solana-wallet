@@ -150,14 +150,15 @@ class ControllerModule extends VuexModule {
         return sum.plus(new BigNumber((curr.balance?.uiAmount ?? 0) * (curr?.price?.[selectedCurrency.toLowerCase()] ?? 0)));
       }, new BigNumber(0))
     );
-    const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    // const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    const pricePerToken = this.conversionRate;
     balance = balance.plus(this.solBalance.times(new BigNumber(pricePerToken)));
     return balance.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString();
   }
 
   // user balance in equivalent selected currency
   get convertedSolBalance(): string {
-    const pricePerToken = this.torusState.CurrencyControllerState.conversionRate;
+    const pricePerToken = this.conversionRate;
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
     const value = this.solBalance.times(new BigNumber(pricePerToken));
     return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString(); // SOL should be 4 decimal places
@@ -215,7 +216,7 @@ class ControllerModule extends VuexModule {
               {
                 ...current,
                 data,
-                price: this.torusState.TokenInfoState.tokenPriceMap[current.mintAddress] || {},
+                price: this.torusState.CurrencyControllerState.tokenPriceMap[current.mintAddress] || {},
               },
             ];
           }

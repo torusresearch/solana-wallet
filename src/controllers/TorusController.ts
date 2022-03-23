@@ -135,6 +135,7 @@ export const DEFAULT_STATE = {
     currentCurrency: "usd",
     nativeCurrency: "sol",
     ticker: "sol",
+    tokenPriceMap: {},
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -146,6 +147,7 @@ export const DEFAULT_STATE = {
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
+    fallback: false,
   },
   TransactionControllerState: {
     transactions: {},
@@ -227,7 +229,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get conversionRate(): number {
-    return this.currencyController.state.conversionRate;
+    if (!this.currencyController.state.tokenPriceMap.solana) return 0;
+    return this.currencyController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 
   get userInfo(): UserInfo {
@@ -300,7 +303,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get lastTokenRefreshDate(): Date {
-    return this.lastTokenRefresh;
+    return new Date(Number(this.currencyController.state.conversionDate) * 1000);
   }
 
   /**
@@ -335,8 +338,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
     });
-    this.currencyController.updateConversionRate();
+    this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
     this.currencyController.scheduleConversionInterval();
+    this.currencyController.updateConversionRate();
 
     // key mgmt
     this.keyringController = new KeyringController({
@@ -351,7 +355,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
-      getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      // getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      getConversionRate: () => this.conversionRate,
       getConnection: this.networkController.getConnection.bind(this),
     });
 
@@ -427,7 +432,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
-      this.lastTokenRefresh = new Date(); // useful in UI
+      this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
     });
 
     this.keyringController.on("store", (state2) => {
@@ -437,8 +442,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      await this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+      // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -447,6 +452,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
           const tokenTransfer = constructTokenData(
+            this.currencyController.state.tokenPriceMap,
             this.tokenInfoController.state,
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
@@ -638,12 +644,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async addAccount(privKey: string, userInfo?: UserInfo, rehydrate?: boolean): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
     if (userInfo) {
-      await this.preferencesController.initPreferences({
-        address,
-        calledFromEmbed: false,
-        userInfo,
-        rehydrate,
-      });
+      // try catch to prevent breaking login flow
+      try {
+        await this.preferencesController.initPreferences({
+          address,
+          calledFromEmbed: false,
+          userInfo,
+          rehydrate,
+        });
+      } catch (e) {
+        log.error(e);
+        await this.preferencesController.backendFallback(address, userInfo);
+      }
     }
     return address;
   }
@@ -666,7 +678,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
+    // await this.currencyController.updateConversionRate();
     // TODO: store this in prefsController
   }
 
@@ -709,7 +721,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
+    // await this.currencyController.updateConversionRate();
     return this.preferencesController.setSelectedCurrency({
       selectedCurrency: currency,
     });
@@ -724,7 +736,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async refreshUserTokens(): Promise<void> {
-    await this.tokensTracker.updateSolanaTokens();
+    this.currencyController.scheduleConversionInterval();
+    await this.currencyController.updateConversionRate();
+    // await this.tokensTracker.updateSolanaTokens();
   }
 
   setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean; rid?: string }>): void {
@@ -1022,7 +1036,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
-        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
         networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
@@ -1078,7 +1092,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
-        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
         networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),

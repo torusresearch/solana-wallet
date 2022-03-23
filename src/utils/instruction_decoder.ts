@@ -327,6 +327,7 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
 };
 
 export const constructTokenData = (
+  tokenPriceMap: { [mintAddress: string]: { [currency: string]: number } },
   infoState: TokenInfoController["state"],
   rawTransaction?: string,
   tokenMap: SolanaToken[] = []
@@ -362,7 +363,7 @@ export const constructTokenData = (
           ? infoState.tokenInfoMap[tokenState.mintAddress]?.logoURI
           : infoState.metaplexMetaMap[tokenState.mintAddress]?.offChainMetaData?.image;
 
-        const price = infoState.tokenPriceMap[tokenState.mintAddress];
+        const price = tokenPriceMap[tokenState.mintAddress];
         return {
           tokenName: symbol,
           amount: decoded.data.amount as number,
