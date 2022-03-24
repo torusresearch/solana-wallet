@@ -745,7 +745,9 @@ class ControllerModule extends VuexModule {
           this.torus.setSelectedAccount(address, true);
         }
       } else {
-        throw new Error("Invalid or no key in local storage");
+        // Fixes sentry logs, too many errors
+        log.warn("Invalid or no key in local storage");
+        this.logout();
       }
     } catch (error) {
       log.error("Error restoring state!", error);
