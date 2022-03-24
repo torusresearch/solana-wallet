@@ -197,7 +197,7 @@ const transferNFT = () => {
         :aria-current="key === 'nfts' ? 'page' : undefined"
         :class="[value.mobHidden ? 'hidden' : 'block']"
       >
-        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === tab ? 'active-border' : '']">
+        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === 'nfts' ? 'active-border' : '']">
           <img
             :src="value.icon"
             alt="link icon"

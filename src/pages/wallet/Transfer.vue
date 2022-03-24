@@ -388,7 +388,7 @@ watch(transferTo, () => {
                 class="w-2/3 flex-auto"
               />
               <div class="w-1/3 flex-auto mt-6">
-                <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
+                <SelectField v-model="transferType" :items="transferTypes" />
               </div>
             </div>
 
