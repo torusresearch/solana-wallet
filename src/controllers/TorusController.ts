@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, Keypair, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -38,7 +38,9 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
+import eccrypto from "@toruslabs/eccrypto";
 import { post } from "@toruslabs/http-helpers";
+// import { post } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
@@ -52,7 +54,7 @@ import {
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
-import { randomId } from "@toruslabs/openlogin-utils";
+import { keccak256, randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -69,7 +71,6 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
-import nacl from "@toruslabs/tweetnacl-js";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
@@ -100,7 +101,7 @@ import { SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
-
+// import { } from "@tkey/storage-layer-torus"
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
@@ -1247,31 +1248,50 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
 
     // stored locally
-    // const tempKey = new Keypair().secretKey.slice(32, 64);
-    const tempKeyPair = new Keypair(); // .secretKey.slice(32, 64);
-    const tempKey = tempKeyPair.secretKey.slice(32, 64);
+    const ecc_privateKey = eccrypto.generatePrivate();
+    const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
 
     // (ephemeral private key, user public key)
     const keyState: KeyState = {
-      priv_key: base58.encode(tempKey),
-      // pub_key: base58.encode(publicKey), // actual pubkey
-      pub_key: tempKeyPair.publicKey.toBase58(), // actual pubkey
+      priv_key: ecc_privateKey.toString("hex"),
+      pub_key: ecc_publicKey.toString("hex"),
     };
 
     try {
-      // window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
-      const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
       const stateString = stringify({ publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) });
       const stateByteArray = Buffer.from(stateString, "utf-8");
-      const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
+      // const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
+      const encryptedState = await eccrypto.encrypt(ecc_publicKey, stateByteArray);
+      const decryptedStateArray = await eccrypto.decrypt(ecc_privateKey, encryptedState);
+      log.info(decryptedStateArray);
 
       const timestamp = Date.now();
-      const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") }; // tkey metadata structure
-      const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
-      const signature = nacl.sign.detached(dataHash, tempKeyPair.secretKey);
-      const signatureString = Buffer.from(signature).toString("hex");
+      const setData = {
+        data: encryptedState,
+        timestamp,
+      };
 
-      await post(`${config.openloginStateAPI}/set`, { pub_key: tempKeyPair.publicKey, signature: signatureString, set_data: setData });
+      const strData = JSON.stringify(setData);
+
+      //  remove "0x"
+      const hash = keccak256(strData).slice(2);
+
+      const signature = await eccrypto.sign(ecc_privateKey, Buffer.from(hash, "hex"));
+
+      // await eccrypto.verify( ecc_publicKey,  )
+      log.info(ecc_publicKey.toString("hex").length);
+      log.info(hash.length);
+      log.info(signature.toString("hex").length);
+
+      await eccrypto.verify(ecc_publicKey, Buffer.from(hash, "hex"), signature);
+      await post(`${config.openloginStateAPI}/set`, {
+        pub_key: ecc_publicKey.toString("hex"),
+        signature: signature.toString("hex"),
+        set_data: setData,
+      });
+
+      log.info(signature.toString("hex"));
+      window.localStorage.setItem("encryptedState", strData);
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
       log.error("Error saving state!", error);
@@ -1301,19 +1321,28 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       if (keyState.priv_key && keyState.pub_key) {
         const pubKey = keyState.pub_key;
-        let res: { state?: string; nonce?: string };
+        let res: { state?: eccrypto.Ecies; nonce?: string };
         try {
           res = await post(`${config.openloginStateAPI}/get`, { pub_key: pubKey });
         } catch (e) {
           log.info(e);
           throw e;
         }
-        if (Object.keys(res).length && res.state && res.nonce) {
-          const encryptedState = res.state;
-          const nonce = Buffer.from(res.nonce, "hex");
-          const ephermalPrivateKey = base58.decode(keyState.priv_key);
 
-          const decryptedStateArray = nacl.secretbox.open(Buffer.from(encryptedState, "hex"), nonce, ephermalPrivateKey.slice(0, 32));
+        if (Object.keys(res).length && res.state) {
+          // const strData = window.localStorage.getItem("encryptedState");
+          // const setData = JSON.parse(strData || "");
+          const setData = res.state;
+
+          const data = {
+            ciphertext: Buffer.from(setData.ciphertext),
+            iv: Buffer.from(setData.iv),
+            mac: Buffer.from(setData.mac),
+            ephemPublicKey: Buffer.from(setData.ephemPublicKey),
+          } as eccrypto.Ecies;
+          const ephermalPrivateKey = Buffer.from(keyState.priv_key, "hex");
+
+          const decryptedStateArray = await eccrypto.decrypt(ephermalPrivateKey, data as eccrypto.Ecies);
           if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
           const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
           const decryptedState: OpenLoginBackendState = JSON.parse(decryptedStateString);
