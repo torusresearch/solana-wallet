@@ -39,8 +39,6 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
-import { post } from "@toruslabs/http-helpers";
-// import { post } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
@@ -54,7 +52,7 @@ import {
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
-import { keccak256, randomId } from "@toruslabs/openlogin-utils";
+import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -101,6 +99,7 @@ import { SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
+import { MetaStorage } from "./MetaStorage";
 // import { } from "@tkey/storage-layer-torus"
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
@@ -178,6 +177,7 @@ export const DEFAULT_STATE = {
 };
 
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
+
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
 
@@ -204,6 +204,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private tokensTracker!: TokensTrackerController;
 
   private engine?: JRPCEngine;
+
+  private metaStorage?: MetaStorage;
 
   private lastTokenRefresh: Date = new Date();
 
@@ -313,6 +315,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
 
+    this.metaStorage = new MetaStorage({ storageName: "wallet", enableLogging: false, serverTimeOffset: 0, hostUrl: config.openloginStateAPI });
     // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
@@ -497,6 +500,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   };
 
   setOrigin(origin: string): void {
+    this.metaStorage?.setStrageName(origin);
     this.preferencesController.setIframeOrigin(origin);
   }
 
@@ -1258,40 +1262,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      const stateString = stringify({ publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) });
-      const stateByteArray = Buffer.from(stateString, "utf-8");
-      // const encryptedState = nacl.secretbox(stateByteArray, nonce, tempKey.slice(0, 32)); // encrypt state with tempKey
-      const encryptedState = await eccrypto.encrypt(ecc_publicKey, stateByteArray);
-      const decryptedStateArray = await eccrypto.decrypt(ecc_privateKey, encryptedState);
-      log.info(decryptedStateArray);
-
-      const timestamp = Date.now();
-      const setData = {
-        data: encryptedState,
-        timestamp,
-      };
-
-      const strData = JSON.stringify(setData);
-
-      //  remove "0x"
-      const hash = keccak256(strData).slice(2);
-
-      const signature = await eccrypto.sign(ecc_privateKey, Buffer.from(hash, "hex"));
-
-      // await eccrypto.verify( ecc_publicKey,  )
-      log.info(ecc_publicKey.toString("hex").length);
-      log.info(hash.length);
-      log.info(signature.toString("hex").length);
-
-      await eccrypto.verify(ecc_publicKey, Buffer.from(hash, "hex"), signature);
-      await post(`${config.openloginStateAPI}/set`, {
-        pub_key: ecc_publicKey.toString("hex"),
-        signature: signature.toString("hex"),
-        set_data: setData,
+      const resp = await this.metaStorage?.setMetadata({
+        input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
+        privKey: ecc_privateKey,
       });
-
-      log.info(signature.toString("hex"));
-      window.localStorage.setItem("encryptedState", strData);
+      log.info(resp);
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
       log.error("Error saving state!", error);
@@ -1320,56 +1295,30 @@ export default class TorusController extends BaseController<TorusControllerConfi
             };
 
       if (keyState.priv_key && keyState.pub_key) {
-        const pubKey = keyState.pub_key;
-        let res: { state?: eccrypto.Ecies; nonce?: string };
-        try {
-          res = await post(`${config.openloginStateAPI}/get`, { pub_key: pubKey });
-        } catch (e) {
-          log.info(e);
-          throw e;
+        const decryptedState: OpenLoginBackendState = await this.metaStorage?.getMetadata(Buffer.from(keyState.priv_key, "hex"));
+
+        if (!decryptedState.privateKey) {
+          throw new Error("Private key not found in state");
+        }
+        if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+
+        // Restore keyringController only ( no Sync / initPreferenes )
+        const address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+
+        // valid private key needed to refreshJwt,
+        const jwt = this.preferencesController.state.identities[this.selectedAddress]?.jwtToken;
+
+        if (jwt) {
+          const expire = parseJwt(jwt).exp;
+          if (expire < Date.now() / 1000) {
+            await this.refreshJwt();
+          }
+        } else {
+          throw new Error("Previous JWT not found");
         }
 
-        if (Object.keys(res).length && res.state) {
-          // const strData = window.localStorage.getItem("encryptedState");
-          // const setData = JSON.parse(strData || "");
-          const setData = res.state;
-
-          const data = {
-            ciphertext: Buffer.from(setData.ciphertext),
-            iv: Buffer.from(setData.iv),
-            mac: Buffer.from(setData.mac),
-            ephemPublicKey: Buffer.from(setData.ephemPublicKey),
-          } as eccrypto.Ecies;
-          const ephermalPrivateKey = Buffer.from(keyState.priv_key, "hex");
-
-          const decryptedStateArray = await eccrypto.decrypt(ephermalPrivateKey, data as eccrypto.Ecies);
-          if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
-          const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
-          const decryptedState: OpenLoginBackendState = JSON.parse(decryptedStateString);
-
-          if (!decryptedState.privateKey) {
-            throw new Error("Private key not found in state");
-          }
-          if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
-
-          // Restore keyringController only ( no Sync / initPreferenes )
-          const address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
-
-          // valid private key needed to refreshJwt,
-          const jwt = this.preferencesController.state.identities[this.selectedAddress]?.jwtToken;
-
-          if (jwt) {
-            const expire = parseJwt(jwt).exp;
-            if (expire < Date.now() / 1000) {
-              await this.refreshJwt();
-            }
-          } else {
-            throw new Error("Previous JWT not found");
-          }
-
-          // This call sync and refresh blockchain state
-          this.setSelectedAccount(address, true);
-        }
+        // This call sync and refresh blockchain state
+        this.setSelectedAccount(address, true);
       } else {
         throw new Error("Invalid or no key in local storage");
       }
