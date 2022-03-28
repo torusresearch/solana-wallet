@@ -100,7 +100,7 @@ import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 import { MetaStorage } from "./MetaStorage";
-// import { } from "@tkey/storage-layer-torus"
+
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 

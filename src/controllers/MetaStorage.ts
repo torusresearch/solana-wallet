@@ -35,7 +35,6 @@ export class MetaStorage {
   }
 
   async setMetadata<T>(params: { input: T; privKey?: Buffer }): Promise<{ message: string }> {
-    // stored locally
     const ecc_privateKey = params.privKey || eccrypto.generatePrivate();
     const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
     const encryptedState = await eccrypto.encrypt(ecc_publicKey, Buffer.from(JSON.stringify(params.input)));
