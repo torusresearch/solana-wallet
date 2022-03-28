@@ -10,15 +10,16 @@ import NftCard from "@/components/home/NftCard.vue";
 import ControllerModule from "@/modules/controllers";
 import { setFallbackImg } from "@/utils/helpers";
 
-const router = useRouter();
 type FETCH_STATE = "idle" | "loading" | "loaded" | "error";
+
+const router = useRouter();
 const nfts = computed<SolanaToken[]>(() => ControllerModule.nonFungibleTokens);
 const exploreNFTS = ref<any[]>([]);
-const exploreNFTFetchState = ref<FETCH_STATE>("idle");
+const exploreNFTSFetchState = ref<FETCH_STATE>("idle");
 onMounted(async () => {
   if (nfts.value.length === 0) {
     try {
-      exploreNFTFetchState.value = "loading";
+      exploreNFTSFetchState.value = "loading";
       const [collections, volume]: any[] = await Promise.all([
         get("https://qzlsklfacc.medianetwork.cloud/get_collections"),
         get("https://qzlsklfacc.medianetwork.cloud/query_volume_all"),
@@ -37,10 +38,10 @@ onMounted(async () => {
           return 0;
         });
       exploreNFTS.value = combinedCollectionObject.slice(0, 10) as any;
-      exploreNFTFetchState.value = "loaded";
+      exploreNFTSFetchState.value = "loaded";
     } catch (error) {
       log.error("Could not fetch example NFTs");
-      exploreNFTFetchState.value = "error";
+      exploreNFTSFetchState.value = "error";
       exploreNFTS.value = [];
     }
   }
@@ -54,11 +55,11 @@ const navigateNFT = (mintAddress: string) => {
 function getNftFetchMessage(state: FETCH_STATE): string {
   switch (state) {
     case "error":
-      return "Failed to load popular NFT projects, please refresh/try again later.";
-    case "loading":
-      return "Loading popular NFT projects, please wait.";
+      return "Failed to load popular NFT projects, please try again later.";
     case "loaded":
-      return "You might be keen to check out some of the popular NFT projects:";
+      return "You might be keen to check out some of the popular NFT projects";
+    case "loading":
+      return "Loading popular NFT projects";
     default:
       return "";
   }
@@ -68,7 +69,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
   <div class="flex flex-col w-full py-2">
     <span class="text-app-text-500">You have {{ nfts.length }} NFTs</span>
     <div v-if="nfts.length === 0" class="w-full shadow dark:shadow-dark bg-white dark:bg-app-gray-700 rounded-md mt-10 p-12 pt-8">
-      <span class="text-app-text-500 dark:text-app-text-dark-400 text-center inline-block">{{ getNftFetchMessage(exploreNFTFetchState) }}</span>
+      <span class="text-app-text-500 dark:text-app-text-dark-400 text-center inline-block">{{ getNftFetchMessage(exploreNFTSFetchState) }}</span>
       <div v-if="exploreNFTS.length" class="flex flex-wrap justify-center mt-12">
         <div v-for="collection in exploreNFTS" :key="collection.url" class="flex flex-col items-center m-4 w-48">
           <img
