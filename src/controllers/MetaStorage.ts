@@ -26,18 +26,17 @@ export class MetaStorage {
     // localstorage ?
     // assocDapp
     // metadata
-    // this.storageLayerName;
   }
 
-  setStrageName(storageName: string) {
+  setStorageName(storageName: string) {
     this.storageName = storageName;
     return storageName;
   }
 
   async setMetadata<T>(params: { input: T; privKey?: Buffer }): Promise<{ message: string }> {
-    const ecc_privateKey = params.privKey || eccrypto.generatePrivate();
-    const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
-    const encryptedState = await eccrypto.encrypt(ecc_publicKey, Buffer.from(JSON.stringify(params.input)));
+    const eccPrivateKey = params.privKey || eccrypto.generatePrivate();
+    const eccPublicKey = eccrypto.getPublic(eccPrivateKey);
+    const encryptedState = await eccrypto.encrypt(eccPublicKey, Buffer.from(JSON.stringify(params.input)));
 
     const setData = {
       data: encryptedState,
@@ -46,15 +45,15 @@ export class MetaStorage {
 
     const strData = JSON.stringify(setData);
     const hash = keccak256(strData).slice(2);
-    const sign = await eccrypto.sign(ecc_privateKey, Buffer.from(hash, "hex"));
+    const sign = await eccrypto.sign(eccPrivateKey, Buffer.from(hash, "hex"));
 
-    return this.writeData({ pub_key: ecc_publicKey.toString("hex"), set_data: setData, signature: sign.toString("hex") });
+    return this.writeData({ pub_key: eccPublicKey.toString("hex"), set_data: setData, signature: sign.toString("hex") });
   }
 
   async getMetadata(privKey: Buffer) {
-    const ecc_privateKey = privKey;
-    const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
-    const { state } = await this.readData(ecc_publicKey.toString("hex"));
+    const eccPrivateKey = privKey;
+    const eccPublicKey = eccrypto.getPublic(eccPrivateKey);
+    const { state } = await this.readData(eccPublicKey.toString("hex"));
 
     const data = {
       ciphertext: Buffer.from(state.ciphertext),
@@ -63,7 +62,7 @@ export class MetaStorage {
       ephemPublicKey: Buffer.from(state.ephemPublicKey),
     } as eccrypto.Ecies;
 
-    const decryptedStateArray = await eccrypto.decrypt(ecc_privateKey, data as eccrypto.Ecies);
+    const decryptedStateArray = await eccrypto.decrypt(eccPrivateKey, data as eccrypto.Ecies);
     if (decryptedStateArray === null) throw new Error("Couldn't decrypt state from backend");
     const decryptedStateString = Buffer.from(decryptedStateArray).toString("utf-8");
     return JSON.parse(decryptedStateString);
