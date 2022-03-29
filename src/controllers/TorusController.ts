@@ -1342,7 +1342,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
           this.setSelectedAccount(address, true);
         }
       } else {
-        throw new Error("Invalid or no key in local storage");
+        log.warn("Invalid or no key in local storage");
+        this.handleLogout();
       }
     } catch (error) {
       log.error("Error restoring state!", error);
