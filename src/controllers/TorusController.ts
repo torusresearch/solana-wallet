@@ -500,7 +500,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   };
 
   setOrigin(origin: string): void {
-    this.metaStorage?.setStrageName(origin);
+    this.metaStorage?.setStorageName(origin);
     this.preferencesController.setIframeOrigin(origin);
   }
 
