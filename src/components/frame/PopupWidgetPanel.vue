@@ -13,6 +13,7 @@ import { useI18n } from "vue-i18n";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
+import solicon from "@/assets/solana-logo-light.svg";
 import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
@@ -65,7 +66,7 @@ const refDiv = ref(null);
                 <div class="flex text-xs text-app-text-500 dark:text-app-text-dark-500">
                   <div class="rounded-full border-2 border-app-gray-400">
                     <div class="rounded-full w-8 h-8 overflow-hidden border-2 border-white dark:border-app-gray-800">
-                      <img :src="userInfo.profileImage" alt="" srcset="" />
+                      <img class="w-8 h-8" :src="userInfo.profileImage || solicon" alt="" srcset="" />
                     </div>
                   </div>
                   <div class="ml-2">

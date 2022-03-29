@@ -1191,7 +1191,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // Embed login might have selectedAddress restored from storage.
       // Need to clear preference selectedAddress on Login
-      this.preferencesController.setSelectedAddress("");
+      this.preferencesController.update({ identities: {}, selectedAddress: "" });
 
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
@@ -1503,6 +1503,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async loginWithPrivateKey(req: Ihandler<LoginWithPrivateKeyParams>): Promise<{ success: boolean }> {
     if (!req.params?.privateKey) throw new Error("Invalid Private Key");
+    this.preferencesController.update({ identities: {}, selectedAddress: "" });
     const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
     this.setSelectedAccount(publicKey);
 
