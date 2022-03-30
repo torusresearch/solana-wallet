@@ -58,7 +58,7 @@ const getWalletBalance = (address: string): string => {
 <template>
   <div>
     <div class="flex items-center p-4">
-      <img class="rounded-full w-10 mr-2" :src="user.profileImage || solicon" alt="img" />
+      <img class="rounded-full w-10 mr-2" :src="user.profileImage || solicon" alt="" />
       <div class="font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
     </div>
     <div class="px-3 pb-3">
