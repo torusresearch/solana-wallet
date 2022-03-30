@@ -127,7 +127,7 @@ onMounted(() => {
         </div>
         <div class="grid grid-cols-3 gap-4">
           <div class="col-span-3 md:col-span-2">
-            <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
+            <TextField v-model="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("walletTopUp.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
               {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }}

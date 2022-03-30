@@ -148,14 +148,14 @@ const onDelete = (contactId: number) => {
     <form @submit.prevent="onSave">
       <div class="mb-4 grid grid-cols-3 gap-2">
         <div class="col-span-3 sm:col-span-2">
-          <TextField v-model.lazy="newContactState.name" :errors="$v.name.$errors" :placeholder="t('walletSettings.enterContact')" />
+          <TextField v-model="newContactState.name" :errors="$v.name.$errors" :placeholder="t('walletSettings.enterContact')" />
         </div>
         <div class="col-span-3 sm:col-span-1">
           <SelectField v-model="newContactState.transferType" :items="transferTypes" />
         </div>
       </div>
       <div class="mb-4">
-        <TextField v-model.lazy="newContactState.address" :errors="$v.address.$errors" :placeholder="t('walletSettings.enterSOL')" />
+        <TextField v-model="newContactState.address" :errors="$v.address.$errors" :placeholder="t('walletSettings.enterSOL')" />
       </div>
       <div>
         <Button class="ml-auto" variant="tertiary" type="submit">{{ t("walletSettings.addContact") }}</Button>
