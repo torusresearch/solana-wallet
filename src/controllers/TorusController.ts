@@ -4,6 +4,7 @@
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
+import { TorusStorageLayer } from "@tkey/storage-layer-torus";
 import {
   BaseConfig,
   BaseController,
@@ -64,12 +65,14 @@ import {
   SendTransactionParams,
   SignAllTransactionParams,
   SignTransactionParams,
+  SolanaCurrencyControllerConfig,
   SolanaToken,
   TokenInfoController,
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
+import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
 import cloneDeep from "lodash-es/cloneDeep";
@@ -99,13 +102,16 @@ import { SolAndSplToken } from "@/utils/interfaces";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
-import { MetaStorage } from "./MetaStorage";
 
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
 export const DEFAULT_CONFIG = {
-  CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
+  CurrencyControllerConfig: {
+    api: config.api,
+    pollInterval: 600_000,
+    supportedCurrencies: config.supportedCurrencies,
+  } as SolanaCurrencyControllerConfig,
   NetworkControllerConfig: {
     providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
   },
@@ -205,7 +211,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private engine?: JRPCEngine;
 
-  private metaStorage?: MetaStorage;
+  private storageLayer?: TorusStorageLayer;
 
   private lastTokenRefresh: Date = new Date();
 
@@ -315,7 +321,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
 
-    this.metaStorage = new MetaStorage({ storageName: "wallet", enableLogging: false, serverTimeOffset: 0, hostUrl: config.openloginStateAPI });
+    this.storageLayer = new TorusStorageLayer({ hostUrl: config.openloginStateAPI });
+    // new MetaStorage({ storageName: "wallet", enableLogging: false, serverTimeOffset: 0, hostUrl: config.openloginStateAPI });
     // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
@@ -500,7 +507,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   };
 
   setOrigin(origin: string): void {
-    this.metaStorage?.setStorageName(origin);
+    // this.storageLayer?.setStorageName(origin);
     this.preferencesController.setIframeOrigin(origin);
   }
 
@@ -1262,9 +1269,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      const resp = await this.metaStorage?.setMetadata({
+      const resp = await this.storageLayer?.setMetadata({
         input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
-        privKey: ecc_privateKey,
+        privKey: new BN(ecc_privateKey),
       });
       log.info(resp);
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
@@ -1295,7 +1302,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
             };
 
       if (keyState.priv_key && keyState.pub_key) {
-        const decryptedState: OpenLoginBackendState = await this.metaStorage?.getMetadata(Buffer.from(keyState.priv_key, "hex"));
+        const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
+        log.info(metadata);
+
+        const decryptedState = metadata as OpenLoginBackendState;
 
         if (!decryptedState.privateKey) {
           throw new Error("Private key not found in state");
