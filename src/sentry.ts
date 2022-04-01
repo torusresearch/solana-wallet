@@ -21,7 +21,7 @@ export function installSentry(Vue: App) {
     environment: process.env.VUE_APP_MODE,
     release: `solana-wallet@${process.env.VUE_APP_SOLANA_BUILD_VERSION}`,
     autoSessionTracking: true,
-    integrations: [new Integrations.Breadcrumbs({ console: false })],
+    integrations: [new Integrations.Breadcrumbs({ console: true })],
     sampleRate: getSampleRate(),
     normalizeDepth: 5,
     ignoreErrors: [
