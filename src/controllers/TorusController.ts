@@ -1330,7 +1330,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
       } else {
-        throw new Error("Invalid or no key in local storage");
+        log.warn("Invalid or no key in local storage");
+        this.handleLogout();
       }
     } catch (error) {
       log.error("Error restoring state!", error);
@@ -1443,14 +1444,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
     end();
   }
 
+  private fastLogin() {
+    this.preferencesController.storeUserLogin({
+      verifier: this.userInfo.verifier,
+      verifierId: this.userInfo.verifierId,
+      address: this.selectedAddress,
+      options: {
+        calledFromEmbed: true,
+        rehydrate: false,
+      },
+    });
+
+    return this.selectedAddress;
+  }
+
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;
       log.info(currentLoginProvider);
       if (requestedLoginProvider) {
-        if (requestedLoginProvider === currentLoginProvider && this.selectedAddress) {
-          resolve([this.selectedAddress]);
+        if (requestedLoginProvider === currentLoginProvider && this.hasSelectedPrivateKey) {
+          const address = this.fastLogin();
+          resolve([address]);
         } else {
           // To login with the requested provider
           // On Embed, we have a window waiting... we need to tell it to login
@@ -1471,8 +1487,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
             else resolve([address]);
           });
         }
-      } else if (this.hasSelectedPrivateKey) resolve([this.selectedAddress]);
-      else {
+      } else if (this.hasSelectedPrivateKey) {
+        const address = this.fastLogin();
+        resolve([address]);
+      } else {
         // We show the modal to login
         this.embedController.update({
           loginInProgress: true,

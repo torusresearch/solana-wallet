@@ -30,13 +30,19 @@ export function setupI18n(locale = LOCALE_EN) {
   return i18n;
 }
 
-export async function loadLocaleMessages(i18n: I18n, locale: string) {
-  // load locale messages with dynamic import
-  const messages = await import(/* webpackChunkName: "locale-[request]" */ `./i18n/${languageMap[locale]}.json`);
-
-  // set locale and locale message
-  i18n.global.setLocaleMessage(locale, messages.default);
-
+export async function loadLocaleMessages(i18n: I18n, locale: any) {
+  let lang = locale;
+  if (!languageMap[lang]) {
+    lang = "en";
+  }
+  try {
+    // load locale messages with dynamic import
+    const messages = await import(/* webpackChunkName: "locale-[request]" */ `./i18n/${languageMap[lang]}.json`);
+    // set locale and locale message
+    i18n.global.setLocaleMessage(lang, messages.default);
+  } catch (e) {
+    log.error(`REQUESTED UNKNOWN LOCALE ${lang}: ${JSON.stringify(e)}`);
+  }
   return nextTick();
 }
 
@@ -45,7 +51,6 @@ export const setLocale = async (i18n: I18n, lang: string) => {
 
   // if unknown locale is requested, default to en.
   if (!languageMap[lang]) {
-    log.error(`REQUESTED UNKNOWN LOCALE ${lang}`);
     finalLang = "en";
   }
 
