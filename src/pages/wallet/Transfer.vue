@@ -103,7 +103,7 @@ async function escrowAccountVerifier(): Promise<boolean> {
   if (transferType.value.value === "sns") {
     return !(await ControllerModule.torus.isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
   }
-  return false;
+  return true;
 }
 const tokenAddressVerifier = async (value: string) => {
   if (!selectedToken?.value?.mintAddress) {
