@@ -3,23 +3,16 @@ import { keccak256 } from "@toruslabs/openlogin-utils";
 import BN from "bn.js";
 import stringify from "json-stable-stringify";
 
-import { getPubKeyECC, getPubKeyPoint, ONE_KEY_DELETE_NONCE, ONE_KEY_NAMESPACE, toPrivKeyEC, toPrivKeyECC } from "./base";
-import {
-  EncryptedMessage,
-  IServiceProvider,
-  IStorageLayer,
-  StringifiedType,
-  TorusStorageLayerAPIParams,
-  TorusStorageLayerArgs,
-} from "./baseTypes/commonTypes";
-import { decrypt, ecCurve, encrypt, KEY_NOT_FOUND, stripHexPrefix } from "./utils";
+import { getPubKeyECC, getPubKeyPoint, toPrivKeyEC, toPrivKeyECC } from "./base";
+import { EncryptedMessage, IServiceProvider, StringifiedType, TorusStorageLayerAPIParams } from "./baseTypes/commonTypes";
+import { decrypt, encrypt, KEY_NOT_FOUND } from "./utils";
 
-function signDataWithPrivKey(data: { timestamp: number }, privKey: BN): string {
-  const sig = ecCurve.sign(stripHexPrefix(keccak256(stringify(data))), toPrivKeyECC(privKey), "utf-8");
-  return sig.toDER("hex");
-}
+// function signDataWithPrivKey(data: { timestamp: number }, privKey: BN): string {
+//   const sig = ecCurve.sign(stripHexPrefix(keccak256(stringify(data))), toPrivKeyECC(privKey), "utf-8");
+//   return sig.toDER("hex");
+// }
 
-class TorusStorageLayer implements IStorageLayer {
+class TorusStorageLayer {
   enableLogging: boolean;
 
   hostUrl: string;
@@ -28,12 +21,7 @@ class TorusStorageLayer implements IStorageLayer {
 
   serverTimeOffset: number;
 
-  constructor({
-    enableLogging = false,
-    hostUrl = "http://localhost:5051",
-    serverTimeOffset = 0,
-    storageLayerName = "TorusStorageLayer",
-  }: TorusStorageLayerArgs) {
+  constructor({ enableLogging = false, hostUrl = "http://localhost:5051", serverTimeOffset = 0, storageLayerName = "TorusStorageLayer" }) {
     this.enableLogging = enableLogging;
     this.hostUrl = hostUrl;
     this.storageLayerName = storageLayerName;
@@ -45,13 +33,6 @@ class TorusStorageLayer implements IStorageLayer {
   // }
 
   static async serializeMetadataParamsInput(el: unknown, serviceProvider?: IServiceProvider, privKey?: BN): Promise<unknown> {
-    if (typeof el === "object") {
-      // Allow using of special message as command, in which case, do not encrypt
-      const obj = el as Record<string, unknown>;
-      const isCommandMessage = obj.message === ONE_KEY_DELETE_NONCE;
-      if (isCommandMessage) return obj.message;
-    }
-
     // General case, encrypt message
     const bufferMetadata = Buffer.from(stringify(el));
     let encryptedDetails: EncryptedMessage;
@@ -149,19 +130,12 @@ class TorusStorageLayer implements IStorageLayer {
     let sig: string;
     let pubX: string;
     let pubY: string;
-    let namespace = this.storageLayerName;
+    const namespace = this.storageLayerName;
 
     const setTKeyStore = {
       data: message,
       timestamp: new BN((this.serverTimeOffset + Date.now()) / 1000).toString(16),
     };
-
-    // Overwrite bulk_set to allow deleting nonce v2 together with creating tKey.
-    // This is a workaround, a better solution is allow upstream API to set tableName/namespace of metadata params
-    if (message === ONE_KEY_DELETE_NONCE) {
-      namespace = ONE_KEY_NAMESPACE;
-      setTKeyStore.data = "<deleted>";
-    }
 
     const hash = keccak256(stringify(setTKeyStore)).slice(2);
     if (privKey) {
@@ -183,47 +157,6 @@ class TorusStorageLayer implements IStorageLayer {
       signature: sig,
       namespace,
     };
-  }
-
-  async acquireWriteLock(params: { serviceProvider?: IServiceProvider; privKey: BN }): Promise<{ status: number; id?: string }> {
-    const { serviceProvider, privKey } = params;
-    const data = {
-      timestamp: Math.floor((this.serverTimeOffset + Date.now()) / 1000),
-    };
-
-    let signature: string;
-    if (serviceProvider) {
-      signature = serviceProvider.sign(stripHexPrefix(keccak256(stringify(data))));
-    } else {
-      signature = signDataWithPrivKey(data, privKey);
-    }
-    const metadataParams = {
-      key: toPrivKeyEC(privKey).getPublic("hex"),
-      data,
-      signature,
-    };
-    return post<{ status: number; id?: string }>(`${this.hostUrl}/acquireLock`, metadataParams);
-  }
-
-  async releaseWriteLock(params: { id: string; serviceProvider?: IServiceProvider; privKey: BN }): Promise<{ status: number }> {
-    const { serviceProvider, privKey, id } = params;
-    const data = {
-      timestamp: Math.floor((this.serverTimeOffset + Date.now()) / 1000),
-    };
-
-    let signature: string;
-    if (serviceProvider) {
-      signature = serviceProvider.sign(stripHexPrefix(keccak256(stringify(data))));
-    } else {
-      signature = signDataWithPrivKey(data, privKey);
-    }
-    const metadataParams = {
-      key: toPrivKeyEC(privKey).getPublic("hex"),
-      data,
-      signature,
-      id,
-    };
-    return post<{ status: number; id?: string }>(`${this.hostUrl}/releaseLock`, metadataParams);
   }
 
   toJSON(): StringifiedType {

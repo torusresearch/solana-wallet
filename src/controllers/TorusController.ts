@@ -1269,11 +1269,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       // save encrypted ed25519
-      const resp = await this.storageLayer?.setMetadata({
+      await this.storageLayer?.setMetadata({
         input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
         privKey: new BN(ecc_privateKey),
       });
-      log.info(resp);
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
       log.error("Error saving state!", error);
