@@ -1,6 +1,7 @@
 /* eslint-disable class-methods-use-this */
+import { NameRegistryState } from "@bonfida/spl-name-service";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
   addressSlicer,
@@ -321,8 +322,8 @@ class ControllerModule extends VuexModule {
     }
     let data;
     try {
-      data = await this.torus.getSNSAccount(type, filtered_address);
-      return data ? data.owner.toBase58() : null;
+      data = (await this.torus.getSNSAccount(type, filtered_address)) as { registry: NameRegistryState; nftOwner: PublicKey | undefined };
+      return data?.nftOwner?.toBase58() || data?.registry.owner.toBase58() || null;
     } catch (e) {
       return null;
     }

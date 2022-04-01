@@ -1,8 +1,13 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@bonfida/spl-name-service";
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -75,6 +80,7 @@ import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
 import cloneDeep from "lodash-es/cloneDeep";
+import memoize from "lodash-es/memoize";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -515,7 +521,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return { inputDomainKey, hashedInputName };
   }
 
-  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null> {
+  async getSNSAccount(
+    type: string,
+    address: string
+  ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
     const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns":
@@ -579,17 +588,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const decimals = selectedToken.balance?.decimals || 0;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
-    const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
+    const sourceTokenAccount = await getAssociatedTokenAddress(mintAccount, signer, false);
     const receiverAccount = new PublicKey(receiver);
 
     let associatedTokenAccount = receiverAccount;
     try {
-      associatedTokenAccount = await Token.getAssociatedTokenAddress(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
-        new PublicKey(tokenMintAddress),
-        receiverAccount
-      );
+      associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiverAccount, false);
     } catch (e) {
       log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
     }
@@ -597,25 +601,22 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
     if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-      const newAccount = await Token.createAssociatedTokenAccountInstruction(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
-        new PublicKey(tokenMintAddress),
+      const newAccount = await createAssociatedTokenAccountInstruction(
+        new PublicKey(this.selectedAddress),
         associatedTokenAccount,
-        receiverAccount,
-        new PublicKey(this.selectedAddress)
+        new PublicKey(this.selectedAddress),
+        new PublicKey(tokenMintAddress)
       );
       transaction.add(newAccount);
     }
-    const transferInstructions = Token.createTransferCheckedInstruction(
-      TOKEN_PROGRAM_ID,
+    const transferInstructions = createTransferCheckedInstruction(
       sourceTokenAccount,
       mintAccount,
       associatedTokenAccount,
       signer,
-      [],
       amount,
-      decimals
+      decimals,
+      []
     );
     transaction.add(transferInstructions);
 
@@ -1592,4 +1593,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }
+
+  isOwnerEscrow = memoize(async (domainOwner: string): Promise<boolean> => {
+    const NAME_AUCTIONING = new PublicKey("jCebN34bUfdeUYJT13J1yG16XWQpt5PDx6Mse9GUqhR");
+    const NAME_OFFERS_ID = new PublicKey("85iDfUvr3HJyLM2zcq5BXSiDvUWfw6cSE1FfNBo8Ap29");
+    const accountInfo = await this.connection.getAccountInfo(new PublicKey(domainOwner));
+    return !!accountInfo?.owner.equals(NAME_OFFERS_ID) || !!accountInfo?.owner.equals(NAME_AUCTIONING);
+  });
 }
