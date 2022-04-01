@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { significantDigits } from "@toruslabs/base-controllers";
-import BigNumber from "bignumber.js";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -44,8 +43,8 @@ function splClicked() {
         <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken?.iconURL" alt="TOKEN Logo" />
         <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p></span
       >
-      <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
-        ~ {{ significantDigits(new BigNumber(splToken.balance?.uiAmountString || "0"), false, 4) }} {{ splToken?.symbol }}
+      <p class="font-medium text-xs leading-3 text-right text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
+        ~ {{ significantDigits(splToken.balance?.uiAmount || 0, false, 4) }} {{ splToken?.symbol }}
       </p>
     </div>
     <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">
