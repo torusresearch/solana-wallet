@@ -10,6 +10,7 @@ import BigNumber from "bignumber.js";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
+import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
@@ -57,7 +58,7 @@ const getWalletBalance = (address: string): string => {
 <template>
   <div>
     <div class="flex items-center p-4">
-      <img class="rounded-full w-10 mr-2" :src="user.profileImage" alt="" />
+      <img class="rounded-full w-10 mr-2" :src="user.profileImage || solicon" alt="" />
       <div class="font-bold text-base text-app-text-600 dark:text-app-text-dark-500">{{ user.name }}'s {{ t("accountMenu.account") }}</div>
     </div>
     <div class="px-3 pb-3">
