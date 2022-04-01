@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { significantDigits } from "@toruslabs/base-controllers";
+import BigNumber from "bignumber.js";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -32,6 +34,7 @@ function splClicked() {
 
 <template>
   <div
+    v-if="splToken"
     class="shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
     @click="splClicked"
     @keydown="splClicked"
@@ -42,7 +45,7 @@ function splClicked() {
         <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p></span
       >
       <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
-        ~ {{ (+(splToken?.balance?.uiAmountString ?? "0"))?.toFixed(3) }} {{ splToken?.symbol }}
+        ~ {{ significantDigits(new BigNumber(splToken.balance?.uiAmountString || "0"), false, 4) }} {{ splToken?.symbol }}
       </p>
     </div>
     <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">

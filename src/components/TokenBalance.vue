@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { significantDigits } from "@toruslabs/base-controllers";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -26,8 +27,8 @@ const setConversionRate = async () => {
 };
 
 const formattedBalance = computed(() => {
-  if (token.value === "SOL") return ControllerModule.solBalance.toFixed(4);
-  return Number(props.selectedToken?.balance?.uiAmount).toFixed(2);
+  if (token.value === "SOL") return significantDigits(ControllerModule.solBalance, false, 4);
+  return significantDigits(props.selectedToken?.balance?.uiAmount || 0, false, 4);
 });
 watch(
   () => props.selectedToken,
