@@ -322,7 +322,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     log.info(_config, _state, "restoring config & state");
 
     this.storageLayer = new TorusStorageLayer({ hostUrl: config.openloginStateAPI });
-    // new MetaStorage({ storageName: "wallet", enableLogging: false, serverTimeOffset: 0, hostUrl: config.openloginStateAPI });
     // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
@@ -507,7 +506,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   };
 
   setOrigin(origin: string): void {
-    // this.storageLayer?.setStorageName(origin);
     this.preferencesController.setIframeOrigin(origin);
   }
 
