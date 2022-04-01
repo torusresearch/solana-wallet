@@ -4,7 +4,7 @@ import BN from "bn.js";
 import stringify from "json-stable-stringify";
 
 import { getPubKeyECC, getPubKeyPoint, toPrivKeyEC, toPrivKeyECC } from "./base";
-import { EncryptedMessage, IServiceProvider, StringifiedType, TorusStorageLayerAPIParams } from "./baseTypes/commonTypes";
+import { EncryptedMessage, StringifiedType, TorusStorageLayerAPIParams } from "./baseTypes/commonTypes";
 import { decrypt, encrypt, KEY_NOT_FOUND } from "./utils";
 
 // function signDataWithPrivKey(data: { timestamp: number }, privKey: BN): string {
@@ -32,14 +32,12 @@ class TorusStorageLayer {
   //   throw new Error("Method not implemented.");
   // }
 
-  static async serializeMetadataParamsInput(el: unknown, serviceProvider?: IServiceProvider, privKey?: BN): Promise<unknown> {
+  static async serializeMetadataParamsInput(el: unknown, privKey: BN): Promise<unknown> {
     // General case, encrypt message
     const bufferMetadata = Buffer.from(stringify(el));
     let encryptedDetails: EncryptedMessage;
     if (privKey) {
       encryptedDetails = await encrypt(getPubKeyECC(privKey), bufferMetadata);
-    } else if (serviceProvider) {
-      encryptedDetails = await serviceProvider.encrypt(bufferMetadata);
     } else {
       throw new Error("Invalid params");
     }
@@ -57,9 +55,9 @@ class TorusStorageLayer {
    *  Get metadata for a key
    * @param privKey - If not provided, it will use service provider's share for decryption
    */
-  async getMetadata<T>(params: { serviceProvider?: IServiceProvider; privKey?: BN }): Promise<T> {
-    const { serviceProvider, privKey } = params;
-    const keyDetails = this.generateMetadataParams({}, serviceProvider, privKey);
+  async getMetadata<T>(params: { privKey: BN }): Promise<T> {
+    const { privKey } = params;
+    const keyDetails = this.generateMetadataParams({}, privKey);
     const metadataResponse = await post<{ message: string }>(`${this.hostUrl}/get`, keyDetails);
     // returns empty object if object
     if (metadataResponse.message === "") {
@@ -70,8 +68,6 @@ class TorusStorageLayer {
     let decrypted: Buffer;
     if (privKey) {
       decrypted = await decrypt(toPrivKeyECC(privKey), encryptedMessage);
-    } else if (serviceProvider) {
-      decrypted = await serviceProvider.decrypt(encryptedMessage);
     } else {
       throw new Error("Invalid Params");
     }
@@ -84,27 +80,21 @@ class TorusStorageLayer {
    * @param input - data to post
    * @param privKey - If not provided, it will use service provider's share for encryption
    */
-  async setMetadata<T>(params: { input: T; serviceProvider?: IServiceProvider; privKey?: BN }): Promise<{ message: string }> {
-    const { serviceProvider, privKey, input } = params;
+  async setMetadata<T>(params: { input: T; privKey: BN }): Promise<{ message: string }> {
+    const { privKey, input } = params;
     const metadataParams = this.generateMetadataParams(
-      await TorusStorageLayer.serializeMetadataParamsInput(input, serviceProvider, privKey),
-      serviceProvider,
+      await TorusStorageLayer.serializeMetadataParamsInput(input, privKey),
+
       privKey
     );
     return post<{ message: string }>(`${this.hostUrl}/set`, metadataParams);
   }
 
-  async setMetadataStream<T>(params: { input: Array<T>; serviceProvider?: IServiceProvider; privKey?: Array<BN> }): Promise<{ message: string }> {
-    const { serviceProvider, privKey, input } = params;
+  async setMetadataStream<T>(params: { input: Array<T>; privKey: Array<BN> }): Promise<{ message: string }> {
+    const { privKey, input } = params;
     const newInput = input;
     const finalMetadataParams = await Promise.all(
-      newInput.map(async (el, i) =>
-        this.generateMetadataParams(
-          await TorusStorageLayer.serializeMetadataParamsInput(el, serviceProvider, privKey ? privKey[i] : undefined),
-          serviceProvider,
-          privKey ? privKey[i] : undefined
-        )
-      )
+      newInput.map(async (el, i) => this.generateMetadataParams(await TorusStorageLayer.serializeMetadataParamsInput(el, privKey[i]), privKey[i]))
     );
 
     const FD = new FormData();
@@ -126,7 +116,7 @@ class TorusStorageLayer {
     return post<{ message: string }>(`${this.hostUrl}/bulk_set_stream`, FD, options, customOptions);
   }
 
-  generateMetadataParams(message: unknown, serviceProvider?: IServiceProvider, privKey?: BN): TorusStorageLayerAPIParams {
+  generateMetadataParams(message: unknown, privKey: BN): TorusStorageLayerAPIParams {
     let sig: string;
     let pubX: string;
     let pubY: string;
@@ -144,11 +134,6 @@ class TorusStorageLayer {
       const pubK = getPubKeyPoint(privKey);
       pubX = pubK.x.toString("hex");
       pubY = pubK.y.toString("hex");
-    } else if (serviceProvider) {
-      const point = serviceProvider.retrievePubKeyPoint();
-      sig = serviceProvider.sign(hash);
-      pubX = point.getX().toString("hex");
-      pubY = point.getY().toString("hex");
     } else throw new Error(" Invalid Params");
     return {
       pub_key_X: pubX,
