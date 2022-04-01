@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
+import memoize from "lodash-es/memoize";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -88,13 +89,22 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
-const addressPromise = () => {
-  return ControllerModule.getSNSAddress({
-    type: transferType.value.value,
-    address: transferTo.value,
-  });
-};
+const addressPromise = memoize(
+  (type: string, address: string) => {
+    return ControllerModule.getSNSAddress({
+      type,
+      address,
+    });
+  },
+  (...args) => Object.values(args).join("_")
+);
 
+async function escrowAccountVerifier(): Promise<boolean> {
+  if (transferType.value.value === "sns") {
+    return !(await ControllerModule.torus.isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
+  }
+  return false;
+}
 const tokenAddressVerifier = async (value: string) => {
   if (!selectedToken?.value?.mintAddress) {
     return true;
@@ -105,7 +115,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   if (transferType.value.value === "sns") {
     try {
-      associatedAccount = new PublicKey((await addressPromise()) as string);
+      associatedAccount = new PublicKey((await addressPromise(transferType.value.value, transferTo.value)) as string);
     } catch (e) {
       // since our sns validator will return false anyway
       return true;
@@ -113,10 +123,10 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   // if succeeds, we assume that the account is account key is correct.
-  // Transfer in TorusController with derive the associated token adddress using the same function.
+  // Transfer in TorusController with derive the associated token address using the same function.
   associatedAccount = !associatedAccount ? new PublicKey(value) : associatedAccount;
   try {
-    await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    await getAssociatedTokenAddress(mintAddress, associatedAccount, false);
     return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
@@ -145,7 +155,7 @@ async function snsRule(value: string, debounce: () => Promise<void>): Promise<bo
   if (transferType.value.value !== "sns") return true;
   try {
     await debounce();
-    const address = await addressPromise();
+    const address = await addressPromise(transferType.value.value, transferTo.value);
     return address !== null;
   } catch (e) {
     return false;
@@ -182,6 +192,7 @@ const rules = computed(() => {
       required: helpers.withMessage(t("walletTransfer.required"), required),
       addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator<string>(snsRule, 500))),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
+      escrowAccount: helpers.withMessage(t("walletTransfer.escrowAccount"), helpers.withAsync(escrowAccountVerifier)),
     },
     sendAmount: {
       required: helpers.withMessage(t("walletTransfer.minTransfer"), required),
@@ -224,7 +235,7 @@ const openModal = async () => {
   resolvedAddress.value = transferTo.value;
   if (!$v.value.$invalid) {
     if (transferType.value.value === "sns") {
-      const address = await addressPromise(); // doesn't throw
+      const address = await addressPromise(transferType.value.value, transferTo.value); // doesn't throw
       if (address) {
         resolvedAddress.value = address;
       } else {
