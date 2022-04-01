@@ -1429,8 +1429,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (!message) throw new Error("empty error message");
 
     let tx: Transaction;
-    if (req.params?.messageOnly) tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
-    else tx = Transaction.from(Buffer.from(message, "hex"));
+    if (req.params?.messageOnly) {
+      tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
+      const block = await this.connection.getLatestBlockhash("max");
+      tx.recentBlockhash = block.blockhash;
+    } else tx = Transaction.from(Buffer.from(message, "hex"));
 
     return this.transfer(tx, req);
   }
