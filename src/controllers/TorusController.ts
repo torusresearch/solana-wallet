@@ -1256,9 +1256,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     const { privateKey } = saveState;
 
+    // openlogin derived ED255519
     const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
 
-    // stored locally
+    // Random generated secp256k1
     const ecc_privateKey = eccrypto.generatePrivate();
     const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
 
@@ -1269,6 +1270,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
+      // save encrypted ed25519
       const resp = await this.storageLayer?.setMetadata({
         input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
         privKey: new BN(ecc_privateKey),
@@ -1303,7 +1305,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       if (keyState.priv_key && keyState.pub_key) {
         const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
-        log.info(metadata);
 
         const decryptedState = metadata as OpenLoginBackendState;
 
@@ -1323,9 +1324,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
           if (expire < Date.now() / 1000) {
             await this.refreshJwt();
           }
-        } else {
-          throw new Error("Previous JWT not found");
         }
+        // support fallback when solana backend is down
+        // else {
+        //   throw new Error("Previous JWT not found");
+        // }
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
