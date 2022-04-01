@@ -28,10 +28,15 @@ class TorusStorageLayer implements IStorageLayer {
 
   serverTimeOffset: number;
 
-  constructor({ enableLogging = false, hostUrl = "http://localhost:5051", serverTimeOffset = 0 }: TorusStorageLayerArgs) {
+  constructor({
+    enableLogging = false,
+    hostUrl = "http://localhost:5051",
+    serverTimeOffset = 0,
+    storageLayerName = "TorusStorageLayer",
+  }: TorusStorageLayerArgs) {
     this.enableLogging = enableLogging;
     this.hostUrl = hostUrl;
-    this.storageLayerName = "TorusStorageLayer";
+    this.storageLayerName = storageLayerName;
     this.serverTimeOffset = serverTimeOffset;
   }
 
@@ -57,7 +62,6 @@ class TorusStorageLayer implements IStorageLayer {
     } else {
       throw new Error("Invalid params");
     }
-    atob("test");
     const serializedEncryptedDetails = Buffer.from(stringify(encryptedDetails)).toString("base64");
     return serializedEncryptedDetails;
   }
@@ -145,7 +149,8 @@ class TorusStorageLayer implements IStorageLayer {
     let sig: string;
     let pubX: string;
     let pubY: string;
-    let namespace = "tkey";
+    let namespace = this.storageLayerName;
+
     const setTKeyStore = {
       data: message,
       timestamp: new BN((this.serverTimeOffset + Date.now()) / 1000).toString(16),

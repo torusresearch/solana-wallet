@@ -78,6 +78,7 @@ export type TorusStorageLayerArgs = {
   enableLogging?: boolean;
   hostUrl?: string;
   serverTimeOffset?: number;
+  storageLayerName?: string;
 };
 
 export type MockStorageLayerArgs = {
