@@ -4,7 +4,6 @@
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
-import { TorusStorageLayer } from "@tkey/storage-layer-torus";
 import {
   BaseConfig,
   BaseController,
@@ -99,6 +98,7 @@ import {
 import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
