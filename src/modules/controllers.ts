@@ -42,8 +42,8 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { delay, isMain, logoutWithBC } from "@/utils/helpers";
+import { CONTROLLER_MODULE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -426,7 +426,8 @@ class ControllerModule extends VuexModule {
     });
 
     this.torus.on("logout", () => {
-      logoutWithBC();
+      // logoutWithBC();
+      this.logout();
     });
     this.setInstanceId(randomId());
 
@@ -494,10 +495,19 @@ class ControllerModule extends VuexModule {
       this.openloginLogout();
     }
     const initialState = { ...cloneDeep(DEFAULT_STATE) };
-    this.updateTorusState(initialState);
+    // this.updateTorusState(initialState);
 
     const { origin } = this.torus;
-    this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
+    if (isMain) {
+      this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
+    } else {
+      // prevent network state reseted during logout due to failed restoration
+      this.torus.init({
+        _config: cloneDeep(DEFAULT_CONFIG),
+        _state: { ...initialState, NetworkControllerState: cloneDeep(this.torusState.NetworkControllerState) },
+      });
+    }
+
     this.torus.setOrigin(origin);
 
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
@@ -515,7 +525,7 @@ class ControllerModule extends VuexModule {
     }
     try {
       // window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
-      window.localStorage?.removeItem(EPHERMAL_KEY);
+      window.localStorage?.removeItem(`${EPHERMAL_KEY}-${this.torus.origin}`);
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
     }
@@ -656,7 +666,7 @@ class ControllerModule extends VuexModule {
 const moduleName = `${CONTROLLER_MODULE_KEY}`;
 installStorePlugin({
   key: moduleName,
-  storage: LOCAL_STORAGE_KEY,
+  storage: SESSION_STORAGE_KEY, // LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.requireKeyRestore`, `${moduleName}.torusState.KeyringControllerState`]);
     storage?.setItem(key, JSON.stringify(requiredState));
