@@ -40,7 +40,7 @@ onMounted(async () => {
       exploreNFTS.value = combinedCollectionObject.slice(0, 10) as any;
       exploreNFTSFetchState.value = "loaded";
     } catch (error) {
-      log.error("Could not fetch example NFTs");
+      log.error(new Error("Could not fetch example NFTs"));
       exploreNFTSFetchState.value = "error";
       exploreNFTS.value = [];
     }

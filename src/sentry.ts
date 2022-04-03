@@ -47,7 +47,7 @@ export function installSentry(Vue: App) {
       }
 
       // do not track events on dev environment
-      return e;
+      return null;
     },
   });
   // Sentry.setUser({ email: "john.doe@example.com" });
