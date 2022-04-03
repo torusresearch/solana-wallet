@@ -47,11 +47,12 @@ export function installSentry(Vue: App) {
       }
 
       // do not track events on dev environment
-      return null;
+      return e;
     },
   });
   // Sentry.setUser({ email: "john.doe@example.com" });
 
   const plugin = new LoglevelSentryPlugin(Sentry);
+  Sentry.setTag("referrer", document.referrer || "self");
   plugin.install(log);
 }
