@@ -16,10 +16,10 @@ const logo = computed(() => props.dapp?.logo?.[0].url || "");
     rel="noreferrer noopener"
   >
     <img class="w-12 h-12" :src="logo" alt="Dapp Logo" />
-    <div class="pl-2 -mt-1">
+    <div class="pl-2 -mt-1 overflow-x-hidden">
       <p class="text-sm text-app-text-600 dark:text-app-text-dark-500 font-bold">{{ dapp.title }}</p>
       <p class="text-xs text-app-text-400 dark:text-app-text-dark-700">{{ dapp.category }}</p>
-      <p class="text-xs text-app-gray-600">{{ dapp.desc }}</p>
+      <p class="text-xs text-app-gray-600 text-ellipsis whitespace-nowrap">{{ dapp.desc }}</p>
     </div>
   </a>
 </template>
