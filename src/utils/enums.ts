@@ -25,6 +25,7 @@ import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 
 import MobActivity from "@/assets/mob-activity.svg";
+import MobDiscover from "@/assets/mob-discover.svg";
 import MobHome from "@/assets/mob-home.svg";
 import MobNft from "@/assets/mob-nft.svg";
 import MobSettings from "@/assets/mob-settings.svg";
@@ -82,7 +83,15 @@ export interface ControllerModuleState {
   torusState: TorusControllerState;
 }
 
-export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; route: string; icon: string; mobHidden: boolean } } = {
+export const NAVIGATION_LIST: {
+  [key: string]: {
+    name: string;
+    title: string;
+    route: string;
+    icon: string;
+    mobHidden: boolean;
+  };
+} = {
   home: {
     name: "navBar.home",
     title: "walletHome.walletHome",
@@ -123,6 +132,13 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     title: "walletSettings.settings",
     route: "settings",
     icon: MobSettings,
+    mobHidden: false,
+  },
+  discover: {
+    name: "navBar.discover",
+    title: "Discover",
+    route: "discover",
+    icon: MobDiscover,
     mobHidden: false,
   },
 };
@@ -301,7 +317,9 @@ export const LOCALES = [
   },
 ];
 
-export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean } } = {
+export const REDIRECT_FLOW_CONFIG: {
+  [keyof: string]: { redirectPath: string; requiresLogin: boolean };
+} = {
   logout: {
     redirectPath: "/logout",
     requiresLogin: false,

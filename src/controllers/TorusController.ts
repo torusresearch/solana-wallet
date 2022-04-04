@@ -22,6 +22,7 @@ import {
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
+  DiscoverDapp,
   FEATURES_CONFIRM_WINDOW,
   FEATURES_DEFAULT_WALLET_WINDOW,
   FEATURES_PROVIDER_CHANGE_WINDOW,
@@ -1338,6 +1339,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error("Error restoring state!", error);
       this.handleLogout();
     }
+  }
+
+  async getDappList(): Promise<DiscoverDapp[]> {
+    return this.preferencesController.getDappList();
   }
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
