@@ -24,9 +24,11 @@ export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
         uiAmountString: ControllerModule.solBalance.toFixed(4),
       },
     },
-    ...(ControllerModule.fungibleTokens?.map((st) => {
-      return { ...st, name: st.data?.name || "", iconURL: `${st.data?.logoURI}` || "", symbol: st.data?.symbol };
-    }) || []),
+    ...(
+      ControllerModule.fungibleTokens?.map((st) => {
+        return { ...st, name: st.data?.name || "", iconURL: `${st.data?.logoURI}` || "", symbol: st.data?.symbol };
+      }) || []
+    ).sort((t1, t2) => Number(Number(t1?.price?.usd) - Number(t2.price?.usd))),
   ];
 });
 
