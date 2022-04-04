@@ -88,6 +88,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFTS" */ "@/pages/wallet/NftDetail.vue"),
           meta: { title: "NFTs", tab: "nfts" },
         },
+        {
+          name: "walletDiscover",
+          path: "discover",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "Discover" */ "@/pages/wallet/Discover.vue"),
+          meta: { title: "Discover", tab: "discover" },
+        },
       ],
     },
     // AUTH STATE INDEPENDENT ROUTES

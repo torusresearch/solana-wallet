@@ -13,6 +13,7 @@ import {
   Contact,
   ContactPayload,
   DEFAULT_PREFERENCES,
+  DiscoverDapp,
   NetworkChangeChannelData,
   PopupData,
   PopupStoreChannel,
@@ -637,6 +638,11 @@ class ControllerModule extends VuexModule {
       default:
     }
     return res;
+  }
+
+  @Action
+  async getDappList(): Promise<DiscoverDapp[]> {
+    return this.torus.getDappList();
   }
 }
 
