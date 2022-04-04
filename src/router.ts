@@ -1,7 +1,9 @@
+import { config, pageview } from "vue-gtag";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
+import { getBrowserKey } from "@/utils/helpers";
 
 import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
 
@@ -224,9 +226,30 @@ router.beforeEach(async (to, _, next) => {
   // route below might need key restoration
   if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.torus.restoreFromBackend();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
-  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+
+  if (authMeta === AuthStates.AUTHENTICATED) {
+    // user tried to access a authenticated route without being authenticated
+    if (!isLoggedIn() && !isRedirectFlow) {
+      return next("/login");
+    }
+    // route is authenticated and so is user, good to go
+    config({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
+  }
+  if (authMeta === AuthStates.NON_AUTHENTICATED) {
+    // user tried to access a un-authenticated route being authenticated
+    if (isLoggedIn() && !isRedirectFlow) {
+      return next("/");
+    }
+
+    // route is non-authenticated and so is user, good to go
+    config({ user_id: `notLoggedIn_${getBrowserKey()}` });
+  }
+
   return next();
+});
+
+router.afterEach(() => {
+  pageview({ page_title: document.title, page_path: window.location.href });
 });
 
 export default router;

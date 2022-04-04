@@ -10,6 +10,7 @@ import { useRouter } from "vue-router";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import config from "@/config";
+import { TopupPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { TOPUP, TopupProviders } from "@/utils/topup";
@@ -89,24 +90,35 @@ async function refreshTransferEstimate(val: { value: string; label: string; symb
   evaluateTransactionQuote();
 }
 
-watch(selectedCryptocurrency, throttle(refreshTransferEstimate, 500));
-watch([selectedCurrency, amount], throttle(evaluateTransactionQuote, 500));
+watch(selectedCryptocurrency, () => {
+  throttle(refreshTransferEstimate, 500);
+  trackUserClick(TopupPageInteractions.SELECTED_CRYPTO + selectedCryptocurrency.value);
+});
+watch([selectedCurrency, amount], () => {
+  throttle(evaluateTransactionQuote, 500);
+  trackUserClick(TopupPageInteractions.AMOUNT + amount.value);
+  trackUserClick(TopupPageInteractions.SELECTED_FIAT + selectedCurrency.value);
+});
 
 const onTopup = () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
+    trackUserClick(TopupPageInteractions.CONFIRM);
     ControllerModule.torus
       .handleTopup(TOPUP.RAMPNETWORK, {
         selectedCryptoCurrency: selectedCryptocurrency.value.symbol,
         cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (rampQuoteData?.decimals || 0)),
       })
-      .catch(() => addToast({ message: "Transaction could not complete.", type: "error" }));
+      .catch(() => {
+        addToast({ message: "Transaction could not complete.", type: "error" });
+      });
   }
 };
 
 onMounted(() => {
   selectedCurrency.value = selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || selectedProvider.validCurrencies[0];
   refreshTransferEstimate(selectedCryptocurrency.value);
+  trackUserClick(`${TopupPageInteractions.PROVIDER_SELECT} moonpay`);
 });
 </script>
 

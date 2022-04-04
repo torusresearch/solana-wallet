@@ -12,6 +12,7 @@ import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
+import { NftsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
@@ -48,10 +49,12 @@ const goBack = () => {
 };
 
 const viewNFT = () => {
+  trackUserClick(NftsPageInteractions.SOLSCAN + mint.value);
   window.open(`https://solscan.io/token/${mint.value}`, "_blank");
 };
 
 const transferNFT = () => {
+  trackUserClick(NftsPageInteractions.SEND + mint.value);
   router.push(`/wallet/transfer?mint=${mint.value}`);
 };
 </script>

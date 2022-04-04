@@ -7,6 +7,7 @@ import { useRouter } from "vue-router";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
 import NftCard from "@/components/home/NftCard.vue";
+import { NftsPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { setFallbackImg } from "@/utils/helpers";
 
@@ -73,6 +74,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
       <div v-if="exploreNFTS.length" class="flex flex-wrap justify-center mt-12">
         <div v-for="collection in exploreNFTS" :key="collection.url" class="flex flex-col items-center m-4 w-48">
           <img
+            v-ga="NftsPageInteractions.OPEN_COLLECTION + collection.url"
             alt="NFT collection"
             :src="collection?.imgpreview || FallbackNft"
             class="h-32 w-32 rounded-full overflow-hidden border-2 border-white cursor-pointer object-cover"
@@ -81,6 +83,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
             @error="setFallbackImg($event.target, FallbackNft)"
           />
           <span
+            v-ga="NftsPageInteractions.OPEN_COLLECTION + collection.url"
             class="mt-4 text-app-text-500 dark:text-app-text-dark-400 cursor-pointer truncate"
             @click="openCollection(collection.url)"
             @keydown="openCollection(collection.url)"
@@ -90,7 +93,13 @@ function getNftFetchMessage(state: FETCH_STATE): string {
       </div>
     </div>
     <div v-else class="w-full mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-center justify-items-center">
-      <NftCard v-for="nft in nfts" :key="nft.mintAddress" :nft-token="nft" @card-clicked="navigateNFT(nft.mintAddress)" />
+      <NftCard
+        v-for="nft in nfts"
+        :key="nft.mintAddress"
+        v-ga="NftsPageInteractions.SELECT + nft.mintAddress"
+        :nft-token="nft"
+        @card-clicked="navigateNFT(nft.mintAddress)"
+      />
     </div>
   </div>
 </template>
