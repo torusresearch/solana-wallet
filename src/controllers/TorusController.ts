@@ -808,6 +808,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   showWalletPopup(path: string, instanceId: string): void {
+    sessionStorage.setItem(instanceId, this.origin);
     const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&dappStorageKey=${this.origin}`);
     const walletPopupWindow = new PopupHandler({
       config: {
@@ -1269,8 +1270,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
       // save encrypted ed25519
-      await this.storageLayer?.setMetadata({
-        input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
+      await this.storageLayer?.setMetadata<OpenLoginBackendState>({
+        input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey), userInfo: this.userInfo },
         privKey: new BN(ecc_privateKey),
       });
       window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
@@ -1280,6 +1281,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async restoreFromBackend(): Promise<boolean> {
+    // has selected keypair (logged in)
     if (this.hasSelectedPrivateKey) {
       return true;
     }
@@ -1287,8 +1289,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       const { search } = window.location;
       const searchParams = new URLSearchParams(search);
-      const dappStorageKey = searchParams.get("dappStorageKey") || this.origin;
+      // const dappStorageKey = searchParams.get("dappStorageKey") || this.origin;
 
+      const dappStorageKey = sessionStorage.getItem(searchParams.get("instanceId") || "") || this.origin;
+      log.info(dappStorageKey);
       const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
 
       const keyState: KeyState =
@@ -1307,13 +1311,23 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (!decryptedState.privateKey) {
           throw new Error("Private key not found in state");
         }
-        if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
-        // Restore keyringController only ( no Sync / initPreferenes )
-        const address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+        let address;
+        if (this.preferencesController.state.identities[decryptedState.publicKey]) {
+          // Try key restore with session state intact.
+          // if restored pubkey doesnt not match sessions state pubkey, throw error (return false)
+          if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+
+          log.info("login without userinfo");
+          // Restore keyringController only ( no Sync / initPreferenes )
+          address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+        } else {
+          // restore with userInfo
+          address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), decryptedState.userInfo);
+        }
 
         // valid private key needed to refreshJwt,
-        const jwt = this.preferencesController.state.identities[this.selectedAddress]?.jwtToken;
+        const jwt = this.preferencesController.state.identities[address]?.jwtToken;
 
         if (jwt) {
           const expire = parseJwt(jwt).exp;
@@ -1321,10 +1335,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
             await this.refreshJwt();
           }
         }
-        // support fallback when solana backend is down
-        // else {
-        //   throw new Error("Previous JWT not found");
-        // }
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
@@ -1465,6 +1475,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
+    // Try to restore from backend (restore privatekey)
+    await this.restoreFromBackend();
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;

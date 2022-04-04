@@ -234,6 +234,7 @@ router.beforeEach(async (to, _, next) => {
   if (to.name === "404") return next(); // to prevent 404 redirecting to 404
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
+  // log.info(ControllerModule.torus.origin);
   // route below might need key restoration
 
   if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();

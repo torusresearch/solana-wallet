@@ -105,14 +105,9 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
-    try {
-      await ControllerModule.torus.restoreFromBackend();
-    } catch (error) {
-      log.error(error);
-    } finally {
-      ControllerModule.setupCommunication(dappOrigin);
-      showUI.value = true;
-    }
+
+    ControllerModule.setupCommunication(dappOrigin);
+    showUI.value = true;
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
