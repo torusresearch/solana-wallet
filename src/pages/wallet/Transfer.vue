@@ -22,7 +22,20 @@ const { t } = useI18n();
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTo = ref<string>("");
+let timeoutId: ReturnType<typeof setTimeout>;
+const transferToInternal = ref("");
+const transferTo = computed({
+  get: () => transferToInternal.value,
+  set: (value2) => {
+    // this will debounce the update and ensure that transferType is updated before validations are run
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      // eslint-disable-next-line prefer-destructuring
+      if (/\.sol$/g.test(value2)) transferType.value = ALLOWED_VERIFIERS[1];
+      transferToInternal.value = value2;
+    }, 500);
+  },
+});
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transactionFee = ref(0);
@@ -376,10 +389,6 @@ watch([tokens, nftTokens], () => {
   if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
     updateSelectedToken(tokens.value[0]);
   }
-});
-watch(transferTo, () => {
-  // eslint-disable-next-line prefer-destructuring
-  if (/\.sol$/g.test(transferTo.value)) transferType.value = ALLOWED_VERIFIERS[1];
 });
 </script>
 
