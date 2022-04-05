@@ -12,6 +12,7 @@ import { useI18n } from "vue-i18n";
 
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
+import { GeneralInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
 
@@ -34,6 +35,7 @@ const logout = () => {
   emits("onLogout");
 };
 const copySelectedAddress = (address: string) => {
+  trackUserClick(GeneralInteractions.GENERAL_PUB_KEY);
   copyText(address);
 };
 
@@ -128,7 +130,7 @@ const getWalletBalance = (address: string): string => {
     <div>Info and Support</div>
   </div> -->
     <div class="p-4 border-t">
-      <Button class="ml-auto" variant="text" @click="logout">{{ t("accountMenu.logOut") }}</Button>
+      <Button v-ga="GeneralInteractions.GENERAL_LOGOUT" class="ml-auto" variant="text" @click="logout">{{ t("accountMenu.logOut") }}</Button>
     </div>
   </div>
 </template>

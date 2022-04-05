@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
+import { GeneralInteractions, HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
@@ -24,6 +25,7 @@ const formattedBalance = computed(() => {
   return Number(ControllerModule.totalBalance);
 });
 const updateCurrency = (newCurrency: string) => {
+  trackUserClick(GeneralInteractions.GENERAL_CHANGE_CURRENCY + newCurrency);
   ControllerModule.setCurrency(newCurrency);
 };
 </script>
@@ -48,8 +50,12 @@ const updateCurrency = (newCurrency: string) => {
     </div>
     <template v-if="showButtons" #footer>
       <div class="flex w-full justify-between items-center">
-        <Button :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
-        <Button :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
+        <Button v-ga="HomePageInteractions.TOPUP" :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{
+          t("walletHome.topUp")
+        }}</Button>
+        <Button v-ga="HomePageInteractions.TRANSFER" :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{
+          t("walletHome.transfer")
+        }}</Button>
       </div>
     </template>
   </Card>

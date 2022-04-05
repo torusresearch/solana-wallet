@@ -265,3 +265,12 @@ export const logoutWithBC = async () => {
   await bc.postMessage("logout");
   bc.close();
 };
+
+export function getBrowserKey() {
+  let id = sessionStorage.getItem("bk");
+  if (!id) {
+    id = `${Date.now()}`;
+    sessionStorage.setItem("bk", id);
+  }
+  return id;
+}
