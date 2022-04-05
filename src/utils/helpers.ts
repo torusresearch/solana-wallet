@@ -227,7 +227,7 @@ export async function recordDapp(origin: string) {
     };
     await post(`${config.api}/dapps/record`, { ...recordLoginPayload });
   } catch (e) {
-    log.error("ERROR RECORDING DAPP", e);
+    log.error(e, "ERROR RECORDING DAPP");
   }
 }
 export const backendStatePromise = promiseCreator();

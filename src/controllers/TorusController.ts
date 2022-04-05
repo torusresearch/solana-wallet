@@ -475,7 +475,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
-            log.error("error while patching a new tx", err);
+            log.error(err, "error while patching a new tx");
           });
         }
       });
@@ -1277,7 +1277,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
-      log.error("Error saving state!", error);
+      log.error(error, "Error saving state!");
     }
   }
 
@@ -1336,7 +1336,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         this.handleLogout();
       }
     } catch (error) {
-      log.error("Error restoring state!", error);
+      log.error(error, "Error restoring state!");
       this.handleLogout();
     }
   }

@@ -510,7 +510,7 @@ class ControllerModule extends VuexModule {
       // window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
       window.localStorage?.removeItem(EPHERMAL_KEY);
     } catch (error) {
-      log.error("LocalStorage unavailable");
+      log.error(new Error("LocalStorage unavailable"));
     }
   }
 

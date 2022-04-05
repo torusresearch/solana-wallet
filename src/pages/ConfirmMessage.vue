@@ -47,7 +47,7 @@ onMounted(async () => {
     msg_data.message = (channel_msg.message as string) || "";
     msg_data.origin = channel_msg.origin as string;
   } catch (error) {
-    log.error("error in tx", error);
+    log.error(error, "error in tx");
   }
 });
 
