@@ -3,11 +3,15 @@ import { Keypair } from "@solana/web3.js";
 import nacl from "@toruslabs/tweetnacl-js";
 import axios from "axios";
 import base58 from "bs58";
-import stringify from "safe-stable-stringify";
+import { ec as EC } from "elliptic";
+
+import TorusStorageLayer from "@/utils/tkey/storageLayer";
 
 import { changeLanguage, getBackendDomain, getDomain, getStateDomain, wait } from "./utils";
 
-export const EPHEMERAL_SECRET_KEY = "JE6FauN4iF56b9aC8yrD314AYptuDHxzoChzkod5MxYR";
+const ec = new EC("secp256k1");
+export const EPHEMERAL_KEYPAIR = ec.genKeyPair({ entropy: "ad1238470128347018934701983470183478sfa" });
+// export const EPHEMERAL_SECRET_KEY = "JE6FauN4iF56b9aC8yrD314AYptuDHxzoChzkod5MxYR";
 
 export const PUB_ADDRESS = "Bxfp7RZLPLEiJhSMiHb3JrLrNdop94gWY5NGhG9KepL9";
 export const SECRET_KEY = "rJ2u984seEczhz7bRva9jn7E3RqaqzJpkh81Lmmnj6oAFMDfZqu2KGXLHo9MgmW6rFfPYsoDXtJsGbZojQhefcm";
@@ -15,6 +19,7 @@ export const SECRET_KEY = "rJ2u984seEczhz7bRva9jn7E3RqaqzJpkh81Lmmnj6oAFMDfZqu2K
 export const IMPORT_ACC_ADDRESS = "H3N28hUVVRhZW1zyM8dGQTrKztRHhgbS1nJg9nSXghet";
 export const IMPORT_ACC_SECRET_KEY = "4md5HAy1iZvyGVuwssQu8Kn78gnm7RHfpC8FLSHcsA1Wo1JwD6jNu8vHPLLSaFxXXD753vMaFBdbZYFvvmQtborU";
 
+const storageLayer = new TorusStorageLayer({ hostUrl: getStateDomain() });
 async function getJWT(): Promise<{ success: boolean; token: string }> {
   const { message } = (
     await axios.post(`${getBackendDomain()}/auth/message`, {
@@ -36,19 +41,13 @@ async function getJWT(): Promise<{ success: boolean; token: string }> {
   ).data;
 }
 
+const privKey = EPHEMERAL_KEYPAIR.getPrivate();
+
 export async function createRedisKey() {
-  const nonce = nacl.randomBytes(24); // random nonce is required for encryption as per spec
-  const stateString = stringify({ publicKey: PUB_ADDRESS, privateKey: SECRET_KEY });
-  const stateByteArray = Buffer.from(stateString, "utf-8");
-  const encryptedState = nacl.secretbox(stateByteArray, nonce, base58.decode(EPHEMERAL_SECRET_KEY).slice(0, 32)); // encrypt state with tempKey
+  const input = { publicKey: PUB_ADDRESS, privateKey: SECRET_KEY };
+  const params = storageLayer.generateMetadataParams(await TorusStorageLayer.serializeMetadataParamsInput(input, privKey), privKey);
 
-  const timestamp = Date.now();
-  const setData = { data: Buffer.from(encryptedState).toString("hex"), timestamp, nonce: Buffer.from(nonce).toString("hex") }; // tkey metadata structure
-  const dataHash = nacl.hash(Buffer.from(stringify(setData), "utf-8"));
-  const signature = nacl.sign.detached(dataHash, base58.decode(SECRET_KEY));
-  const signatureString = Buffer.from(signature).toString("hex");
-
-  await axios.post(`${getStateDomain()}/set`, { pub_key: PUB_ADDRESS, signature: signatureString, set_data: setData });
+  await axios.post(`${getStateDomain()}/set`, params);
 }
 
 export async function login(context: BrowserContext): Promise<Page> {
@@ -56,8 +55,8 @@ export async function login(context: BrowserContext): Promise<Page> {
   const keyFunction = `window.localStorage.setItem(
     "controllerModule-ephemeral",
     JSON.stringify({
-      "priv_key": "${EPHEMERAL_SECRET_KEY}",
-      "pub_key": "${PUB_ADDRESS}",
+      "priv_key": "${EPHEMERAL_KEYPAIR.getPrivate("hex")}",
+      "pub_key": "${EPHEMERAL_KEYPAIR.getPublic("hex")}",
     })
   )`;
   const { token } = await getJWT();
