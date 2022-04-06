@@ -15,7 +15,7 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { debounceAsyncValidator, delay, ruleVerifierId } from "@/utils/helpers";
+import { delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -23,7 +23,20 @@ const { t } = useI18n();
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTo = ref<string>("");
+let timeoutId: ReturnType<typeof setTimeout>;
+const transferToInternal = ref("");
+const transferTo = computed({
+  get: () => transferToInternal.value,
+  set: (value2) => {
+    // this will debounce the update and ensure that transferType is updated before validations are run
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      // eslint-disable-next-line prefer-destructuring
+      if (/\.sol$/g.test(value2)) transferType.value = ALLOWED_VERIFIERS[1];
+      transferToInternal.value = value2;
+    }, 500);
+  },
+});
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transactionFee = ref(0);
@@ -151,11 +164,10 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
-async function snsRule(value: string, debounce: () => Promise<void>): Promise<boolean> {
+async function snsRule(value: string): Promise<boolean> {
   if (!value) return true;
   if (transferType.value.value !== "sns") return true;
   try {
-    await debounce();
     const address = await addressPromise(transferType.value.value, transferTo.value);
     return address !== null;
   } catch (e) {
@@ -191,7 +203,7 @@ const rules = computed(() => {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
       required: helpers.withMessage(t("walletTransfer.required"), required),
-      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator<string>(snsRule, 500))),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(snsRule)),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
       escrowAccount: helpers.withMessage(t("walletTransfer.escrowAccount"), helpers.withAsync(escrowAccountVerifier)),
     },
@@ -235,6 +247,7 @@ const closeModal = () => {
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
+  await $v.value.$validate();
   if (!$v.value.$invalid) {
     if (transferType.value.value === "sns") {
       const address = await addressPromise(transferType.value.value, transferTo.value); // doesn't throw
@@ -381,11 +394,6 @@ watch([tokens, nftTokens], () => {
   if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
     updateSelectedToken(tokens.value[0]);
   }
-});
-watch(transferTo, () => {
-  // eslint-disable-next-line prefer-destructuring
-  if (/\.sol$/g.test(transferTo.value)) transferType.value = ALLOWED_VERIFIERS[1];
-  trackUserClick(TransferPageInteractions.SEND_TO + transferTo.value);
 });
 </script>
 
