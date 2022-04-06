@@ -75,7 +75,7 @@ const cryptoAmountString = computed(() => {
 
 const fiatAmountString = computed(() => {
   const totalFiatAmount = new BigNumber(pricePerToken.value).multipliedBy(props.cryptoAmount);
-  return `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}`;
+  return totalFiatAmount.toNumber() ? `${significantDigits(totalFiatAmount, false, 2)} ${currency.value}` : "";
 });
 
 // Total cost
@@ -95,7 +95,7 @@ const totalCryptoCostString = computed(() => {
 
 // Transaction fee
 const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+  return `${new BigNumber(props.cryptoTxFee).multipliedBy(ControllerModule.torus.conversionRate).toFixed(5).toString()} ${currency.value}`;
 });
 const refDiv = ref(null);
 </script>
@@ -173,7 +173,7 @@ const refDiv = ref(null);
                   <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
                   <div class="ml-auto text-right">
                     <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
-                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
+                    <div v-if="fiatAmountString" class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
                   </div>
                 </div>
                 <div class="flex">
@@ -191,7 +191,7 @@ const refDiv = ref(null);
                   <div class="text-sm text-app-text-600 dark:text-app-text-dark-400 font-bold">{{ t("walletTransfer.totalCost") }}</div>
                   <div class="ml-auto text-right">
                     <div class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-400">~ {{ totalCryptoCostString }}</div>
-                    <div class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
+                    <div v-if="fiatAmountString" class="text-xs text-app-text-400 dark:text-app-text-dark-400">~ {{ totalFiatCostString }}</div>
                   </div>
                 </div>
               </div>
