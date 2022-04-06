@@ -2,15 +2,20 @@
 import { DiscoverDapp } from "@toruslabs/base-controllers";
 import { computed } from "vue";
 
+import ControllerModule from "@/modules/controllers";
+
 const props = defineProps<{
   dapp: DiscoverDapp;
 }>();
 
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
+
+const dappUrl =
+  window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("/?dappOrigin=", ControllerModule.torus.origin);
 </script>
 <template>
   <a
-    :href="dapp.url"
+    :href="dappUrl"
     class="flex bg-white hover:bg-app-gray-200 dark:bg-app-gray-700 border border-app-gray-200 dark:border-transparent shadow dark:shadow-dark rounded-lg p-4"
     target="_blank"
     rel="noreferrer noopener"

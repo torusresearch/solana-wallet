@@ -809,7 +809,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   showWalletPopup(path: string, instanceId: string): void {
     sessionStorage.setItem(instanceId, this.origin);
-    const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&dappStorageKey=${this.origin}`);
+    // const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&dappStorageKey=${this.origin}`);
+    const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&resolvedRoute=${this.origin}`);
     const walletPopupWindow = new PopupHandler({
       config: {
         features: getPopupFeatures(FEATURES_DEFAULT_WALLET_WINDOW),
@@ -1290,10 +1291,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const { search } = window.location;
       const searchParams = new URLSearchParams(search);
       // const dappStorageKey = searchParams.get("dappStorageKey") || this.origin;
+      const dappStorageKey = searchParams.get("resolvedRoute") || this.origin;
 
-      const dappStorageKey = sessionStorage.getItem(searchParams.get("instanceId") || "") || this.origin;
+      // const dappStorageKey = sessionStorage.getItem(searchParams.get("instanceId") || "") || this.origin;
       log.info(dappStorageKey);
       const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+
+      if (window.location.origin !== dappStorageKey) this.setOrigin(dappStorageKey);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -1311,7 +1315,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (!decryptedState.privateKey) {
           throw new Error("Private key not found in state");
         }
-
+        log.info("try to restore key");
         let address;
         if (this.preferencesController.state.identities[decryptedState.publicKey]) {
           // Try key restore with session state intact.
@@ -1338,6 +1342,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
+
         return true;
       }
       log.warn("Invalid or no key in local storage");
