@@ -109,7 +109,7 @@ import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 
-const TARGET_NETWORK = "mainnet";
+const TARGET_NETWORK = "mainnet_google";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
 export const DEFAULT_CONFIG = {
@@ -186,6 +186,7 @@ export const DEFAULT_STATE = {
   },
   RelayMap: {},
   RelayKeyHostMap: {},
+  AppState: { lastRpcError: undefined },
 };
 
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
@@ -1589,5 +1590,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
+  }
+
+  get rpcDownAt(): number | undefined {
+    return this.state.AppState.lastRpcError;
   }
 }

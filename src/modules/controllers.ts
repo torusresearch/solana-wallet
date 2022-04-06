@@ -651,6 +651,11 @@ class ControllerModule extends VuexModule {
   async getDappList(): Promise<DiscoverDapp[]> {
     return this.torus.getDappList();
   }
+
+  @Action
+  recordRpcError(): void {
+    this.torus.state.AppState.lastRpcError = Date.now();
+  }
 }
 
 const moduleName = `${CONTROLLER_MODULE_KEY}`;
