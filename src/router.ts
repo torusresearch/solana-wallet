@@ -1,7 +1,9 @@
+import { config, pageview } from "vue-gtag";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
+import { getBrowserKey } from "@/utils/helpers";
 
 import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
 
@@ -88,6 +90,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFTS" */ "@/pages/wallet/NftDetail.vue"),
           meta: { title: "NFTs", tab: "nfts" },
         },
+        {
+          name: "walletDiscover",
+          path: "discover",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "Discover" */ "@/pages/wallet/Discover.vue"),
+          meta: { title: "Discover", tab: "discover" },
+        },
       ],
     },
     // AUTH STATE INDEPENDENT ROUTES
@@ -150,12 +158,14 @@ const router = createRouter({
       path: "/redirectflow",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
       meta: { title: "redirecting" },
-      beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+      beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
         const { method = "" } = getB64DecodedData(to.hash);
         const resolveRoute = (to.query.resolveRoute as string) || "";
         const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
         if (!resolveRoute || !method) return next({ name: "404", query: to.query, hash: to.hash });
-        if (!ControllerModule.selectedAddress && requiresLogin)
+
+        await ControllerModule.torus.restoreFromBackend();
+        if (!ControllerModule.hasSelectedPrivateKey && requiresLogin)
           return next({
             name: "login",
             query: {
@@ -208,6 +218,15 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   return next();
 });
 
+const restoreOrlogout = async () => {
+  try {
+    const result = await ControllerModule.torus.restoreFromBackend();
+    if (!result) ControllerModule.logout();
+  } catch (_e) {
+    ControllerModule.logout();
+  }
+};
+
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
@@ -216,11 +235,32 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-  if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.torus.restoreFromBackend();
+
+  if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
-  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+
+  if (authMeta === AuthStates.AUTHENTICATED) {
+    // user tried to access a authenticated route without being authenticated
+    if (!isLoggedIn() && !isRedirectFlow) {
+      return next("/login");
+    }
+    // route is authenticated and so is user, good to go
+    config({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
+  } else if (authMeta === AuthStates.NON_AUTHENTICATED) {
+    // user tried to access a un-authenticated route being authenticated
+    if (isLoggedIn() && !isRedirectFlow) {
+      return next("/");
+    }
+
+    // route is non-authenticated and so is user, good to go
+    config({ user_id: `notLoggedIn_${getBrowserKey()}` });
+  }
+
   return next();
+});
+
+router.afterEach(() => {
+  pageview({ page_title: document.title, page_path: window.location.href });
 });
 
 export default router;

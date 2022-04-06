@@ -12,6 +12,7 @@ import { useRoute, useRouter } from "vue-router";
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
+import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay, ruleVerifierId } from "@/utils/helpers";
@@ -240,6 +241,7 @@ const onMessageModalClosed = () => {
 
 const closeModal = () => {
   isOpen.value = false;
+  trackUserClick(TransferPageInteractions.CANCEL);
 };
 
 const openModal = async () => {
@@ -257,6 +259,7 @@ const openModal = async () => {
     }
 
     isOpen.value = true;
+    trackUserClick(TransferPageInteractions.INITIATE);
   }
 
   // This can't be guarantee
@@ -280,6 +283,7 @@ function convertFiatToCrypto(fiatValue = 1) {
 }
 
 const confirmTransfer = async () => {
+  trackUserClick(TransferPageInteractions.CONFIRM);
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
@@ -382,6 +386,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
     }
   }
   selectedToken.value = $event;
+  trackUserClick(TransferPageInteractions.TOKEN_SELECT + $event.mintAddress);
 }
 
 // reset transfer token to solana if tokens no longer has current token
@@ -423,6 +428,7 @@ watch([tokens, nftTokens], () => {
               >
                 <div v-if="hasGeckoPrice" class="flex flex-row items-center justify-around h-full select-none">
                   <div
+                    v-ga="TransferPageInteractions.CURRENCY_TOGGLE + selectedToken.symbol"
                     class="currency-selector mr-1"
                     :class="[!isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
                     @click="setAmountCurrency(false)"
@@ -431,6 +437,7 @@ watch([tokens, nftTokens], () => {
                     {{ selectedToken.symbol }}
                   </div>
                   <div
+                    v-ga="TransferPageInteractions.CURRENCY_TOGGLE + currency"
                     class="currency-selector"
                     :class="[isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
                     @click="setAmountCurrency(true)"

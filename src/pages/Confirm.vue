@@ -60,6 +60,7 @@ onMounted(async () => {
       txData = {
         type: method,
         message: params?.message,
+        messageOnly: params?.messageOnly,
         signer: ControllerModule.selectedAddress,
         origin: window.origin,
       };
@@ -130,7 +131,7 @@ onMounted(async () => {
       log.error(e);
     }
   } catch (error) {
-    log.error("error in tx", error);
+    log.error(error, "error in tx");
   }
 });
 
@@ -160,7 +161,7 @@ const approveTxn = async (): Promise<void> => {
         redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
       } else throw new Error();
     } catch (e) {
-      redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
+      redirectToResult(jsonrpc, { success: false, method, error: (e as Error).message }, req_id, resolveRoute);
     }
   }
 };

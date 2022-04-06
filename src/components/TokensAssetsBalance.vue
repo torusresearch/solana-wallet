@@ -3,10 +3,12 @@ import { useRouter } from "vue-router";
 
 import SplCard from "@/components/home/SplCard.vue";
 import { tokens } from "@/components/transfer/token-helper";
+import { HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
 
 const router = useRouter();
 
 function transferToken(mint?: string) {
+  trackUserClick(HomePageInteractions.SPL_TOKENS + (mint || ""));
   if (!mint) router.push("/wallet/transfer");
   else router.push(`/wallet/transfer?mint=${mint}`);
 }

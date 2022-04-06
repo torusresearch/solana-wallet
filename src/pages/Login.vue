@@ -13,6 +13,7 @@ import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
+import { LoginInteractions } from "@/directives/google-analytics";
 import { addToast, app } from "@/modules/app";
 
 import { Button } from "../components/common";
@@ -34,7 +35,7 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
-const selectedAddress = computed(() => ControllerModule.selectedAddress);
+const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
 
 onMounted(() => {
   if (selectedAddress.value && isRedirectFlow)
@@ -96,24 +97,24 @@ const onEmailLogin = () => {
           </div>
           <div class="grid grid-cols-3 gap-2 w-full">
             <div class="col-span-3">
-              <Button variant="tertiary" :block="true" class="w-full" @click="onLogin('google')"
+              <Button v-ga="LoginInteractions.LOGIN_GOOGLE" variant="tertiary" :block="true" class="w-full" @click="onLogin('google')"
                 ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />{{
                   t("dappLogin.continue", { verifier: "Google" })
                 }}</Button
               >
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon :block="true" class="w-full" @click="onLogin('facebook')">
+              <Button v-ga="LoginInteractions.LOGIN_FACEBOOK" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('facebook')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon :block="true" class="w-full" @click="onLogin('twitter')">
+              <Button v-ga="LoginInteractions.LOGIN_TWITTER" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('twitter')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
               </Button>
             </div>
             <div class="col-span-1">
-              <Button variant="tertiary" icon :block="true" class="w-full" @click="onLogin('discord')">
+              <Button v-ga="LoginInteractions.LOGIN_DISCORD" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('discord')">
                 <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-discord.8a29d113.svg" alt="" />
               </Button>
             </div>
@@ -135,7 +136,7 @@ const onEmailLogin = () => {
                 :placeholder="t('login.enterYourEmail')"
                 :errors="$v.userEmail.$errors"
               />
-              <Button variant="tertiary" :block="true" type="submit" class="w-full mt-2">{{
+              <Button v-ga="LoginInteractions.LOGIN_EMAIL" variant="tertiary" :block="true" type="submit" class="w-full mt-2">{{
                 t("dappLogin.continue", { verifier: t("loginCountry.email") })
               }}</Button>
             </form>

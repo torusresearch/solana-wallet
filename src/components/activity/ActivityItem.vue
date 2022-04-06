@@ -7,6 +7,7 @@ import { useI18n } from "vue-i18n";
 
 import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
 import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
+import { ActivityPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 
 const props = defineProps<{
@@ -19,6 +20,7 @@ const props = defineProps<{
 const { t } = useI18n();
 
 const openExplorerLink = (link: string) => {
+  trackUserClick(ActivityPageInteractions.ACTIVITY_DETAIL + link);
   window.open(link, "_blank");
 };
 const toggleDetails = (link: string) => {

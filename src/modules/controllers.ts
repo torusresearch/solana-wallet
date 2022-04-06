@@ -13,6 +13,7 @@ import {
   Contact,
   ContactPayload,
   DEFAULT_PREFERENCES,
+  DiscoverDapp,
   NetworkChangeChannelData,
   PopupData,
   PopupStoreChannel,
@@ -454,7 +455,6 @@ class ControllerModule extends VuexModule {
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
     // do not need to restore beyond login
-    this.torus.setRequireKeyRestore(false);
     const res = await this.torus.triggerLogin({ loginProvider, login_hint });
     this.torus.saveToOpenloginBackend({ privateKey: res.privKey, publicKey: this.selectedAddress });
   }
@@ -509,7 +509,7 @@ class ControllerModule extends VuexModule {
       // window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
       window.localStorage?.removeItem(EPHERMAL_KEY);
     } catch (error) {
-      log.error("LocalStorage unavailable");
+      log.error(new Error("LocalStorage unavailable"));
     }
   }
 
@@ -637,6 +637,11 @@ class ControllerModule extends VuexModule {
       default:
     }
     return res;
+  }
+
+  @Action
+  async getDappList(): Promise<DiscoverDapp[]> {
+    return this.torus.getDappList();
   }
 }
 
