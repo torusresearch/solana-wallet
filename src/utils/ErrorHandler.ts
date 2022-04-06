@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/vue";
 
 import { addToast, removeToast } from "@/modules/app";
+import ControllerModule from "@/modules/controllers";
 import { i18n } from "@/plugins/i18nPlugin";
 
 const { t } = i18n.global;
@@ -12,6 +13,7 @@ export function handleExceptions(e: any): void {
     const rpcNetworkError: any = { type: "warning", message: t("walletSettings.changeNetworkError") };
     removeToast(rpcNetworkError); // remove existing rpcNetworkError toasts
     addToast(rpcNetworkError); // show rpcNetworkError
+    ControllerModule.recordRpcError();
   }
   // handle other uncaught exceptions here
 }

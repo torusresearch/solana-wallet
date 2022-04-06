@@ -63,6 +63,7 @@ export interface TorusControllerState extends BaseState {
   TokenInfoState: TokenInfoState;
   RelayMap: { [relay: string]: string };
   RelayKeyHostMap: { [Pubkey: string]: string };
+  AppState: { lastRpcError: number | undefined };
 }
 
 export interface TorusControllerConfig extends BaseConfig {

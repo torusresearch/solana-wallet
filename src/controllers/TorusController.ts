@@ -187,6 +187,7 @@ export const DEFAULT_STATE = {
   },
   RelayMap: {},
   RelayKeyHostMap: {},
+  AppState: { lastRpcError: undefined },
 };
 
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
@@ -1605,4 +1606,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const accountInfo = await this.connection.getAccountInfo(new PublicKey(domainOwner));
     return !!accountInfo?.owner.equals(NAME_OFFERS_ID) || !!accountInfo?.owner.equals(NAME_AUCTIONING);
   });
+
+  get rpcDownAt(): number | undefined {
+    // crypto currency
+    return this.state.AppState.lastRpcError;
+  }
 }
