@@ -110,7 +110,7 @@ import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 
-const TARGET_NETWORK = "mainnet";
+const TARGET_NETWORK = "mainnet_google";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
 export const DEFAULT_CONFIG = {
@@ -187,6 +187,7 @@ export const DEFAULT_STATE = {
   },
   RelayMap: {},
   RelayKeyHostMap: {},
+  AppState: { lastRpcError: undefined },
 };
 
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
@@ -1598,4 +1599,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const accountInfo = await this.connection.getAccountInfo(new PublicKey(domainOwner));
     return !!accountInfo?.owner.equals(NAME_OFFERS_ID) || !!accountInfo?.owner.equals(NAME_AUCTIONING);
   });
+
+  get rpcDownAt(): number | undefined {
+    // crypto currency
+    return this.state.AppState.lastRpcError;
+  }
 }
