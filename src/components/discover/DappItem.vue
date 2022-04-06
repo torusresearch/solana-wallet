@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { DiscoverDapp } from "@toruslabs/base-controllers";
+import log from "loglevel";
 import { computed } from "vue";
 
 import ControllerModule from "@/modules/controllers";
@@ -11,7 +12,12 @@ const props = defineProps<{
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
 
 const dappUrl =
-  window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("/?dappOrigin=", ControllerModule.torus.origin);
+  window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappOrigin=", ControllerModule.torus.origin);
+
+const onDappClick = () => {
+  localStorage.setItem("overrideDapp", ControllerModule.torus.origin);
+  log.info(dappUrl);
+};
 </script>
 <template>
   <a
@@ -19,6 +25,7 @@ const dappUrl =
     class="flex bg-white hover:bg-app-gray-200 dark:bg-app-gray-700 border border-app-gray-200 dark:border-transparent shadow dark:shadow-dark rounded-lg p-4"
     target="_blank"
     rel="noreferrer noopener"
+    @click="onDappClick"
   >
     <img class="w-12 h-12" :src="logo" alt="Dapp Logo" />
     <div class="pl-2 -mt-1 overflow-x-hidden">

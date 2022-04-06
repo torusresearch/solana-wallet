@@ -13,6 +13,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 
 const { resolve, promise } = promiseCreator<void>();
 let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";
+
 const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
@@ -80,6 +81,9 @@ const lastTransaction = computed(() => {
 });
 
 onMounted(async () => {
+  const override = localStorage.getItem("overrideDapp");
+  if (override) localStorage.removeItem("overrideDapp");
+
   if (!isMain) {
     await promise;
     log.info("initializing controllers with origin", dappOrigin);
@@ -103,7 +107,7 @@ onMounted(async () => {
           },
         }),
       },
-      origin: dappOrigin,
+      origin: override || dappOrigin,
     });
 
     ControllerModule.setupCommunication(dappOrigin);
