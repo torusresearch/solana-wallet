@@ -101,7 +101,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
@@ -1288,16 +1288,30 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
 
     try {
-      const { search } = window.location;
-      const searchParams = new URLSearchParams(search);
-      // const dappStorageKey = searchParams.get("dappStorageKey") || this.origin;
-      const dappStorageKey = searchParams.get("resolvedRoute") || this.origin;
-
-      // const dappStorageKey = sessionStorage.getItem(searchParams.get("instanceId") || "") || this.origin;
+      let dappStorageKey = this.origin;
+      if (isMain) {
+        // wallet popup with dappOrigin
+        const { search } = window.location;
+        const searchParams = new URLSearchParams(search);
+        // const dappKey = searchParams.get("dappStorageKey");
+        // const dappKey = sessionStorage.getItem(searchParams.get("instanceId") || "");
+        const dappKey = searchParams.get("resolvedRoute");
+        if (dappKey) {
+          dappStorageKey = dappKey;
+          this.setOrigin(dappStorageKey);
+        }
+      } else {
+        // DappOrign overide
+        const override = localStorage.getItem(`overrideDapp-${this.origin}`);
+        if (override) {
+          dappStorageKey = origin;
+          localStorage.removeItem(`overrideDapp-${this.origin}`);
+          this.setOrigin(dappStorageKey);
+        }
+      }
       log.info(dappStorageKey);
-      const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
 
-      if (window.location.origin !== dappStorageKey) this.setOrigin(dappStorageKey);
+      const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
 
       const keyState: KeyState =
         typeof value === "string"

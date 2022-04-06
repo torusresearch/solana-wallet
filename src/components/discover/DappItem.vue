@@ -15,7 +15,11 @@ const dappUrl =
   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappOrigin=", ControllerModule.torus.origin);
 
 const onDappClick = () => {
-  localStorage.setItem("overrideDapp", ControllerModule.torus.origin);
+  const durl = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
+
+  log.info(durl);
+
+  localStorage.setItem(`overrideDapp-${durl}`, ControllerModule.torus.origin);
   log.info(dappUrl);
 };
 </script>

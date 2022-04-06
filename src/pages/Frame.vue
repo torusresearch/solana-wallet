@@ -81,9 +81,6 @@ const lastTransaction = computed(() => {
 });
 
 onMounted(async () => {
-  const override = localStorage.getItem("overrideDapp");
-  if (override) localStorage.removeItem("overrideDapp");
-
   if (!isMain) {
     await promise;
     log.info("initializing controllers with origin", dappOrigin);
@@ -107,7 +104,7 @@ onMounted(async () => {
           },
         }),
       },
-      origin: override || dappOrigin,
+      origin: dappOrigin,
     });
 
     ControllerModule.setupCommunication(dappOrigin);
