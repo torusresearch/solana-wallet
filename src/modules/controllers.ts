@@ -522,9 +522,9 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  setNetwork(chainId: string): void {
-    const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
-    if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
+  setNetwork(rpcTarget: string): void {
+    const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.rpcTarget === rpcTarget);
+    if (!providerConfig) throw new Error(`Unsupported network: ${rpcTarget}`);
 
     this.torus.setNetwork(providerConfig);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");

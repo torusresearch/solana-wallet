@@ -282,6 +282,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.networkController?.state?.chainId;
   }
 
+  get rpcTarget(): string {
+    return this.networkController?.state?.providerConfig.rpcTarget;
+  }
+
   // UNSAFE METHOD: use with caution
   get privateKey(): string | undefined {
     return this.keyringController?.state.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey;

@@ -13,14 +13,14 @@ const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   const value = WALLET_SUPPORTED_NETWORKS[key as keyof typeof WALLET_SUPPORTED_NETWORKS];
   return {
     label: value.displayName,
-    value: value.chainId,
+    value: value.rpcTarget,
   };
 });
 const rpcDown = computed(() => {
   return ControllerModule.torus.rpcDownAt;
 });
 const selectedNetwork = computed({
-  get: () => networks.find((it) => it.value === ControllerModule.torus.chainId),
+  get: () => networks.find((it) => it.value === ControllerModule.torus.rpcTarget),
   set: (value) => {
     trackUserClick(SettingsPageInteractions.NETWORK + (value?.value || ""));
     if (value) ControllerModule.setNetwork(value.value);
