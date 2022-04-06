@@ -127,19 +127,19 @@ onMounted(() => {
 
         <div class="grid grid-cols-3">
           <div class="col-span-3 sm:col-span-1">
-            <SelectField id="ramp_crypto_select" v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
+            <SelectField v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-4">
           <div class="col-span-3 sm:col-span-2">
-            <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
+            <TextField v-model="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("walletTopUp.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
               <!-- {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }} -->
             </p>
           </div>
-          <div id="ramp_fiat_select" class="col-span-3 sm:col-span-1 gt-sm:pt-6">
-            <SelectField id="ramp_fiat_select" v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
+          <div class="col-span-3 sm:col-span-1 md:pt-6">
+            <SelectField v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
         <div v-if="!(isLoadingQuote || sendingTopup || errorMsg.length)" class="flex flex-col items-end mb-5">

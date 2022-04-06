@@ -1,6 +1,6 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
-import { get, post } from "@toruslabs/http-helpers";
+import { post } from "@toruslabs/http-helpers";
 import bowser from "bowser";
 import { BroadcastChannel } from "broadcast-channel";
 import copyToClipboard from "copy-to-clipboard";
@@ -174,15 +174,6 @@ export function setFallbackImg(target: any, src: string) {
   (target as { src: string }).src = src;
 }
 
-export async function convertCurrency(inputCurrencySymbol: string, outputCurrencySymbol: string) {
-  try {
-    const data: any = await get(`https://solana-api.tor.us/currency?fsym=${inputCurrencySymbol}&tsyms=${outputCurrencySymbol}`);
-    return data?.[outputCurrencySymbol.toUpperCase()];
-  } catch (e) {
-    return 0;
-  }
-}
-
 export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => Promise<void>) => Promise<boolean>, delayAmount: number) => {
   let currentTimer: NodeJS.Timeout | null = null;
   let currentPromiseReject: {
@@ -236,7 +227,7 @@ export async function recordDapp(origin: string) {
     };
     await post(`${config.api}/dapps/record`, { ...recordLoginPayload });
   } catch (e) {
-    log.error("ERROR RECORDING DAPP", e);
+    log.error(e, "ERROR RECORDING DAPP");
   }
 }
 export const backendStatePromise = promiseCreator();
@@ -274,3 +265,12 @@ export const logoutWithBC = async () => {
   await bc.postMessage("logout");
   bc.close();
 };
+
+export function getBrowserKey() {
+  let id = sessionStorage.getItem("bk");
+  if (!id) {
+    id = `${Date.now()}`;
+    sessionStorage.setItem("bk", id);
+  }
+  return id;
+}

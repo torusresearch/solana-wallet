@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { significantDigits } from "@toruslabs/base-controllers";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Card, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { convertCurrency } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -21,14 +21,14 @@ const token = computed(() => {
 const conversionRate = ref<number>();
 const setConversionRate = async () => {
   if (props?.selectedToken?.symbol !== "SOL") {
-    if (currency.value === "SOL") conversionRate.value = await convertCurrency(token.value as string, "SOL");
+    if (currency.value === "SOL") conversionRate.value = ControllerModule.torus.conversionRate;
     else conversionRate.value = props.selectedToken?.price?.[currency.value.toLowerCase()] || 0;
   } else conversionRate.value = ControllerModule.torus.conversionRate;
 };
 
 const formattedBalance = computed(() => {
-  if (token.value === "SOL") return ControllerModule.solBalance.toFixed(4);
-  return Number(props.selectedToken?.balance?.uiAmount).toFixed(2);
+  if (token.value === "SOL") return significantDigits(ControllerModule.solBalance, false, 4);
+  return significantDigits(props.selectedToken?.balance?.uiAmount || 0, false, 4);
 });
 watch(
   () => props.selectedToken,
@@ -48,7 +48,7 @@ watch(
     </div>
     <div class="flex w-full justify-between items-center">
       <div class="amount-container">
-        <span class="mr-2 font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
+        <span class="mr-2 font-bold text-5xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <span class="uppercase text-xs text-app-text-500 dark:text-app-text-dark-600">{{
           !selectedToken?.isFungible ? selectedToken?.name : token
         }}</span>

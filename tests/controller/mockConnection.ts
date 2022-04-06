@@ -1,5 +1,5 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
-import { MintInfo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AccountInfo, Commitment, Connection, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
 import BN from "bn.js";
 import base58 from "bs58";
@@ -14,7 +14,7 @@ import { OffChainMetaplexUri, sKeyPair } from "./mockData";
 let slotCounter = 23134;
 
 export const mockMintAddress = ["CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp", "2sTumM2oVLdurFrXWKVLpipdfwwY3D9ZspLh4Yo5zK6o"];
-export const mockMintInfo: Record<string, MintInfo> = {
+export const mockMintInfo: Record<string, any> = {
   [mockMintAddress[0]]: {
     mintAuthority: sKeyPair[0].publicKey,
     freezeAuthority: sKeyPair[0].publicKey,
@@ -33,7 +33,7 @@ export const mockMintInfo: Record<string, MintInfo> = {
 
 const generateAccountInfo = async () => {
   // mint buf len 82
-  const genMintLayout = (mintInfo: MintInfo) => {
+  const genMintLayout = (mintInfo: any) => {
     const buf = Buffer.alloc(82);
     const mintocz = {
       mintAuthorityOption: new BN(0),
@@ -58,7 +58,7 @@ const generateAccountInfo = async () => {
   //   isInitialized: true,
   // });
 
-  const decodeMintInfo: MintInfo = MintLayout.decode(buf);
+  const decodeMintInfo: any = MintLayout.decode(buf);
 
   log.info(decodeMintInfo.supply.toNumber());
   log.info(decodeMintInfo.isInitialized);

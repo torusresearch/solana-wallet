@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import ActivityItem from "@/components/activity/ActivityItem.vue";
 import { SelectField } from "@/components/common";
+import { ActivityPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 
 const ACTIVITY_ACTION_ALL = "walletActivity.allTransactions";
@@ -71,7 +72,12 @@ const sixMonthAgoDate = computed(() => {
   return minDate.setMonth(minDate.getMonth() - 6);
 });
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
-
+watch(actionType, () => {
+  trackUserClick(ActivityPageInteractions.FILTER_TRANSACTION_TYPE + actionType.value.label);
+});
+watch(period, () => {
+  trackUserClick(ActivityPageInteractions.FILTER_TRANSACTION_TIME + period.value.label);
+});
 const filteredTransaction = computed(() => {
   const selectedAction = actionType.value.value === ACTIVITY_ACTION_ALL ? "" : actionType.value.value;
   const regExAction = new RegExp(selectedAction, "i");

@@ -6,6 +6,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
+import { SettingsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
 
@@ -18,9 +19,11 @@ const closeModal = () => {
   isOpen.value = false;
 };
 const openModal = () => {
+  trackUserClick(SettingsPageInteractions.ACCOUNT_DETAILS);
   isOpen.value = true;
 };
 function copyPrivKey() {
+  trackUserClick(SettingsPageInteractions.COPY_PRIV);
   copyText(key.value || "");
 }
 const refDiv = ref(null);

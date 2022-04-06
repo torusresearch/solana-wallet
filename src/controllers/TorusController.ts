@@ -1,9 +1,14 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Connection, LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@bonfida/spl-name-service";
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -17,11 +22,14 @@ import {
   createLoggerMiddleware,
   createOriginMiddleware,
   DEFAULT_PREFERENCES,
+  DiscoverDapp,
   FEATURES_CONFIRM_WINDOW,
   FEATURES_DEFAULT_WALLET_WINDOW,
   FEATURES_PROVIDER_CHANGE_WINDOW,
   getPopupFeatures,
   ICommunicationProviderHandlers,
+  Ihandler,
+  LoginWithPrivateKeyParams,
   PaymentParams,
   PopupHandler,
   PopupWithBcHandler,
@@ -36,7 +44,9 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
+import eccrypto from "@toruslabs/eccrypto";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   createEngineStream,
   JRPCEngine,
@@ -53,23 +63,28 @@ import {
   AccountTrackerController,
   CurrencyController,
   ExtendedAddressPreferences,
-  Ihandler,
   IProviderHandlers,
   KeyringController,
   NetworkController,
   PreferencesController,
+  SendTransactionParams,
+  SignAllTransactionParams,
+  SignTransactionParams,
+  SolanaCurrencyControllerConfig,
   SolanaToken,
   TokenInfoController,
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
+import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
 import cloneDeep from "lodash-es/cloneDeep";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
+import stringify from "safe-stable-stringify";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
@@ -77,15 +92,19 @@ import topupPlugin from "@/plugins/Topup";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
+  CONTROLLER_MODULE_KEY,
+  KeyState,
+  OpenLoginBackendState,
   OpenLoginPopupResponse,
   SignMessageChannelDataType,
   TorusControllerConfig,
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
@@ -94,7 +113,11 @@ const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
 export const DEFAULT_CONFIG = {
-  CurrencyControllerConfig: { api: config.api, pollInterval: 600_000 },
+  CurrencyControllerConfig: {
+    api: config.api,
+    pollInterval: 600_000,
+    supportedCurrencies: config.supportedCurrencies,
+  } as SolanaCurrencyControllerConfig,
   NetworkControllerConfig: {
     providerConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
   },
@@ -124,6 +147,7 @@ export const DEFAULT_STATE = {
     currentCurrency: "usd",
     nativeCurrency: "sol",
     ticker: "sol",
+    tokenPriceMap: {},
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -135,6 +159,7 @@ export const DEFAULT_STATE = {
   PreferencesControllerState: {
     identities: {},
     selectedAddress: "",
+    fallback: false,
   },
   TransactionControllerState: {
     transactions: {},
@@ -163,6 +188,8 @@ export const DEFAULT_STATE = {
   RelayKeyHostMap: {},
 };
 
+export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
+
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
 
@@ -187,6 +214,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private tokensTracker!: TokensTrackerController;
 
   private engine?: JRPCEngine;
+
+  private storageLayer?: TorusStorageLayer;
 
   private lastTokenRefresh: Date = new Date();
 
@@ -213,7 +242,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get conversionRate(): number {
-    return this.currencyController.state.conversionRate;
+    if (!this.currencyController.state.tokenPriceMap.solana) return 0;
+    return this.currencyController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 
   get userInfo(): UserInfo {
@@ -286,7 +316,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get lastTokenRefreshDate(): Date {
-    return this.lastTokenRefresh;
+    return new Date(Number(this.currencyController.state.conversionDate) * 1000);
   }
 
   /**
@@ -295,6 +325,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
 
+    this.storageLayer = new TorusStorageLayer({ hostUrl: config.openloginStateAPI });
     // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
@@ -321,8 +352,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
     });
-    this.currencyController.updateConversionRate();
+    this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
     this.currencyController.scheduleConversionInterval();
+    this.currencyController.updateConversionRate();
 
     // key mgmt
     this.keyringController = new KeyringController({
@@ -337,7 +369,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
       getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
-      getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      // getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
+      getConversionRate: () => this.conversionRate,
       getConnection: this.networkController.getConnection.bind(this),
     });
 
@@ -413,7 +446,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
-      this.lastTokenRefresh = new Date(); // useful in UI
+      this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
     });
 
     this.keyringController.on("store", (state2) => {
@@ -423,8 +456,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      await this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+      // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -433,12 +466,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
           const tokenTransfer = constructTokenData(
+            this.currencyController.state.tokenPriceMap,
             this.tokenInfoController.state,
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
-            log.error("error while patching a new tx", err);
+            log.error(err, "error while patching a new tx");
           });
         }
       });
@@ -485,7 +519,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return { inputDomainKey, hashedInputName };
   }
 
-  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null> {
+  async getSNSAccount(
+    type: string,
+    address: string
+  ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
     const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns":
@@ -511,7 +548,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }
 
-  async transfer(tx: Transaction, req?: Ihandler<{ message: string }>): Promise<string> {
+  async transfer(tx: Transaction, req?: Ihandler<SendTransactionParams>): Promise<string> {
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     try {
       await signedTransaction.result;
@@ -549,17 +586,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const decimals = selectedToken.balance?.decimals || 0;
     const mintAccount = new PublicKey(tokenMintAddress);
     const signer = new PublicKey(this.selectedAddress); // add gasless transactions
-    const sourceTokenAccount = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAccount, signer);
+    const sourceTokenAccount = await getAssociatedTokenAddress(mintAccount, signer, false);
     const receiverAccount = new PublicKey(receiver);
 
     let associatedTokenAccount = receiverAccount;
     try {
-      associatedTokenAccount = await Token.getAssociatedTokenAddress(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
-        new PublicKey(tokenMintAddress),
-        receiverAccount
-      );
+      associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiverAccount, false);
     } catch (e) {
       log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
     }
@@ -567,25 +599,22 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
     if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-      const newAccount = await Token.createAssociatedTokenAccountInstruction(
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
-        new PublicKey(tokenMintAddress),
+      const newAccount = await createAssociatedTokenAccountInstruction(
+        new PublicKey(this.selectedAddress),
         associatedTokenAccount,
-        receiverAccount,
-        new PublicKey(this.selectedAddress)
+        new PublicKey(this.selectedAddress),
+        new PublicKey(tokenMintAddress)
       );
       transaction.add(newAccount);
     }
-    const transferInstructions = Token.createTransferCheckedInstruction(
-      TOKEN_PROGRAM_ID,
+    const transferInstructions = createTransferCheckedInstruction(
       sourceTokenAccount,
       mintAccount,
       associatedTokenAccount,
       signer,
-      [],
       amount,
-      decimals
+      decimals,
+      []
     );
     transaction.add(transferInstructions);
 
@@ -624,12 +653,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async addAccount(privKey: string, userInfo?: UserInfo, rehydrate?: boolean): Promise<string> {
     const address = this.keyringController.importAccount(privKey);
     if (userInfo) {
-      await this.preferencesController.initPreferences({
-        address,
-        calledFromEmbed: false,
-        userInfo,
-        rehydrate,
-      });
+      // try catch to prevent breaking login flow
+      try {
+        await this.preferencesController.initPreferences({
+          address,
+          calledFromEmbed: false,
+          userInfo,
+          rehydrate,
+        });
+      } catch (e) {
+        log.error(e);
+        await this.preferencesController.backendFallback(address, userInfo);
+      }
     }
     return address;
   }
@@ -652,7 +687,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
+    // await this.currencyController.updateConversionRate();
     // TODO: store this in prefsController
   }
 
@@ -695,7 +730,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
-    await this.currencyController.updateConversionRate();
+    // await this.currencyController.updateConversionRate();
     return this.preferencesController.setSelectedCurrency({
       selectedCurrency: currency,
     });
@@ -710,7 +745,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async refreshUserTokens(): Promise<void> {
-    await this.tokensTracker.updateSolanaTokens();
+    this.currencyController.scheduleConversionInterval();
+    await this.currencyController.updateConversionRate();
+    // await this.tokensTracker.updateSolanaTokens();
   }
 
   setIFrameStatus(req: JRPCRequest<{ isIFrameFullScreen: boolean; rid?: string }>): void {
@@ -730,6 +767,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   public handleLogout(): void {
     this.emit("logout");
+    this.notifyEmbedLogout();
+  }
+
+  public notifyEmbedLogout(): void {
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.ACCOUNTS_CHANGED,
       params: [],
@@ -986,7 +1027,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     throw new Error("user denied provider change request");
   }
 
-  async handleTransactionPopup(txId: string, req: Ihandler<{ message: string | string[] | undefined }>): Promise<boolean> {
+  async handleTransactionPopup(
+    txId: string,
+    req: Ihandler<SendTransactionParams | SignTransactionParams | SignAllTransactionParams>
+  ): Promise<boolean> {
     try {
       const { windowId } = req;
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
@@ -995,12 +1039,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const popupPayload: TransactionChannelDataType = {
         type: req.method,
         message: req.params?.message || "",
+        messageOnly: req.params?.messageOnly || false,
         signer: this.selectedAddress,
         // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
-        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
         networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
@@ -1056,7 +1101,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
-        currencyRate: this.currencyController.state.conversionRate?.toString(),
+        currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
         networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
@@ -1150,7 +1195,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // Embed login might have selectedAddress restored from storage.
       // Need to clear preference selectedAddress on Login
-      this.preferencesController.setSelectedAddress("");
+      this.preferencesController.update({ identities: {}, selectedAddress: "" });
 
       const address = await this.addAccount(paddedKey, userInfo);
       this.setSelectedAccount(address);
@@ -1193,6 +1238,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return relayPublicKey;
   }
 
+  // Only called in redirect flow
   async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
@@ -1204,22 +1250,91 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return allTransactions;
   }
 
-  async providerSignAllTransaction(req: Ihandler<{ message: string[] | undefined }>) {
-    if (!this.selectedAddress) throw new Error("Not logged in");
+  async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
+    const { privateKey } = saveState;
 
-    const approved = await this.handleTransactionPopup("", req);
+    // openlogin derived ED255519
+    const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
 
-    // throw error on reject
-    if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+    // Random generated secp256k1
+    const ecc_privateKey = eccrypto.generatePrivate();
+    const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
 
-    // sign all transaction
-    const allTransactions = req.params?.message?.map((msg) => {
-      let tx = Transaction.from(Buffer.from(msg, "hex"));
-      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
-      return signedMessage;
-    });
-    return allTransactions;
+    // (ephemeral private key, user public key)
+    const keyState: KeyState = {
+      priv_key: ecc_privateKey.toString("hex"),
+      pub_key: ecc_publicKey.toString("hex"),
+    };
+
+    try {
+      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
+      // save encrypted ed25519
+      await this.storageLayer?.setMetadata({
+        input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
+        privKey: new BN(ecc_privateKey),
+      });
+    } catch (error) {
+      log.error(error, "Error saving state!");
+    }
+  }
+
+  async restoreFromBackend(): Promise<boolean> {
+    if (this.hasSelectedPrivateKey) {
+      return true;
+    }
+
+    try {
+      const value = window.localStorage?.getItem(EPHERMAL_KEY);
+
+      const keyState: KeyState =
+        typeof value === "string"
+          ? JSON.parse(value)
+          : {
+              priv_key: "",
+              pub_key: "",
+            };
+
+      if (keyState.priv_key && keyState.pub_key) {
+        const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
+
+        const decryptedState = metadata as OpenLoginBackendState;
+
+        if (!decryptedState.privateKey) {
+          throw new Error("Private key not found in state");
+        }
+        if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+
+        // Restore keyringController only ( no Sync / initPreferenes )
+        const address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+
+        // valid private key needed to refreshJwt,
+        const jwt = this.preferencesController.state.identities[this.selectedAddress]?.jwtToken;
+
+        if (jwt) {
+          const expire = parseJwt(jwt).exp;
+          if (expire < Date.now() / 1000) {
+            await this.refreshJwt();
+          }
+        }
+        // support fallback when solana backend is down
+        // else {
+        //   throw new Error("Previous JWT not found");
+        // }
+
+        // This call sync and refresh blockchain state
+        this.setSelectedAccount(address, true);
+        return true;
+      }
+      log.warn("Invalid or no key in local storage");
+      return false;
+    } catch (error) {
+      log.error(error, "Error restoring state!");
+      return false;
+    }
+  }
+
+  async getDappList(): Promise<DiscoverDapp[]> {
+    return this.preferencesController.getDappList();
   }
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
@@ -1243,11 +1358,49 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController.state.selectedAddress ? [this.preferencesController.state.selectedAddress] : [];
   }
 
-  private async providerSignTransaction(req: JRPCRequest<any>) {
+  private async providerSignAllTransaction(req: Ihandler<SignAllTransactionParams>) {
+    if (!this.selectedAddress) throw new Error("Not logged in");
+    const message = req.params?.message;
+    if (!message?.length) throw new Error("Empty message from embed");
+
+    const approved = await this.handleTransactionPopup("", req);
+
+    // throw error on reject
+    if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
+    // sign all transaction
+    const allTransactions = req.params?.message?.map((msg) => {
+      if (req.params?.messageOnly) {
+        // fix for inconsistent account serialization
+        const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
+      }
+
+      let tx = Transaction.from(Buffer.from(msg, "hex"));
+      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      return signedMessage;
+    });
+    return allTransactions;
+  }
+
+  private async providerSignTransaction(req: JRPCRequest<SignTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
 
     const message = req.params?.message;
-    if (!message) throw new Error("empty error message");
+    if (!message) throw new Error("Empty message from embed");
+
+    if (req.params?.messageOnly) {
+      const approved = await this.handleTransactionPopup("", req);
+      if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
+      const signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
+
+      return JSON.stringify({
+        publicKey: this.selectedAddress,
+        signature: Buffer.from(signature).toString("hex"),
+      });
+    }
 
     const tx = Transaction.from(Buffer.from(message, "hex"));
 
@@ -1263,16 +1416,22 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (gaslessHost) {
       signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
     }
+
     return signed_tx;
   }
 
-  private async sendTransaction(req: JRPCRequest<any>) {
+  private async sendTransaction(req: JRPCRequest<SendTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
 
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
-    const tx = Transaction.from(Buffer.from(message, "hex"));
+    let tx: Transaction;
+    if (req.params?.messageOnly) {
+      tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
+      const block = await this.connection.getLatestBlockhash("max");
+      tx.recentBlockhash = block.blockhash;
+    } else tx = Transaction.from(Buffer.from(message, "hex"));
 
     return this.transfer(tx, req);
   }
@@ -1286,14 +1445,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
     end();
   }
 
+  private fastLogin() {
+    this.preferencesController.storeUserLogin({
+      verifier: this.userInfo.verifier,
+      verifierId: this.userInfo.verifierId,
+      address: this.selectedAddress,
+      options: {
+        calledFromEmbed: true,
+        rehydrate: false,
+      },
+    });
+
+    return this.selectedAddress;
+  }
+
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;
       log.info(currentLoginProvider);
       if (requestedLoginProvider) {
-        if (requestedLoginProvider === currentLoginProvider && this.selectedAddress) {
-          resolve([this.selectedAddress]);
+        if (requestedLoginProvider === currentLoginProvider && this.hasSelectedPrivateKey) {
+          const address = this.fastLogin();
+          resolve([address]);
         } else {
           // To login with the requested provider
           // On Embed, we have a window waiting... we need to tell it to login
@@ -1314,8 +1488,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
             else resolve([address]);
           });
         }
-      } else if (this.hasSelectedPrivateKey) resolve([this.selectedAddress]);
-      else {
+      } else if (this.hasSelectedPrivateKey) {
+        const address = this.fastLogin();
+        resolve([address]);
+      } else {
         // We show the modal to login
         this.embedController.update({
           loginInProgress: true,
@@ -1354,6 +1530,33 @@ export default class TorusController extends BaseController<TorusControllerConfi
     end();
   }
 
+  private async loginWithPrivateKey(req: Ihandler<LoginWithPrivateKeyParams>): Promise<{ success: boolean }> {
+    if (!req.params?.privateKey) throw new Error("Invalid Private Key");
+    this.keyringController.update({ wallets: [] });
+    this.preferencesController.update({ identities: {}, selectedAddress: "" });
+    const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
+    this.setSelectedAccount(publicKey);
+
+    if (!this.privateKey) throw new Error("Waller Error");
+    this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress });
+
+    this.engine?.emit("notification", {
+      method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
+      params: {
+        accounts: [publicKey],
+        isUnlocked: true,
+      },
+    });
+    this.communicationEngine?.emit("notification", {
+      method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
+      params: {
+        currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      },
+    });
+    log.info(publicKey);
+    return { success: true };
+  }
+
   private initializeProvider() {
     const providerHandlers: IProviderHandlers = {
       version: PKG.version,
@@ -1383,6 +1586,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       topup: this.topup.bind(this),
       handleWindowRpc: this.communicationManager.handleWindowRpc,
       getProviderState: this.getCommProviderState.bind(this),
+      loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }

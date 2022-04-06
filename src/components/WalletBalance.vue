@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
+import { GeneralInteractions, HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 
 const { t } = useI18n();
@@ -21,9 +22,10 @@ const conversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
 });
 const formattedBalance = computed(() => {
-  return ControllerModule.totalBalance;
+  return Number(ControllerModule.totalBalance);
 });
 const updateCurrency = (newCurrency: string) => {
+  trackUserClick(GeneralInteractions.GENERAL_CHANGE_CURRENCY + newCurrency);
   ControllerModule.setCurrency(newCurrency);
 };
 </script>
@@ -37,7 +39,7 @@ const updateCurrency = (newCurrency: string) => {
     </div>
     <div class="flex w-full justify-between items-center">
       <div class="amount-container">
-        <span class="mr-2 font-bold text-5xl lt-sm:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
+        <span class="mr-2 font-bold text-5xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />
       </div>
       <div class="mt-auto uppercase text-xs text-app-text-400 dark:text-app-text-dark-600">
@@ -48,8 +50,12 @@ const updateCurrency = (newCurrency: string) => {
     </div>
     <template v-if="showButtons" #footer>
       <div class="flex w-full justify-between items-center">
-        <Button :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{ t("walletHome.topUp") }}</Button>
-        <Button :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{ t("walletHome.transfer") }}</Button>
+        <Button v-ga="HomePageInteractions.TOPUP" :block="true" variant="tertiary" class="w-full mr-3" @click="router.push('/wallet/topup')">{{
+          t("walletHome.topUp")
+        }}</Button>
+        <Button v-ga="HomePageInteractions.TRANSFER" :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{
+          t("walletHome.transfer")
+        }}</Button>
       </div>
     </template>
   </Card>

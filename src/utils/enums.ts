@@ -3,8 +3,6 @@ import {
   AccountTrackerConfig,
   AccountTrackerState,
   BaseConfig,
-  BaseCurrencyControllerConfig,
-  BaseCurrencyControllerState,
   BaseEmbedControllerState,
   BaseState,
   KeyringControllerState,
@@ -15,12 +13,19 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
-import { SolanaBlock, SolanaPreferencesConfig, SolanaPreferencesState } from "@toruslabs/solana-controllers";
+import {
+  SolanaBlock,
+  SolanaCurrencyControllerConfig,
+  SolanaCurrencyControllerState,
+  SolanaPreferencesConfig,
+  SolanaPreferencesState,
+} from "@toruslabs/solana-controllers";
 import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Network/NetworkController";
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 
 import MobActivity from "@/assets/mob-activity.svg";
+import MobDiscover from "@/assets/mob-discover.svg";
 import MobHome from "@/assets/mob-home.svg";
 import MobNft from "@/assets/mob-nft.svg";
 import MobSettings from "@/assets/mob-settings.svg";
@@ -48,7 +53,7 @@ export interface OpenLoginBackendState {
 
 export interface TorusControllerState extends BaseState {
   NetworkControllerState: SolanaNetworkState;
-  CurrencyControllerState: BaseCurrencyControllerState;
+  CurrencyControllerState: SolanaCurrencyControllerState;
   PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
@@ -62,7 +67,7 @@ export interface TorusControllerState extends BaseState {
 
 export interface TorusControllerConfig extends BaseConfig {
   NetworkControllerConfig: NetworkConfig;
-  CurrencyControllerConfig: BaseCurrencyControllerConfig;
+  CurrencyControllerConfig: SolanaCurrencyControllerConfig;
   PreferencesControllerConfig: SolanaPreferencesConfig;
   AccountTrackerConfig: AccountTrackerConfig<SolanaBlock>;
   KeyringControllerConfig: BaseConfig;
@@ -78,7 +83,15 @@ export interface ControllerModuleState {
   torusState: TorusControllerState;
 }
 
-export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; route: string; icon: string; mobHidden: boolean } } = {
+export const NAVIGATION_LIST: {
+  [key: string]: {
+    name: string;
+    title: string;
+    route: string;
+    icon: string;
+    mobHidden: boolean;
+  };
+} = {
   home: {
     name: "navBar.home",
     title: "walletHome.walletHome",
@@ -119,6 +132,13 @@ export const NAVIGATION_LIST: { [key: string]: { name: string; title: string; ro
     title: "walletSettings.settings",
     route: "settings",
     icon: MobSettings,
+    mobHidden: false,
+  },
+  discover: {
+    name: "navBar.discover",
+    title: "Discover",
+    route: "discover",
+    icon: MobDiscover,
     mobHidden: false,
   },
 };
@@ -219,6 +239,7 @@ export interface EmbedInitParams {
 export type TransactionChannelDataType = {
   type: string;
   message: string | string[];
+  messageOnly?: boolean;
   origin: string;
   signer: string;
   balance: string;
@@ -296,7 +317,9 @@ export const LOCALES = [
   },
 ];
 
-export const REDIRECT_FLOW_CONFIG: { [keyof: string]: { redirectPath: string; requiresLogin: boolean } } = {
+export const REDIRECT_FLOW_CONFIG: {
+  [keyof: string]: { redirectPath: string; requiresLogin: boolean };
+} = {
   logout: {
     redirectPath: "/logout",
     requiresLogin: false,

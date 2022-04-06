@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { significantDigits } from "@toruslabs/base-controllers";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
+
+const { t } = useI18n();
 
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 
@@ -15,11 +19,12 @@ const conversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
 });
 
-defineProps<{
+const props = defineProps<{
   splToken: Partial<SolAndSplToken>;
 }>();
 
 const emits = defineEmits(["splClicked"]);
+const hasGeckoPrice = computed(() => props.splToken.symbol === "SOL" || !!props.splToken?.price?.usd);
 
 function splClicked() {
   emits("splClicked");
@@ -28,6 +33,7 @@ function splClicked() {
 
 <template>
   <div
+    v-if="splToken"
     class="shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
     @click="splClicked"
     @keydown="splClicked"
@@ -37,17 +43,20 @@ function splClicked() {
         <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken?.iconURL" alt="TOKEN Logo" />
         <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p></span
       >
-      <p class="font-medium text-xs leading-3 text-right text-gray-900 text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
-        ~ {{ (+(splToken?.balance?.uiAmountString ?? "0"))?.toFixed(3) }} {{ splToken?.symbol }}
+      <p class="font-medium text-xs leading-3 text-right text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
+        ~ {{ significantDigits(splToken.balance?.uiAmount || 0, false, 4) }} {{ splToken?.symbol }}
       </p>
     </div>
     <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">
-      <p>
+      <p v-if="hasGeckoPrice">
         1 {{ splToken?.symbol }} ≈
         {{ !splToken.mintAddress ? conversionRate : (splToken?.price?.[currency === "sol" ? "usd" : currency] || 0).toFixed(3) }}
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
-      <p>
+      <p v-if="!hasGeckoPrice">
+        {{ t("homeToken.noRate") }}
+      </p>
+      <p v-if="hasGeckoPrice">
         ~{{
           !splToken.mintAddress
             ? formattedSOLBalance

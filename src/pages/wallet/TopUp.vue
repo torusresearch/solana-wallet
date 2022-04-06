@@ -22,13 +22,13 @@ watch(selectedProvider, () => {
 
 <template>
   <div class="py-2">
-    <dl class="mt-5 grid grid-cols-1 gap-5 gt-sm:grid-cols-2 lg:grid-cols-2">
+    <dl class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-2">
       <RadioGroup v-model="selectedProvider">
         <RadioGroupLabel class="sr-only">{{ t("walletTopUp.serverSize") }}</RadioGroupLabel>
         <div class="space-y-4">
           <RadioGroupOption v-for="provider in providers" :key="provider.name" v-slot="{ checked }" :value="provider" as="template">
             <div
-              class="relative grid grid-cols-2 rounded-md border bg-white dark:bg-app-gray-700 shadow dark:shadow-dark px-4 gt-sm:px-6 py-4 cursor-pointer hover:bg-app-gray-200 focus:outline-none"
+              class="relative grid grid-cols-2 rounded-md border bg-white dark:bg-app-gray-700 shadow dark:shadow-dark px-4 md:px-6 py-4 cursor-pointer hover:bg-app-gray-200 focus:outline-none"
               :class="checked ? 'border-app-primary-500' : 'border-app-gray-200 dark:border-transparent'"
             >
               <div class="flex col-span-1 items-center">
@@ -48,11 +48,11 @@ watch(selectedProvider, () => {
                   <span class="font-bold">{{ `${t("walletTopUp.fees")}:` }}</span
                   >: {{ provider.fee }}
                 </div>
-                <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 gt-sm:ml-0">
+                <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 md:ml-0">
                   <span class="font-bold">{{ t("walletTopUp.limits") }}</span
                   >: {{ provider.limit }}
                 </div>
-                <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 gt-sm:ml-0">
+                <div class="text-right ml-1 text-xs text-app-text-600 dark:text-app-text-dark-500 md:ml-0">
                   <span class="font-bold">{{ t("walletTopUp.currencies") }}</span
                   >:
                   {{ provider.validCryptocurrencies.map((k) => k.value).join(", ") }}

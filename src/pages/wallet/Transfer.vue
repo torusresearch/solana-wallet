@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
+import memoize from "lodash-es/memoize";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -11,9 +12,10 @@ import { useRoute, useRouter } from "vue-router";
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
+import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { debounceAsyncValidator, delay, ruleVerifierId } from "@/utils/helpers";
+import { delay, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -21,7 +23,20 @@ const { t } = useI18n();
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-const transferTo = ref<string>("");
+let timeoutId: ReturnType<typeof setTimeout>;
+const transferToInternal = ref("");
+const transferTo = computed({
+  get: () => transferToInternal.value,
+  set: (value2) => {
+    // this will debounce the update and ensure that transferType is updated before validations are run
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      // eslint-disable-next-line prefer-destructuring
+      if (/\.sol$/g.test(value2)) transferType.value = ALLOWED_VERIFIERS[1];
+      transferToInternal.value = value2;
+    }, 500);
+  },
+});
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transactionFee = ref(0);
@@ -54,6 +69,7 @@ const AsyncTransferTokenSelect = defineAsyncComponent({
 const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
+const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!selectedToken.value.price?.usd);
 
 onMounted(() => {
   const { query } = route;
@@ -87,13 +103,22 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
-const addressPromise = () => {
-  return ControllerModule.getSNSAddress({
-    type: transferType.value.value,
-    address: transferTo.value,
-  });
-};
+const addressPromise = memoize(
+  (type: string, address: string) => {
+    return ControllerModule.getSNSAddress({
+      type,
+      address,
+    });
+  },
+  (...args) => Object.values(args).join("_")
+);
 
+async function escrowAccountVerifier(): Promise<boolean> {
+  if (transferType.value.value === "sns") {
+    return !(await ControllerModule.isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
+  }
+  return true;
+}
 const tokenAddressVerifier = async (value: string) => {
   if (!selectedToken?.value?.mintAddress) {
     return true;
@@ -104,7 +129,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   if (transferType.value.value === "sns") {
     try {
-      associatedAccount = new PublicKey((await addressPromise()) as string);
+      associatedAccount = new PublicKey((await addressPromise(transferType.value.value, transferTo.value)) as string);
     } catch (e) {
       // since our sns validator will return false anyway
       return true;
@@ -112,10 +137,10 @@ const tokenAddressVerifier = async (value: string) => {
   }
 
   // if succeeds, we assume that the account is account key is correct.
-  // Transfer in TorusController with derive the associated token adddress using the same function.
+  // Transfer in TorusController with derive the associated token address using the same function.
   associatedAccount = !associatedAccount ? new PublicKey(value) : associatedAccount;
   try {
-    await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mintAddress, associatedAccount);
+    await getAssociatedTokenAddress(mintAddress, associatedAccount, false);
     return true;
   } catch (e) {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
@@ -125,7 +150,7 @@ const tokenAddressVerifier = async (value: string) => {
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
-    if (new PublicKey(data.parsed.info.mint) === mintAddress) {
+    if (new PublicKey(data.parsed.info.mint).equals(mintAddress)) {
       return true;
     }
   }
@@ -139,12 +164,11 @@ const nftVerifier = (value: number) => {
   return true;
 };
 
-async function snsRule(value: string, debounce: () => Promise<void>): Promise<boolean> {
+async function snsRule(value: string): Promise<boolean> {
   if (!value) return true;
   if (transferType.value.value !== "sns") return true;
   try {
-    await debounce();
-    const address = await addressPromise();
+    const address = await addressPromise(transferType.value.value, transferTo.value);
     return address !== null;
   } catch (e) {
     return false;
@@ -179,8 +203,9 @@ const rules = computed(() => {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
       required: helpers.withMessage(t("walletTransfer.required"), required),
-      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounceAsyncValidator<string>(snsRule, 500))),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(snsRule)),
       tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
+      escrowAccount: helpers.withMessage(t("walletTransfer.escrowAccount"), helpers.withAsync(escrowAccountVerifier)),
     },
     sendAmount: {
       required: helpers.withMessage(t("walletTransfer.minTransfer"), required),
@@ -216,14 +241,16 @@ const onMessageModalClosed = () => {
 
 const closeModal = () => {
   isOpen.value = false;
+  trackUserClick(TransferPageInteractions.CANCEL);
 };
 
 const openModal = async () => {
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
+  await $v.value.$validate();
   if (!$v.value.$invalid) {
     if (transferType.value.value === "sns") {
-      const address = await addressPromise(); // doesn't throw
+      const address = await addressPromise(transferType.value.value, transferTo.value); // doesn't throw
       if (address) {
         resolvedAddress.value = address;
       } else {
@@ -232,6 +259,7 @@ const openModal = async () => {
     }
 
     isOpen.value = true;
+    trackUserClick(TransferPageInteractions.INITIATE);
   }
 
   // This can't be guarantee
@@ -255,6 +283,7 @@ function convertFiatToCrypto(fiatValue = 1) {
 }
 
 const confirmTransfer = async () => {
+  trackUserClick(TransferPageInteractions.CONFIRM);
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
@@ -357,6 +386,7 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
     }
   }
   selectedToken.value = $event;
+  trackUserClick(TransferPageInteractions.TOKEN_SELECT + $event.mintAddress);
 }
 
 // reset transfer token to solana if tokens no longer has current token
@@ -365,16 +395,12 @@ watch([tokens, nftTokens], () => {
     updateSelectedToken(tokens.value[0]);
   }
 });
-watch(transferTo, () => {
-  // eslint-disable-next-line prefer-destructuring
-  if (/\.sol$/g.test(transferTo.value)) transferType.value = ALLOWED_VERIFIERS[1];
-});
 </script>
 
 <template>
   <div class="py-2">
-    <div class="mt-5 flex flex-row justify-around items-start gt-sm:space-x-5 lt-sm:flex-col-reverse lt-sm:justify-start">
-      <Card class="w-full lt-sm:mt-4">
+    <div class="mt-5 flex flex-row justify-around items-start md:space-x-5 lt-md:flex-col-reverse lt-md:justify-start">
+      <Card class="w-full lt-md:mt-4">
         <form action="#" method="POST" class="w-full">
           <div class="flex flex-col justify-around items-start space-y-9">
             <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
@@ -387,7 +413,7 @@ watch(transferTo, () => {
                 class="w-2/3 flex-auto"
               />
               <div class="w-1/3 flex-auto mt-6">
-                <SelectField v-model="transferType" :items="transferTypes" class="mt-0 sm:mt-6" />
+                <SelectField v-model="transferType" :items="transferTypes" />
               </div>
             </div>
 
@@ -400,8 +426,9 @@ watch(transferTo, () => {
                 type="number"
                 @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
               >
-                <div class="flex flex-row items-center justify-around h-full select-none">
+                <div v-if="hasGeckoPrice" class="flex flex-row items-center justify-around h-full select-none">
                   <div
+                    v-ga="TransferPageInteractions.CURRENCY_TOGGLE + selectedToken.symbol"
                     class="currency-selector mr-1"
                     :class="[!isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
                     @click="setAmountCurrency(false)"
@@ -410,6 +437,7 @@ watch(transferTo, () => {
                     {{ selectedToken.symbol }}
                   </div>
                   <div
+                    v-ga="TransferPageInteractions.CURRENCY_TOGGLE + currency"
                     class="currency-selector"
                     :class="[isCurrencyFiat ? 't-btn-tertiary active-currency' : '']"
                     @click="setAmountCurrency(true)"
@@ -471,6 +499,6 @@ watch(transferTo, () => {
   @apply dark:bg-app-gray-700;
 }
 .currency-selector {
-  @apply py-1 px-4 uppercase text-xs text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
+  @apply py-1 px-4 uppercase text-xs cursor-pointer border-0 text-app-text-500 dark:text-app-text-dark-600;
 }
 </style>

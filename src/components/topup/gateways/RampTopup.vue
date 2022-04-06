@@ -10,6 +10,7 @@ import { useRouter } from "vue-router";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import config from "@/config";
+import { TopupPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { TOPUP, TopupProviders } from "@/utils/topup";
@@ -89,31 +90,42 @@ async function refreshTransferEstimate(val: { value: string; label: string; symb
   evaluateTransactionQuote();
 }
 
-watch(selectedCryptocurrency, throttle(refreshTransferEstimate, 500));
-watch([selectedCurrency, amount], throttle(evaluateTransactionQuote, 500));
+watch(selectedCryptocurrency, () => {
+  throttle(refreshTransferEstimate, 500);
+  trackUserClick(TopupPageInteractions.SELECTED_CRYPTO + selectedCryptocurrency.value);
+});
+watch([selectedCurrency, amount], () => {
+  throttle(evaluateTransactionQuote, 500);
+  trackUserClick(TopupPageInteractions.AMOUNT + amount.value);
+  trackUserClick(TopupPageInteractions.SELECTED_FIAT + selectedCurrency.value);
+});
 
 const onTopup = () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
+    trackUserClick(TopupPageInteractions.CONFIRM);
     ControllerModule.torus
       .handleTopup(TOPUP.RAMPNETWORK, {
         selectedCryptoCurrency: selectedCryptocurrency.value.symbol,
         cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (rampQuoteData?.decimals || 0)),
       })
-      .catch(() => addToast({ message: "Transaction could not complete.", type: "error" }));
+      .catch(() => {
+        addToast({ message: "Transaction could not complete.", type: "error" });
+      });
   }
 };
 
 onMounted(() => {
   selectedCurrency.value = selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || selectedProvider.validCurrencies[0];
   refreshTransferEstimate(selectedCryptocurrency.value);
+  trackUserClick(`${TopupPageInteractions.PROVIDER_SELECT} moonpay`);
 });
 </script>
 
 <template>
   <form @submit.prevent="onTopup">
-    <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 gt-sm:rounded-md gt-sm:overflow-hidden">
-      <div class="py-6 px-4 space-y-6 gt-sm:p-6">
+    <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 md:rounded-md md:overflow-hidden">
+      <div class="py-6 px-4 space-y-6 md:p-6">
         <div>
           <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">
             <span class="capitalize">{{ selectedProvider.name }}</span> {{ t(selectedProvider.description) }}.
@@ -121,19 +133,19 @@ onMounted(() => {
         </div>
 
         <div class="grid grid-cols-3">
-          <div class="col-span-3 gt-sm:col-span-1">
+          <div class="col-span-3 md:col-span-1">
             <SelectField id="ramp_crypto_select" v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-4">
-          <div class="col-span-3 gt-sm:col-span-2">
-            <TextField v-model.lazy="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
+          <div class="col-span-3 md:col-span-2">
+            <TextField v-model="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("walletTopUp.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
               {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }}
             </p>
           </div>
-          <div id="ramp_fiat_select" class="col-span-3 gt-sm:col-span-1 gt-sm:pt-6">
+          <div id="ramp_fiat_select" class="col-span-3 md:col-span-1 md:pt-6">
             <SelectField id="ramp_fiat_select" v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
           </div>
         </div>
@@ -155,7 +167,7 @@ onMounted(() => {
           <div>{{ t("walletTopUp.receiveHint") }}</div>
         </div>
       </div>
-      <div class="px-4 py-3 mb-4 gt-sm:px-6">
+      <div class="px-4 py-3 mb-4 md:px-6">
         <Button class="ml-auto mb-2" variant="primary" type="submit" :disabled="isLoadingQuote || ($v.$dirty && $v.$invalid)">{{
           t("walletHome.topUp")
         }}</Button>

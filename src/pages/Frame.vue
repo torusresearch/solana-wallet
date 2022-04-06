@@ -106,7 +106,7 @@ onMounted(async () => {
       origin: dappOrigin,
     });
     try {
-      await ControllerModule.restoreFromBackend();
+      await ControllerModule.torus.restoreFromBackend();
     } catch (error) {
       log.error(error);
     } finally {
