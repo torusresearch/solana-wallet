@@ -194,8 +194,6 @@ export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
 
-  public requireKeyRestore = true;
-
   private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
@@ -1281,10 +1279,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  public setRequireKeyRestore(value: boolean) {
-    this.requireKeyRestore = value;
-  }
-
   async restoreFromBackend(): Promise<boolean> {
     if (this.hasSelectedPrivateKey) {
       return true;
@@ -1335,7 +1329,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.warn("Invalid or no key in local storage");
       return false;
     } catch (error) {
-      log.error("Error restoring state!", error);
+      log.error(error, "Error restoring state!");
       return false;
     }
   }
