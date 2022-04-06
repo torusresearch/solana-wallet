@@ -234,9 +234,16 @@ router.beforeEach(async (to, _, next) => {
 
   // route below might need key restoration
   if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();
-  if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
-  if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
-  if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");
+  else if (isRedirectFlow) {
+    if (!getB64DecodedData(to.hash).method || !to.query.resolveRoute) {
+      return next({ name: "404", query: to.query, hash: to.hash });
+    }
+  } else {
+    const loggedIn = isLoggedIn();
+    if (authMeta === AuthStates.AUTHENTICATED && !loggedIn) return next("/login");
+    if (authMeta === AuthStates.NON_AUTHENTICATED && loggedIn) return next("/");
+  }
+
   return next();
 });
 
