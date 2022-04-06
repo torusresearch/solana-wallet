@@ -115,7 +115,7 @@ const addressPromise = memoize(
 
 async function escrowAccountVerifier(): Promise<boolean> {
   if (transferType.value.value === "sns") {
-    return !(await ControllerModule.torus.isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
+    return !(await ControllerModule.isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
   }
   return true;
 }

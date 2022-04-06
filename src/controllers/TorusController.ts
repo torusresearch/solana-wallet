@@ -81,7 +81,6 @@ import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
 import cloneDeep from "lodash-es/cloneDeep";
-import memoize from "lodash-es/memoize";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -1591,11 +1590,4 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }
-
-  isOwnerEscrow = memoize(async (domainOwner: string): Promise<boolean> => {
-    const NAME_AUCTIONING = new PublicKey("jCebN34bUfdeUYJT13J1yG16XWQpt5PDx6Mse9GUqhR");
-    const NAME_OFFERS_ID = new PublicKey("85iDfUvr3HJyLM2zcq5BXSiDvUWfw6cSE1FfNBo8Ap29");
-    const accountInfo = await this.connection.getAccountInfo(new PublicKey(domainOwner));
-    return !!accountInfo?.owner.equals(NAME_OFFERS_ID) || !!accountInfo?.owner.equals(NAME_AUCTIONING);
-  });
 }
