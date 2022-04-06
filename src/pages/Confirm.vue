@@ -131,7 +131,7 @@ onMounted(async () => {
       log.error(e);
     }
   } catch (error) {
-    log.error("error in tx", error);
+    log.error(error, "error in tx");
   }
 });
 

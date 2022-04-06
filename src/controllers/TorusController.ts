@@ -473,7 +473,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
-            log.error("error while patching a new tx", err);
+            log.error(err, "error while patching a new tx");
           });
         }
       });
@@ -1275,7 +1275,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         privKey: new BN(ecc_privateKey),
       });
     } catch (error) {
-      log.error("Error saving state!", error);
+      log.error(error, "Error saving state!");
     }
   }
 

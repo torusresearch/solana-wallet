@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { SelectField } from "@/components/common";
+import { SettingsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 
 import { WALLET_SUPPORTED_NETWORKS } from "../../utils/const";
@@ -18,6 +19,7 @@ const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
 const selectedNetwork = computed({
   get: () => networks.find((it) => it.value === ControllerModule.torus.chainId),
   set: (value) => {
+    trackUserClick(SettingsPageInteractions.NETWORK + (value?.value || ""));
     if (value) ControllerModule.setNetwork(value.value);
   },
 });

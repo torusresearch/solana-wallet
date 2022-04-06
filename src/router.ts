@@ -1,7 +1,9 @@
+import { config, pageview } from "vue-gtag";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
+import { getBrowserKey } from "@/utils/helpers";
 
 import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
 
@@ -233,18 +235,32 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
+
   if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();
-  else if (isRedirectFlow) {
-    if (!getB64DecodedData(to.hash).method || !to.query.resolveRoute) {
-      return next({ name: "404", query: to.query, hash: to.hash });
+  if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
+
+  if (authMeta === AuthStates.AUTHENTICATED) {
+    // user tried to access a authenticated route without being authenticated
+    if (!isLoggedIn() && !isRedirectFlow) {
+      return next("/login");
     }
-  } else {
-    const loggedIn = isLoggedIn();
-    if (authMeta === AuthStates.AUTHENTICATED && !loggedIn) return next("/login");
-    if (authMeta === AuthStates.NON_AUTHENTICATED && loggedIn) return next("/");
+    // route is authenticated and so is user, good to go
+    config({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
+  } else if (authMeta === AuthStates.NON_AUTHENTICATED) {
+    // user tried to access a un-authenticated route being authenticated
+    if (isLoggedIn() && !isRedirectFlow) {
+      return next("/");
+    }
+
+    // route is non-authenticated and so is user, good to go
+    config({ user_id: `notLoggedIn_${getBrowserKey()}` });
   }
 
   return next();
+});
+
+router.afterEach(() => {
+  pageview({ page_title: document.title, page_path: window.location.href });
 });
 
 export default router;

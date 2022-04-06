@@ -7,6 +7,7 @@ import { useI18n } from "vue-i18n";
 
 import SolanaLogoLight from "@/assets/solana-logo-light.svg";
 import WalletIcon from "@/assets/wallet.svg";
+import { HomePageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
@@ -53,6 +54,7 @@ const lastUpdateString = computed(() => {
           </h1>
           <div class="flex items-center space-x-2">
             <div
+              v-ga="HomePageInteractions.COPY_PUB"
               class="bg-white border dark:border-0 dark:bg-app-gray-700 flex space-x-2 py-1 px-2 rounded-full cursor-pointer items-center"
               @click="copyText(ControllerModule.torus.selectedAddress)"
               @keydown="copyText(ControllerModule.torus.selectedAddress)"
@@ -87,7 +89,11 @@ const lastUpdateString = computed(() => {
       <div class="flex flex-col w-full items-end !mt-12">
         <div class="bg-white border dark:border-0 dark:bg-app-gray-700 flex items-center space-x-2 py-2 px-4 rounded-full w-fit">
           <RefreshIcon class="w-3 h-3 text-app-text-500 dark:text-app-text-dark-400" />
-          <span class="text-app-text-500 dark:text-app-text-dark-400 text-xs cursor-pointer" @click="refreshTokens" @keydown="refreshTokens"
+          <span
+            v-ga="HomePageInteractions.REFRESH"
+            class="text-app-text-500 dark:text-app-text-dark-400 text-xs cursor-pointer"
+            @click="refreshTokens"
+            @keydown="refreshTokens"
             >Refresh Tokens</span
           >
         </div>

@@ -227,7 +227,7 @@ export async function recordDapp(origin: string) {
     };
     await post(`${config.api}/dapps/record`, { ...recordLoginPayload });
   } catch (e) {
-    log.error("ERROR RECORDING DAPP", e);
+    log.error(e, "ERROR RECORDING DAPP");
   }
 }
 export const backendStatePromise = promiseCreator();
@@ -265,3 +265,12 @@ export const logoutWithBC = async () => {
   await bc.postMessage("logout");
   bc.close();
 };
+
+export function getBrowserKey() {
+  let id = sessionStorage.getItem("bk");
+  if (!id) {
+    id = `${Date.now()}`;
+    sessionStorage.setItem("bk", id);
+  }
+  return id;
+}

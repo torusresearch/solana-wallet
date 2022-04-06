@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/vue";
 import log from "loglevel";
 import { nextTick } from "vue";
 import { createI18n, I18n } from "vue-i18n";
@@ -41,7 +42,8 @@ export async function loadLocaleMessages(i18n: I18n, locale: any) {
     // set locale and locale message
     i18n.global.setLocaleMessage(lang, messages.default);
   } catch (e) {
-    log.error(`REQUESTED UNKNOWN LOCALE ${lang}: ${JSON.stringify(e)}`);
+    log.error(e, `REQUESTED UNKNOWN LOCALE ${lang}`);
+    Sentry.setTag("unknown-locale", lang);
   }
   return nextTick();
 }

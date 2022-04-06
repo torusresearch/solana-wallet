@@ -53,5 +53,6 @@ export function installSentry(Vue: App) {
   // Sentry.setUser({ email: "john.doe@example.com" });
 
   const plugin = new LoglevelSentryPlugin(Sentry);
+  Sentry.setTag("referrer", document.referrer || "self");
   plugin.install(log);
 }
