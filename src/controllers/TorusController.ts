@@ -194,8 +194,6 @@ export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
 
-  public requireKeyRestore = true;
-
   private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
@@ -1270,26 +1268,21 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
+      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
       // save encrypted ed25519
       await this.storageLayer?.setMetadata({
         input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
         privKey: new BN(ecc_privateKey),
       });
-      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
       log.error(error, "Error saving state!");
     }
   }
 
-  public setRequireKeyRestore(value: boolean) {
-    this.requireKeyRestore = value;
-  }
-
-  async restoreFromBackend() {
-    if (!this.requireKeyRestore) {
-      return;
+  async restoreFromBackend(): Promise<boolean> {
+    if (this.hasSelectedPrivateKey) {
+      return true;
     }
-    this.setRequireKeyRestore(false);
 
     try {
       const value = window.localStorage?.getItem(EPHERMAL_KEY);
@@ -1331,13 +1324,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
-      } else {
-        log.warn("Invalid or no key in local storage");
-        this.handleLogout();
+        return true;
       }
+      log.warn("Invalid or no key in local storage");
+      return false;
     } catch (error) {
       log.error(error, "Error restoring state!");
-      this.handleLogout();
+      return false;
     }
   }
 
