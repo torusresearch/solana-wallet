@@ -1270,12 +1270,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
+      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
       // save encrypted ed25519
       await this.storageLayer?.setMetadata({
         input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey) },
         privKey: new BN(ecc_privateKey),
       });
-      window.localStorage?.setItem(EPHERMAL_KEY, stringify(keyState));
     } catch (error) {
       log.error("Error saving state!", error);
     }
@@ -1285,11 +1285,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.requireKeyRestore = value;
   }
 
-  async restoreFromBackend() {
-    if (!this.requireKeyRestore) {
-      return;
+  async restoreFromBackend(): Promise<boolean> {
+    if (this.hasSelectedPrivateKey) {
+      return true;
     }
-    this.setRequireKeyRestore(false);
 
     try {
       const value = window.localStorage?.getItem(EPHERMAL_KEY);
@@ -1331,13 +1330,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
-      } else {
-        log.warn("Invalid or no key in local storage");
-        this.handleLogout();
+        return true;
       }
+      log.warn("Invalid or no key in local storage");
+      return false;
     } catch (error) {
       log.error("Error restoring state!", error);
-      this.handleLogout();
+      return false;
     }
   }
 

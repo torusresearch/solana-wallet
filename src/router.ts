@@ -156,12 +156,14 @@ const router = createRouter({
       path: "/redirectflow",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
       meta: { title: "redirecting" },
-      beforeEnter: (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+      beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
         const { method = "" } = getB64DecodedData(to.hash);
         const resolveRoute = (to.query.resolveRoute as string) || "";
         const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
         if (!resolveRoute || !method) return next({ name: "404", query: to.query, hash: to.hash });
-        if (!ControllerModule.selectedAddress && requiresLogin)
+
+        await ControllerModule.torus.restoreFromBackend();
+        if (!ControllerModule.hasSelectedPrivateKey && requiresLogin)
           return next({
             name: "login",
             query: {
@@ -214,6 +216,15 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   return next();
 });
 
+const restoreOrlogout = async () => {
+  try {
+    const result = await ControllerModule.torus.restoreFromBackend();
+    if (!result) ControllerModule.logout();
+  } catch (_e) {
+    ControllerModule.logout();
+  }
+};
+
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
@@ -222,7 +233,7 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-  if (authMeta === AuthStates.AUTHENTICATED || (to.meta.redirectFlow && isRedirectFlow)) ControllerModule.torus.restoreFromBackend();
+  if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
   if (authMeta === AuthStates.AUTHENTICATED && !isLoggedIn() && !isRedirectFlow) return next("/login");
   if (authMeta === AuthStates.NON_AUTHENTICATED && isLoggedIn() && !isRedirectFlow) return next("/");

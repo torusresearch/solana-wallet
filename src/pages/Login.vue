@@ -34,7 +34,7 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
-const selectedAddress = computed(() => ControllerModule.selectedAddress);
+const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
 
 onMounted(() => {
   if (selectedAddress.value && isRedirectFlow)
