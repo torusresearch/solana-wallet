@@ -808,7 +808,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   showWalletPopup(path: string, instanceId: string): void {
-    const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&resolvedRoute=${this.origin}`);
+    const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&resolveRoute=${this.origin}`);
     const walletPopupWindow = new PopupHandler({
       config: {
         features: getPopupFeatures(FEATURES_DEFAULT_WALLET_WINDOW),
@@ -1292,7 +1292,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         // wallet popup with dappOrigin
         const { search } = window.location;
         const searchParams = new URLSearchParams(search);
-        const dappKey = searchParams.get("resolvedRoute");
+        const dappKey = searchParams.get("resolveRoute");
         if (dappKey) {
           dappStorageKey = dappKey;
           this.setOrigin(dappStorageKey);
