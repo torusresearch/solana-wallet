@@ -269,8 +269,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.currencyController?.state?.nativeCurrency;
   }
 
-  get currentNetworkName(): string {
-    return this.networkController.state.providerConfig.displayName;
+  get currentProviderConfig(): ProviderConfig {
+    return this.networkController?.getProviderConfig();
   }
 
   get provider(): SafeEventEmitterProvider {
@@ -280,10 +280,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   get chainId(): string {
     // crypto currency
     return this.networkController?.state?.chainId;
-  }
-
-  get rpcTarget(): string {
-    return this.networkController?.state?.providerConfig.rpcTarget;
   }
 
   // UNSAFE METHOD: use with caution
@@ -317,11 +313,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get blockExplorerUrl(): string {
-    return this.networkController.getProviderConfig().blockExplorerUrl;
+    return this.currentProviderConfig.blockExplorerUrl;
   }
 
   get lastTokenRefreshDate(): Date {
     return new Date(Number(this.currencyController.state.conversionDate) * 1000);
+  }
+
+  get rpcDownAt(): number | undefined {
+    return this.state.AppState.lastRpcError;
   }
 
   /**
@@ -688,7 +688,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setCurrentCurrency(currency: string): Promise<void> {
-    const { ticker } = this.networkController.getProviderConfig();
+    const { ticker } = this.currentProviderConfig;
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
@@ -730,7 +730,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setDefaultCurrency(currency: string): Promise<boolean> {
-    const { ticker } = this.networkController.getProviderConfig();
+    const { ticker } = this.currentProviderConfig;
     // This is SOL
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
@@ -1022,7 +1022,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const result = (await providerChangeWindow.handleWithHandshake({
       origin: this.preferencesController.iframeOrigin,
       newNetwork: req.params,
-      currentNetwork: this.networkController.state.providerConfig.displayName,
+      currentNetwork: this.currentProviderConfig.displayName,
     })) as { approve: boolean };
     const { approve = false } = result;
     if (approve) {
@@ -1052,8 +1052,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         selectedCurrency: this.currencyController.state.currentCurrency,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
-        network: this.networkController.state.providerConfig.displayName,
-        networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+        network: this.currentProviderConfig.displayName,
+        networkDetails: JSON.parse(JSON.stringify(this.currentProviderConfig)),
       };
       const txApproveWindow = new PopupWithBcHandler({
         state: {
@@ -1108,8 +1108,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         selectedCurrency: this.currencyController.state.currentCurrency,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
-        network: this.networkController.state.providerConfig.displayName,
-        networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+        network: this.currentProviderConfig.displayName,
+        networkDetails: JSON.parse(JSON.stringify(this.currentProviderConfig)),
       };
       const txApproveWindow = new PopupWithBcHandler({
         state: {
@@ -1594,9 +1594,5 @@ export default class TorusController extends BaseController<TorusControllerConfi
       loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
-  }
-
-  get rpcDownAt(): number | undefined {
-    return this.state.AppState.lastRpcError;
   }
 }

@@ -22,7 +22,7 @@ const rpcDown = computed(() => {
   return ControllerModule.torus.rpcDownAt;
 });
 const selectedNetwork = computed({
-  get: () => networks.find((it) => it.value === ControllerModule.torus.rpcTarget),
+  get: () => networks.find((it) => it.value === ControllerModule.torus.currentProviderConfig.rpcTarget),
   set: (value) => {
     trackUserClick(SettingsPageInteractions.NETWORK + (value?.value || ""));
     if (value) ControllerModule.setNetwork(value.value);
