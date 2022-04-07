@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DiscoverDapp } from "@toruslabs/base-controllers";
-import log from "loglevel";
+// import log from "loglevel";
 import { computed } from "vue";
 
 import ControllerModule from "@/modules/controllers";
@@ -11,21 +11,17 @@ const props = defineProps<{
 
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
 
-const dappUrl =
-  window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappOrigin=", ControllerModule.torus.origin);
+// const dappUrl =
+//   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappLink=", ControllerModule.torus.origin);
 
 const onDappClick = () => {
-  const durl = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
-
-  log.info(durl);
-
-  localStorage.setItem(`overrideDapp-${durl}`, ControllerModule.torus.origin);
-  log.info(dappUrl);
+  const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
+  localStorage.setItem(`dappLink-${urlTrimmed}`, ControllerModule.torus.origin);
 };
 </script>
 <template>
   <a
-    :href="dappUrl"
+    :href="dapp.url"
     class="flex bg-white hover:bg-app-gray-200 dark:bg-app-gray-700 border border-app-gray-200 dark:border-transparent shadow dark:shadow-dark rounded-lg p-4"
     target="_blank"
     rel="noreferrer noopener"

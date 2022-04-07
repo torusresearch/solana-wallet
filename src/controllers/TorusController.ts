@@ -808,8 +808,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   showWalletPopup(path: string, instanceId: string): void {
-    sessionStorage.setItem(instanceId, this.origin);
-    // const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&dappStorageKey=${this.origin}`);
     const finalUrl = new URL(`${config.baseRoute}${path}?instanceId=${instanceId}&resolvedRoute=${this.origin}`);
     const walletPopupWindow = new PopupHandler({
       config: {
@@ -1293,8 +1291,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
         // wallet popup with dappOrigin
         const { search } = window.location;
         const searchParams = new URLSearchParams(search);
-        // const dappKey = searchParams.get("dappStorageKey");
-        // const dappKey = sessionStorage.getItem(searchParams.get("instanceId") || "");
         const dappKey = searchParams.get("resolvedRoute");
         if (dappKey) {
           dappStorageKey = dappKey;
@@ -1302,11 +1298,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
       } else {
         // DappOrign overide
-        const override = localStorage.getItem(`overrideDapp-${this.origin}`);
+        const override = localStorage.getItem(`dappLink-${this.origin}`);
         if (override) {
-          dappStorageKey = origin;
-          localStorage.removeItem(`overrideDapp-${this.origin}`);
-          this.setOrigin(dappStorageKey);
+          dappStorageKey = override;
+          localStorage.removeItem(`dappLink-${this.origin}`);
+          log.info("restoring key with dappLink");
         }
       }
       log.info(dappStorageKey);
