@@ -1300,10 +1300,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else {
         // DappOrign overide
         const override = localStorage.getItem(`dappLink-${this.origin}`);
+        const sessionOverride = sessionStorage.getItem("dappLink");
         if (override) {
           dappStorageKey = override;
+          sessionStorage.setItem("dappLink", override);
           localStorage.removeItem(`dappLink-${this.origin}`);
           log.info("restoring key with dappLink");
+        } else if (sessionOverride) {
+          dappStorageKey = sessionOverride;
+          log.info("restoring key with session dappLink");
         }
       }
       log.info(dappStorageKey);
