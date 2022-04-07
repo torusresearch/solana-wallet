@@ -9,8 +9,8 @@ import SolanaLogoLight from "@/assets/solana-logo-light.svg";
 import WalletIcon from "@/assets/wallet.svg";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
+import { NAVIGATION_LIST } from "@/utils/mobNav";
 
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),

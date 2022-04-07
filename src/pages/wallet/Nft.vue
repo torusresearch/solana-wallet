@@ -14,8 +14,8 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import { NftsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { NAVIGATION_LIST } from "@/utils/enums";
-import { setFallbackImg } from "@/utils/helpers";
+import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
+import { NAVIGATION_LIST } from "@/utils/mobNav";
 
 const router = useRouter();
 const { t } = useI18n();
