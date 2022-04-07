@@ -41,10 +41,10 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
-import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain, logoutWithBC } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/network";
 
 import store from "../store";
 import { addToast } from "./app";

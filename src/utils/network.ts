@@ -1,7 +1,7 @@
 import { ProviderConfig } from "@toruslabs/base-controllers";
 import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 // override default config here.
-export const WALLET_SUPPORTED_NETWORKS = {
+export const WALLET_SUPPORTED_NETWORKS: { [name: string]: ProviderConfig } = {
   ...SUPPORTED_NETWORKS,
   mainnet_serum: {
     blockExplorerUrl: "https://explorer.solana.com",
@@ -24,7 +24,7 @@ export const WALLET_SUPPORTED_NETWORKS = {
   mainnet_genesysgo: {
     blockExplorerUrl: "https://explorer.solana.com",
     chainId: "0x1",
-    displayName: "Genesysgo Mainet ",
+    displayName: "Genesysgo Mainnet",
     logo: "solana.svg",
     rpcTarget: "https://ssc-dao.genesysgo.net/",
     ticker: "SOL",

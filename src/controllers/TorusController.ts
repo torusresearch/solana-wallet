@@ -89,7 +89,6 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import topupPlugin from "@/plugins/Topup";
-import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
   CONTROLLER_MODULE_KEY,
@@ -104,6 +103,7 @@ import {
 import { getRandomWindowId, getRelaySigned, getUserLanguage, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/network";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
