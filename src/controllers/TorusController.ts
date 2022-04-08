@@ -194,8 +194,6 @@ export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
 
-  public dappLink = "";
-
   private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
@@ -1267,25 +1265,30 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (redirectflowOrigin) {
         dappStorageKey = redirectflowOrigin;
       } else {
+        // If the popup is opened from a dapp, use the dapp origin as the dappStorageKey
         const instanceIdOrigin = searchParams.get("instanceId") || "";
-        const dappLink = sessionStorage.getItem(instanceIdOrigin);
-        if (dappLink) {
-          dappStorageKey = dappLink;
-          this.dappLink = dappLink;
+        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin);
+        if (dappOriginURL) {
+          dappStorageKey = dappOriginURL;
+          // sessionStorage.setItem("dappOriginURL", dappOriginURL); // Set for refresh use
+          // this.dappOriginURL = dappOriginURL;
         }
+        // else: default wallet case
       }
     } else {
-      // DappOrign overide
-      const override = localStorage.getItem(`dappLink-${this.origin}`);
-      const sessionOverride = sessionStorage.getItem("dappLink");
+      // Override is set from discover page
+      const override = localStorage.getItem(`dappOriginURL-${this.origin}`);
+
+      // Session override is used in case of refresh
+      const sessionOverride = sessionStorage.getItem("dappOriginURL");
       if (override) {
         dappStorageKey = override;
-        sessionStorage.setItem("dappLink", override);
-        localStorage.removeItem(`dappLink-${this.origin}`);
-        log.info("restoring key with dappLink");
+        sessionStorage.setItem("dappOriginURL", override); // Set for refresh use
+        localStorage.removeItem(`dappOriginURL-${this.origin}`); // Remove to avoid reentrancy on solana.tor.us keys
+        log.info(`Key restored for - ${override} on ${this.origin}`);
       } else if (sessionOverride) {
         dappStorageKey = sessionOverride;
-        log.info("restoring key with session dappLink");
+        log.info(`Key restored using refresh for - ${sessionOverride} on ${this.origin}`);
       }
     }
     return dappStorageKey;
@@ -1594,7 +1597,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
     this.setSelectedAccount(publicKey);
 
-    if (!this.privateKey) throw new Error("Waller Error");
+    if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
     this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress });
 
     this.engine?.emit("notification", {

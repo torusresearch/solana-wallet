@@ -3,8 +3,6 @@ import { DiscoverDapp } from "@toruslabs/base-controllers";
 // import log from "loglevel";
 import { computed } from "vue";
 
-import ControllerModule from "@/modules/controllers";
-
 const props = defineProps<{
   dapp: DiscoverDapp;
 }>();
@@ -15,9 +13,13 @@ const logo = computed(() => props.dapp?.logo?.[0].url || "");
 //   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappLink=", ControllerModule.torus.origin);
 
 const onDappClick = () => {
-  if (ControllerModule.torus.dappLink) {
+  const searchParams = new URLSearchParams(window.location.search);
+  const instanceId = searchParams.get("instanceId") || "";
+  const dappOriginURL = sessionStorage.getItem(instanceId);
+
+  if (dappOriginURL) {
     const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
-    localStorage.setItem(`dappLink-${urlTrimmed}`, ControllerModule.torus.dappLink);
+    localStorage.setItem(`dappOriginURL-${urlTrimmed}`, dappOriginURL);
   }
 };
 </script>
@@ -25,7 +27,6 @@ const onDappClick = () => {
   <a
     :href="dapp.url"
     class="flex bg-white hover:bg-app-gray-200 dark:bg-app-gray-700 border border-app-gray-200 dark:border-transparent shadow dark:shadow-dark rounded-lg p-4"
-    target="_blank"
     rel="noreferrer noopener"
     @click="onDappClick"
   >
