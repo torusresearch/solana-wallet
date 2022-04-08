@@ -525,7 +525,8 @@ class ControllerModule extends VuexModule {
     }
     try {
       // window.localStorage?.removeItem(CONTROLLER_MODULE_KEY);
-      window.localStorage?.removeItem(`${EPHERMAL_KEY}-${this.torus.origin}`);
+      const dappStorageKey = this.torus.dappLink ? this.torus.dappLink : this.torus.origin;
+      window.localStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
     }
