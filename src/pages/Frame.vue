@@ -13,6 +13,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 
 const { resolve, promise } = promiseCreator<void>();
 let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";
+
 const initParams = {
   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
   isIFrameFullScreen: false,
@@ -105,14 +106,9 @@ onMounted(async () => {
       },
       origin: dappOrigin,
     });
-    try {
-      await ControllerModule.torus.restoreFromBackend();
-    } catch (error) {
-      log.error(error);
-    } finally {
-      ControllerModule.setupCommunication(dappOrigin);
-      showUI.value = true;
-    }
+
+    ControllerModule.setupCommunication(dappOrigin);
+    showUI.value = true;
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
