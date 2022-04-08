@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { DiscoverDapp } from "@toruslabs/base-controllers";
+// import log from "loglevel";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -7,13 +8,27 @@ const props = defineProps<{
 }>();
 
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
+
+// const dappUrl =
+//   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappLink=", ControllerModule.torus.origin);
+
+const onDappClick = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const instanceId = searchParams.get("instanceId") || "";
+  const dappOriginURL = sessionStorage.getItem(instanceId);
+
+  if (dappOriginURL) {
+    const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
+    localStorage.setItem(`dappOriginURL-${urlTrimmed}`, dappOriginURL);
+  }
+};
 </script>
 <template>
   <a
     :href="dapp.url"
     class="flex bg-white hover:bg-app-gray-200 dark:bg-app-gray-700 border border-app-gray-200 dark:border-transparent shadow dark:shadow-dark rounded-lg p-4"
-    target="_blank"
     rel="noreferrer noopener"
+    @click="onDappClick"
   >
     <img class="w-12 h-12" :src="logo" alt="Dapp Logo" />
     <div class="pl-2 -mt-1 overflow-x-hidden">

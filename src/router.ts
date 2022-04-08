@@ -127,25 +127,25 @@ const router = createRouter({
       name: "confirm",
       path: "/confirm",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/Confirm.vue"),
-      meta: { title: "Confirm", redirectFlow: true },
+      meta: { title: "Confirm" },
     },
     {
       name: "confirm_nft",
       path: "/confirm_nft",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/ConfirmNft.vue"),
-      meta: { title: "Confirm Nft", redirectFlow: true },
+      meta: { title: "Confirm Nft" },
     },
     {
       name: "confirm_spl",
       path: "/confirm_spl",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/ConfirmSpl.vue"),
-      meta: { title: "Confirm Spl", redirectFlow: true },
+      meta: { title: "Confirm Spl" },
     },
     {
       name: "confirm_message",
       path: "/confirm_message",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/ConfirmMessage.vue"),
-      meta: { title: "Sign Message", redirectFlow: true },
+      meta: { title: "Sign Message" },
     },
     {
       name: "redirect",
@@ -235,7 +235,6 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-
   if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
 
