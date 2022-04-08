@@ -16,7 +16,7 @@ const logo = computed(() => props.dapp?.logo?.[0].url || "");
 
 const onDappClick = () => {
   const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
-  localStorage.setItem(`dappLink-${urlTrimmed}`, ControllerModule.torus.origin);
+  localStorage.setItem(`dappLink-${urlTrimmed}`, ControllerModule.torus.dappLink);
 };
 </script>
 <template>
