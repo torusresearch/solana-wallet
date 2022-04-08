@@ -15,8 +15,10 @@ const logo = computed(() => props.dapp?.logo?.[0].url || "");
 //   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappLink=", ControllerModule.torus.origin);
 
 const onDappClick = () => {
-  const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
-  localStorage.setItem(`dappLink-${urlTrimmed}`, ControllerModule.torus.dappLink);
+  if (ControllerModule.torus.dappLink) {
+    const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
+    localStorage.setItem(`dappLink-${urlTrimmed}`, ControllerModule.torus.dappLink);
+  }
 };
 </script>
 <template>
