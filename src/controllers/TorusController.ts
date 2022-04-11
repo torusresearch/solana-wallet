@@ -1209,7 +1209,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const keypair = getED25519Key(paddedKey);
       const address = await this.addAccount(base58.encode(keypair.sk), userInfo);
       this.setSelectedAccount(address);
-      if (!this.privateKey) throw new Error("Wallet Error: Invalid private key ");
+
+      if (!this.hasSelectedPrivateKey) throw new Error("Wallet Error: Invalid private key ");
       this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo });
 
       this.emit("LOGIN_RESPONSE", null, address);
@@ -1303,11 +1304,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
-    // const { privateKey: secretKey, publicKey } = saveState;
-
-    // openlogin derived ED255519
-    // const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
-
     // Random generated secp256k1
     const ecc_privateKey = eccrypto.generatePrivate();
     const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
@@ -1600,8 +1596,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (!req.params?.privateKey) throw new Error("Invalid Private Key");
 
     // Do not need this as embed restore trigger moved to on 'requestAccount` called and state save in SessionStorage
-    // this.keyringController.update({ wallets: [] });
-    // this.preferencesController.update({ identities: {}, selectedAddress: "" });
     const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
     this.setSelectedAccount(publicKey);
 
