@@ -418,8 +418,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         try {
           this.preferencesController.initializeDisplayActivity();
         } catch (e) {
-          log.error(this.selectedAddress);
-          log.error(e);
+          log.error(e, this.selectedAddress);
         }
       }
 
