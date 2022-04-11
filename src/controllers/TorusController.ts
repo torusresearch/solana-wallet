@@ -415,7 +415,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", async () => {
       if (this.selectedAddress) {
-        this.preferencesController.initializeDisplayActivity();
+        try {
+          this.preferencesController.initializeDisplayActivity();
+        } catch (e) {
+          log.error(e, this.selectedAddress);
+        }
       }
 
       this.engine?.emit("notification", {
@@ -652,7 +656,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async addAccount(privKey: string, userInfo?: UserInfo, rehydrate?: boolean): Promise<string> {
-    const address = this.keyringController.importAccount(privKey);
+    const address = this.keyringController.importKeyring(base58.decode(privKey));
     if (userInfo) {
       // try catch to prevent breaking login flow
       try {
@@ -1202,8 +1206,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // Need to clear preference selectedAddress on Login
       // Do not need this due to save state to SessionStorage
 
-      const address = await this.addAccount(paddedKey, userInfo);
+      const keypair = getED25519Key(paddedKey);
+      const address = await this.addAccount(base58.encode(keypair.sk), userInfo);
       this.setSelectedAccount(address);
+
+      if (!this.hasSelectedPrivateKey) throw new Error("Wallet Error: Invalid private key ");
+      this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo });
+
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
     } catch (error) {
@@ -1295,11 +1304,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
-    const { privateKey } = saveState;
-
-    // openlogin derived ED255519
-    const { pk: publicKey, sk: secretKey } = getED25519Key(privateKey.padStart(64, "0"));
-
     // Random generated secp256k1
     const ecc_privateKey = eccrypto.generatePrivate();
     const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
@@ -1314,7 +1318,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
-        input: { publicKey: base58.encode(publicKey), privateKey: base58.encode(secretKey), userInfo: this.userInfo },
+        input: saveState,
         privKey: new BN(ecc_privateKey),
       });
     } catch (error) {
@@ -1358,7 +1362,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
           log.info("login without userinfo");
           // Restore keyringController only ( no Sync / initPreferenes )
-          address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64));
+          address = await this.addAccount(decryptedState.privateKey);
 
           // required to set selectedAddress before check for jwt
           this.preferencesController.setSelectedAddress(address);
@@ -1374,7 +1378,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           }
         } else {
           // restore with userInfo ( full login as preference state not available )
-          address = await this.addAccount(base58.decode(decryptedState.privateKey).toString("hex").slice(0, 64), decryptedState.userInfo);
+          address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
         }
 
         // This call sync and refresh blockchain state
@@ -1592,13 +1596,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (!req.params?.privateKey) throw new Error("Invalid Private Key");
 
     // Do not need this as embed restore trigger moved to on 'requestAccount` called and state save in SessionStorage
-    // this.keyringController.update({ wallets: [] });
-    // this.preferencesController.update({ identities: {}, selectedAddress: "" });
     const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
     this.setSelectedAccount(publicKey);
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
-    this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress });
+    this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress, userInfo: req.params?.userInfo });
 
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
