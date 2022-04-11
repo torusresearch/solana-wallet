@@ -1601,7 +1601,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
     this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress, userInfo: req.params?.userInfo });
-
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {
