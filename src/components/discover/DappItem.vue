@@ -18,8 +18,8 @@ const onDappClick = () => {
   const dappOriginURL = sessionStorage.getItem(instanceId);
 
   if (dappOriginURL) {
-    const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
-    localStorage.setItem(`dappOriginURL-${urlTrimmed}`, dappOriginURL);
+    const dappUrl = new URL(props.dapp.url);
+    localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
   }
 };
 </script>
