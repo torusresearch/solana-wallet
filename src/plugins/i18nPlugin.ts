@@ -1,10 +1,12 @@
 import * as Sentry from "@sentry/vue";
+import merge from "lodash-es/merge";
 import log from "loglevel";
 import { nextTick } from "vue";
 import { createI18n, I18n } from "vue-i18n";
 
 import { LOCALE_EN } from "@/utils/enums";
 import { getUserLanguage } from "@/utils/helpers";
+import { getOverrideTranslations } from "@/utils/white-label";
 
 export const localeTarget = getUserLanguage() || LOCALE_EN;
 export const languageMap: Record<string, string> = {
@@ -40,7 +42,7 @@ export async function loadLocaleMessages(i18n: I18n, locale: any) {
     // load locale messages with dynamic import
     const messages = await import(/* webpackChunkName: "locale-[request]" */ `./i18n/${languageMap[lang]}.json`);
     // set locale and locale message
-    i18n.global.setLocaleMessage(lang, messages.default);
+    i18n.global.setLocaleMessage(lang, merge(messages.default, getOverrideTranslations(lang)));
   } catch (e) {
     log.error(e, `REQUESTED UNKNOWN LOCALE ${lang}`);
     Sentry.setTag("unknown-locale", lang);

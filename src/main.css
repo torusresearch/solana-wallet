@@ -171,7 +171,7 @@ input[type=number] {
 
 .active-border {
   border-top: 2px solid #9945ff;
-  border-bottom: 2px solid transparent;
+  border-bottom: 2px solid transparent!important;
 }
 
 :focus-visible {

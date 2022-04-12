@@ -19,7 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Button variant="text" @click="toggleNav()"><MenuIcon class="w-6 h-6 text-app-primary-500" /></Button>
+  <Button variant="text" @click="toggleNav()"><MenuIcon class="w-6 h-6 text-app-primary-500 wl-color" /></Button>
 
   <div
     :class="{ hidden: !showNav }"

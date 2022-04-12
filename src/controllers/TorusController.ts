@@ -1521,7 +1521,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;
-      log.info(currentLoginProvider);
+      // log.info(currentLoginProvider);
       if (requestedLoginProvider) {
         if (requestedLoginProvider === currentLoginProvider && this.hasSelectedPrivateKey) {
           const address = this.fastLogin();

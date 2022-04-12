@@ -6,8 +6,10 @@ import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
+import ControllerModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white-label";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
 import InstructionDisplay from "../payments/InstructionDisplay.vue";
@@ -48,7 +50,11 @@ function openLink() {
   <div class="w-full h-full overflow-hidden text-left align-middle bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center">
     <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
       <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4">
-        <img class="h-7 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
+        <img
+          class="h-7 left-5 absolute max-w-[65px]"
+          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.logoUrl"
+          alt="Dapp Logo"
+        />
         <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 w-full">
           {{ `${t("dappProvider.confirm")} ${t("dappProvider.permission")}` }}
         </p>
@@ -59,7 +65,7 @@ function openLink() {
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
 
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent">{{ getDomainFromUrl(props.origin) }}</a>
+            <a :href="props.origin" target="_blank" class="text-sm text-app-text-accent wl-color">{{ getDomainFromUrl(props.origin) }}</a>
             <div class="h-6 w-6 flex items-center justify-center rounded-md cursor-pointer" @click="openLink" @keydown="openLink">
               <img :src="GoToLinkLogo" alt="GoToLink" />
             </div>
@@ -74,7 +80,7 @@ function openLink() {
             </p>
           </div>
           <p
-            class="text-right mt-4 text-sm cursor-pointer text-app-text-accent w-full"
+            class="text-right mt-4 text-sm cursor-pointer text-app-text-accent w-full wl-color"
             @click="() => (expand_inst = !expand_inst)"
             @keydown="() => (expand_inst = !expand_inst)"
           >

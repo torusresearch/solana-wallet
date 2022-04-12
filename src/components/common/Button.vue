@@ -22,8 +22,13 @@ const classList = computed(() => {
   let sizeClass = "";
   const fontClasses = [""];
   if (props.variant === "text") {
-    fontClasses.push("text-xs");
+    fontClasses.push("text-xs wl-color");
   } else {
+    if (props.variant === "primary") {
+      fontClasses.push("wl-background");
+    } else if (props.variant === "tertiary") {
+      fontClasses.push("wl-color");
+    }
     sizeClass = `size-${props.size}`;
     fontClasses.push("text-base");
   }

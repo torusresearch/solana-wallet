@@ -8,14 +8,14 @@ import {
   ProviderConfig,
 } from "@toruslabs/base-controllers";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
-import Button from "@toruslabs/vue-components/common/Button.vue";
 import { BroadcastChannel } from "broadcast-channel";
 import { onMounted, reactive } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-import { TextField } from "@/components/common";
+import { Button, TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white-label";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
@@ -89,7 +89,11 @@ const denyProviderChange = async () => {
   <div class="h-full w-full bg-white dark:bg-app-gray-700 flex justify-center items-center">
     <div class="content-box h-full bg-white dark:bg-app-gray-700 flex flex-col justify-between shadow dark:shadow-dark">
       <div class="shadow w-full dark:shadow-dark text-center py-6 relative" tabindex="0">
-        <img class="h-7 mx-auto w-auto mb-1 absolute left-5" :src="SolanaLogoURL" alt="Solana Logo" />
+        <img
+          class="h-7 mx-auto w-auto mb-1 absolute left-5 max-w-[65px]"
+          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || SolanaLogoURL"
+          alt="Solana Logo"
+        />
         <div class="font-header w-full text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 title-box">
           {{ `${t("dappTransfer.confirm")} ${t("dappTransfer.permission")}` }}
         </div>
@@ -116,13 +120,9 @@ const denyProviderChange = async () => {
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 m-6">
-        <div>
-          <Button class="ml-auto" :block="true" variant="tertiary" @click="denyProviderChange()">{{ t("dappProvider.cancel") }}</Button>
-        </div>
-        <div>
-          <Button class="ml-auto" :block="true" variant="primary" @click="approveProviderChange()">{{ t("dappProvider.confirm") }}</Button>
-        </div>
+      <div class="flex flex-row items-center my-4 mx-4">
+        <Button class="flex-auto mx-1" :block="true" variant="tertiary" @click="denyProviderChange()">{{ t("dappProvider.cancel") }}</Button>
+        <Button class="flex-auto mx-1" :block="true" variant="primary" @click="approveProviderChange()">{{ t("dappProvider.confirm") }}</Button>
       </div>
     </div>
   </div>

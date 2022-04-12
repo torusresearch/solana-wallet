@@ -45,6 +45,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
+import { didOverrideTheme, isWhiteLabelActive, isWhiteLabelDark } from "@/utils/white-label";
 
 import store from "../store";
 import { addToast } from "./app";
@@ -185,6 +186,13 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
+    log.info(
+      "isDarkMode evaluation",
+      isWhiteLabelActive() && !didOverrideTheme(),
+      isWhiteLabelDark(),
+      this.selectedAccountPreferences.theme === "dark"
+    );
+    if (isWhiteLabelActive() && !didOverrideTheme()) return isWhiteLabelDark();
     return this.selectedAccountPreferences.theme === "dark";
   }
 

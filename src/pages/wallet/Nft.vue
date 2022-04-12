@@ -76,7 +76,7 @@ const transferNFT = () => {
               :to="`/wallet/${value.route}`"
               :class="[
                 key === 'nfts'
-                  ? 'border-app-primary-500 text-app-primary-500'
+                  ? 'border-app-primary-500 text-app-primary-500 wl-border-color wl-color'
                   : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
                 'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
               ]"
@@ -147,7 +147,7 @@ const transferNFT = () => {
               {{ nftMetaData.offChainMetaData?.description || "" }}
             </p>
             <div
-              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer"
+              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer wl-background"
               @click="transferNFT"
               @keydown="transferNFT"
             >
@@ -200,7 +200,10 @@ const transferNFT = () => {
         :aria-current="key === 'nfts' ? 'page' : undefined"
         :class="[value.mobHidden ? 'hidden' : 'block']"
       >
-        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === 'nfts' ? 'active-border' : '']">
+        <div
+          class="flex flex-col h-full items-center justify-center select-none w-16 py-1"
+          :class="[key === 'nfts' ? 'active-border wl-border-color' : '']"
+        >
           <img
             :src="value.icon"
             alt="link icon"

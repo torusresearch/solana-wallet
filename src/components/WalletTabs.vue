@@ -10,12 +10,13 @@ import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/enums";
 import { logoutWithBC } from "@/utils/helpers";
+import { getWhiteLabelLocale, getWhiteLabelLogoDark, getWhiteLabelLogoLight, isWhiteLabelActive } from "@/utils/white-label";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
 requireLoggedIn();
 
-setLocale(i18n, ControllerModule.torus.locale || i18n.global.locale);
+setLocale(i18n, isWhiteLabelActive() ? getWhiteLabelLocale() : ControllerModule.torus.locale || i18n.global.locale);
 
 const props = withDefaults(
   defineProps<{
@@ -43,7 +44,11 @@ const logout = async () => {
       <div class="flex h-16 px-4 header-border">
         <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
-            <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+            <img
+              class="block h-4 w-auto"
+              :src="ControllerModule.isDarkMode ? getWhiteLabelLogoLight() || SolanaLightLogoURL : getWhiteLabelLogoDark() || SolanaLogoURL"
+              alt="Solana Logo"
+            />
           </router-link>
         </div>
         <div class="flex flex-3">
@@ -54,11 +59,11 @@ const logout = async () => {
               :to="`/wallet/${value.route}`"
               :class="[
                 key === tab
-                  ? 'border-app-primary-500 text-app-primary-500'
+                  ? 'border-app-primary-500 text-app-primary-500 wl-border-color'
                   : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
-                'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
+                'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium wl-color ',
               ]"
-              :aria-current="key === tab ? 'page' : undefined"
+              :aria-current="key === tab ? 'page wl-border-bottom-color' : undefined"
               >{{ t(value.name) }}</router-link
             >
           </div>
@@ -101,7 +106,10 @@ const logout = async () => {
         :aria-current="key === tab ? 'page' : undefined"
         :class="[value.mobHidden ? 'hidden' : 'block']"
       >
-        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === tab ? 'active-border' : '']">
+        <div
+          class="flex flex-col h-full items-center justify-center select-none w-16 py-1"
+          :class="[key === tab ? 'active-border wl-border-color' : '']"
+        >
           <img
             :src="value.icon"
             alt="link icon"

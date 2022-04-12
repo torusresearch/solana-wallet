@@ -12,7 +12,7 @@ const spinnerStyle = () => {
     <div
       v-for="n in 9"
       :key="n"
-      class="box-loader_beat inline-block bg-app-primary-500 w-5 h-5 rounded-full"
+      class="box-loader_beat inline-block bg-app-primary-500 w-5 h-5 rounded-full wl-background"
       :class="[`box-loader_beat-${n % 2 ? 'odd' : 'even'}`, { 'box-loader_beat--hidden': hidden.includes(n) }]"
       :style="spinnerStyle()"
     ></div>

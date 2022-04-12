@@ -7,6 +7,7 @@ import VueGtag from "vue-gtag";
 import App from "@/App.vue";
 import { googleAnalyticsDirective } from "@/directives/google-analytics";
 import router from "@/router";
+import { applyWhiteLabelThings } from "@/utils/white-label";
 
 import { i18n } from "./plugins/i18nPlugin";
 import * as serviceWorker from "./registerServiceWorker";
@@ -24,6 +25,7 @@ vue
     config: { id: VUE_APP_GA_ID },
   })
   .mount("#app");
+applyWhiteLabelThings();
 installSentry(vue);
 
 serviceWorker.register({

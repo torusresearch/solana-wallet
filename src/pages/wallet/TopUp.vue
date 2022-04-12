@@ -6,6 +6,7 @@ import { useRouter } from "vue-router";
 
 import controllerModule from "@/modules/controllers";
 import { TOPUP, TopupProvider, TopupProviders } from "@/utils/topup";
+import { getBrandColor } from "@/utils/white-label";
 
 const router = useRouter();
 
@@ -18,6 +19,10 @@ const { t } = useI18n();
 watch(selectedProvider, () => {
   router.push({ name: selectedProvider.value.name });
 });
+
+function getRadioButtonColor(): string {
+  return getBrandColor() || "currentColor";
+}
 </script>
 
 <template>
@@ -28,14 +33,14 @@ watch(selectedProvider, () => {
         <div class="space-y-4">
           <RadioGroupOption v-for="provider in providers" :key="provider.name" v-slot="{ checked }" :value="provider" as="template">
             <div
-              class="relative grid grid-cols-2 rounded-md border bg-white dark:bg-app-gray-700 shadow dark:shadow-dark px-4 md:px-6 py-4 cursor-pointer hover:bg-app-gray-200 focus:outline-none"
+              class="relative grid grid-cols-2 rounded-md border bg-white dark:bg-app-gray-700 shadow dark:shadow-dark px-4 md:px-6 py-4 cursor-pointer hover:bg-app-gray-200 focus:outline-none wl-border-color"
               :class="checked ? 'border-app-primary-500' : 'border-app-gray-200 dark:border-transparent'"
             >
               <div class="flex col-span-1 items-center">
                 <div class="mr-3">
                   <svg class="w-6 h-6" :class="checked ? 'text-app-primary-500' : 'text-app-gray-600'" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="11" stroke="currentColor" />
-                    <circle v-if="checked" cx="12" cy="12" r="8" fill="currentColor" />
+                    <circle cx="12" cy="12" r="11" :stroke="getRadioButtonColor()" />
+                    <circle v-if="checked" cx="12" cy="12" r="8" :fill="getRadioButtonColor()" />
                   </svg>
                 </div>
                 <img :src="provider.logo(controllerModule.isDarkMode)" :alt="provider.name" class="w-24" />
