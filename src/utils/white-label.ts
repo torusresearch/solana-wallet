@@ -5,7 +5,7 @@ export function overrideTheme() {
   wasThemeChanged = true;
 }
 export function didOverrideTheme(): boolean {
-  return wasThemeChanged;
+  return !!wasThemeChanged;
 }
 
 export function getWhiteLabel(): any {
@@ -26,7 +26,7 @@ export function isWhiteLabelDark() {
   const wl2 = getWhiteLabel();
   return !(wl2?.theme?.isDark === false);
 }
-export function getBrandColor() {
+export function getBrandColor(): string {
   return getWhiteLabel()?.theme?.colors?.torusBrand1;
 }
 

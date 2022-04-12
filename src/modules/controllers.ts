@@ -186,12 +186,6 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
-    log.info(
-      "isDarkMode evaluation",
-      isWhiteLabelActive() && !didOverrideTheme(),
-      isWhiteLabelDark(),
-      this.selectedAccountPreferences.theme === "dark"
-    );
     if (isWhiteLabelActive() && !didOverrideTheme()) return isWhiteLabelDark();
     return this.selectedAccountPreferences.theme === "dark";
   }
