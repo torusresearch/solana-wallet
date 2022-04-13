@@ -31,7 +31,7 @@ jobs:
 
       #       serve in non-blocking 8080 port using pm2
       - name: Serve Project Build
-        run: ./node_modules/.bin/pm2 start npm -- run serve-p
+        run: npm run serve-p
 
       - name: Run Tests
         run: npm run test
