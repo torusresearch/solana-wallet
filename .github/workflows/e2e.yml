@@ -29,9 +29,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      #       serve in non-blocking 8080 port using pm2
+      # serve in non-blocking 8080 port using pm2
       - name: Serve Project Build
-        run: ./node_modules/.bin/pm2 start npm -- run serve-p
+        run: ./node_modules/.bin/pm2 start npm -- run serve-dist
 
       - name: Sleep for 30 seconds
         uses: whatnick/wait-action@master

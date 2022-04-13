@@ -14,8 +14,7 @@
     "test:controller": "npx mocha  ./tests/controller/**.ts",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js",
-    "production": "vue-cli-service serve --mode production",
-    "serve-p": "npx serve -s dist -p 8080"
+    "serve-dist": "npx serve -s dist -p 8080"
   },
   "dependencies": {
     "@bonfida/spl-name-service": "^0.1.27",
