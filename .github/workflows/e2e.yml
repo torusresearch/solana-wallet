@@ -26,8 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Serve Project
-        run: npm run serve
+      - name: Build Project
+        run: npm run build
+
+      - name: Serve Project Build
+        run: npx serve -s dist -l 8080
 
       - name: Run Tests
         run: npm run  test
