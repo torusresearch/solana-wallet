@@ -1318,6 +1318,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const keyState: KeyState = {
       priv_key: ecc_privateKey.toString("hex"),
       pub_key: ecc_publicKey.toString("hex"),
+      selectedAddress: saveState.publicKey,
     };
 
     try {
@@ -1342,8 +1343,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       const dappStorageKey = this.getDappStorageKey();
       log.info(dappStorageKey);
-      const value =
-        window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`) || window.sessionStorage.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      const value = localKey || sessionKey;
+
+      // Saving to SessionStorage - user closed browser and revisit with restored key
+      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}-${dappStorageKey}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -1351,9 +1356,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
           : {
               priv_key: "",
               pub_key: "",
+              selectedAddress: "",
             };
 
-      if (keyState.priv_key && keyState.pub_key) {
+      if (keyState.priv_key && keyState.pub_key && keyState.selectedAddress) {
+        // opportunistic login
+        this.preferencesController.setSelectedAddress(keyState.selectedAddress);
+
         const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
 
         const decryptedState = metadata as OpenLoginBackendState;
