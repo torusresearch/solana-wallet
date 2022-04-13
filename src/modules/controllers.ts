@@ -41,7 +41,7 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -409,6 +409,7 @@ class ControllerModule extends VuexModule {
     this.torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
     });
+
     // this.torus.setupUntrustedCommunication();
     // Good
     this.torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
@@ -520,6 +521,7 @@ class ControllerModule extends VuexModule {
       const sessionOverride = sessionStorage.getItem("dappOriginURL");
       const dappStorageKey = sessionOverride || this.torus.origin;
       window.localStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      window.sessionStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
     }
@@ -660,7 +662,7 @@ class ControllerModule extends VuexModule {
 const moduleName = `${CONTROLLER_MODULE_KEY}`;
 installStorePlugin({
   key: moduleName,
-  storage: LOCAL_STORAGE_KEY,
+  storage: SESSION_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.requireKeyRestore`, `${moduleName}.torusState.KeyringControllerState`]);
     storage?.setItem(key, JSON.stringify(requiredState));
