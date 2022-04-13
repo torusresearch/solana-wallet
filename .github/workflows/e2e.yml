@@ -29,8 +29,5 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Serve Project Build
-        run: npx serve -s dist -l 8080
-
-      - name: Run Tests
-        run: npm run  test
+      - name: Serve Project Build & Run Tests
+        run: npx serve -s dist -l 8080 & npm run  test
