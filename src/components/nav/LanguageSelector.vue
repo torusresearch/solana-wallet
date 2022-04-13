@@ -9,7 +9,7 @@ import ControllersModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { LOCALES } from "@/utils/enums";
 
-const value = customRef((track, trigger) => {
+const selectedLocale = customRef((track, trigger) => {
   return {
     get() {
       track();
@@ -17,6 +17,10 @@ const value = customRef((track, trigger) => {
       return value2;
     },
     set(input: typeof LOCALES[0]) {
+      // do nothing if selects same language
+      if (input.value === selectedLocale.value.value) {
+        return;
+      }
       trackUserClick(GeneralInteractions.GENERAL_LANGUAGE + input.value);
       setLocale(i18n, input.value);
       ControllersModule.setLocale(input.value);
@@ -29,10 +33,10 @@ const value = customRef((track, trigger) => {
 <template>
   <div class="relative items-stretch w-full md:w-auto">
     <div class="relative w-full md:w-auto">
-      <Listbox v-model="value" as="div">
+      <Listbox v-model="selectedLocale" as="div">
         <ListboxButton class="flex items-center text-app-text-600 dark:text-app-text-dark-500 w-full md:w-auto px-4 md:px-0">
           <GlobeIcon class="h-4 w-4 mr-2" aria-hidden="true" />
-          <span class="font-bold text-sm md:text-xs">{{ value.name }}</span>
+          <span class="font-bold text-sm md:text-xs">{{ selectedLocale.name }}</span>
           <ChevronBottomIcon class="h-3 w-3 ml-1" aria-hidden="true" />
         </ListboxButton>
         <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">

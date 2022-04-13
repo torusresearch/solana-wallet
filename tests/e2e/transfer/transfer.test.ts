@@ -68,10 +68,10 @@ test.describe("Transfer page", async () => {
 
     // Fill a unique random amount
     await page.fill("input[type='number']", transferAmount);
-
+    await wait(5000);
     // Click transfer, wait for popup
     await page.click("button >> text=Transfer");
-    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 30_000 });
     // const total = (await page.locator("div >> text=/~ [0-9.].* SOL/").first().innerText()).split(" ")[1];
     // Click confirm, wait for navigation to activities page
 
@@ -101,15 +101,18 @@ test.describe("Transfer page", async () => {
     await page.click("button >> text=Solana");
     await page.click("p >> text=USD Coin (USDC)");
     await page.fill("input.combo-input-field", PUB_ADDRESS);
+    await wait(5000);
+
     await page.fill("input[type='number']", "0.01");
+    await wait(5000);
     await page.click("button >> text=Transfer");
-    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
+    await page.waitForSelector("button>> text=Confirm", { timeout: 30_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
     // ensure first activity to be our recent transaction
     await ensureFirstActivityIsRecentTransaction(page, "Sent 0.01 USDC");
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load", { timeout: 10_000 });
+    await page2.waitForEvent("load", { timeout: 30_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
     await page2.close();
   });

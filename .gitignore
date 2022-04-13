@@ -12,6 +12,7 @@ yarn-error.log*
 pnpm-debug.log*
 /pnpm-lock.yaml
 .idea
+test-result.json
 
 yarn.lock
 src/plugins/i18n
