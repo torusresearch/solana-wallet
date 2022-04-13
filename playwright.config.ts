@@ -13,5 +13,6 @@ const config: PlaywrightTestConfig = {
       testDir: "tests/e2e",
     },
   ],
+  reporter: [["dot"], ["json", { outputFile: "test-result.json" }]],
 };
 export default config;
