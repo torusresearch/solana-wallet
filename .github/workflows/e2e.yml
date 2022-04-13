@@ -9,7 +9,7 @@ on:
 
 jobs:
   e2e-tests:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
