@@ -29,5 +29,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Serve Project Build & Run Tests
-        run: npx serve -s dist -l 8080 & npm run  test
+      #       serve in non-blocking 8080 port using pm2
+      - name: Serve Project Build
+        run: pm2 start npm -- run serve-p
+
+      - name: Run Tests
+        run: npm run  test
