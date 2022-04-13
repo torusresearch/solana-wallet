@@ -34,9 +34,9 @@ jobs:
         run: ./node_modules/.bin/pm2 start npm -- run serve-p && pm2 logs 0
 
       - name: Sleep for 30 seconds
-          uses: whatnick/wait-action@master
-          with:
-            time: '30s'
+        uses: whatnick/wait-action@master
+        with:
+          time: '30s'
 
       - name: Check if localhost is accesable
         uses: satak/webrequest-action@master
