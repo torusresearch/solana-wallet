@@ -38,13 +38,14 @@ test("Changing of crypto/fiat currency changes the value you receive correctly",
 
   // // see navigation works correctly
   await switchTab(page, "topup");
-
+  // change crypto currency to SOL
+  await switchCryptoCurrency(page, "SOL");
+  const SOLYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
   // change crypto currency to USDC (SOL)
-  const USDYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
   await switchCryptoCurrency(page, "USDC");
   const USDCYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
   // ensure USDCYouReceive value is greater than USDYouReceive
-  expect(USDCYouReceive).toBeGreaterThan(USDYouReceive);
+  expect(USDCYouReceive !== SOLYouReceive).toBeTruthy();
   await switchCryptoCurrency(page, "SOL");
 
   // change fiat currency EUR
@@ -58,7 +59,7 @@ test("Changing of crypto/fiat currency changes the value you receive correctly",
   await changeFiatCurrency(page, "GBP");
   const GBPfiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
   // ensure GBPfiatYouReceive value is greater than EURFiatYouReceive
-  expect(GBPfiatYouReceive).toBeGreaterThan(EURFiatYouReceive);
+  expect(GBPfiatYouReceive !== EURFiatYouReceive).toBeTruthy();
 
   await changeFiatCurrency(page, "USD");
 });
