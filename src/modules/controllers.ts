@@ -493,6 +493,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async logout(): Promise<void> {
+    log.info("logout");
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
     }
@@ -530,6 +531,7 @@ class ControllerModule extends VuexModule {
       const dappStorageKey = sessionOverride || this.torus.origin;
       window.localStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
       window.sessionStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      window.sessionStorage?.removeItem("dappOriginURL");
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
     }
