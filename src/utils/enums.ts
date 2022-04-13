@@ -43,6 +43,7 @@ export type OpenLoginPopupResponse = {
 export interface KeyState {
   priv_key: string;
   pub_key: string;
+  selectedAddress: string;
 }
 
 export interface OpenLoginBackendState {
