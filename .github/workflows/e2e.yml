@@ -31,7 +31,18 @@ jobs:
 
       #       serve in non-blocking 8080 port using pm2
       - name: Serve Project Build
-        run: npm run serve-p
+        run: ./node_modules/.bin/pm2 start npm -- run serve-p && pm2 logs 0
+
+      - name: Sleep for 30 seconds
+          uses: whatnick/wait-action@master
+          with:
+            time: '30s'
+
+      - name: Check if localhost is accesable
+        uses: satak/webrequest-action@master
+        with:
+          url: http://localhost:8080
+          method: GET
 
       - name: Run Tests
         run: npm run test
