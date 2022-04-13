@@ -52,7 +52,7 @@ test("Changing of crypto/fiat currency changes the value you receive correctly",
   await changeFiatCurrency(page, "EUR");
   const EURFiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
   // ensure EURFiatYouReceive value is greater than USDFiatYouReceive
-  expect(EURFiatYouReceive).toBeGreaterThan(USDFiatYouReceive);
+  expect(EURFiatYouReceive !== USDFiatYouReceive).toBeTruthy();
 
   // change fiat currency GBP
   await changeFiatCurrency(page, "GBP");
