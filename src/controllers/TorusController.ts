@@ -1322,6 +1322,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
@@ -1341,7 +1342,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       const dappStorageKey = this.getDappStorageKey();
       log.info(dappStorageKey);
-      const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      const value =
+        window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`) || window.sessionStorage.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
 
       const keyState: KeyState =
         typeof value === "string"
