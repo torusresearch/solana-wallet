@@ -106,8 +106,6 @@ import {
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
-import { createTransaction } from "@/utils/solanapay/createTransaction";
-import { parseURL } from "@/utils/solanapay/parseURL";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 

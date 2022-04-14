@@ -1,6 +1,6 @@
 /* eslint-disable vuejs-accessibility/media-has-caption */
 <script setup lang="ts">
-// import { ParsedURL, parseURL } from "@solana/pay";
+import { Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import QrScanner from "qr-scanner";
 import { onMounted, ref, watch } from "vue";
@@ -20,7 +20,10 @@ let scanner: QrScanner;
 watch(
   route,
   () => {
-    if (scanner) scanner.destroy();
+    if (scanner) {
+      scanner.stop();
+      scanner.destroy();
+    }
     log.info(scanner);
   },
   { flush: "pre", immediate: true, deep: true }
@@ -41,8 +44,10 @@ const onDecode = (result: { data: string; cornerPoints: { x: number; y: number }
 
 onMounted(async () => {
   if (el.value) {
-    scanner = new QrScanner(el.value, onDecode, { highlightScanRegion: true });
-    log.info(scanner);
+    scanner = new QrScanner(el.value, onDecode, {
+      highlightScanRegion: true,
+      highlightCodeOutline: true,
+    });
   }
 
   if (route.query.request) {
@@ -60,10 +65,10 @@ const rescan = async () => {
   scanner.start();
 };
 
-const onApproved = async () => {
+const onApproved = async (tx: Transaction) => {
   // create Transaction send
   try {
-    await controllerModule.torus.solanapay(requestLink.value);
+    await controllerModule.torus.transfer(tx);
     scanner.destroy();
     // redirect to transaction page
     router.push("/wallet/activity");
@@ -80,14 +85,44 @@ const onReject = () => {
 };
 </script>
 <template>
-  <div></div>
-  <video ref="el" muted />
-  <SolanaPay
-    v-if="requestLink.length"
-    :requested-from="location?.origin || 'unknown'"
-    :request-link="requestLink"
-    @on-close-modal="onReject"
-    @on-approved="onApproved"
-  />
+  <div class="qrwrapper">
+    <video v-show="!requestLink.length" ref="el" class="qrscanner" muted webkit-playsinline="true" playsinline="true" />
+  </div>
+  <SolanaPay v-if="requestLink.length" class="spay z-40 sm:z-0" :request-link="requestLink" @on-close-modal="onReject" @on-approved="onApproved" />
   <button v-if="errMessage.length" @click="rescan">{{ errMessage }}</button>
 </template>
+
+<style>
+.spay {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.qrwrapper-hidden {
+  display: none;
+}
+.qrwrapper {
+  position: absolute;
+  height: 100vh;
+  width: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.qrscanner {
+  /* width: 100%; */
+  max-width: none;
+  height: 100%;
+  object-fit: contain;
+  left: 50%;
+  transform: translateX(-50%);
+  /* top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); */
+  /* overflow-x: hidden; */
+}
+</style>

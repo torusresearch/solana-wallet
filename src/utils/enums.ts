@@ -131,7 +131,8 @@ export const NAVIGATION_LIST: {
     name: "navBar.pay",
     title: "walletPay.pay",
     route: "pay",
-    icon: ListIcon,
+    icon: MobActivity,
+    mobHidden: false,
   },
   settings: {
     name: "navBar.settings",

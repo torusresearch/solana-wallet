@@ -1,7 +1,7 @@
 import * as borsh from "@project-serum/borsh";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { post } from "@toruslabs/http-helpers";
+import { get, post } from "@toruslabs/http-helpers";
 import bowser from "bowser";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
@@ -10,6 +10,7 @@ import config from "@/config";
 import { addToast } from "@/modules/app";
 
 import { DISCORD, GITHUB, GOOGLE, LOCALE_EN, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
+import { decodeInstruction } from "./instruction_decoder";
 import { ClubbedNfts, SolAndSplToken } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
@@ -287,3 +288,29 @@ export const TokenAccountLayout = borsh.struct([
   borsh.u32("closeAuthorityOption"),
   borsh.publicKey("closeAuthority"),
 ]);
+
+// SolanaPay
+export const parseSolanaPayRequestLink = async (request: string, account: string) => {
+  log.info(request);
+  // get link
+  // return {"label":"<label>","icon":"<icon>"}
+  // update label and icon on tx display
+  const getResult = await get<{ label: string; icon: string }>(request);
+  // post link
+  // body {"account":"<account>"}
+  // return {"transaction":"<transaction>"} (base64)
+  const postResult = await post<{ transaction: string }>(request, { account });
+
+  const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
+  const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
+  // validate transaction
+  // if (transaction.signatures.length) {
+
+  // } else {
+
+  // }
+  // if transaction.blockhash ?
+
+  // assign transaction object
+  return { ...getResult, transaction, decodedInst };
+};
