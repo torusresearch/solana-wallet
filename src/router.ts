@@ -154,12 +154,6 @@ const router = createRouter({
       meta: { title: "Sign Message" },
     },
     {
-      name: "solana_pay",
-      path: "/solana_pay",
-      component: () => import("@/pages/ConfirmSolanaPay.vue"),
-      meta: { title: "Solana Pay" },
-    },
-    {
       name: "redirect",
       path: "/redirect",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectHandler.vue"),
