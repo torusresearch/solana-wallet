@@ -30,7 +30,7 @@ const updateCurrency = (newCurrency: string) => {
 };
 </script>
 <template>
-  <Card :height="showButtons ? '164px' : undefined">
+  <Card>
     <div class="flex w-full justify-between items-center">
       <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
         {{ t("walletHome.totalValue") }}
@@ -55,6 +55,11 @@ const updateCurrency = (newCurrency: string) => {
         }}</Button>
         <Button v-ga="HomePageInteractions.TRANSFER" :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/transfer')">{{
           t("walletHome.transfer")
+        }}</Button>
+      </div>
+      <div class="flex w-full justify-between items-center mt-3">
+        <Button v-ga="HomePageInteractions.SOLANA_PAY" :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/pay')">{{
+          t("walletHome.solanapay")
         }}</Button>
       </div>
     </template>

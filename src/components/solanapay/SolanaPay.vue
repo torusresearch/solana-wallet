@@ -24,6 +24,7 @@ const invalidLink = ref(false);
 const transaction = ref<Transaction>();
 const requestParams = ref<ParsedURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[] }>();
+const symbol = ref<string>("");
 
 const emits = defineEmits(["onApproved", "onCloseModal"]);
 
@@ -71,13 +72,15 @@ onMounted(async () => {
       linkParams.value = result;
     } else {
       const result = parseURL(requestLink);
-      // update construced tx
       const { recipient, splToken, reference, memo, amount } = result;
       if (!amount) {
-        // invalid amount
-        // show error
         throw new Error("Invalid Amount", amount);
       }
+      if (splToken) {
+        const tokenInfo = await ControllerModule.torus.getTokenInfo(splToken.toBase58());
+        if (tokenInfo.symbol) symbol.value = tokenInfo.symbol;
+      }
+
       const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
         splToken,
         reference,
@@ -103,10 +106,10 @@ onMounted(async () => {
   </div>
 
   <div v-else-if="requestParams" class="container">
-    <div class="wrapper">
-      <div class="amount">{{ requestParams?.amount }} {{ addressSlicer(requestParams?.splToken?.toBase58()) || "SOL" }}</div>
-      <div>Pay to {{ addressSlicer(requestParams?.recipient.toBase58()) }}</div>
+    <div class="wrapper w-full gt-xs:w-96">
       <div>Label {{ requestParams?.label }}</div>
+      <div class="amount">{{ requestParams?.amount }} {{ symbol || addressSlicer(requestParams?.splToken?.toBase58()) || "SOL" }}</div>
+      <div>Pay to {{ addressSlicer(requestParams?.recipient.toBase58()) }}</div>
       <div>Memo {{ requestParams?.memo }}</div>
       <div>Message {{ requestParams?.message }}</div>
       <hr class="mx-6 mt-auto" />
@@ -127,7 +130,7 @@ onMounted(async () => {
     @on-close-modal="onCancel"
   />
   <div v-else class="container">
-    <div>Loading</div>
+    <div class="wrapper w-full md:w-96">Loading</div>
   </div>
 </template>
 
@@ -135,9 +138,10 @@ onMounted(async () => {
 .container {
   height: 100%;
   width: 100%;
-  @apply flex-row justify-center;
+  @apply flex flex-col justify-center items-center;
 }
 .wrapper {
+  @apply gt-xs:w-96;
   @apply overflow-hidden align-middle transform shadow-xl flex-col justify-center items-center dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6;
 }
 </style>

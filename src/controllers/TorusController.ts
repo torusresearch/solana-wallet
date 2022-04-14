@@ -73,6 +73,7 @@ import {
   SignTransactionParams,
   SolanaCurrencyControllerConfig,
   SolanaToken,
+  TokenInfo,
   TokenInfoController,
   TokensTrackerController,
   TransactionController,
@@ -523,6 +524,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   setInstanceId(instanceId: string): void {
     this.instanceId = instanceId;
+  }
+
+  async getTokenInfo(mintAddress: string): Promise<Partial<TokenInfo>> {
+    // temporary solution
+    await this.tokenInfoController.updateTokenInfoMap([
+      { mintAddress, tokenAddress: "", balance: { decimals: 1, amount: "0", uiAmount: 0, uiAmountString: "0" }, isFungible: true },
+    ]);
+    const tokenInfo = this.tokenInfoController.state.tokenInfoMap[mintAddress];
+
+    return {
+      ...tokenInfo,
+      address: mintAddress,
+    };
   }
 
   async getInputKey(input: string) {

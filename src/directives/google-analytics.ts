@@ -24,6 +24,7 @@ export enum HomePageInteractions {
   COPY_PUB = "home page - copied pub key",
   REFRESH = "home page - refresh tokens",
   SPL_TOKENS = "home page - spl token",
+  SOLANA_PAY = "home page - solana pay",
 }
 
 export enum TransferPageInteractions {
