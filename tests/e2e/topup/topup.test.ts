@@ -60,15 +60,8 @@ test.describe("Topup page", async () => {
     const USDFiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
     await changeFiatCurrency(page, "EUR");
     const EURFiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
-    // ensure EURFiatYouReceive value is greater than USDFiatYouReceive
+    // ensure EURFiatYouReceive value is not equal to USDFiatYouReceive
     expect(EURFiatYouReceive !== USDFiatYouReceive).toBeTruthy();
-
-    // change fiat currency GBP
-    await changeFiatCurrency(page, "GBP");
-    const GBPfiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
-    // ensure GBPfiatYouReceive value is greater than EURFiatYouReceive
-    expect(GBPfiatYouReceive !== EURFiatYouReceive).toBeTruthy();
-
     await changeFiatCurrency(page, "USD");
   });
 
