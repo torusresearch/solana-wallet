@@ -10,6 +10,9 @@ test.describe("Topup page", async () => {
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
   });
+  test.afterAll(() => {
+    page.close();
+  });
 
   test("Topup Page Should render", async () => {
     // // see navigation works correctly

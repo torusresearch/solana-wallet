@@ -20,7 +20,7 @@
         "testMatch": [
           "**/?(*.)@(spec|test).*"
         ],
-        "timeout": 9999000
+        "timeout": 50000
       }
     ],
     "reporter": [
@@ -54,41 +54,12 @@
       "file": "tests/e2e/activity/activity.test.ts",
       "line": 0,
       "column": 0,
-      "specs": [
-        {
-          "title": "Activity Page with Imported Account",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 9999000,
-              "annotations": [],
-              "expectedStatus": "skipped",
-              "projectName": "Chrome Stable",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "status": "skipped",
-                  "duration": 0,
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "attachments": []
-                }
-              ],
-              "status": "skipped"
-            }
-          ],
-          "file": "tests/e2e/activity/activity.test.ts",
-          "line": 219,
-          "column": 6
-        }
-      ],
+      "specs": [],
       "suites": [
         {
           "title": "Activity Page",
           "file": "tests/e2e/activity/activity.test.ts",
-          "line": 23,
+          "line": 14,
           "column": 6,
           "specs": [
             {
@@ -97,7 +68,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -105,7 +76,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1143,
+                      "duration": 1090,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -116,7 +87,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 29,
+              "line": 23,
               "column": 3
             },
             {
@@ -125,7 +96,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -133,7 +104,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 2548,
+                      "duration": 2458,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -144,7 +115,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 37,
+              "line": 31,
               "column": 3
             },
             {
@@ -153,7 +124,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -161,7 +132,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 5905,
+                      "duration": 5567,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -172,7 +143,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 51,
+              "line": 45,
               "column": 3
             },
             {
@@ -181,7 +152,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -189,7 +160,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 5661,
+                      "duration": 5949,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -200,7 +171,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 66,
+              "line": 60,
               "column": 3
             },
             {
@@ -209,7 +180,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -217,7 +188,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4710,
+                      "duration": 4687,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -228,7 +199,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 81,
+              "line": 75,
               "column": 3
             },
             {
@@ -237,7 +208,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -245,7 +216,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4654,
+                      "duration": 4567,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -256,7 +227,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 134,
+              "line": 128,
               "column": 3
             },
             {
@@ -265,7 +236,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -273,7 +244,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 5128,
+                      "duration": 4357,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -284,7 +255,7 @@
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
-              "line": 196,
+              "line": 190,
               "column": 3
             }
           ]
@@ -303,7 +274,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 9999000,
+              "timeout": 50000,
               "annotations": [],
               "expectedStatus": "skipped",
               "projectName": "Chrome Stable",
@@ -322,7 +293,7 @@
             }
           ],
           "file": "tests/e2e/home/home.test.ts",
-          "line": 122,
+          "line": 125,
           "column": 6
         }
       ],
@@ -339,7 +310,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -347,7 +318,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1100,
+                      "duration": 1081,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -358,7 +329,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 21,
+              "line": 24,
               "column": 3
             },
             {
@@ -367,7 +338,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -375,7 +346,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 2207,
+                      "duration": 2212,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -386,7 +357,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 29,
+              "line": 32,
               "column": 3
             },
             {
@@ -395,7 +366,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -403,7 +374,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 2342,
+                      "duration": 2354,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -414,7 +385,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 39,
+              "line": 42,
               "column": 3
             },
             {
@@ -423,7 +394,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -431,7 +402,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 7181,
+                      "duration": 6888,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -442,7 +413,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 49,
+              "line": 52,
               "column": 3
             },
             {
@@ -451,7 +422,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -459,7 +430,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 6546,
+                      "duration": 6448,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -470,7 +441,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 72,
+              "line": 75,
               "column": 3
             },
             {
@@ -479,7 +450,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -487,7 +458,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4751,
+                      "duration": 4840,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -498,7 +469,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 83,
+              "line": 86,
               "column": 3
             },
             {
@@ -507,7 +478,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -515,7 +486,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1100,
+                      "duration": 1209,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -526,7 +497,7 @@
                 }
               ],
               "file": "tests/e2e/home/home.test.ts",
-              "line": 111,
+              "line": 114,
               "column": 3
             }
           ]
@@ -545,7 +516,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 9999000,
+              "timeout": 50000,
               "annotations": [],
               "expectedStatus": "passed",
               "projectName": "Chrome Stable",
@@ -553,8 +524,12 @@
                 {
                   "workerIndex": 0,
                   "status": "passed",
-                  "duration": 14293,
-                  "stdout": [],
+                  "duration": 13806,
+                  "stdout": [
+                    {
+                      "text": "token eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNfYWRkcmVzcyI6IkJ4ZnA3UlpMUExFaUpoU01pSGIzSnJMck5kb3A5NGdXWTVOR2hHOUtlcEw5IiwiaWF0IjoxNjUwMDU0MTE4LCJleHAiOjE2NTAwOTczMTh9.UupDSlUXFm1n8nw47uGrCmTrulLmDiKXIubW6m1z7H83cVljYidG9HQ9svdj8JFc6CdmDGiIhiexYyJJgNgE8w\n"
+                    }
+                  ],
                   "stderr": [],
                   "retry": 0,
                   "attachments": []
@@ -581,7 +556,7 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 9999000,
+              "timeout": 50000,
               "annotations": [],
               "expectedStatus": "skipped",
               "projectName": "Chrome Stable",
@@ -600,7 +575,7 @@
             }
           ],
           "file": "tests/e2e/settings/settings.test.ts",
-          "line": 171,
+          "line": 174,
           "column": 6
         }
       ],
@@ -617,7 +592,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -625,7 +600,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1105,
+                      "duration": 1087,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -636,7 +611,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 14,
+              "line": 17,
               "column": 3
             },
             {
@@ -645,7 +620,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -653,7 +628,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 9627,
+                      "duration": 9600,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -664,7 +639,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 26,
+              "line": 29,
               "column": 3
             },
             {
@@ -673,7 +648,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -681,7 +656,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 7507,
+                      "duration": 7294,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -692,7 +667,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 41,
+              "line": 44,
               "column": 3
             },
             {
@@ -701,7 +676,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -709,7 +684,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1905,
+                      "duration": 1867,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -720,7 +695,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 57,
+              "line": 60,
               "column": 3
             },
             {
@@ -729,7 +704,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -737,7 +712,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4869,
+                      "duration": 4912,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -748,7 +723,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 68,
+              "line": 71,
               "column": 3
             },
             {
@@ -757,7 +732,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -776,7 +751,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 86,
+              "line": 89,
               "column": 3
             },
             {
@@ -785,7 +760,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -793,7 +768,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4245,
+                      "duration": 4230,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -804,7 +779,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 96,
+              "line": 99,
               "column": 3
             },
             {
@@ -813,7 +788,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -821,7 +796,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4108,
+                      "duration": 4066,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -832,7 +807,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 121,
+              "line": 124,
               "column": 3
             },
             {
@@ -841,7 +816,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -849,7 +824,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4318,
+                      "duration": 4235,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -860,7 +835,7 @@
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
-              "line": 146,
+              "line": 149,
               "column": 3
             }
           ]
@@ -886,7 +861,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -894,7 +869,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1062,
+                      "duration": 1080,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -905,7 +880,7 @@
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
-              "line": 14,
+              "line": 17,
               "column": 3
             },
             {
@@ -914,7 +889,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -922,7 +897,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 8438,
+                      "duration": 8995,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -933,7 +908,7 @@
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
-              "line": 21,
+              "line": 24,
               "column": 3
             },
             {
@@ -942,7 +917,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -950,7 +925,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 3209,
+                      "duration": 3332,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -961,7 +936,7 @@
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
-              "line": 46,
+              "line": 49,
               "column": 3
             },
             {
@@ -970,7 +945,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -978,7 +953,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 4901,
+                      "duration": 4760,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -989,7 +964,7 @@
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
-              "line": 68,
+              "line": 71,
               "column": 3
             }
           ]
@@ -1015,7 +990,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -1023,7 +998,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1309,
+                      "duration": 1261,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1034,7 +1009,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 13,
+              "line": 16,
               "column": 3
             },
             {
@@ -1043,7 +1018,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -1051,7 +1026,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 8413,
+                      "duration": 8282,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1062,7 +1037,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 21,
+              "line": 24,
               "column": 3
             },
             {
@@ -1071,7 +1046,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 29997000,
+                  "timeout": 150000,
                   "annotations": [
                     {
                       "type": "slow"
@@ -1083,7 +1058,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 24332,
+                      "duration": 22382,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1094,7 +1069,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 53,
+              "line": 56,
               "column": 3
             },
             {
@@ -1103,7 +1078,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 29997000,
+                  "timeout": 150000,
                   "annotations": [
                     {
                       "type": "slow"
@@ -1115,7 +1090,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 26358,
+                      "duration": 26090,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1126,7 +1101,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 94,
+              "line": 97,
               "column": 3
             },
             {
@@ -1135,7 +1110,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 9999000,
+                  "timeout": 50000,
                   "annotations": [],
                   "expectedStatus": "skipped",
                   "projectName": "Chrome Stable",
@@ -1154,8 +1129,36 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 121,
+              "line": 124,
               "column": 8
+            },
+            {
+              "title": "Language change should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4282,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 148,
+              "column": 3
             },
             {
               "title": "Should show error for escrow accounts",
@@ -1163,7 +1166,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 29997000,
+                  "timeout": 150000,
                   "annotations": [
                     {
                       "type": "slow"
@@ -1175,7 +1178,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 6877,
+                      "duration": 6669,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1186,7 +1189,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 145,
+              "line": 175,
               "column": 3
             },
             {
@@ -1195,7 +1198,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 29997000,
+                  "timeout": 150000,
                   "annotations": [
                     {
                       "type": "slow"
@@ -1207,7 +1210,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 6389,
+                      "duration": 6456,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1218,7 +1221,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 164,
+              "line": 194,
               "column": 3
             },
             {
@@ -1227,7 +1230,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 29997000,
+                  "timeout": 150000,
                   "annotations": [
                     {
                       "type": "slow"
@@ -1239,7 +1242,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 8459,
+                      "duration": 8424,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1250,35 +1253,7 @@
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 182,
-              "column": 3
-            },
-            {
-              "title": "Language change should work",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 9999000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectName": "Chrome Stable",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 51682,
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "file": "tests/e2e/transfer/transfer.test.ts",
-              "line": 200,
+              "line": 212,
               "column": 3
             }
           ]

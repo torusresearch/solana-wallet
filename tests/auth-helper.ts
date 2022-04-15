@@ -6,6 +6,7 @@ import axios from "axios";
 import BN from "bn.js";
 import base58 from "bs58";
 import { memoize } from "lodash-es";
+import log from "loglevel";
 
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 
@@ -64,6 +65,8 @@ export async function login(context: BrowserContext): Promise<Page> {
   let token = "";
   try {
     token = (await getJWT()).token;
+
+    log.info("Token generated token", token);
   } catch (e) {}
   const stateFunction = `window.localStorage.setItem(
     "controllerModule",

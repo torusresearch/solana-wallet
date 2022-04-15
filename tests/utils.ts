@@ -59,7 +59,7 @@ export async function switchNetwork(page: Page, network: "mainnet" | "testnet" |
   await switchTab(page, "settings");
   await page.click("button[id^='headlessui-listbox-button'] :text-matches('Solana .*net', 'i')");
   await page.click(`ul[role='listbox'] div >> text=${networkLabels[network]}`);
-  await page.waitForSelector(`button[id^='headlessui-listbox-button'] :has-text('${networkLabels[network]}')`, { timeout: 5_000 });
+  await page.waitForSelector(`button[id^='headlessui-listbox-button'] :has-text('${networkLabels[network]}')`, { timeout: 30_000 });
   await switchTab(page, currentTab);
 }
 

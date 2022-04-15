@@ -17,6 +17,9 @@ test.describe("Home Page", async () => {
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
   });
+  test.afterAll(() => {
+    page.close();
+  });
 
   test("Home Page Should render", async () => {
     // see navigation works correctly

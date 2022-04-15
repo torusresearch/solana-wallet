@@ -9,6 +9,9 @@ test.describe("Transfer page", async () => {
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
   });
+  test.afterAll(() => {
+    page.close();
+  });
 
   test("Transfer Page Should render", async () => {
     // see navigation works correctly
@@ -142,6 +145,33 @@ test.describe("Transfer page", async () => {
     await page2.close();
   });
 
+  test("Language change should work", async () => {
+    // see navigation works correctly
+    await switchTab(page, "transfer");
+
+    await changeLanguage(page, "german");
+    await wait(500);
+    await ensureTextualElementExists(page, "Übertragungsdetails");
+
+    await changeLanguage(page, "japanese");
+    await wait(500);
+    await ensureTextualElementExists(page, "送信内容の詳細");
+
+    await changeLanguage(page, "korean");
+    await wait(500);
+    await ensureTextualElementExists(page, "전송 세부 사항");
+
+    await changeLanguage(page, "mandarin");
+    await wait(500);
+    await ensureTextualElementExists(page, "转账明细");
+
+    await changeLanguage(page, "spanish");
+    await wait(500);
+    await ensureTextualElementExists(page, "Detalles de Transferencia");
+
+    await changeLanguage(page, "english");
+  });
+
   test("Should show error for escrow accounts", async () => {
     test.slow();
     // see navigation works correctly
@@ -195,32 +225,5 @@ test.describe("Transfer page", async () => {
     await page.click("button >> text=Transfer");
     await wait(3000);
     expect(await page.locator("text=5YQHt...kQ9rF").elementHandles()).toHaveLength(1);
-  });
-
-  test("Language change should work", async () => {
-    // see navigation works correctly
-    await switchTab(page, "transfer");
-
-    await changeLanguage(page, "german");
-    await wait(500);
-    await ensureTextualElementExists(page, "Übertragungsdetails");
-
-    await changeLanguage(page, "japanese");
-    await wait(500);
-    await ensureTextualElementExists(page, "送信内容の詳細");
-
-    await changeLanguage(page, "korean");
-    await wait(500);
-    await ensureTextualElementExists(page, "전송 세부 사항");
-
-    await changeLanguage(page, "mandarin");
-    await wait(500);
-    await ensureTextualElementExists(page, "转账明细");
-
-    await changeLanguage(page, "spanish");
-    await wait(500);
-    await ensureTextualElementExists(page, "Detalles de Transferencia");
-
-    await changeLanguage(page, "english");
   });
 });

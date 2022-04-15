@@ -10,7 +10,7 @@ const config: PlaywrightTestConfig = {
         browserName: "chromium",
         channel: "chrome",
       },
-      testDir: "tests/e2e",
+      testDir: "tests/e2e/",
     },
   ],
   reporter: [["dot"], ["json", { outputFile: "test-result.json" }]],
