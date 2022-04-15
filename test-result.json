@@ -15,12 +15,12 @@
         "repeatEach": 1,
         "retries": 0,
         "name": "Chrome Stable",
-        "testDir": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e/topup",
+        "testDir": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/?(*.)@(spec|test).*"
         ],
-        "timeout": 30000
+        "timeout": 9999000
       }
     ],
     "reporter": [
@@ -46,9 +46,827 @@
     "version": "1.20.1",
     "workers": 1,
     "webServer": null,
-    "__testGroupsCount": 1
+    "__testGroupsCount": 6
   },
   "suites": [
+    {
+      "title": "tests/e2e/activity/activity.test.ts",
+      "file": "tests/e2e/activity/activity.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [
+        {
+          "title": "Activity Page with Imported Account",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 9999000,
+              "annotations": [],
+              "expectedStatus": "skipped",
+              "projectName": "Chrome Stable",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "skipped",
+                  "duration": 0,
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "file": "tests/e2e/activity/activity.test.ts",
+          "line": 219,
+          "column": 6
+        }
+      ],
+      "suites": [
+        {
+          "title": "Activity Page",
+          "file": "tests/e2e/activity/activity.test.ts",
+          "line": 23,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Activity Page Should render",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1143,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 29,
+              "column": 3
+            },
+            {
+              "title": "Activities should work with network=mainnet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 2548,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "Activities should work with network=testnet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 5905,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 51,
+              "column": 3
+            },
+            {
+              "title": "Activities should work with network=devnet",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 5661,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 66,
+              "column": 3
+            },
+            {
+              "title": "Changing Transaction Time filter works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4710,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 81,
+              "column": 3
+            },
+            {
+              "title": "Changing Transaction Type Filter works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4654,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 134,
+              "column": 3
+            },
+            {
+              "title": "Language Change Works Correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 5128,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/activity/activity.test.ts",
+              "line": 196,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tests/e2e/home/home.test.ts",
+      "file": "tests/e2e/home/home.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [
+        {
+          "title": "Home Page with Imported Account",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 9999000,
+              "annotations": [],
+              "expectedStatus": "skipped",
+              "projectName": "Chrome Stable",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "skipped",
+                  "duration": 0,
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "file": "tests/e2e/home/home.test.ts",
+          "line": 122,
+          "column": 6
+        }
+      ],
+      "suites": [
+        {
+          "title": "Home Page",
+          "file": "tests/e2e/home/home.test.ts",
+          "line": 15,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Home Page Should render",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1100,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "Topup Button click should take to topup page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 2207,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 29,
+              "column": 3
+            },
+            {
+              "title": "Transfer button click should take to transfer page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 2342,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 39,
+              "column": 3
+            },
+            {
+              "title": "Currency Change should work correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 7181,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "Tokens should display and clicking should take to transfer page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 6546,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "Language change should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4751,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "clicking on public key icon copies public key to clipboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1100,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/home/home.test.ts",
+              "line": 111,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tests/e2e/login/login.test.ts",
+      "file": "tests/e2e/login/login.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [
+        {
+          "title": "Should Login successfully",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 9999000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectName": "Chrome Stable",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "passed",
+                  "duration": 14293,
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "file": "tests/e2e/login/login.test.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "tests/e2e/settings/settings.test.ts",
+      "file": "tests/e2e/settings/settings.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [
+        {
+          "title": "Settings Page using imported account",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 9999000,
+              "annotations": [],
+              "expectedStatus": "skipped",
+              "projectName": "Chrome Stable",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "status": "skipped",
+                  "duration": 0,
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "file": "tests/e2e/settings/settings.test.ts",
+          "line": 171,
+          "column": 6
+        }
+      ],
+      "suites": [
+        {
+          "title": "Settings Page",
+          "file": "tests/e2e/settings/settings.test.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Settings Page Should render",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1105,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "Network Change should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 9627,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 26,
+              "column": 3
+            },
+            {
+              "title": "Theme Change should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 7507,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 41,
+              "column": 3
+            },
+            {
+              "title": "Private key should be available",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1905,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 57,
+              "column": 3
+            },
+            {
+              "title": "Contact should be added and then deleted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4869,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 68,
+              "column": 3
+            },
+            {
+              "title": "Crash reporting should update",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1459,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 86,
+              "column": 3
+            },
+            {
+              "title": "Search address book should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4245,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "Address book filter should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4108,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 121,
+              "column": 3
+            },
+            {
+              "title": "Language change should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 4318,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/settings/settings.test.ts",
+              "line": 146,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
     {
       "title": "tests/e2e/topup/topup.test.ts",
       "file": "tests/e2e/topup/topup.test.ts",
@@ -68,7 +886,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 9999000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -76,7 +894,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1107,
+                      "duration": 1062,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -96,7 +914,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 9999000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -104,7 +922,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 9619,
+                      "duration": 8438,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -124,7 +942,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 9999000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -132,7 +950,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 3921,
+                      "duration": 3209,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -152,7 +970,7 @@
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 9999000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectName": "Chrome Stable",
@@ -160,7 +978,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 5315,
+                      "duration": 4901,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -171,7 +989,296 @@
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
-              "line": 75,
+              "line": 68,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tests/e2e/transfer/transfer.test.ts",
+      "file": "tests/e2e/transfer/transfer.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Transfer page",
+          "file": "tests/e2e/transfer/transfer.test.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Transfer Page Should render",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 1309,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 13,
+              "column": 3
+            },
+            {
+              "title": "Checks before transaction should be correct",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 8413,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "Transaction should happen correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 29997000,
+                  "annotations": [
+                    {
+                      "type": "slow"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 24332,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 53,
+              "column": 3
+            },
+            {
+              "title": "Transfer SPL token",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 29997000,
+                  "annotations": [
+                    {
+                      "type": "slow"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 26358,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 94,
+              "column": 3
+            },
+            {
+              "title": "Transfer NFT",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "skipped",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "skipped",
+                      "duration": 0,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 121,
+              "column": 8
+            },
+            {
+              "title": "Should show error for escrow accounts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 29997000,
+                  "annotations": [
+                    {
+                      "type": "slow"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 6877,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 145,
+              "column": 3
+            },
+            {
+              "title": "Should show error for invalid accounts.",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 29997000,
+                  "annotations": [
+                    {
+                      "type": "slow"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 6389,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 164,
+              "column": 3
+            },
+            {
+              "title": "Should resolve to correct address for NFT wrapped accounts.",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 29997000,
+                  "annotations": [
+                    {
+                      "type": "slow"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 8459,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 182,
+              "column": 3
+            },
+            {
+              "title": "Language change should work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 9999000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "status": "passed",
+                      "duration": 51682,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/transfer/transfer.test.ts",
+              "line": 200,
               "column": 3
             }
           ]
