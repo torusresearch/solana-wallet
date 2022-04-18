@@ -1372,7 +1372,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
         log.info("try to restore key");
         let address;
-        if (this.preferencesController.state.identities[decryptedState.publicKey]) {
+        if (this.preferencesController.state.identities[decryptedState.publicKey]?.jwtToken) {
           // Try key restore with session state intact.
           // Using LocalStorage to save state, hence could not check with selected address
           // if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
