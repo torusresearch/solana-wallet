@@ -108,7 +108,7 @@ onMounted(async () => {
   <div v-else-if="requestParams" class="container">
     <div class="wrapper w-full gt-xs:w-96">
       <div>Label {{ requestParams?.label }}</div>
-      <div class="amount">{{ requestParams?.amount }} {{ symbol || addressSlicer(requestParams?.splToken?.toBase58()) || "SOL" }}</div>
+      <div class="amount">{{ requestParams?.amount }} {{ symbol || addressSlicer(requestParams?.splToken?.toBase58() || "SOL") }}</div>
       <div>Pay to {{ addressSlicer(requestParams?.recipient.toBase58()) }}</div>
       <div>Memo {{ requestParams?.memo }}</div>
       <div>Message {{ requestParams?.message }}</div>
