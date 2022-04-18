@@ -42,7 +42,7 @@ import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
-import { CONTROLLER_MODULE_KEY, SESSION_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
+import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
@@ -672,7 +672,7 @@ class ControllerModule extends VuexModule {
 const moduleName = `${CONTROLLER_MODULE_KEY}`;
 installStorePlugin({
   key: moduleName,
-  storage: SESSION_STORAGE_KEY,
+  storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
     const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.requireKeyRestore`, `${moduleName}.torusState.KeyringControllerState`]);
     storage?.setItem(key, JSON.stringify(requiredState));
