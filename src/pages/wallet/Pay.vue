@@ -51,9 +51,11 @@ onMounted(async () => {
   }
 
   if (route.query.request) {
-    log.info(route.query);
+    // got query param request (expected from url_protocol web+solana:)
     const idx = window.location.search.indexOf("=");
-    requestLink.value = window.location.search.substring(idx + 1);
+    const webSchemaLink = window.location.search.substring(idx + 1);
+    // reformat string to solana:<>
+    requestLink.value = decodeURIComponent(webSchemaLink).slice("web+".length);
   } else {
     scanner.start();
   }

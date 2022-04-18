@@ -44,6 +44,9 @@ onMounted(() => {
 });
 
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
+  // register protocolhandler on each login
+  navigator.registerProtocolHandler("web+solana", "/wallet/pay?request=%s");
+
   try {
     isLoading.value = true;
     await ControllerModule.triggerLogin({

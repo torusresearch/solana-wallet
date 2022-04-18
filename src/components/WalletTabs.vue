@@ -57,6 +57,8 @@ const logout = async () => {
                   ? 'border-app-primary-500 text-app-primary-500'
                   : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
                 'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
+                ,
+                value.mobHidden ? 'hidden' : 'block',
               ]"
               :aria-current="key === tab ? 'page' : undefined"
               >{{ t(value.name) }}</router-link

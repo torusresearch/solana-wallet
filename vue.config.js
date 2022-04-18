@@ -46,6 +46,12 @@ module.exports = {
             maskIcon: "img/icons/safari-pinned-tab.svg",
             msTileImage: "img/icons/msapplication-icon-144x144.png",
         },
+        manifestOptions : {
+            protocol_handlers: {
+            "protocol": "web+solana",
+            "url": "/wallet/pay?type=%s"
+            }
+        }
     },
     productionSourceMap: false
 };

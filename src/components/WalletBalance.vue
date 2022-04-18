@@ -57,11 +57,6 @@ const updateCurrency = (newCurrency: string) => {
           t("walletHome.transfer")
         }}</Button>
       </div>
-      <div class="flex w-full justify-between items-center mt-3">
-        <Button v-ga="HomePageInteractions.SOLANA_PAY" :block="true" variant="tertiary" class="w-full" @click="router.push('/wallet/pay')">{{
-          t("walletHome.solanapay")
-        }}</Button>
-      </div>
     </template>
   </Card>
 </template>
