@@ -607,7 +607,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const newAccount = await createAssociatedTokenAccountInstruction(
         new PublicKey(this.selectedAddress),
         associatedTokenAccount,
-        new PublicKey(this.selectedAddress),
+        receiverAccount,
         new PublicKey(tokenMintAddress)
       );
       transaction.add(newAccount);
