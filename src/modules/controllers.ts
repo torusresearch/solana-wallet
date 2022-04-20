@@ -407,11 +407,13 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
+    const instanceId = randomId();
     this.torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
     });
     this.torus.setOrigin(origin);
+    this.torus.setInstanceId(instanceId);
     this.torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
     });
@@ -429,7 +431,7 @@ class ControllerModule extends VuexModule {
       // logoutWithBC();
       this.logout();
     });
-    this.setInstanceId(randomId());
+    this.setInstanceId(instanceId);
 
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
