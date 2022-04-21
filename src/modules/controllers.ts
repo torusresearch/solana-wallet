@@ -414,6 +414,8 @@ class ControllerModule extends VuexModule {
     });
     this.torus.setOrigin(origin);
     this.torus.setInstanceId(instanceId);
+    // hotfix
+    localStorage.setItem(instanceId, origin);
     this.torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
     });

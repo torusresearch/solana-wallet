@@ -1282,7 +1282,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else {
         // If the popup is opened from a dapp, use the dapp origin as the dappStorageKey
         const instanceIdOrigin = searchParams.get("instanceId") || "";
-        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin);
+        // hotfix
+        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin) || localStorage.getItem(instanceIdOrigin);
         if (dappOriginURL) {
           dappStorageKey = dappOriginURL;
           // sessionStorage.setItem("dappOriginURL", dappOriginURL); // Set for refresh use
