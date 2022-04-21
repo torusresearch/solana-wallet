@@ -1591,6 +1591,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   private async getWalletInstanceId(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    // hotfix
+    localStorage.setItem(this.instanceId, this.origin);
     res.result = this.instanceId;
     end();
   }
