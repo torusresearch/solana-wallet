@@ -1282,8 +1282,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else {
         // If the popup is opened from a dapp, use the dapp origin as the dappStorageKey
         const instanceIdOrigin = searchParams.get("instanceId") || "";
-        // hotfix
-        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin) || localStorage.getItem(instanceIdOrigin);
+        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin);
         if (dappOriginURL) {
           dappStorageKey = dappOriginURL;
           // sessionStorage.setItem("dappOriginURL", dappOriginURL); // Set for refresh use
@@ -1591,8 +1590,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   private async getWalletInstanceId(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
-    // hotfix
-    localStorage.setItem(this.instanceId, this.origin);
+    // set DappOrign with instanceId key for dappStorageKey restoration
+    sessionStorage.setItem(this.instanceId, this.origin);
     res.result = this.instanceId;
     end();
   }

@@ -15,8 +15,7 @@ const logo = computed(() => props.dapp?.logo?.[0].url || "");
 const onDappClick = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const instanceId = searchParams.get("instanceId") || "";
-  // hotfix
-  const dappOriginURL = sessionStorage.getItem(instanceId) || localStorage.getItem(instanceId);
+  const dappOriginURL = sessionStorage.getItem(instanceId);
 
   if (dappOriginURL) {
     const dappUrl = new URL(props.dapp.url);
