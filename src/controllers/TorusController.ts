@@ -220,6 +220,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private lastTokenRefresh: Date = new Date();
 
+  private instanceId = "";
+
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
   }
@@ -516,6 +518,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
+  }
+
+  setInstanceId(instanceId: string): void {
+    this.instanceId = instanceId;
   }
 
   async getInputKey(input: string) {
@@ -1583,8 +1589,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.embedhandleTopUp(req);
   }
 
-  private async getWalletInstanceId() {
-    return "";
+  private async getWalletInstanceId(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
+    // set DappOrign with instanceId key for dappStorageKey restoration
+    sessionStorage.setItem(this.instanceId, this.origin);
+    res.result = this.instanceId;
+    end();
   }
 
   private async getUserInfo(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
