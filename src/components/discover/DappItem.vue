@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { DiscoverDapp } from "@toruslabs/base-controllers";
 // import log from "loglevel";
-import { computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { computed } from "vue";
 
 const props = defineProps<{
   dapp: DiscoverDapp;
@@ -18,16 +17,6 @@ const onDappClick = () => {
     localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
   }
 };
-
-onMounted(() => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const redirect = searchParams.get("url");
-  if (redirect) {
-    onDappClick();
-    const router = useRouter();
-    router.push(redirect);
-  }
-});
 
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
 </script>
