@@ -4,7 +4,7 @@ export const WALLET_SUPPORTED_NETWORKS = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,
-    rpcTarget: "https://green-dark-sky.solana-mainnet.quiknode.pro/0b4b99540b7930cf590dc7fb0a2d1c9a906fd53c/",
+    rpcTarget: "https://api.google.mainnet-beta.solana.com/",
   },
   testnet: {
     ...SUPPORTED_NETWORKS.testnet,
