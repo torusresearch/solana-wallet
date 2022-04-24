@@ -235,7 +235,11 @@ router.beforeEach(async (to, _, next) => {
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
 
   // route below might need key restoration
-  if (authMeta === AuthStates.AUTHENTICATED) restoreOrlogout();
+  if (authMeta === AuthStates.AUTHENTICATED) {
+    // restore will skip if keypair is exist in restore function
+    const rol = restoreOrlogout();
+    if (to.name === "walletDiscover") await rol;
+  }
   if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
 
   if (authMeta === AuthStates.AUTHENTICATED) {
