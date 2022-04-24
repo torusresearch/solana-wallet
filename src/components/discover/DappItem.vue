@@ -7,11 +7,6 @@ const props = defineProps<{
   dapp: DiscoverDapp;
 }>();
 
-const logo = computed(() => props.dapp?.logo?.[0].url || "");
-
-// const dappUrl =
-//   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappLink=", ControllerModule.torus.origin);
-
 const onDappClick = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const instanceId = searchParams.get("instanceId") || "";
@@ -22,6 +17,8 @@ const onDappClick = () => {
     localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
   }
 };
+
+const logo = computed(() => props.dapp?.logo?.[0].url || "");
 </script>
 <template>
   <a
