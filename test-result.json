@@ -46,7 +46,7 @@
     "version": "1.20.1",
     "workers": 1,
     "webServer": null,
-    "__testGroupsCount": 6
+    "__testGroupsCount": 8
   },
   "suites": [
     {
@@ -76,7 +76,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1090,
+                      "duration": 1114,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -104,7 +104,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 2458,
+                      "duration": 2639,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -132,7 +132,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 5567,
+                      "duration": 6204,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -148,7 +148,7 @@
             },
             {
               "title": "Activities should work with network=devnet",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -159,15 +159,24 @@
                   "results": [
                     {
                       "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 5949,
+                      "status": "failed",
+                      "duration": 32807,
+                      "error": {
+                        "message": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================",
+                        "stack": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================\n    at switchNetwork (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:65:14)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/activity/activity.test.ts:63:5\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:388:7\n    at TestInfoImpl._runFn (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:182:7)\n    at WorkerRunner._runTestWithBeforeHooks (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:363:24)\n    at TestInfoImpl._runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:154:7)\n    at WorkerRunner._runTestOrAllHook (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:325:5)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:238:43)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:234:9)\n    at WorkerRunner.run (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:167:9)\n    at process.<anonymous> (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/worker.js:94:5)"
+                      },
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "attachments": []
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e/activity/activity.test.ts",
+                        "column": 5,
+                        "line": 63
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "file": "tests/e2e/activity/activity.test.ts",
@@ -186,9 +195,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4687,
+                      "duration": 5287,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -214,9 +223,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4567,
+                      "duration": 4442,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -242,9 +251,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4357,
+                      "duration": 4690,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -280,7 +289,7 @@
               "projectName": "Chrome Stable",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "status": "skipped",
                   "duration": 0,
                   "stdout": [],
@@ -316,9 +325,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 1081,
+                      "duration": 1076,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -344,9 +353,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 2212,
+                      "duration": 2156,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -372,9 +381,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 2354,
+                      "duration": 2309,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -400,9 +409,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 6888,
+                      "duration": 7055,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -428,9 +437,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 6448,
+                      "duration": 4879,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -456,9 +465,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4840,
+                      "duration": 4825,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -484,9 +493,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 1,
                       "status": "passed",
-                      "duration": 1209,
+                      "duration": 1151,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -522,14 +531,10 @@
               "projectName": "Chrome Stable",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "status": "passed",
-                  "duration": 13806,
-                  "stdout": [
-                    {
-                      "text": "token eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNfYWRkcmVzcyI6IkJ4ZnA3UlpMUExFaUpoU01pSGIzSnJMck5kb3A5NGdXWTVOR2hHOUtlcEw5IiwiaWF0IjoxNjUwMDU0MTE4LCJleHAiOjE2NTAwOTczMTh9.UupDSlUXFm1n8nw47uGrCmTrulLmDiKXIubW6m1z7H83cVljYidG9HQ9svdj8JFc6CdmDGiIhiexYyJJgNgE8w\n"
-                    }
-                  ],
+                  "duration": 13971,
+                  "stdout": [],
                   "stderr": [],
                   "retry": 0,
                   "attachments": []
@@ -541,6 +546,224 @@
           "file": "tests/e2e/login/login.test.ts",
           "line": 7,
           "column": 1
+        }
+      ]
+    },
+    {
+      "title": "tests/e2e/mobile-screen/mobile-screen.test.ts",
+      "file": "tests/e2e/mobile-screen/mobile-screen.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Mobile screens",
+          "file": "tests/e2e/mobile-screen/mobile-screen.test.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Should have all the tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 95,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/mobile-screen/mobile-screen.test.ts",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "Should do correct routing",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 10033,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/mobile-screen/mobile-screen.test.ts",
+              "line": 28,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tests/e2e/nfts/nfts.test.ts",
+      "file": "tests/e2e/nfts/nfts.test.ts",
+      "line": 0,
+      "column": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Nfts Page",
+          "file": "tests/e2e/nfts/nfts.test.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "NFTs Page Should render",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 3063,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/nfts/nfts.test.ts",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "If no NFTs project eventually load popular NFTs project",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "passed",
+                      "duration": 3053,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "file": "tests/e2e/nfts/nfts.test.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "If has NFTs project eventually load all NFTs",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 150000,
+                  "annotations": [
+                    {
+                      "type": "slow"
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "status": "failed",
+                      "duration": 26567,
+                      "error": {
+                        "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/nfts/nfts.test.ts:37:54"
+                      },
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e/nfts/nfts.test.ts",
+                        "column": 54,
+                        "line": 37
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "file": "tests/e2e/nfts/nfts.test.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "Click on NFT should open  page with correct information, clicking on Send should take on transfer page",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "status": "timedOut",
+                      "duration": 50005,
+                      "error": {
+                        "message": "\u001b[31mTimeout of 50000ms exceeded.\u001b[39m"
+                      },
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "file": "tests/e2e/nfts/nfts.test.ts",
+              "line": 42,
+              "column": 3
+            }
+          ]
         }
       ]
     },
@@ -562,7 +785,7 @@
               "projectName": "Chrome Stable",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 4,
                   "status": "skipped",
                   "duration": 0,
                   "stdout": [],
@@ -598,9 +821,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 3,
                       "status": "passed",
-                      "duration": 1087,
+                      "duration": 1118,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -616,7 +839,7 @@
             },
             {
               "title": "Network Change should work",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -626,16 +849,25 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 9600,
+                      "workerIndex": 3,
+                      "status": "failed",
+                      "duration": 37897,
+                      "error": {
+                        "message": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================",
+                        "stack": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================\n    at switchNetwork (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:65:14)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/settings/settings.test.ts:41:5\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:388:7\n    at TestInfoImpl._runFn (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:182:7)\n    at WorkerRunner._runTestWithBeforeHooks (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:363:24)\n    at TestInfoImpl._runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:154:7)\n    at WorkerRunner._runTestOrAllHook (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:325:5)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:238:43)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:234:9)\n    at WorkerRunner.run (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:167:9)\n    at process.<anonymous> (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/worker.js:94:5)"
+                      },
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "attachments": []
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e/settings/settings.test.ts",
+                        "column": 5,
+                        "line": 41
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "file": "tests/e2e/settings/settings.test.ts",
@@ -654,9 +886,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 7294,
+                      "duration": 7701,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -682,9 +914,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 1867,
+                      "duration": 1936,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -710,9 +942,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4912,
+                      "duration": 4717,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -738,9 +970,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 1459,
+                      "duration": 1488,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -766,9 +998,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4230,
+                      "duration": 4272,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -794,9 +1026,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4066,
+                      "duration": 4210,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -822,9 +1054,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4235,
+                      "duration": 4651,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -867,9 +1099,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 1080,
+                      "duration": 1077,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -895,9 +1127,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 4,
                       "status": "passed",
-                      "duration": 8995,
+                      "duration": 10243,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -913,7 +1145,7 @@
             },
             {
               "title": "Changing of crypto/fiat currency changes the value you receive correctly",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -923,16 +1155,19 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 3332,
+                      "workerIndex": 4,
+                      "status": "timedOut",
+                      "duration": 50007,
+                      "error": {
+                        "message": "\u001b[31mTimeout of 50000ms exceeded.\u001b[39m"
+                      },
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
                       "attachments": []
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
@@ -951,9 +1186,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 4760,
+                      "duration": 5767,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -996,9 +1231,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 1261,
+                      "duration": 1100,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1024,9 +1259,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 8282,
+                      "duration": 8550,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1056,9 +1291,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 22382,
+                      "duration": 23652,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1088,9 +1323,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 26090,
+                      "duration": 26216,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1116,7 +1351,7 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "skipped",
                       "duration": 0,
                       "stdout": [],
@@ -1144,9 +1379,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 4282,
+                      "duration": 4293,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1176,9 +1411,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 6669,
+                      "duration": 6841,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1208,9 +1443,9 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
+                      "workerIndex": 5,
                       "status": "passed",
-                      "duration": 6456,
+                      "duration": 6418,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1226,7 +1461,7 @@
             },
             {
               "title": "Should resolve to correct address for NFT wrapped accounts.",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -1240,16 +1475,25 @@
                   "projectName": "Chrome Stable",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "status": "passed",
-                      "duration": 8424,
+                      "workerIndex": 5,
+                      "status": "failed",
+                      "duration": 8518,
+                      "error": {
+                        "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m0\u001b[39m\nReceived array:  \u001b[31m[]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m0\u001b[39m\nReceived array:  \u001b[31m[]\u001b[39m\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/transfer/transfer.test.ts:227:71"
+                      },
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "attachments": []
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e/transfer/transfer.test.ts",
+                        "column": 71,
+                        "line": 227
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "file": "tests/e2e/transfer/transfer.test.ts",

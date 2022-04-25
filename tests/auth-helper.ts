@@ -53,7 +53,7 @@ export const createRedisKey = memoize(async () => {
   await axios.post(`${getStateDomain()}/set`, params);
 });
 
-export async function login(context: BrowserContext): Promise<Page> {
+export async function login(context: BrowserContext, isMobile = false): Promise<Page> {
   await createRedisKey();
   const keyFunction = `window.localStorage.setItem(
     "controllerModule-ephemeral-http://localhost:8080",
@@ -110,8 +110,10 @@ export async function login(context: BrowserContext): Promise<Page> {
   await context.grantPermissions(["clipboard-read"]);
   const page = await context.newPage();
   await page.goto(getDomain());
-  await changeLanguage(page, "english");
-  await wait(500);
-  await page.locator("text=Account Balance").waitFor({ state: "visible" });
+  if (!isMobile) {
+    await changeLanguage(page, "english");
+    await wait(500);
+    await page.locator("text=Account Balance").waitFor({ state: "visible" });
+  }
   return page;
 }

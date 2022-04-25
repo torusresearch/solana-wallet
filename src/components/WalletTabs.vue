@@ -101,7 +101,11 @@ const logout = async () => {
         :aria-current="key === tab ? 'page' : undefined"
         :class="[value.mobHidden ? 'hidden' : 'block']"
       >
-        <div class="flex flex-col h-full items-center justify-center select-none w-16 py-1" :class="[key === tab ? 'active-border' : '']">
+        <div
+          :id="key + '_test'"
+          class="flex flex-col h-full items-center justify-center select-none w-16 py-1"
+          :class="[key === tab ? 'active-border' : '']"
+        >
           <img
             :src="value.icon"
             alt="link icon"

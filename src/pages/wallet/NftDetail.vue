@@ -72,7 +72,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
     <div v-if="nfts.length === 0" class="w-full shadow dark:shadow-dark bg-white dark:bg-app-gray-700 rounded-md mt-10 p-12 pt-8">
       <span class="text-app-text-500 dark:text-app-text-dark-400 text-center inline-block">{{ getNftFetchMessage(exploreNFTSFetchState) }}</span>
       <div v-if="exploreNFTS.length" class="flex flex-wrap justify-center mt-12">
-        <div v-for="collection in exploreNFTS" :key="collection.url" class="flex flex-col items-center m-4 w-48">
+        <div v-for="collection in exploreNFTS" :key="collection.url" class="flex flex-col items-center m-4 w-48 popular-nft">
           <img
             v-ga="NftsPageInteractions.OPEN_COLLECTION + collection.url"
             alt="NFT collection"

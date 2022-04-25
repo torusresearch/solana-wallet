@@ -46,7 +46,7 @@ test.describe("Topup page", async () => {
     await ensureTextualElementExists(page, "Transaction could not complete.");
   });
 
-  test("Changing of crypto/fiat currency changes the value you receive correctly", async () => {
+  test.skip("Changing of crypto/fiat currency changes the value you receive correctly", async () => {
     // see navigation works correctly
     await switchTab(page, "topup");
     // change crypto currency to SOL

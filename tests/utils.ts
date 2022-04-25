@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env.testing" });
 
-type Tabs = "home" | "transfer" | "topup" | "activity" | "settings";
+type Tabs = "home" | "transfer" | "topup" | "activity" | "settings" | "nfts";
 
 export function getDomain(): string {
   return `${process.env.TESTING_DOMAIN}`;
@@ -34,19 +34,22 @@ export async function getInnerText(page: Page, selector: string): Promise<string
   return page.locator(selector)?.first()?.innerText();
 }
 
-export async function switchTab(page: Page, tab: Tabs) {
+export async function switchTab(page: Page, tab: Tabs, verify = true) {
   const tabHeaders = {
     home: "Account Balance",
     transfer: "Transfer Details",
     topup: "Select a Provider",
     activity: "Transaction Activities",
     settings: "Settings",
+    nfts: "NFTs",
   };
   await page.click(`a[href='/wallet/${tab}']`);
   await wait(1000);
-  expect(page.url().includes(`/wallet/${tab}`)).toBeTruthy();
-  // ENSURE UI IS INTACT
-  await ensureTextualElementExists(page, tabHeaders[tab]);
+  if (verify) {
+    expect(page.url().includes(`/wallet/${tab}`)).toBeTruthy();
+    // ENSURE UI IS INTACT
+    await ensureTextualElementExists(page, tabHeaders[tab]);
+  }
 }
 
 export async function switchNetwork(page: Page, network: "mainnet" | "testnet" | "devnet") {

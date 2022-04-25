@@ -147,7 +147,7 @@ const transferNFT = () => {
               {{ nftMetaData.offChainMetaData?.description || "" }}
             </p>
             <div
-              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer"
+              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer send-nft"
               @click="transferNFT"
               @keydown="transferNFT"
             >
