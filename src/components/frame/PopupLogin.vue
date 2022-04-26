@@ -2,7 +2,7 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/solid";
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
@@ -40,6 +40,10 @@ const setActiveButton = (provider: string) => {
   activeButton.value = provider;
 };
 const refDiv = ref(null);
+
+onMounted(() => {
+  window.$crisp.push(["do", "chat:hide"]);
+});
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
