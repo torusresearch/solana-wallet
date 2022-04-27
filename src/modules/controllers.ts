@@ -22,13 +22,13 @@ import {
   THEME,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import { BroadcastChannel } from "broadcast-channel";
 import cloneDeep from "lodash-es/cloneDeep";
 import memoize from "lodash-es/memoize";
 import merge from "lodash-es/merge";
