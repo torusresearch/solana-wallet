@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { broadcastChannelOptions, PopupData } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { safeatob } from "@toruslabs/openlogin-utils";
-import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { useRoute } from "vue-router";
 
