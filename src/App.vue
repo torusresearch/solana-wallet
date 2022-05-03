@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BroadcastChannel } from "broadcast-channel";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { onBeforeMount } from "vue";
 
 import { Toast } from "@/components/common";
