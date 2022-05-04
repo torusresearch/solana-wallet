@@ -142,15 +142,26 @@ const onEmailLogin = () => {
             </form>
           </div>
           <div class="mt-8 mb-2 w-full">
-            <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 font-bold mb-2">
-              {{ t("dappLogin.note") }}
+            <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 font-light">
+              {{ t("dappLogin.selfCustodial") }}
+            </div>
+            <img src="../assets/web3auth-logo.svg" alt="web3auth logo" />
+            <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 font-light mb-2">
+              <a
+                class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light underline"
+                href="https://docs.web3auth.io/"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {{ t("dappLogin.howWorks") }}
+              </a>
             </div>
             <div class="text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mb-2">
               {{ t("login.dataPrivacy") }}
             </div>
-            <div class="text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
+            <!-- <div class="text-xs text-app-text-400 dark:text-app-text-dark-600 font-light">
               {{ `${t("dappLogin.termsAuth01")} ${t("dappLogin.termsAuth02")}` }}
-            </div>
+            </div> -->
           </div>
 
           <div class="inset-0 flex items-center mt-4 mb-1" aria-hidden="true">
