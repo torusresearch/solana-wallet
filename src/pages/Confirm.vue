@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { BigNumber } from "bignumber.js";
-import { BroadcastChannel } from "broadcast-channel";
 import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 

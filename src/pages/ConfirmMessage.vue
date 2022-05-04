@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import { BroadcastChannel } from "broadcast-channel";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
 import { onMounted, reactive } from "vue";
 

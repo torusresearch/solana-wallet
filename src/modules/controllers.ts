@@ -22,13 +22,13 @@ import {
   THEME,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import { BroadcastChannel } from "broadcast-channel";
 import cloneDeep from "lodash-es/cloneDeep";
 import merge from "lodash-es/merge";
 import omit from "lodash-es/omit";
@@ -399,11 +399,13 @@ class ControllerModule extends VuexModule {
    */
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
+    const instanceId = randomId();
     this.torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
     });
     this.torus.setOrigin(origin);
+    this.torus.setInstanceId(instanceId);
     this.torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
     });
@@ -421,7 +423,7 @@ class ControllerModule extends VuexModule {
       // logoutWithBC();
       this.logout();
     });
-    this.setInstanceId(randomId());
+    this.setInstanceId(instanceId);
 
     if (!isMain) {
       const popupStoreChannel = new PopupStoreChannel({
