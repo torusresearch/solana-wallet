@@ -4,7 +4,7 @@ export const WALLET_SUPPORTED_NETWORKS = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,
-    rpcTarget: "https://ssc-dao.genesysgo.net/",
+    rpcTarget: "https://ssc-dao.genesysgo.net",
   },
   testnet: {
     ...SUPPORTED_NETWORKS.testnet,
