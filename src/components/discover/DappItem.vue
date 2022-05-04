@@ -7,21 +7,18 @@ const props = defineProps<{
   dapp: DiscoverDapp;
 }>();
 
-const logo = computed(() => props.dapp?.logo?.[0].url || "");
-
-// const dappUrl =
-//   window.location.origin === ControllerModule.torus.origin ? props.dapp.url : props.dapp.url.concat("?dappLink=", ControllerModule.torus.origin);
-
 const onDappClick = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const instanceId = searchParams.get("instanceId") || "";
   const dappOriginURL = sessionStorage.getItem(instanceId);
 
   if (dappOriginURL) {
-    const urlTrimmed = props.dapp.url.at(-1) === "/" ? props.dapp.url.slice(0, -1) : props.dapp.url;
-    localStorage.setItem(`dappOriginURL-${urlTrimmed}`, dappOriginURL);
+    const dappUrl = new URL(props.dapp.url);
+    localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
   }
 };
+
+const logo = computed(() => props.dapp?.logo?.[0].url || "");
 </script>
 <template>
   <a

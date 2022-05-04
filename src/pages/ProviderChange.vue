@@ -7,8 +7,8 @@ import {
   PopupWhitelabelData,
   ProviderConfig,
 } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
-import { BroadcastChannel } from "broadcast-channel";
 import { onMounted, reactive } from "vue";
 import { useI18n } from "vue-i18n";
 

@@ -77,7 +77,7 @@ function openLink() {
             </p>
           </div>
           <div class="w-full bg-white dark:bg-app-gray-700 h-12 mt-3 rounded-md approval-msg">
-            <p class="text-sm text-app-text-600 dark:text-app-text-dark-500 m-4">{{ props.approvalMessage }}</p>
+            <p class="whitespace-pre-line break-all text-sm text-app-text-600 dark:text-app-text-dark-500 m-4">{{ props.approvalMessage }}</p>
           </div>
         </div>
       </div>
