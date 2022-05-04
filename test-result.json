@@ -43,10 +43,13 @@
     "quiet": false,
     "shard": null,
     "updateSnapshots": "missing",
-    "version": "1.20.1",
+    "version": "1.21.1",
     "workers": 1,
     "webServer": null,
-    "__testGroupsCount": 8
+    "_attachments": [],
+    "_configDir": "/Users/ishansrivastava/dev/solana-wallet",
+    "_testGroupsCount": 8,
+    "_screenshotsDir": ""
   },
   "suites": [
     {
@@ -76,7 +79,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 1114,
+                      "duration": 16817,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -104,7 +107,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 2639,
+                      "duration": 3165,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -132,7 +135,7 @@
                     {
                       "workerIndex": 0,
                       "status": "passed",
-                      "duration": 6204,
+                      "duration": 7458,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -160,10 +163,10 @@
                     {
                       "workerIndex": 0,
                       "status": "failed",
-                      "duration": 32807,
+                      "duration": 32839,
                       "error": {
                         "message": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================",
-                        "stack": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================\n    at switchNetwork (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:65:14)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/activity/activity.test.ts:63:5\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:388:7\n    at TestInfoImpl._runFn (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:182:7)\n    at WorkerRunner._runTestWithBeforeHooks (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:363:24)\n    at TestInfoImpl._runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:154:7)\n    at WorkerRunner._runTestOrAllHook (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:325:5)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:238:43)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:234:9)\n    at WorkerRunner.run (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:167:9)\n    at process.<anonymous> (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/worker.js:94:5)"
+                        "stack": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================\n    at switchNetwork (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:65:14)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/activity/activity.test.ts:63:5\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:385:9\n    at TestInfoImpl._runFn (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:176:7)\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:341:26\n    at TimeoutManager.runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/timeoutManager.js:72:7)\n    at TestInfoImpl._runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:164:26)\n    at WorkerRunner._runTest (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:323:5)\n    at WorkerRunner.runTestGroup (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:196:11)\n    at process.<anonymous> (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/worker.js:94:5)"
                       },
                       "stdout": [],
                       "stderr": [],
@@ -197,7 +200,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 5287,
+                      "duration": 20427,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -225,7 +228,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4442,
+                      "duration": 4523,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -253,7 +256,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4690,
+                      "duration": 4700,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -327,7 +330,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 1076,
+                      "duration": 9239,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -355,7 +358,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 2156,
+                      "duration": 2162,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -383,7 +386,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 2309,
+                      "duration": 2392,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -411,7 +414,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 7055,
+                      "duration": 7336,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -439,7 +442,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4879,
+                      "duration": 4793,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -467,7 +470,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 4825,
+                      "duration": 5355,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -495,7 +498,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 1151,
+                      "duration": 1138,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -533,7 +536,7 @@
                 {
                   "workerIndex": 1,
                   "status": "passed",
-                  "duration": 13971,
+                  "duration": 14174,
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
@@ -576,7 +579,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 95,
+                      "duration": 8344,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -604,7 +607,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 10033,
+                      "duration": 10037,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -649,7 +652,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 3063,
+                      "duration": 13587,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -677,7 +680,7 @@
                     {
                       "workerIndex": 1,
                       "status": "passed",
-                      "duration": 3053,
+                      "duration": 3040,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -709,7 +712,7 @@
                     {
                       "workerIndex": 1,
                       "status": "failed",
-                      "duration": 26567,
+                      "duration": 27033,
                       "error": {
                         "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/nfts/nfts.test.ts:37:54"
@@ -746,7 +749,7 @@
                     {
                       "workerIndex": 2,
                       "status": "timedOut",
-                      "duration": 50005,
+                      "duration": 66943,
                       "error": {
                         "message": "\u001b[31mTimeout of 50000ms exceeded.\u001b[39m"
                       },
@@ -823,7 +826,7 @@
                     {
                       "workerIndex": 3,
                       "status": "passed",
-                      "duration": 1118,
+                      "duration": 15517,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -851,10 +854,10 @@
                     {
                       "workerIndex": 3,
                       "status": "failed",
-                      "duration": 37897,
+                      "duration": 38469,
                       "error": {
                         "message": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================",
-                        "stack": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================\n    at switchNetwork (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:65:14)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/settings/settings.test.ts:41:5\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:388:7\n    at TestInfoImpl._runFn (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:182:7)\n    at WorkerRunner._runTestWithBeforeHooks (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:363:24)\n    at TestInfoImpl._runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:154:7)\n    at WorkerRunner._runTestOrAllHook (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:325:5)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:238:43)\n    at WorkerRunner._runSuite (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:234:9)\n    at WorkerRunner.run (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:167:9)\n    at process.<anonymous> (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/worker.js:94:5)"
+                        "stack": "page.waitForSelector: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for selector \"button[id^='headlessui-listbox-button'] :has-text('Solana Devnet')\" to be visible\n============================================================\n    at switchNetwork (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:65:14)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/settings/settings.test.ts:41:5\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:385:9\n    at TestInfoImpl._runFn (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:176:7)\n    at /Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:341:26\n    at TimeoutManager.runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/timeoutManager.js:72:7)\n    at TestInfoImpl._runWithTimeout (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/testInfo.js:164:26)\n    at WorkerRunner._runTest (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:323:5)\n    at WorkerRunner.runTestGroup (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/workerRunner.js:196:11)\n    at process.<anonymous> (/Users/ishansrivastava/dev/solana-wallet/node_modules/@playwright/test/lib/worker.js:94:5)"
                       },
                       "stdout": [],
                       "stderr": [],
@@ -888,7 +891,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 7701,
+                      "duration": 21195,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -916,7 +919,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 1936,
+                      "duration": 1937,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -944,7 +947,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4717,
+                      "duration": 4655,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -972,7 +975,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 1488,
+                      "duration": 1566,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1000,7 +1003,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4272,
+                      "duration": 4483,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1028,7 +1031,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4210,
+                      "duration": 3967,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1056,7 +1059,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 4651,
+                      "duration": 4749,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1101,7 +1104,7 @@
                     {
                       "workerIndex": 4,
                       "status": "passed",
-                      "duration": 1077,
+                      "duration": 9558,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1117,34 +1120,6 @@
             },
             {
               "title": "Changing amount changes received value",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 50000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectName": "Chrome Stable",
-                  "results": [
-                    {
-                      "workerIndex": 4,
-                      "status": "passed",
-                      "duration": 10243,
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "file": "tests/e2e/topup/topup.test.ts",
-              "line": 24,
-              "column": 3
-            },
-            {
-              "title": "Changing of crypto/fiat currency changes the value you receive correctly",
               "ok": false,
               "tags": [],
               "tests": [
@@ -1156,23 +1131,57 @@
                   "results": [
                     {
                       "workerIndex": 4,
-                      "status": "timedOut",
-                      "duration": 50007,
+                      "status": "failed",
+                      "duration": 10227,
                       "error": {
-                        "message": "\u001b[31mTimeout of 50000ms exceeded.\u001b[39m"
+                        "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m\"Transaction could not complete.\"\u001b[39m\nReceived array: \u001b[31m[]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m\"Transaction could not complete.\"\u001b[39m\nReceived array: \u001b[31m[]\u001b[39m\n    at ensureTextualElementExists (/Users/ishansrivastava/dev/solana-wallet/tests/utils.ts:30:63)\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/topup/topup.test.ts:46:5"
                       },
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "attachments": []
+                      "attachments": [],
+                      "errorLocation": {
+                        "file": "/Users/ishansrivastava/dev/solana-wallet/tests/e2e/topup/topup.test.ts",
+                        "column": 5,
+                        "line": 46
+                      }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
               "file": "tests/e2e/topup/topup.test.ts",
-              "line": 49,
+              "line": 24,
               "column": 3
+            },
+            {
+              "title": "Changing of crypto/fiat currency changes the value you receive correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 50000,
+                  "annotations": [],
+                  "expectedStatus": "skipped",
+                  "projectName": "Chrome Stable",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "status": "skipped",
+                      "duration": 0,
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "file": "tests/e2e/topup/topup.test.ts",
+              "line": 49,
+              "column": 8
             },
             {
               "title": "Language change should work",
@@ -1188,7 +1197,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 5767,
+                      "duration": 20014,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1233,7 +1242,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 1100,
+                      "duration": 9308,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1261,7 +1270,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 8550,
+                      "duration": 14687,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1293,7 +1302,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 23652,
+                      "duration": 23798,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1325,7 +1334,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 26216,
+                      "duration": 29444,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1381,7 +1390,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 4293,
+                      "duration": 4326,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1413,7 +1422,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 6841,
+                      "duration": 6898,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1445,7 +1454,7 @@
                     {
                       "workerIndex": 5,
                       "status": "passed",
-                      "duration": 6418,
+                      "duration": 6482,
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
@@ -1477,7 +1486,7 @@
                     {
                       "workerIndex": 5,
                       "status": "failed",
-                      "duration": 8518,
+                      "duration": 8731,
                       "error": {
                         "message": "\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m0\u001b[39m\nReceived array:  \u001b[31m[]\u001b[39m",
                         "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m0\u001b[39m\nReceived array:  \u001b[31m[]\u001b[39m\n    at /Users/ishansrivastava/dev/solana-wallet/tests/e2e/transfer/transfer.test.ts:227:71"
