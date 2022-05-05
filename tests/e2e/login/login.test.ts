@@ -4,9 +4,9 @@ import test, { expect } from "@playwright/test";
 import { login } from "../../auth-helper";
 import { wait } from "../../utils";
 
-test("Should Login successfully", async ({ context }) => {
+test("Should Login successfully", async ({ context, browserName }) => {
   // ------------ STEP1: Login -----------
-  const page = await login(context);
+  const page = await login(context, browserName);
 
   // ------------ Check if navbar routing works-----------
   // Click text=Home

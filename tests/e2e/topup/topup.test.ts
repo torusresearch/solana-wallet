@@ -5,8 +5,8 @@ import { login } from "../../auth-helper";
 import { changeFiatCurrency, switchCryptoCurrency } from "../../topup.utils";
 import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
 
-test("Popup Page Should render", async ({ context }) => {
-  const page = await login(context);
+test("Popup Page Should render", async ({ context, browserName }) => {
+  const page = await login(context, browserName);
 
   // // see navigation works correctly
   await switchTab(page, "topup");
@@ -33,8 +33,8 @@ test("Popup Page Should render", async ({ context }) => {
   await ensureTextualElementExists(page, "Transaction could not complete.");
 });
 
-test("Changing of crypto/fiat currency changes the value you receive correctly", async ({ context }) => {
-  const page = await login(context);
+test("Changing of crypto/fiat currency changes the value you receive correctly", async ({ context, browserName }) => {
+  const page = await login(context, browserName);
 
   // // see navigation works correctly
   await switchTab(page, "topup");
@@ -63,8 +63,8 @@ test("Changing of crypto/fiat currency changes the value you receive correctly",
   await changeFiatCurrency(page, "USD");
 });
 
-test("Language change should work", async ({ context }) => {
-  const page = await login(context);
+test("Language change should work", async ({ context, browserName }) => {
+  const page = await login(context, browserName);
   await switchTab(page, "topup");
 
   await changeLanguage(page, "german");

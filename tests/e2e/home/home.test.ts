@@ -14,8 +14,8 @@ import { changeLanguage, ensureTextualElementExists, getInnerText, importAccount
 
 test.describe("Home Page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
 
   test("Home Page Should render", async () => {
@@ -121,8 +121,8 @@ test.describe("Home Page", async () => {
 
 test.skip("Home Page with Imported Account", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
   test.beforeEach(async () => {
     await importAccount(page, IMPORT_ACC_SECRET_KEY);

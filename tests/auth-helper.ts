@@ -50,7 +50,7 @@ export async function createRedisKey() {
   await axios.post(`${getStateDomain()}/set`, params);
 }
 
-export async function login(context: BrowserContext): Promise<Page> {
+export async function login(context: BrowserContext, browserName: "chromium" | "webkit" | "firefox"): Promise<Page> {
   await createRedisKey();
   const keyFunction = `window.localStorage.setItem(
     "controllerModule-ephemeral-http://localhost:8080",
@@ -97,9 +97,11 @@ export async function login(context: BrowserContext): Promise<Page> {
       },
     })
   )`;
+  if (browserName === "chromium") {
+    await context.grantPermissions(["clipboard-read"]);
+  }
   await context.addInitScript({ content: keyFunction });
   await context.addInitScript({ content: stateFunction });
-  await context.grantPermissions(["clipboard-read"]);
   const page = await context.newPage();
   await page.goto(getDomain());
   await changeLanguage(page, "english");

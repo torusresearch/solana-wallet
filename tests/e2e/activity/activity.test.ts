@@ -22,8 +22,8 @@ import {
 
 test.describe("Activity Page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
 
   test("Activity Page Should render", async () => {
@@ -218,8 +218,8 @@ test.describe("Activity Page", async () => {
 
 test.skip("Activity Page with Imported Account", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
   test.beforeEach(async () => {
     await importAccount(page, IMPORT_ACC_SECRET_KEY);

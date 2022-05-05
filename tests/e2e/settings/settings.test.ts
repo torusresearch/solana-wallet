@@ -7,8 +7,8 @@ import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwor
 
 test.describe("Settings Page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
 
   test("Settings Page Should render", async () => {
@@ -170,8 +170,8 @@ test.describe("Settings Page", async () => {
 // Skipped because "Import Account" feature is no more supported
 test.skip("Settings Page using imported account", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
   test.beforeEach(async () => {
     await importAccount(page, IMPORT_ACC_SECRET_KEY);

@@ -6,8 +6,8 @@ import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwor
 
 test.describe("Transfer page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
 
   test("Transfer Page Should render", async () => {
@@ -70,6 +70,7 @@ test.describe("Transfer page", async () => {
     await page.fill("input[type='number']", transferAmount);
 
     // Click transfer, wait for popup
+    await wait(3000);
     await page.click("button >> text=Transfer");
     await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     // const total = (await page.locator("div >> text=/~ [0-9.].* SOL/").first().innerText()).split(" ")[1];
@@ -102,6 +103,7 @@ test.describe("Transfer page", async () => {
     await page.click("p >> text=USD Coin (USDC)");
     await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.fill("input[type='number']", "0.01");
+    await wait(3000);
     await page.click("button >> text=Transfer");
     await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
@@ -172,8 +174,8 @@ test.describe("Transfer page", async () => {
 
 test.skip("Transfer page using imported account", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
 
   test.beforeEach(async () => {
