@@ -2,7 +2,7 @@ import { JRPCRequest } from "@toruslabs/openlogin-jrpc";
 import log from "loglevel";
 import nock from "nock";
 
-import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/network";
 
 import { mockData, OffChainMetaplexUri } from "./mockData";
 

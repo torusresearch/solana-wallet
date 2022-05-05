@@ -9,7 +9,7 @@ import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { isMain, promiseCreator, recordDapp } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
-import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
+import { WALLET_SUPPORTED_NETWORKS } from "../utils/network";
 
 const { resolve, promise } = promiseCreator<void>();
 let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";

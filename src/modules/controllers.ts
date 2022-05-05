@@ -41,10 +41,10 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
-import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/network";
 
 import store from "../store";
 import { addToast } from "./app";
@@ -534,9 +534,9 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  setNetwork(chainId: string): void {
-    const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
-    if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
+  setNetwork(rpcTarget: string): void {
+    const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.rpcTarget === rpcTarget);
+    if (!providerConfig) throw new Error(`Unsupported network: ${rpcTarget}`);
 
     this.torus.setNetwork(providerConfig);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");

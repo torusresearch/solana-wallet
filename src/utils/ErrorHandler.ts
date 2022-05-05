@@ -5,7 +5,8 @@ import { i18n } from "@/plugins/i18nPlugin";
 
 const { t } = i18n.global;
 export function handleExceptions(e: any): void {
-  if (e.exception?.values?.[0]?.value?.includes("Network request failed")) {
+  const error = e.exception?.values?.[0]?.value;
+  if (error?.includes("Network request failed") || error?.includes("Too many requests")) {
     // subsequent error which are not network errors will have the tag that there was a rpc error in the past for this session.
     // which might be a possible explanation of error in inspection
     Sentry.setTag("rpc-error", Date.now());

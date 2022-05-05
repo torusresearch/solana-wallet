@@ -90,7 +90,6 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import topupPlugin from "@/plugins/Topup";
-import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
   CONTROLLER_MODULE_KEY,
@@ -105,12 +104,13 @@ import {
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { WALLET_SUPPORTED_NETWORKS } from "@/utils/network";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
 
-const TARGET_NETWORK = "mainnet";
+const TARGET_NETWORK = "mainnet_genesysgo";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
 export const DEFAULT_CONFIG = {
@@ -271,8 +271,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.currencyController?.state?.nativeCurrency;
   }
 
-  get currentNetworkName(): string {
-    return this.networkController.state.providerConfig.displayName;
+  get currentProviderConfig(): ProviderConfig {
+    return this.networkController?.getProviderConfig();
   }
 
   get provider(): SafeEventEmitterProvider {
@@ -315,7 +315,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get blockExplorerUrl(): string {
-    return this.networkController.getProviderConfig().blockExplorerUrl;
+    return this.currentProviderConfig.blockExplorerUrl;
   }
 
   get lastTokenRefreshDate(): Date {
@@ -696,7 +696,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setCurrentCurrency(currency: string): Promise<void> {
-    const { ticker } = this.networkController.getProviderConfig();
+    const { ticker } = this.currentProviderConfig;
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
     this.currencyController.setCurrentCurrency(currency);
@@ -738,7 +738,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setDefaultCurrency(currency: string): Promise<boolean> {
-    const { ticker } = this.networkController.getProviderConfig();
+    const { ticker } = this.currentProviderConfig;
     // This is SOL
     this.currencyController.setNativeCurrency(ticker);
     // This is USD
@@ -1032,7 +1032,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const result = (await providerChangeWindow.handleWithHandshake({
       origin: this.preferencesController.iframeOrigin,
       newNetwork: req.params,
-      currentNetwork: this.networkController.state.providerConfig.displayName,
+      currentNetwork: this.currentProviderConfig.displayName,
     })) as { approve: boolean };
     const { approve = false } = result;
     if (approve) {
@@ -1062,8 +1062,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         selectedCurrency: this.currencyController.state.currentCurrency,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
-        network: this.networkController.state.providerConfig.displayName,
-        networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+        network: this.currentProviderConfig.displayName,
+        networkDetails: JSON.parse(JSON.stringify(this.currentProviderConfig)),
       };
       const txApproveWindow = new PopupWithBcHandler({
         state: {
@@ -1118,8 +1118,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         selectedCurrency: this.currencyController.state.currentCurrency,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
-        network: this.networkController.state.providerConfig.displayName,
-        networkDetails: JSON.parse(JSON.stringify(this.networkController.state.providerConfig)),
+        network: this.currentProviderConfig.displayName,
+        networkDetails: JSON.parse(JSON.stringify(this.currentProviderConfig)),
       };
       const txApproveWindow = new PopupWithBcHandler({
         state: {
