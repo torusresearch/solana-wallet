@@ -53,7 +53,7 @@ export async function createRedisKey() {
 export async function login(context: BrowserContext): Promise<Page> {
   await createRedisKey();
   const keyFunction = `window.localStorage.setItem(
-    "controllerModule-ephemeral",
+    "controllerModule-ephemeral-http://localhost:8080",
     JSON.stringify({
       "priv_key": "${EPHEMERAL_KEYPAIR.getPrivate("hex")}",
       "pub_key": "${EPHEMERAL_KEYPAIR.getPublic("hex")}",
