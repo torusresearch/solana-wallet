@@ -59,7 +59,7 @@ onMounted(async () => {
     finalProviderData.whitelabelData = providerData.whitelabelData;
   } else {
     finalProviderData.toNetwork = params.displayName;
-    finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+    finalProviderData.fromNetwork = ControllerModule.selectedNetworkDisplayName;
   }
 });
 const approveProviderChange = async (): Promise<void> => {
