@@ -64,12 +64,10 @@ const logout = async () => {
           </div>
         </div>
         <div class="hidden md:flex items-center flex-1 ml-auto justify-end">
-          <LanguageSelector class="mr-2" /><AccountMenu :user="user"
-            ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
-          /></AccountMenu>
+          <LanguageSelector class="mr-2" /><AccountMenu :user="user"><AccountMenuList :user="user" @on-logout="logout" /></AccountMenu>
         </div>
         <div class="ml-6 flex md:hidden items-center">
-          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
+          <AccountMenuMobile><AccountMenuList :user="user" @on-logout="logout" /></AccountMenuMobile>
         </div>
       </div>
     </nav>

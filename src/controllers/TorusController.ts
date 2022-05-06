@@ -1220,7 +1220,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const keypair = getED25519Key(paddedKey);
       const address = await this.addAccount(base58.encode(keypair.sk), userInfo);
 
-      await this.getAppScopedKeys(privKey);
+      await this.getAppScopedKeys(privKey, userInfo);
 
       this.setSelectedAccount(address);
       if (!this.hasSelectedPrivateKey) throw new Error("Wallet Error: Invalid private key ");
@@ -1394,7 +1394,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
 
         // derived app-scoped keys
-        if (decryptedState.openloginPrivateKey) await this.getAppScopedKeys(decryptedState.openloginPrivateKey);
+        if (decryptedState.openloginPrivateKey) await this.getAppScopedKeys(decryptedState.openloginPrivateKey, decryptedState.userInfo!);
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
@@ -1670,7 +1670,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController.initializeProvider(commProviderHandlers);
   }
 
-  private async getAppScopedKeys(privKey: string) {
+  private async getAppScopedKeys(privKey: string, userInfo: UserInfo) {
     try {
       const torus = new Torus();
       const ethAddress = torus.generateAddressFromPrivKey(new BN(privKey, "hex"));
@@ -1682,8 +1682,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
         const subKey = subkey(privKey, Buffer.from(clientId, "base64"));
         const paddedSubKey = subKey.padStart(64, "0");
         const subKeypair = getED25519Key(paddedSubKey);
-        const subAddress = await this.addAccount(base58.encode(subKeypair.sk));
+        const subAddress = await this.addAccount(base58.encode(subKeypair.sk), userInfo);
         this.userProjects[subAddress] = project.name;
+        // set account in accountTracker
+        this.accountTracker.syncAccounts();
+        // get state from chain
+        this.accountTracker.refresh();
+
+        // this.tokensTracker.updateSolanaTokens();
+        // this.preferencesController.initializeDisplayActivity();
       });
     } catch (error) {
       log.error(error, "Error getting user apps from Developer Dashboard");

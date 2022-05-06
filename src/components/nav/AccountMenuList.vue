@@ -19,16 +19,13 @@ import { copyText } from "@/utils/helpers";
 import LanguageSelector from "./LanguageSelector.vue";
 
 const { t } = useI18n();
-const props = defineProps<{
+defineProps<{
   user: UserInfo;
-  selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
-const explorerUrl = computed(() => {
-  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(
-    ControllerModule.torus.chainId
-  )}`;
-});
+const explorerUrl = (address: string) => {
+  return `${ControllerModule.torus.blockExplorerUrl}/account/${address}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
+};
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const logout = () => {
@@ -95,7 +92,7 @@ const getWalletBalance = (address: string): string => {
               <QrcodeIcon class="w-4 h-4" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-              <a :href="explorerUrl" target="_blank" rel="noreferrer noopener" @click="(e) => e.stopImmediatePropagation()">
+              <a :href="explorerUrl(wallet)" target="_blank" rel="noreferrer noopener" @click="(e) => e.stopImmediatePropagation()">
                 <ExternalLinkIcon class="w-4 h-4" />
               </a>
             </div>
