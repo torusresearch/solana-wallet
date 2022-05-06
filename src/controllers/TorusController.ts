@@ -45,6 +45,7 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
+import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
@@ -58,6 +59,7 @@ import {
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
+import { subkey } from "@toruslabs/openlogin-subkey";
 import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
@@ -76,6 +78,7 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import Torus from "@toruslabs/torus.js";
 import { BigNumber } from "bignumber.js";
 import BN from "bn.js";
 import base58 from "bs58";
@@ -221,6 +224,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private lastTokenRefresh: Date = new Date();
 
   private instanceId = "";
+
+  public userProjects: Record<string, string> = {};
 
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
@@ -1214,10 +1219,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       const keypair = getED25519Key(paddedKey);
       const address = await this.addAccount(base58.encode(keypair.sk), userInfo);
-      this.setSelectedAccount(address);
 
+      await this.getAppScopedKeys(privKey);
+
+      this.setSelectedAccount(address);
       if (!this.hasSelectedPrivateKey) throw new Error("Wallet Error: Invalid private key ");
-      this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo });
+      this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo, openloginPrivateKey: privKey });
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
@@ -1340,7 +1347,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       const dappStorageKey = this.getDappStorageKey();
-      log.info(dappStorageKey);
       const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
 
       const keyState: KeyState =
@@ -1386,6 +1392,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
           // restore with userInfo ( full login as preference state not available )
           address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
         }
+
+        // derived app-scoped keys
+        if (decryptedState.openloginPrivateKey) await this.getAppScopedKeys(decryptedState.openloginPrivateKey);
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
@@ -1659,5 +1668,25 @@ export default class TorusController extends BaseController<TorusControllerConfi
       loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
+  }
+
+  private async getAppScopedKeys(privKey: string) {
+    try {
+      const torus = new Torus();
+      const ethAddress = torus.generateAddressFromPrivKey(new BN(privKey, "hex"));
+      const res: { user_projects: [{ project_id: string; name: string }] } = await get(
+        `${config.developerDashboardHost}/projects/user-projects?chain_namespace=solana&public_address=${ethAddress}`
+      );
+      res.user_projects.forEach(async (project) => {
+        const clientId = project.project_id;
+        const subKey = subkey(privKey, Buffer.from(clientId, "base64"));
+        const paddedSubKey = subKey.padStart(64, "0");
+        const subKeypair = getED25519Key(paddedSubKey);
+        const subAddress = await this.addAccount(base58.encode(subKeypair.sk));
+        this.userProjects[subAddress] = project.name;
+      });
+    } catch (error) {
+      log.error(error, "Error getting user apps from Developer Dashboard");
+    }
   }
 }

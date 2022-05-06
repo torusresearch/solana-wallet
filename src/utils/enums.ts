@@ -49,6 +49,7 @@ export interface OpenLoginBackendState {
   userInfo?: UserInfo;
   publicKey: string;
   privateKey: string;
+  openloginPrivateKey?: string;
 }
 
 export interface TorusControllerState extends BaseState {

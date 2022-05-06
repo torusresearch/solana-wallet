@@ -78,7 +78,7 @@ const getWalletBalance = (address: string): string => {
           <div class="flex items-center">
             <WalletIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
             <div class="font-bold text-sm text-app-text-600 dark:text-app-text-dark-500">
-              {{ index ? `Imported Account ${index}` : user.email }}
+              {{ index ? ControllerModule.userProjects[wallet] : user.email }}
             </div>
           </div>
           <div class="ml-auto text-xs text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ getWalletBalance(wallet) }} {{ currency }}</div>

@@ -80,6 +80,10 @@ class ControllerModule extends VuexModule {
     return this.torusState.KeyringControllerState.wallets.map((x) => x.publicKey);
   }
 
+  get userProjects(): Record<string, string> {
+    return this.torus.userProjects;
+  }
+
   get allBalances() {
     return this.torusState.AccountTrackerState.accounts;
   }

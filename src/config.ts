@@ -4,7 +4,7 @@ import log, { LogLevelDesc } from "loglevel";
 
 import { LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY } from "./utils/enums";
 
-const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE } = process.env;
+const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE, VUE_APP_DEVELOPER_DASHBOARD_HOST } = process.env;
 
 const baseUrl = window.location.origin;
 
@@ -36,6 +36,7 @@ export default {
   baseRoute,
   commonApiHost: "https://common-api.tor.us",
   metadataHost: "https://metadata.tor.us",
+  developerDashboardHost: VUE_APP_DEVELOPER_DASHBOARD_HOST,
   api: "https://solana-api.tor.us",
   // api: "http://localhost:4021",
   openloginStateAPI: "https://solana-openlogin-state.tor.us",
