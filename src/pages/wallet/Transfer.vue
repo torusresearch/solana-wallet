@@ -81,6 +81,14 @@ onMounted(() => {
     showAmountField.value = !!selectedToken.value.isFungible;
     sendAmount.value = 1;
   }
+  log.info(query);
+  if (query.receiverPubKey) {
+    resolvedAddress.value = query.receiverPubKey as string;
+    transferTo.value = query.receiverPubKey as string;
+    // eslint-disable-next-line prefer-destructuring
+    transferType.value = ALLOWED_VERIFIERS[0];
+  }
+  // if ()
 });
 
 const contacts = computed(() =>

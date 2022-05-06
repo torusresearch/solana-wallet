@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { significantDigits } from "@toruslabs/base-controllers";
+import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
+import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { BigNumber } from "bignumber.js";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -27,6 +28,9 @@ const props = withDefaults(
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
+    label?: string;
+    message?: string;
+    memo?: string;
   }>(),
   {
     senderPubKey: "",
@@ -37,6 +41,9 @@ const props = withDefaults(
     isOpen: false,
     isGasless: true,
     tokenLogoUrl: "",
+    label: "",
+    message: "",
+    memo: "",
   }
 );
 
@@ -69,6 +76,9 @@ const onConfirm = () => {
 //   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toString()} ${currency.value}`;
 // });
 const totalCryptoCostString = computed(() => {
+  if (props.token !== "SOL") {
+    return `${props.cryptoAmount} ${props.token}`;
+  }
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
   return `${totalCost.toString(10)} ${props.token}`;
 });
@@ -77,6 +87,10 @@ const totalFiatCostString = computed(() => {
   const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
   const totalFee = significantDigits(totalCost.multipliedBy(pricePerToken.value), false, 2);
   return `${totalFee.toString(10)} ${currency.value}`;
+});
+
+const explorerUrl = computed(() => {
+  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${props.network}`;
 });
 </script>
 <template>
@@ -94,7 +108,17 @@ const totalFiatCostString = computed(() => {
       <div class="mt-4 px-6">
         <div class="flex flex-col">
           <NetworkDisplay :network="network" />
-          <p class="whitespace-no-wrap overflow-hidden overflow-ellipsis text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">
+          <div
+            v-if="props.label"
+            class="flex flex-row justify-between items-center w-full whitespace-no-wrap overflow-hidden overflow-ellipsis text-sm text-app-text-500 dark:text-app-text-dark-500 mt-3"
+          >
+            <p>{{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.label }}</p>
+            <a :href="explorerUrl" target="_blank" class="underline flex"
+              >{{ addressSlicer(props.receiverPubKey) }}
+              <ExternalLinkIcon class="w-4 h-4" />
+            </a>
+          </div>
+          <p v-else class="whitespace-no-wrap overflow-hidden overflow-ellipsis text-xs text-app-text-500 dark:text-app-text-dark-500 mt-3">
             {{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.receiverPubKey }}
           </p>
         </div>
@@ -103,13 +127,14 @@ const totalFiatCostString = computed(() => {
       <div class="mt-4 px-6 items-center no-scrollbar overflow-y-auto">
         <div class="flex flex-col justify-start items-start">
           <span class="flex flex-row justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
-            <p>{{ t("walletTopUp.youSend") }}</p>
+            <p v-if="props.message">{{ props.message }}</p>
+            <p v-else>{{ t("walletTopUp.youSend") }}</p>
             <p>{{ props.cryptoAmount }} {{ props.token }}</p>
           </span>
 
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
             <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
-            <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>
+            <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " SOL" }}</p>
           </span>
 
           <p
@@ -120,6 +145,11 @@ const totalFiatCostString = computed(() => {
             {{ expand_inst ? "Hide details" : "View more details" }}
           </p>
           <InstructionDisplay :is-expand="expand_inst" :decoded-inst="decodedInst" />
+          <div v-if="props.memo">
+            <span class="text-sm text-app-text-500 dark:text-app-text-dark-500 mt-3">Memo</span>
+            <br />
+            <span class="text-sm text-app-text-500">{{ props.memo }}</span>
+          </div>
         </div>
       </div>
       <hr class="m-5" />

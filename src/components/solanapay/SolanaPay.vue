@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { createTransaction, ParsedURL, parseURL } from "@solana/pay";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import log from "loglevel";
-import { onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
+import { onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 
 import ControllerModule from "@/modules/controllers";
 import { parseSolanaPayRequestLink } from "@/utils/helpers";
-import { DecodedDataType } from "@/utils/instruction_decoder";
+import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 
+import PaymentConfirm from "../payments/PaymentConfirm.vue";
 import PermissionsTx from "../permissionsTx/PermissionsTx.vue";
 
-const { t } = useI18n();
 const props = withDefaults(
   defineProps<{
     requestLink: string;
@@ -20,7 +20,7 @@ const props = withDefaults(
   {}
 );
 
-const invalidLink = ref(false);
+const invalidLink = ref("");
 const transaction = ref<Transaction>();
 const requestParams = ref<ParsedURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[] }>();
@@ -55,15 +55,36 @@ const isUrl = (UrlString: string) => {
   }
 };
 
+const estimateTxFee = ref(0);
+const router = useRouter();
+watch(transaction, async () => {
+  if (transaction.value) {
+    const response = await ControllerModule.connection.getFeeForMessage(transaction.value.compileMessage());
+    log.info(response);
+    estimateTxFee.value = response.value / LAMPORTS_PER_SOL;
+  }
+});
 onMounted(async () => {
   // set loading
-  invalidLink.value = false;
+  invalidLink.value = "";
   const { requestLink } = props;
   // requestLink = "solana:http://localhost:4022/solanapay";
   try {
+    const pubkey = new PublicKey(requestLink);
+    router.push({
+      name: "walletTransfer",
+      query: {
+        receiverPubKey: pubkey.toBase58(),
+      },
+    });
+  } catch (e) {
+    log.info(e);
+  }
+
+  try {
     if (!requestLink.length) {
       // set loaded
-      invalidLink.value = true;
+      invalidLink.value = "Invalid Link";
     } else if (isUrl(requestLink)) {
       const targetLink = requestLink.slice("solana:".length);
       const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress);
@@ -72,9 +93,20 @@ onMounted(async () => {
       linkParams.value = result;
     } else {
       const result = parseURL(requestLink);
-      const { recipient, splToken, reference, memo, amount } = result;
+      const { recipient, splToken, reference, memo, amount, message } = result;
       if (!amount) {
-        throw new Error("Invalid Amount", amount);
+        // redirect to transfer page
+        router.push({
+          name: "walletTransfer",
+          query: {
+            receiverPubKey: recipient.toBase58(),
+            mint: splToken?.toBase58(),
+            reference: reference?.map((item) => item.toBase58()),
+            memo,
+            message,
+          },
+        });
+        return;
       }
       if (splToken) {
         const tokenInfo = await ControllerModule.torus.getTokenInfo(splToken.toBase58());
@@ -86,12 +118,21 @@ onMounted(async () => {
         reference,
         memo,
       });
+      const block = await ControllerModule.connection.getLatestBlockhash();
+      tx.recentBlockhash = block.blockhash;
+      tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
       transaction.value = tx;
       requestParams.value = result;
       log.info(result);
     }
   } catch (e) {
-    invalidLink.value = true;
+    // invalidLink.value = true;
+    if (e instanceof Error) {
+      log.error("testing parseurl");
+      invalidLink.value = e.message;
+    } else {
+      invalidLink.value = "Invalid Link";
+    }
     log.error(e);
   }
 });
@@ -100,12 +141,12 @@ onMounted(async () => {
 <template>
   <div v-if="invalidLink" class="container">
     <div class="wrapper">
-      <p>Invalid Link</p>
+      <p>{{ invalidLink }}</p>
       <button @click="onCancel">Go Back</button>
     </div>
   </div>
 
-  <div v-else-if="requestParams" class="container">
+  <!-- <div v-else-if="requestParams" class="container">
     <div class="wrapper w-full gt-xs:w-96">
       <div>Label {{ requestParams?.label }}</div>
       <div class="amount">{{ requestParams?.amount }} {{ symbol || addressSlicer(requestParams?.splToken?.toBase58() || "SOL") }}</div>
@@ -118,7 +159,24 @@ onMounted(async () => {
         <Button class="flex-auto mx-1" :block="true" variant="primary" @click="onConfirm">{{ t("dappTransfer.approve") }}</Button>
       </div>
     </div>
-  </div>
+  </div> -->
+  <PaymentConfirm
+    v-else-if="requestParams"
+    class="container"
+    :is-gasless="false"
+    :label="requestParams.label"
+    :message="requestParams.message"
+    :memo="requestParams.memo"
+    :receiver-pub-key="requestParams.recipient.toBase58()"
+    :crypto-amount="requestParams.amount?.toNumber()"
+    :token="symbol || addressSlicer(requestParams?.splToken?.toBase58() || 'SOL')"
+    :crypto-tx-fee="estimateTxFee"
+    :network="ControllerModule.selectedNetworkDisplayName"
+    :decoded-inst="transaction?.instructions.map((inst) => decodeInstruction(inst)) || []"
+    @transfer-confirm="onConfirm"
+    @transfer-cancel="onCancel"
+    @on-close-modal="onCancel"
+  />
   <PermissionsTx
     v-else-if="linkParams"
     :decoded-inst="linkParams.decodedInst"
