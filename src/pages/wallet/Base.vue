@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/vue";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import LogoutRequiredModal from "@/components/common/LogoutRequiredModal.vue";
 import WalletTabs from "@/components/WalletTabs.vue";
 import ControllerModule from "@/modules/controllers";
 
@@ -27,4 +28,5 @@ onMounted(() => {
   <WalletTabs :tab="selectedTab" :show-header="shouldShowHeader">
     <router-view v-if="showRouterChild"></router-view>
   </WalletTabs>
+  <LogoutRequiredModal :is-open="ControllerModule.logoutRequired" @on-close="ControllerModule.logout" />
 </template>
