@@ -1,5 +1,5 @@
 // const { test} = require("@playwright/test");
-import test, { expect, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_SECRET_KEY, login } from "../../auth-helper";
 import {
@@ -11,12 +11,15 @@ import {
   selectCurrency,
 } from "../../home.utils";
 import { changeLanguage, ensureTextualElementExists, getInnerText, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Home Page", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
   });
+  test.afterAll(markResult);
+  test.beforeEach(setBrowserStackTestTitle);
 
   test("Home Page Should render", async () => {
     // see navigation works correctly

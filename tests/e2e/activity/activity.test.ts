@@ -1,5 +1,5 @@
 // const { test} = require("@playwright/test");
-import test, { expect, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 
 import {
   ensureActivityClickTakesToExplorer,
@@ -19,12 +19,15 @@ import {
   switchTab,
   wait,
 } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Activity Page", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
   });
+  test.afterAll(markResult);
+  test.beforeEach(setBrowserStackTestTitle);
 
   test("Activity Page Should render", async () => {
     // see navigation works correctly

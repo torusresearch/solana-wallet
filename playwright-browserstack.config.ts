@@ -2,7 +2,7 @@
 import { devices, PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
-  timeout: 40_000,
+  timeout: 80_000,
   testDir: "tests/e2e",
   globalSetup: "tests/e2e/browserstack-setup.ts",
   globalTeardown: "tests/e2e/browserstack-teardown.ts",

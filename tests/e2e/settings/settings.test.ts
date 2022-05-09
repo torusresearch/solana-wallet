@@ -1,15 +1,18 @@
 // const { test} = require("@playwright/test");
-import test, { expect, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_ADDRESS, IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS, SECRET_KEY } from "../../auth-helper";
 import { isContactDeleted, selectAddressBookFilter } from "../../settings.utils";
 import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Settings Page", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
   });
+  test.afterAll(markResult);
+  test.beforeEach(setBrowserStackTestTitle);
 
   test("Settings Page Should render", async () => {
     // // see navigation works correctly

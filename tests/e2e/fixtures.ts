@@ -1,5 +1,7 @@
-import { PlaywrightWorkerArgs, test as base } from "@playwright/test";
+import { Page, PlaywrightTestArgs, PlaywrightWorkerArgs, test as base, TestInfo } from "@playwright/test";
 import bs from "browserstack-local";
+
+import * as pkg from "../../package.json";
 
 interface BrowserStackCapabillies {
   "browserstack.playwrightVersion": string;
@@ -10,6 +12,9 @@ interface BrowserStackCapabillies {
   os_version?: string;
   browser: string;
   browser_version?: string;
+  name?: string;
+  build?: string;
+  project?: string;
 }
 
 const DEFAULT_CAPS = {
@@ -20,19 +25,23 @@ const DEFAULT_CAPS = {
   "browserstack.console": "errors",
   "browserstack.local": true, // Test using localhost
   "client.playwrightVersion": "1.21.1",
+  project: pkg.app.name,
 };
 
-function generateCapabilities(name: string) {
-  const [browser_caps, os_caps] = name.split(":");
+function generateCapabilities(projectName: string, testTitle?: string) {
+  const [browser_caps, os_caps] = projectName.split(":");
   const [browser, browser_version] = browser_caps.split("@");
   const [os, os_version] = os_caps.split("@");
 
   const caps: BrowserStackCapabillies = {
     ...DEFAULT_CAPS,
+    build: `Build version ${pkg.version}`,
     os,
     os_version,
     browser,
   };
+
+  if (testTitle) caps.name = testTitle;
 
   if (!browser.includes("webkit")) {
     caps.browser_version = browser_version ?? "latest";
@@ -41,18 +50,37 @@ function generateCapabilities(name: string) {
   return caps;
 }
 
-async function getRemoteBrowser(playwright: PlaywrightWorkerArgs["playwright"], projectName: string) {
+async function getRemoteBrowser(playwright: PlaywrightWorkerArgs["playwright"], projectName: string, testTitle?: string) {
   // Generate params required for browserstack
-  const caps = generateCapabilities(projectName);
+  const caps = generateCapabilities(projectName, testTitle);
 
   // Connect to BrowserStack session
   const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
-
-  // const browser = await playwright.chromium.connect(wsEndpoint);
   const browser = await playwright.chromium.connect(wsEndpoint);
 
-  // console.log("Connected to BrowserStack session");
   return browser;
+}
+
+async function setBrowserstackResult(page: Page, testInfo: TestInfo) {
+  const testResult = {
+    action: "setSessionStatus",
+    arguments: {
+      status: testInfo.status === testInfo.expectedStatus ? "passed" : "failed",
+      reason: "",
+    },
+  };
+
+  // Print the error to console
+  if (testInfo.error) {
+    // eslint-disable-next-line no-console
+    console.log(testInfo.error.stack);
+    testResult.arguments.reason = `${process.env.CURRENT_TEST_TITLE || "beforeAll"} failed` || "";
+  }
+
+  // Execute BrowserStack's result executor
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const result = await page.evaluate(() => {}, `browserstack_executor: ${JSON.stringify(testResult)}`);
+  return result;
 }
 
 // Extend the "page" and "browser" fixtures
@@ -66,22 +94,20 @@ const test = base.extend({
       const remotePage = await browser.newPage(testInfo.project.use);
 
       // Use the page
-      await use(remotePage);
-
-      // Set result in browserstack
-      const testResult = {
-        action: "setSessionStatus",
-        arguments: {
-          status: testInfo.status,
-          reason: testInfo?.error?.message,
-        },
-      };
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      await remotePage.evaluate(() => {}, `browserstack_executor: ${JSON.stringify(testResult)}`);
-
-      // Close the session
-      await remotePage.close();
-      await browser.close();
+      // await use(remotePage);
+      use(remotePage)
+        .then(() => {
+          return true;
+        })
+        .finally(async () => {
+          // Set result in browserstack
+          await setBrowserstackResult(remotePage, testInfo);
+          await remotePage.close();
+          await browser.close();
+        })
+        .catch((error) => {
+          return error;
+        });
     }
   },
   browser: async ({ browser, playwright }, use, testInfo) => {
@@ -89,11 +115,24 @@ const test = base.extend({
       use(browser);
     } else {
       const remoteBrowser = await getRemoteBrowser(playwright, testInfo.project.name);
-      await use(remoteBrowser);
-      await remoteBrowser.close();
+      use(remoteBrowser);
     }
   },
 });
+
+export async function markResult({ browser }: PlaywrightTestArgs & PlaywrightWorkerArgs, testInfo: TestInfo) {
+  if (testInfo.project.name.match(/browserstack/)) {
+    const page = await browser.newPage();
+    await setBrowserstackResult(page, testInfo);
+  }
+}
+
+// eslint-disable-next-line no-empty-pattern
+export function setBrowserStackTestTitle({}: PlaywrightTestArgs, testInfo: TestInfo) {
+  const titlePath = [...testInfo.titlePath];
+  titlePath.shift();
+  process.env.CURRENT_TEST_TITLE = titlePath.join(" > ");
+}
 
 export const browserstack = new bs.Local();
 export default test;

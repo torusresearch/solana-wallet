@@ -1,9 +1,12 @@
 // const { test} = require("@playwright/test");
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
 import { wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
+test.afterAll(markResult);
+test.beforeEach(setBrowserStackTestTitle);
 test("Should Login successfully", async ({ context, browserName }) => {
   // ------------ STEP1: Login -----------
   const page = await login(context, browserName);

@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env.testing" });
@@ -75,6 +75,9 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
 
   await page.click("nav button[id^='headlessui-listbox-button'][aria-haspopup='true']");
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
+  if (test.info().project.name.match(/browserstack/)) {
+    await wait(1500);
+  }
 }
 
 export async function importAccount(page: Page, privKey: string) {
