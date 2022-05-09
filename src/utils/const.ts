@@ -4,15 +4,15 @@ export const WALLET_SUPPORTED_NETWORKS = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,
-    rpcTarget: "https://ssc-dao.genesysgo.net",
+    rpcTarget: "https://green-dark-sky.solana-mainnet.quiknode.pro/0b4b99540b7930cf590dc7fb0a2d1c9a906fd53c/",
   },
   testnet: {
     ...SUPPORTED_NETWORKS.testnet,
-    rpcTarget: "https://api.google.testnet.solana.com",
+    rpcTarget: "https://spring-black-waterfall.solana-testnet.quiknode.pro/89830c37acd15df105b23742d37f33dc85b5eff8/",
   },
   devnet: {
     ...SUPPORTED_NETWORKS.devnet,
-    rpcTarget: "https://api.google.devnet.solana.com",
+    rpcTarget: "https://api.devnet.solana.com",
   },
 };
 
