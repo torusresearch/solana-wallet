@@ -18,7 +18,7 @@
   "dependencies": {
     "@bonfida/spl-name-service": "^0.1.27",
     "@gtm-support/vue-gtm": "^1.4.0",
-    "@headlessui/vue": "^1.6.0",
+    "@headlessui/vue": "^1.6.1",
     "@heroicons/vue": "^1.0.6",
     "@metaplex-foundation/mpl-token-metadata": "^1.2.4",
     "@project-serum/borsh": "^0.2.5",
