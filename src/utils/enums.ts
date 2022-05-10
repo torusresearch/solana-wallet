@@ -38,6 +38,7 @@ export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0
 export type OpenLoginPopupResponse = {
   userInfo: OpenloginUserInfo;
   privKey: string;
+  tKey: string;
 };
 
 export interface KeyState {
@@ -49,7 +50,7 @@ export interface OpenLoginBackendState {
   userInfo?: UserInfo;
   publicKey: string;
   privateKey: string;
-  openloginPrivateKey?: string;
+  tKey?: string;
 }
 
 export interface TorusControllerState extends BaseState {

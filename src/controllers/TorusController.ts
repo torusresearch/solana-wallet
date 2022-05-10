@@ -197,6 +197,8 @@ export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
   public communicationManager = new CommunicationWindowManager();
 
+  public userProjects: Record<string, string> = {};
+
   private tokenInfoController!: TokenInfoController;
 
   private networkController!: NetworkController;
@@ -224,8 +226,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private lastTokenRefresh: Date = new Date();
 
   private instanceId = "";
-
-  public userProjects: Record<string, string> = {};
 
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
@@ -1210,7 +1210,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationEngine: this.communicationEngine,
         communicationWindowManager: this.communicationManager,
       });
-      const { privKey, userInfo } = result;
+      const { privKey, userInfo, tKey } = result;
       const paddedKey = privKey.padStart(64, "0");
 
       // Embed login might have selectedAddress restored from storage.
@@ -1220,11 +1220,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const keypair = getED25519Key(paddedKey);
       const address = await this.addAccount(base58.encode(keypair.sk), userInfo);
 
-      await this.importAppScopedKeys(privKey, userInfo);
+      await this.importAppScopedKeys(tKey, userInfo);
 
       this.setSelectedAccount(address);
       if (!this.hasSelectedPrivateKey) throw new Error("Wallet Error: Invalid private key ");
-      this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo, openloginPrivateKey: privKey });
+      this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo, tKey });
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
@@ -1394,7 +1394,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
 
         // derived app-scoped keys
-        if (decryptedState.openloginPrivateKey) await this.importAppScopedKeys(decryptedState.openloginPrivateKey, decryptedState.userInfo!);
+        if (decryptedState.tKey) await this.importAppScopedKeys(decryptedState.tKey, decryptedState.userInfo);
 
         // This call sync and refresh blockchain state
         this.setSelectedAccount(address, true);
@@ -1670,16 +1670,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.embedController.initializeProvider(commProviderHandlers);
   }
 
-  private async importAppScopedKeys(privKey: string, userInfo: UserInfo) {
+  private async importAppScopedKeys(tKey: string, userInfo?: UserInfo) {
     try {
       const torus = new Torus();
-      const ethAddress = torus.generateAddressFromPrivKey(new BN(privKey, "hex"));
+      const ethAddress = torus.generateAddressFromPrivKey(new BN(tKey, "hex"));
       const res: { user_projects: [{ project_id: string; name: string }] } = await get(
         `${config.developerDashboardHost}/projects/user-projects?chain_namespace=solana&public_address=${ethAddress}`
       );
       res.user_projects.forEach(async (project) => {
         const clientId = project.project_id;
-        const subKey = subkey(privKey, Buffer.from(clientId, "base64"));
+        const subKey = subkey(tKey, Buffer.from(clientId, "base64"));
         const paddedSubKey = subKey.padStart(64, "0");
         const subKeypair = getED25519Key(paddedSubKey);
         const subAddress = await this.addAccount(base58.encode(subKeypair.sk), userInfo);
@@ -1688,12 +1688,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         this.accountTracker.syncAccounts();
         // get state from chain
         this.accountTracker.refresh();
-
-        // this.tokensTracker.updateSolanaTokens();
-        // this.preferencesController.initializeDisplayActivity();
       });
     } catch (error) {
-      log.error(error, "Error getting user apps from Developer Dashboard");
+      log.error(error, "Error deriving app-scoped keys");
     }
   }
 }
