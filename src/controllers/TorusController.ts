@@ -1389,10 +1389,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
           }
           // This call sync and refresh blockchain state
           this.setSelectedAccount(address, true);
+          return true;
         } catch (e) {
           log.error(e, "Error restoring state after successfull decrypt!");
         }
-        return true;
       }
       log.warn("Invalid or no key in local storage");
       return false;
