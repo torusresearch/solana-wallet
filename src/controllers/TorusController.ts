@@ -1361,40 +1361,43 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
         log.info("try to restore key");
         let address;
-        if (this.preferencesController.state.identities[decryptedState.publicKey]) {
-          // Try key restore with session state intact.
-          // Using LocalStorage to save state, hence could not check with selected address
-          // if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+        try {
+          if (this.preferencesController.state.identities[decryptedState.publicKey]) {
+            // Try key restore with session state intact.
+            // Using LocalStorage to save state, hence could not check with selected address
+            // if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
-          log.info("login without userinfo");
-          // Restore keyringController only ( no Sync / initPreferenes )
-          address = await this.addAccount(decryptedState.privateKey);
+            log.info("login without userinfo");
+            // Restore keyringController only ( no Sync / initPreferenes )
+            address = await this.addAccount(decryptedState.privateKey);
 
-          // required to set selectedAddress before check for jwt
-          this.preferencesController.setSelectedAddress(address);
+            // required to set selectedAddress before check for jwt
+            this.preferencesController.setSelectedAddress(address);
 
-          // valid private key needed to refreshJwt,
-          const jwt = this.preferencesController.state.identities[address]?.jwtToken;
+            // valid private key needed to refreshJwt,
+            const jwt = this.preferencesController.state.identities[address]?.jwtToken;
 
-          if (jwt) {
-            const expire = parseJwt(jwt).exp;
-            if (expire < Date.now() / 1000) {
-              await this.refreshJwt();
+            if (jwt) {
+              const expire = parseJwt(jwt).exp;
+              if (expire < Date.now() / 1000) {
+                await this.refreshJwt();
+              }
             }
+          } else {
+            // restore with userInfo ( full login as preference state not available )
+            address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
           }
-        } else {
-          // restore with userInfo ( full login as preference state not available )
-          address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
+          // This call sync and refresh blockchain state
+          this.setSelectedAccount(address, true);
+          return true;
+        } catch (e) {
+          log.error(e, "Error restoring state after successfull decrypt!");
         }
-
-        // This call sync and refresh blockchain state
-        this.setSelectedAccount(address, true);
-        return true;
       }
       log.warn("Invalid or no key in local storage");
       return false;
     } catch (error) {
-      log.error(error, "Error restoring state!");
+      log.warn(error, "Error restoring state!");
       return false;
     }
   }
