@@ -22,7 +22,7 @@ async function endLogin() {
 
     const openLoginInstance = await OpenLoginFactory.getInstance();
     const openLoginState = openLoginInstance.state;
-    const { privKey } = openLoginState;
+    const { privKey, tKey } = openLoginState;
 
     if (!privKey) {
       throw new Error("Login unsuccessful");
@@ -40,6 +40,7 @@ async function endLogin() {
       data: {
         userInfo,
         privKey,
+        tKey,
       },
     } as PopupData<OpenLoginPopupResponse>);
   } catch (error) {

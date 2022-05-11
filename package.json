@@ -34,6 +34,7 @@
     "@toruslabs/openlogin": "^1.7.4",
     "@toruslabs/openlogin-ed25519": "^1.7.0",
     "@toruslabs/openlogin-jrpc": "^1.7.3",
+    "@toruslabs/openlogin-subkey": "^1.7.2",
     "@toruslabs/openlogin-utils": "^1.7.0",
     "@toruslabs/solana-controllers": "^1.6.17",
     "@toruslabs/tweetnacl-js": "^1.0.3",

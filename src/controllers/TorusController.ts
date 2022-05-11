@@ -58,6 +58,7 @@ import {
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
+import { subkey } from "@toruslabs/openlogin-subkey";
 import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
@@ -1205,8 +1206,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationEngine: this.communicationEngine,
         communicationWindowManager: this.communicationManager,
       });
-      const { privKey, userInfo } = result;
-      const paddedKey = privKey.padStart(64, "0");
+      const { privKey, userInfo, tKey } = result;
+
+      // if w3aClientID exist in session storage, user should login with subkey
+      const w3aClientID = sessionStorage.getItem("w3aClientID");
+      let paddedKey: string;
+      if (w3aClientID) {
+        log.info("trying to get subkey with clientID");
+        paddedKey = subkey(tKey, Buffer.from(w3aClientID, "base64")).padStart(64, "0");
+      } else {
+        paddedKey = privKey.padStart(64, "0");
+      }
 
       // Embed login might have selectedAddress restored from storage.
       // Need to clear preference selectedAddress on Login
@@ -1322,8 +1332,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
-      window.sessionStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      // session should be priority and there should be only one login in one browser tab session
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+
+      const w3aClientID = sessionStorage.getItem("w3aClientID");
+      const dappOriginURL = sessionStorage.getItem("dappOriginURL");
+      // having w3aClientID should not update localstorage as the private key is from redirected app
+      if (!w3aClientID) window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      else if (dappOriginURL) {
+        // if w3aClientID exist and dappOriginUrl exist, save ephemeral keystate to localstorage tagged to dappOriginUrl
+        // So than next login can skip full login flow
+        window.localStorage?.setItem(`${EPHERMAL_KEY}-${dappOriginURL}`, stringify(keyState));
+      }
+
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
@@ -1344,11 +1365,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const dappStorageKey = this.getDappStorageKey();
       log.info(dappStorageKey);
       const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
-      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
-      const value = localKey || sessionKey;
+      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const value = sessionKey || localKey;
 
       // Saving to SessionStorage - user closed browser and revisit with restored key
-      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}-${dappStorageKey}`, value);
+      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"

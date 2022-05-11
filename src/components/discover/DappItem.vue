@@ -7,11 +7,13 @@ const props = defineProps<{
   dapp: DiscoverDapp;
 }>();
 
-const onDappClick = () => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const instanceId = searchParams.get("instanceId") || "";
-  const dappOriginURL = sessionStorage.getItem(instanceId);
+// move these to controller module ?
+const searchParams = new URLSearchParams(window.location.search);
+const instanceId = searchParams.get("instanceId") || "";
+const dappOriginURL = sessionStorage.getItem(instanceId);
+const w3aClientID = sessionStorage.getItem("w3aClientID");
 
+const onDappClick = () => {
   if (dappOriginURL) {
     const dappUrl = new URL(props.dapp.url);
     localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
@@ -19,10 +21,14 @@ const onDappClick = () => {
 };
 
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
+const targetUrl = computed(() => {
+  if (dappOriginURL && w3aClientID) return `${props.dapp.url}?dappOriginURL=${dappOriginURL}&w3aClientID=${w3aClientID}`;
+  return props.dapp.url;
+});
 </script>
 <template>
   <a
-    :href="dapp.url"
+    :href="targetUrl"
     class="flex bg-white hover:bg-app-gray-200 dark:bg-app-gray-700 border border-app-gray-200 dark:border-transparent shadow dark:shadow-dark rounded-lg p-4"
     rel="noreferrer noopener"
     @click="onDappClick"

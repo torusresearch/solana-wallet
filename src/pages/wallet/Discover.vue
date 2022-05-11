@@ -36,8 +36,12 @@ onMounted(async () => {
         if (dappOriginURL) {
           const dappUrl = redirectUrl.value;
           localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
+          redirectUrl.value.searchParams.append("dappOriginURL", dappOriginURL);
         }
 
+        if (route.query.w3aClientID) {
+          redirectUrl.value.searchParams.append("w3aClientID", route.query.w3aClientID as string);
+        }
         window.location.href = redirectUrl.value.href;
       }
     }
@@ -59,7 +63,7 @@ const categoryList = computed(() => {
     ALL_CATEGORIES,
     ...new Set(
       dapps.value
-        .reduce((categories, dapp) => {
+        .reduce((categories: { value: string; label: string }[], dapp) => {
           if (dapp?.category?.length) {
             const found = categories.find((category: { value: string; label: string }) => category.value === dapp.category);
             if (!found)
