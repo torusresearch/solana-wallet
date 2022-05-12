@@ -1414,14 +1414,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
               if (expire < Date.now() / 1000) {
                 await this.refreshJwt();
               }
-            } else {
-              // restore with userInfo ( full login as preference state not available )
-              address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
             }
-            // This call sync and refresh blockchain state
-            this.setSelectedAccount(address, true);
-            return true;
+          } else {
+            // restore with userInfo ( full login as preference state not available )
+            address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
           }
+          // This call sync and refresh blockchain state
+          this.setSelectedAccount(address, true);
+          return true;
         } catch (e) {
           log.error(e, "Error restoring state after successfull decrypt!");
         }
