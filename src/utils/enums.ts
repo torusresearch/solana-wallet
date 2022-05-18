@@ -229,7 +229,7 @@ export interface EmbedInitParams {
   isIFrameFullScreen: boolean;
   apiKey: string;
   network: ProviderConfig;
-  isCustomeNetwork: boolean;
+  isCustomNetwork: boolean;
   dappMetadata: {
     name: string;
     icon: string;

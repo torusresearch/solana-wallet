@@ -19,7 +19,7 @@ const initParams = {
   isIFrameFullScreen: false,
   apiKey: "torus-default",
   network: WALLET_SUPPORTED_NETWORKS.mainnet,
-  isCustomeNetwork: false,
+  isCustomNetwork: false,
   dappMetadata: {
     icon: "",
     name: "",
@@ -50,7 +50,7 @@ function startLogin() {
           else if (network === "mainnet" || network === "testnet" || network === "devnet") initParams.network = WALLET_SUPPORTED_NETWORKS[network];
         } else {
           initParams.network = network;
-          initParams.isCustomeNetwork = true;
+          initParams.isCustomNetwork = true;
         }
         initParams.buttonPosition = buttonPosition;
         initParams.apiKey = apiKey;
@@ -101,7 +101,7 @@ onMounted(async () => {
             chainId: initParams.network.chainId,
             properties: {},
             providerConfig: initParams.network,
-            isCustomNetwork: initParams.isCustomeNetwork,
+            isCustomNetwork: initParams.isCustomNetwork,
             network: "loading",
           },
         }),
