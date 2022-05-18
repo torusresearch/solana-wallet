@@ -332,7 +332,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // overwrite google node with default node
     if (
       initialState.NetworkControllerState?.providerConfig?.rpcTarget?.includes("api.google") &&
-      !initialState.NetworkControllerState.isCustomNetwork
+      (isMain || !initialState.NetworkControllerState.isCustomNetwork)
     ) {
       let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
       if (initialState.NetworkControllerState.providerConfig.chainId === "0x02") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
