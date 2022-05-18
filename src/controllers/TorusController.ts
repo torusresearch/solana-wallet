@@ -328,6 +328,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
 
+    const initialState = _state;
+    // overwrite google node with default node
+    if (initialState.NetworkControllerState?.providerConfig?.rpcTarget?.includes("api.google")) {
+      let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
+      if (initialState.NetworkControllerState.providerConfig.chainId === "0x02") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
+      if (initialState.NetworkControllerState.providerConfig.chainId === "0x03") defaultNetwork = WALLET_SUPPORTED_NETWORKS.devnet;
+      initialState.NetworkControllerState.providerConfig = defaultNetwork;
+      log.info("unsupported api.google rpc endpoint, replaced with default rpc endpoint");
+    }
+
     this.storageLayer = new TorusStorageLayer({ hostUrl: config.openloginStateAPI });
     // BaseController methods
     this.initialize();
