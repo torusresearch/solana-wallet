@@ -274,3 +274,20 @@ export function getBrowserKey() {
   }
   return id;
 }
+
+export function hideCrispButton() {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.$crisp.push(["do", "chat:hide"]);
+}
+export function showCrispButton() {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.$crisp.push(["do", "chat:show"]);
+}
+export function openCrispChat() {
+  showCrispButton();
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.$crisp.push(["do", "chat:show"]);
+}
