@@ -528,6 +528,7 @@ class ControllerModule extends VuexModule {
       const sessionOverride = sessionStorage.getItem("dappOriginURL");
       const dappStorageKey = sessionOverride || this.torus.origin;
       window.localStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      window.sessionStorage?.removeItem(`${EPHERMAL_KEY}`);
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
     }
