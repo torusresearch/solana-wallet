@@ -9,9 +9,7 @@ const props = defineProps<{
 
 // move these to controller module ?
 const searchParams = new URLSearchParams(window.location.search);
-const instanceId = searchParams.get("instanceId") || "";
-const dappOriginURL = sessionStorage.getItem(instanceId);
-const w3aClientID = sessionStorage.getItem("w3aClientID");
+const dappOriginURL = searchParams.get("dappOriginURL");
 
 const onDappClick = () => {
   if (dappOriginURL) {
@@ -22,7 +20,7 @@ const onDappClick = () => {
 
 const logo = computed(() => props.dapp?.logo?.[0].url || "");
 const targetUrl = computed(() => {
-  if (dappOriginURL && w3aClientID) return `${props.dapp.url}?dappOriginURL=${dappOriginURL}&w3aClientID=${w3aClientID}`;
+  if (dappOriginURL) return `${props.dapp.url}?dappOriginURL=${dappOriginURL}`;
   return props.dapp.url;
 });
 </script>

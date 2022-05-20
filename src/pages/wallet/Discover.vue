@@ -30,17 +30,10 @@ onMounted(async () => {
       redirectUrl.value = new URL(route.query.url as string);
       if (redirectUrl.value) {
         const searchParams = new URLSearchParams(window.location.search);
-        const instanceId = searchParams.get("instanceId") || "";
-        const dappOriginURL = sessionStorage.getItem(instanceId);
+        const dappOriginURL = searchParams.get("dappOriginURL") || "";
 
         if (dappOriginURL) {
-          const dappUrl = redirectUrl.value;
-          localStorage.setItem(`dappOriginURL-${dappUrl.origin}`, dappOriginURL);
           redirectUrl.value.searchParams.append("dappOriginURL", dappOriginURL);
-        }
-
-        if (route.query.w3aClientID) {
-          redirectUrl.value.searchParams.append("w3aClientID", route.query.w3aClientID as string);
         }
         window.location.href = redirectUrl.value.href;
       }

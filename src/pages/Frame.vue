@@ -56,8 +56,11 @@ function startLogin() {
         initParams.extraParams = extraParams;
 
         // retain params in session (on refresh)
-        if (extraParams.w3aClientID) sessionStorage.setItem("w3aClientID", extraParams.w3aClientID);
-        if (extraParams.dappOriginURL) sessionStorage.setItem("dappOriginURL", extraParams.dappOriginURL);
+        if (extraParams.parentSearch) {
+          const parentSearch = new URLSearchParams(extraParams.parentSearch);
+          const dappOriginURL = parentSearch.get("dappOriginURL");
+          if (dappOriginURL) sessionStorage.setItem("dappOriginURL", dappOriginURL);
+        }
         if (resolve) resolve();
       }
     };
