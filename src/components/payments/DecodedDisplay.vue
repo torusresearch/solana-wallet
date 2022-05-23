@@ -15,7 +15,7 @@ const props = withDefaults(
 const data_disp = computed(() => {
   let disp: string;
   if (props.data instanceof PublicKey) disp = props.data.toBase58();
-  if (props.el === "lamports") disp = ((props.data as unknown as number) / LAMPORTS_PER_SOL).toString();
+  if (props.el === "lamports") disp = (Number(props.data) / LAMPORTS_PER_SOL).toString();
   else disp = props.data?.toString() as string;
   return addressSlicer(disp);
 });

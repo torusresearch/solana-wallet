@@ -3,15 +3,15 @@ import { devices, PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   timeout: 30_000,
-  testDir: "tests/e2e",
+  testDir: "tests/e2e/transfer",
   projects: [
-    {
-      name: "Chrome Stable",
-      use: {
-        browserName: "chromium",
-        channel: "chrome",
-      },
-    },
+    // {
+    //   name: "Chrome Stable",
+    //   use: {
+    //     browserName: "chromium",
+    //     channel: "chrome",
+    //   },
+    // },
     {
       name: "iOS Safari",
       use: {

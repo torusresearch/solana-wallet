@@ -64,6 +64,8 @@ class ControllerModule extends VuexModule {
 
   public instanceId = "";
 
+  public logoutRequired = false;
+
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
   }
@@ -234,6 +236,11 @@ class ControllerModule extends VuexModule {
 
   get hasSelectedPrivateKey() {
     return this.torus.hasSelectedPrivateKey;
+  }
+
+  @Mutation
+  public setLogoutRequired(status: boolean) {
+    this.logoutRequired = status;
   }
 
   @Mutation
@@ -457,6 +464,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+    this.setLogoutRequired(false);
     // do not need to restore beyond login
     await this.torus.triggerLogin({ loginProvider, login_hint });
   }

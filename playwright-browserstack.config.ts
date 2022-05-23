@@ -3,7 +3,7 @@ import { devices, PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   timeout: 80_000,
-  testDir: "tests/e2e",
+  testDir: "tests/e2e/activity",
   globalSetup: "tests/e2e/browserstack-setup.ts",
   globalTeardown: "tests/e2e/browserstack-teardown.ts",
   use: {
@@ -11,11 +11,25 @@ const config: PlaywrightTestConfig = {
   },
   // name format: browser[@version]:os@version:browserstack
   projects: [
+    // {
+    //   name: "chrome@latest:Windows@10:browserstack",
+    //   use: {
+    //     browserName: "chromium",
+    //     ...devices["Desktop Chrome"],
+    //   },
+    // },
     {
-      name: "edge@latest:Windows@10:browserstack",
+      name: "chrome@latest-beta:OSX Big Sur@browserstack",
       use: {
         browserName: "chromium",
-        ...devices["Desktop Chrome"],
+        channel: "chrome",
+      },
+    },
+    {
+      name: "playwright-webkit@latest:OSX Big Sur@browserstack",
+      use: {
+        browserName: "webkit",
+        ...devices["iPhone 12 Pro Max"],
       },
     },
   ],

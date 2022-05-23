@@ -221,9 +221,9 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 const restoreOrlogout = async () => {
   try {
     const result = await ControllerModule.torus.restoreFromBackend();
-    if (!result) ControllerModule.logout();
+    if (!result) ControllerModule.setLogoutRequired(true);
   } catch (_e) {
-    ControllerModule.logout();
+    ControllerModule.setLogoutRequired(true);
   }
 };
 

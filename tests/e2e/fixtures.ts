@@ -1,5 +1,6 @@
 import { Page, PlaywrightTestArgs, PlaywrightWorkerArgs, test as base, TestInfo } from "@playwright/test";
 import bs from "browserstack-local";
+import cp from "child_process";
 
 import * as pkg from "../../package.json";
 
@@ -17,6 +18,8 @@ interface BrowserStackCapabillies {
   project?: string;
 }
 
+const clientPlaywrightVersion = cp.execSync("npx playwright --version").toString().trim().split(" ")[1];
+
 const DEFAULT_CAPS = {
   "browserstack.playwrightVersion": "1.latest",
   "browserstack.username": process.env.BROWSERSTACK_USERNAME || "",
@@ -24,21 +27,34 @@ const DEFAULT_CAPS = {
   "browserstack.networkLogs": true,
   "browserstack.console": "errors",
   "browserstack.local": true, // Test using localhost
-  "client.playwrightVersion": "1.21.1",
+  "client.playwrightVersion": clientPlaywrightVersion,
+  name: "Solana wallet tests",
   project: pkg.app.name,
+  browser: "chrome",
+  os: "osx",
+  os_version: "catalina",
+  build: "solana-wallet-build-1",
 };
 
 function generateCapabilities(projectName: string, testTitle?: string) {
-  const [browser_caps, os_caps] = projectName.split(":");
-  const [browser, browser_version] = browser_caps.split("@");
-  const [os, os_version] = os_caps.split("@");
+  const combination = projectName.split(/@browserstack/)[0];
+  const [browerCaps, osCaps] = combination.split(/:/);
+  const [browser, browser_version] = browerCaps.split(/@/);
+  const osCapsSplit = osCaps.split(/ /);
+  const os = osCapsSplit.shift();
+  const os_version = osCapsSplit.join(" ");
+
+  // const [browser_caps, os_caps] = projectName.split(":");
+  // const [browser, browser_version] = browser_caps.split("@");
+  // const [os, os_version] = os_caps.split("@");
 
   const caps: BrowserStackCapabillies = {
     ...DEFAULT_CAPS,
-    build: `Build version ${pkg.version}`,
-    os,
-    os_version,
-    browser,
+    build: `Solana wallet: ${pkg.version}`,
+    os: os || "osx",
+    os_version: os_version || "catalina",
+    browser_version: browser_version || "latest",
+    browser: browser || "chrome",
   };
 
   if (testTitle) caps.name = testTitle;
@@ -56,9 +72,7 @@ async function getRemoteBrowser(playwright: PlaywrightWorkerArgs["playwright"], 
 
   // Connect to BrowserStack session
   const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
-  const browser = await playwright.chromium.connect(wsEndpoint);
-
-  return browser;
+  return playwright.chromium.connect(wsEndpoint);
 }
 
 async function setBrowserstackResult(page: Page, testInfo: TestInfo) {
