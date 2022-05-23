@@ -30,7 +30,6 @@ import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import cloneDeep from "lodash-es/cloneDeep";
-import memoize from "lodash-es/memoize";
 import merge from "lodash-es/merge";
 import omit from "lodash-es/omit";
 import log from "loglevel";
@@ -66,13 +65,6 @@ class ControllerModule extends VuexModule {
   public instanceId = "";
 
   public logoutRequired = false;
-
-  public isOwnerEscrow = memoize(async (domainOwner: string): Promise<boolean> => {
-    const NAME_AUCTIONING = new PublicKey("jCebN34bUfdeUYJT13J1yG16XWQpt5PDx6Mse9GUqhR");
-    const NAME_OFFERS_ID = new PublicKey("85iDfUvr3HJyLM2zcq5BXSiDvUWfw6cSE1FfNBo8Ap29");
-    const accountInfo = await this.connection.getAccountInfo(new PublicKey(domainOwner));
-    return !!accountInfo?.owner.equals(NAME_OFFERS_ID) || !!accountInfo?.owner.equals(NAME_AUCTIONING);
-  });
 
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
