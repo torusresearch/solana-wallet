@@ -1,4 +1,4 @@
-import * as bors from "@project-serum/borsh";
+import { option, publicKey, rustEnum, struct, u8, u64 } from "@project-serum/borsh";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
@@ -8,7 +8,7 @@ import log from "loglevel";
 
 export type DecodedDataType = {
   type: string;
-  data: { [key: string]: string | PublicKey | number | undefined | null };
+  data: { [key: string]: string | PublicKey | number | bigint | undefined | null };
 };
 
 export const decodeUnknownInstruction = (instruction: TransactionInstruction): DecodedDataType => {
@@ -158,23 +158,23 @@ export declare type TokenInstructionLayoutType =
   | { mintToChecked: { amount: BN; decimals: number } }
   | { burnChecked: { amount: BN; decimals: number } };
 
-const TokenInstructionLayout = bors.rustEnum([
-  bors.struct([bors.u8("decimals"), bors.publicKey("mintAuthority"), bors.option(bors.publicKey(), "freezeAuthority")], "initializeMint"),
-  bors.struct([], "initializeAccount"),
-  bors.struct([bors.u8("m")], "initializeMultisig"),
-  bors.struct([bors.u64("amount")], "transfer"),
-  bors.struct([bors.u64("amount")], "approve"),
-  bors.struct([], "revoke"),
-  bors.struct([bors.u8("authorityType"), bors.option(bors.publicKey(), "newAuthority")], "setAuthority"),
-  bors.struct([bors.u64("amount")], "mintTo"),
-  bors.struct([bors.u64("amount")], "burn"),
-  bors.struct([], "closeAccount"),
-  bors.struct([], "freezeAccount"),
-  bors.struct([], "thawAccount"),
-  bors.struct([bors.u64("amount"), bors.u8("decimals")], "transferChecked"),
-  bors.struct([bors.u64("amount"), bors.u8("decimals")], "approveChecked"),
-  bors.struct([bors.u64("amount"), bors.u8("decimals")], "mintToChecked"),
-  bors.struct([bors.u64("amount"), bors.u8("decimals")], "burnChecked"),
+const TokenInstructionLayout = rustEnum([
+  struct([u8("decimals"), publicKey("mintAuthority"), option(publicKey(), "freezeAuthority")], "initializeMint"),
+  struct([], "initializeAccount"),
+  struct([u8("m")], "initializeMultisig"),
+  struct([u64("amount")], "transfer"),
+  struct([u64("amount")], "approve"),
+  struct([], "revoke"),
+  struct([u8("authorityType"), option(publicKey(), "newAuthority")], "setAuthority"),
+  struct([u64("amount")], "mintTo"),
+  struct([u64("amount")], "burn"),
+  struct([], "closeAccount"),
+  struct([], "freezeAccount"),
+  struct([], "thawAccount"),
+  struct([u64("amount"), u8("decimals")], "transferChecked"),
+  struct([u64("amount"), u8("decimals")], "approveChecked"),
+  struct([u64("amount"), u8("decimals")], "mintToChecked"),
+  struct([u64("amount"), u8("decimals")], "burnChecked"),
 ]);
 
 function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDataType {
@@ -378,4 +378,13 @@ export const constructTokenData = (
     }
   }
   return undefined;
+};
+
+export const toObject = (objectwithBigInt: { [key: string]: any }): any => {
+  return JSON.parse(
+    JSON.stringify(
+      objectwithBigInt,
+      (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+    )
+  );
 };

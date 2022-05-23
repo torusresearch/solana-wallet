@@ -2,7 +2,6 @@
 import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { BigNumber } from "bignumber.js";
 import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 
@@ -95,10 +94,8 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
-
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
+    const txFee = isGasless ? 0 : (await ControllerModule.torus.calculateTxFee()).fee;
 
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
@@ -118,11 +115,11 @@ onMounted(async () => {
 
       const txAmount = decoded[0].lamports;
 
-      const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
+      const totalSolCost = Number(BigInt(txFee) + txAmount) / LAMPORTS_PER_SOL;
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
-      finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+      finalTxData.totalSolAmount = Number(txAmount.toString()) / LAMPORTS_PER_SOL;
+      finalTxData.totalSolFee = txFee / LAMPORTS_PER_SOL;
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
