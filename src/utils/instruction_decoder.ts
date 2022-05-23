@@ -8,7 +8,7 @@ import log from "loglevel";
 
 export type DecodedDataType = {
   type: string;
-  data: { [key: string]: string | PublicKey | number | undefined | null };
+  data: { [key: string]: string | PublicKey | number | BigInt | undefined | null };
 };
 
 export const decodeUnknownInstruction = (instruction: TransactionInstruction): DecodedDataType => {

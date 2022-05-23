@@ -1,0 +1,10 @@
+
+
+Thu May 12 2022 12:01:34:795 GMT+0530 (IST) -- [INFO] Started the BrowserStack Binary server on 45691, PID: 9614
+Thu May 12 2022 12:01:34:998 GMT+0530 (IST) -- [SUCCESS] You can now access your local server(s) in our remote browser
+
+Thu May 12 2022 12:01:35:62 GMT+0530 (IST) -- Press Ctrl-C to exit
+
+
+Thu May 12 2022 12:06:25:754 GMT+0530 (IST) -- [WARNING] *** Your testing experience with webserver at 172.20.5.27:8080 may be suboptimal, as the server is sending an HTTP response header containing: "Connection: close".
+Thu May 12 2022 12:06:25:755 GMT+0530 (IST) --      To improve the experience, please change it to "Connection: keep-alive"

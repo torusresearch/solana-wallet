@@ -26,7 +26,7 @@
     "@sentry/tracing": "^6.19.7",
     "@sentry/vue": "^6.19.7",
     "@solana/spl-token": "0.2.0",
-    "@solana/web3.js": "^1.34.0",
+    "@solana/web3.js": "^1.43.1",
     "@toruslabs/base-controllers": "^1.6.17",
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^2.2.0",
