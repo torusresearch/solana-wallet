@@ -3,7 +3,7 @@ import { devices, PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   timeout: 80_000,
-  testDir: "tests/e2e/activity",
+  testDir: "tests/e2e",
   globalSetup: "tests/e2e/browserstack-setup.ts",
   globalTeardown: "tests/e2e/browserstack-teardown.ts",
   use: {
@@ -29,9 +29,17 @@ const config: PlaywrightTestConfig = {
       name: "playwright-webkit@latest:OSX Big Sur@browserstack",
       use: {
         browserName: "webkit",
-        ...devices["iPhone 12 Pro Max"],
+        ...devices["Desktop Safari"],
+        // channel: "chrome",
       },
     },
+    // {
+    //   name: "playwright-webkit@latest:OSX Big Sur@browserstack",
+    //   use: {
+    //     browserName: "webkit",
+    //     ...devices["iPhone 12 Pro Max"],
+    //   },
+    // },
   ],
 };
 export default config;
