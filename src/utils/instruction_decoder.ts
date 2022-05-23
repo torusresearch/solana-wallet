@@ -21,7 +21,7 @@ export const decodeUnknownInstruction = (instruction: TransactionInstruction): D
   };
 };
 
-export const decodeSystemInstruction = (inst: TransactionInstruction): DecodedDataType => {
+export const decodeSystemInstruction = (inst: TransactionInstruction): any => {
   // get layout
   let decoded;
   const type = SystemInstruction.decodeInstructionType(inst);
