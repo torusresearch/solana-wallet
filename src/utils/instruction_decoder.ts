@@ -380,11 +380,11 @@ export const constructTokenData = (
   return undefined;
 };
 
-export const toObject = (objectwithBigInt: { [key: string]: any }): any => {
-  return JSON.parse(
-    JSON.stringify(
-      objectwithBigInt,
-      (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
-    )
-  );
-};
+// export const toObject = (objectwithBigInt: { [key: string]: any }): any => {
+//   return JSON.parse(
+//     JSON.stringify(
+//       objectwithBigInt,
+//       (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+//     )
+//   );
+// };
