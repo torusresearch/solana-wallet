@@ -2,6 +2,7 @@
 import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
+import BigNumber from "bignumber.js";
 import log from "loglevel";
 import { onMounted, reactive, ref } from "vue";
 
@@ -115,11 +116,12 @@ onMounted(async () => {
 
       const txAmount = decoded[0].lamports;
 
-      const totalSolCost = Number(BigInt(txFee) + txAmount) / LAMPORTS_PER_SOL;
+      const totalSolCost = new BigNumber(txFee).plus(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL);
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
-      finalTxData.totalSolAmount = Number(txAmount.toString()) / LAMPORTS_PER_SOL;
-      finalTxData.totalSolFee = txFee / LAMPORTS_PER_SOL;
+      finalTxData.totalSolAmount = new BigNumber(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL).toNumber();
+      finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
