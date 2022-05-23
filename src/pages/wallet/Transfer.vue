@@ -41,6 +41,7 @@ const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transactionFee = ref(0);
 const blockhash = ref("");
+const lastValidBlockHeight = ref(0);
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
@@ -254,8 +255,9 @@ const openModal = async () => {
   }
 
   // This can't be guarantee
-  const { blockHash, fee } = await ControllerModule.torus.calculateTxFee();
+  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = blockHash;
+  lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
@@ -294,7 +296,8 @@ const confirmTransfer = async () => {
         lamports: amount * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({
-        recentBlockhash: blockhash.value,
+        blockhash: blockhash.value,
+        lastValidBlockHeight: lastValidBlockHeight.value,
         feePayer: new PublicKey(ControllerModule.selectedAddress),
       }).add(instuctions);
       await ControllerModule.torus.transfer(tx);
