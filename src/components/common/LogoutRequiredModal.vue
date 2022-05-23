@@ -46,9 +46,11 @@ const refDiv = ref(null);
               >
               </DialogTitle> -->
 
-              <div class="mt-4 mx-8 mb-8 flex flex-col justify-around items-center">
-                <div class="p-12 text-center font-header text-md font-bold text-app-text-500 dark:text-app-text-dark-500">Please Login Again</div>
-                <Button ref="refDiv" class="mt-5" :block="true" variant="tertiary" @click="closeModal">Okay</Button>
+              <div class="mt-4 mx-4 mb-8 flex flex-col justify-around items-center">
+                <div class="p-4 text-center font-header text-xl font-bold text-app-text-500 dark:text-app-text-dark-500">
+                  Session expired. Please login again.
+                </div>
+                <Button ref="refDiv" class="" :block="true" variant="tertiary" @click="closeModal">Logout</Button>
               </div>
             </div>
           </TransitionChild>
