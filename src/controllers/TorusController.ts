@@ -610,7 +610,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
     if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-      const newAccount = await createAssociatedTokenAccountInstruction(
+      const newAccount = createAssociatedTokenAccountInstruction(
         new PublicKey(this.selectedAddress),
         associatedTokenAccount,
         receiverAccount,

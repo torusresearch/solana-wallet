@@ -95,10 +95,11 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
+    // const block = await ControllerModule.torus.connection.getLatestBlockhash("finalized");
+    const fees = await ControllerModule.torus.connection.getFeeForMessage(tx.value.compileMessage());
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
+    const txFee = isGasless ? 0 : fees.value;
 
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
