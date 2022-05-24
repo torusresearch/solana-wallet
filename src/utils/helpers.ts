@@ -1,8 +1,8 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
 import bowser from "bowser";
-import { BroadcastChannel } from "broadcast-channel";
 import copyToClipboard from "copy-to-clipboard";
 import log from "loglevel";
 

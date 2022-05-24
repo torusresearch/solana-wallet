@@ -22,15 +22,14 @@ import {
   THEME,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import { BroadcastChannel } from "broadcast-channel";
 import cloneDeep from "lodash-es/cloneDeep";
-import memoize from "lodash-es/memoize";
 import merge from "lodash-es/merge";
 import omit from "lodash-es/omit";
 import log from "loglevel";
@@ -65,12 +64,7 @@ class ControllerModule extends VuexModule {
 
   public instanceId = "";
 
-  public isOwnerEscrow = memoize(async (domainOwner: string): Promise<boolean> => {
-    const NAME_AUCTIONING = new PublicKey("jCebN34bUfdeUYJT13J1yG16XWQpt5PDx6Mse9GUqhR");
-    const NAME_OFFERS_ID = new PublicKey("85iDfUvr3HJyLM2zcq5BXSiDvUWfw6cSE1FfNBo8Ap29");
-    const accountInfo = await this.connection.getAccountInfo(new PublicKey(domainOwner));
-    return !!accountInfo?.owner.equals(NAME_OFFERS_ID) || !!accountInfo?.owner.equals(NAME_AUCTIONING);
-  });
+  public logoutRequired = false;
 
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
@@ -242,6 +236,11 @@ class ControllerModule extends VuexModule {
 
   get hasSelectedPrivateKey() {
     return this.torus.hasSelectedPrivateKey;
+  }
+
+  @Mutation
+  public setLogoutRequired(status: boolean) {
+    this.logoutRequired = status;
   }
 
   @Mutation
@@ -465,6 +464,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+    this.setLogoutRequired(false);
     // do not need to restore beyond login
     await this.torus.triggerLogin({ loginProvider, login_hint });
   }

@@ -3,7 +3,6 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
-import memoize from "lodash-es/memoize";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -11,6 +10,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
+import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
@@ -41,6 +41,7 @@ const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transactionFee = ref(0);
 const blockhash = ref("");
+const lastValidBlockHeight = ref(0);
 const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
@@ -103,19 +104,10 @@ const validVerifier = (value: string) => {
   if (!transferType.value) return true;
   return ruleVerifierId(transferType.value.value, value);
 };
-const addressPromise = memoize(
-  (type: string, address: string) => {
-    return ControllerModule.getSNSAddress({
-      type,
-      address,
-    });
-  },
-  (...args) => Object.values(args).join("_")
-);
 
 async function escrowAccountVerifier(): Promise<boolean> {
   if (transferType.value.value === "sns") {
-    return !(await ControllerModule.isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
+    return !(await isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
   }
   return true;
 }
@@ -263,8 +255,9 @@ const openModal = async () => {
   }
 
   // This can't be guarantee
-  const { blockHash, fee } = await ControllerModule.torus.calculateTxFee();
+  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = blockHash;
+  lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
@@ -303,7 +296,8 @@ const confirmTransfer = async () => {
         lamports: amount * LAMPORTS_PER_SOL,
       });
       const tx = new Transaction({
-        recentBlockhash: blockhash.value,
+        blockhash: blockhash.value,
+        lastValidBlockHeight: lastValidBlockHeight.value,
         feePayer: new PublicKey(ControllerModule.selectedAddress),
       }).add(instuctions);
       await ControllerModule.torus.transfer(tx);
