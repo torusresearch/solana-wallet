@@ -5,7 +5,7 @@ import { onBeforeMount } from "vue";
 import { Toast } from "@/components/common";
 
 import ControllerModule from "./modules/controllers";
-import { isMain } from "./utils/helpers";
+import { hideCrispButton, isMain } from "./utils/helpers";
 
 const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
 onBeforeMount(() => {
@@ -14,6 +14,11 @@ onBeforeMount(() => {
   bc.onmessage = (ev) => {
     if (ev === "logout" && !!ControllerModule.torus.selectedAddress) ControllerModule.logout();
   };
+
+  // hide crispbutton for iframe
+  if (!isMain) {
+    hideCrispButton();
+  }
 });
 </script>
 
