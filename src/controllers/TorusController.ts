@@ -1285,45 +1285,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return allTransactions;
   }
 
-  getDappStorageKey() {
-    let dappStorageKey = this.origin;
-    if (isMain) {
-      // wallet popup with dappOrigin
-      const { search } = window.location;
-      const searchParams = new URLSearchParams(search);
-      const redirectflowOrigin = searchParams.get("resolveRoute");
-      if (redirectflowOrigin) {
-        dappStorageKey = redirectflowOrigin;
-      } else {
-        // If the popup is opened from a dapp, use the dapp origin as the dappStorageKey
-        const instanceIdOrigin = searchParams.get("instanceId") || "";
-        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin);
-        if (dappOriginURL) {
-          dappStorageKey = dappOriginURL;
-          // sessionStorage.setItem("dappOriginURL", dappOriginURL); // Set for refresh use
-          // this.dappOriginURL = dappOriginURL;
-        }
-        // else: default wallet case
-      }
-    } else {
-      // Override is set from discover page
-      const override = localStorage.getItem(`dappOriginURL-${this.origin}`);
-
-      // Session override is used in case of refresh
-      const sessionOverride = sessionStorage.getItem("dappOriginURL");
-      if (override) {
-        dappStorageKey = override;
-        sessionStorage.setItem("dappOriginURL", override); // Set for refresh use
-        localStorage.removeItem(`dappOriginURL-${this.origin}`); // Remove to avoid reentrancy on solana.tor.us keys
-        log.info(`Key restored for - ${override} on ${this.origin}`);
-      } else if (sessionOverride) {
-        dappStorageKey = sessionOverride;
-        log.info(`Key restored using refresh for - ${sessionOverride} on ${this.origin}`);
-      }
-    }
-    return dappStorageKey;
-  }
-
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
     const ecc_privateKey = eccrypto.generatePrivate();
@@ -1336,7 +1297,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      // session should be priority and there should be only one login in one browser tab session
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+
+      const dappOriginURL = sessionStorage.getItem("dappOriginURL");
+      if (!dappOriginURL) window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      else if (dappOriginURL) {
+        // if dappOriginUrl exist, save ephemeral keystate to localstorage tagged to dappOriginUrl
+        // So than next login can skip full login flow
+        window.localStorage?.setItem(`${EPHERMAL_KEY}-${dappOriginURL}`, stringify(keyState));
+      }
+
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
@@ -1354,9 +1325,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
 
     try {
-      const dappStorageKey = this.getDappStorageKey();
-      log.info(dappStorageKey);
-      const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      const dappOriginURL = sessionStorage.getItem("dappOriginURL") || this.origin;
+
+      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappOriginURL}`);
+      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const value = sessionKey || localKey;
+
+      // Saving to SessionStorage - user refresh with restored key
+      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
