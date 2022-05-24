@@ -9,6 +9,7 @@ import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import { LOGIN_CONFIG } from "@/utils/enums";
+import { hideCrispButton } from "@/utils/helpers";
 
 withDefaults(
   defineProps<{
@@ -42,7 +43,7 @@ const setActiveButton = (provider: string) => {
 const refDiv = ref(null);
 
 onMounted(() => {
-  window.$crisp.push(["do", "chat:hide"]);
+  hideCrispButton();
 });
 </script>
 <template>
