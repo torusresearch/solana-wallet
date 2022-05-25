@@ -3,10 +3,15 @@ import { Keypair } from "@solana/web3.js";
 import { broadcastChannelOptions, PopupData } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { get } from "@toruslabs/http-helpers";
+import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { subkey } from "@toruslabs/openlogin-subkey";
 import { safeatob } from "@toruslabs/openlogin-utils";
+// import {} from "@toruslabs/vue-components";
+import Button from "@toruslabs/vue-components/common/Button.vue";
 import log from "loglevel";
+import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 import { BoxLoader } from "@/components/common";
@@ -14,7 +19,46 @@ import config from "@/config";
 import { generateTorusAuthHeaders } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
-import type { OpenLoginPopupResponse } from "../utils/enums";
+import { OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
+
+const { t } = useI18n();
+
+const loading = ref(true);
+const selectedAccountIndex = ref(0);
+const accountsProps = ref<ProjectAccountType[]>([]);
+const accounts: ProjectAccountType[] = [];
+let channel: string;
+let userInfo: OpenloginUserInfo;
+
+const selectAccount = (index: number) => {
+  selectedAccountIndex.value = index;
+};
+
+const continueToApp = async () => {
+  loading.value = true;
+  try {
+    // move selected key to the first position of keys
+    const id = selectedAccountIndex.value;
+    if (id > -1) {
+      const selectedAccount = accounts[id];
+      accounts.splice(id, 1);
+      accounts.unshift(selectedAccount);
+    }
+
+    log.info(accounts);
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+    await bc.postMessage({
+      data: {
+        userInfo,
+        privKey: accounts[0].privKey,
+        accounts,
+      },
+    } as PopupData<OpenLoginPopupResponse>);
+  } catch (error) {
+    log.error(error, "something went wrong");
+  }
+  loading.value = false;
+};
 
 async function endLogin() {
   try {
@@ -33,17 +77,20 @@ async function endLogin() {
     if (!privKey) {
       throw new Error("Login unsuccessful");
     }
-    const userInfo = await openLoginInstance.getUserInfo();
+
+    userInfo = await openLoginInstance.getUserInfo();
     const openLoginStore = openLoginState.store.getStore();
     if (!openLoginStore.appState) {
       throw new Error("Login unsuccessful");
     }
     const appState = JSON.parse(safeatob(decodeURIComponent(decodeURIComponent(openLoginStore.appState as string))));
     const { instanceId } = appState;
+    channel = instanceId;
 
     // derive app scoped keys from tkey
     const userDapps: Record<string, string> = {};
-    const keys: { privKey: string; name: string; address: string }[] = [];
+    // const keys: { privKey: string; name: string; address: string }[] = [];
+
     if (tKey && oAuthPrivateKey) {
       try {
         // projects are stored on oAuthPrivateKey but subkey is derived from tkey
@@ -61,10 +108,12 @@ async function endLogin() {
         userProjects.sort((a, b) => (a.last_login < b.last_login ? 1 : -1));
         userProjects.forEach((project) => {
           const subKey = subkey(tKey, Buffer.from(project.project_id, "base64"));
-          const { sk } = getED25519Key(subKey);
+          const paddedSubKey = subKey.padStart(64, "0");
+          const { sk } = getED25519Key(paddedSubKey);
           const keyPair = Keypair.fromSecretKey(sk);
           userDapps[keyPair.publicKey.toBase58()] = `${project.name} (${project.hostname})`;
-          keys.push({
+          accounts.push({
+            app: `${project.name}`,
             privKey: Buffer.from(keyPair.secretKey).toString("hex"),
             name: `${project.name} (${project.hostname})`,
             address: keyPair.publicKey.toBase58(),
@@ -72,28 +121,115 @@ async function endLogin() {
         });
       } catch (error2: unknown) {
         log.error("Failed to derive app-scoped keys", error2);
+        const { sk } = getED25519Key(privKey.padStart(64, "0"));
+        accounts.push({
+          app: "Solana Wallet",
+          privKey,
+          name: `Solana Wallet ${window.location.origin}`,
+          address: `${Keypair.fromSecretKey(sk).publicKey.toBase58()}`,
+        });
       }
+      if (accounts.length === 1) continueToApp();
+      accountsProps.value = accounts;
     }
-
-    const bc = new BroadcastChannel(instanceId, broadcastChannelOptions);
-    await bc.postMessage({
-      data: {
-        userInfo,
-        privKey,
-        keys,
-      },
-    } as PopupData<OpenLoginPopupResponse>);
   } catch (error) {
     log.error(error);
     // TODO: Display error to user and show crisp chat
   }
+  loading.value = false;
 }
-
+// accounts.push({
+//   app: "test",
+//   privKey: "testkey",
+//   name: "test",
+//   address: "testaddres 0000",
+// });
+// accounts.push({
+//   app: "test1",
+//   privKey: "testkey",
+//   name: "test",
+//   address: "testaddres 0000",
+// });
+// accounts.push({
+//   app: "test2",
+//   privKey: "testkey",
+//   name: "test",
+//   address: "testaddres 0000",
+// });
 endLogin();
 </script>
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <BoxLoader />
+    <BoxLoader v-if="loading" />
+    <div v-else>
+      <div class="text-xl text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
+      <div class="account-list mb-8">
+        <div>
+          <div class="account-list overflow-hidden">
+            <button
+              v-for="({ app, address }, index) in accountsProps"
+              :key="address"
+              :value="index"
+              class="flex flex-col overflow-hidden w-full pt-1 pb-1 hover:border-cyan-100"
+              @click="() => selectAccount(index)"
+            >
+              <div
+                class="flex flex-col account-item-checkbox w-full overflow-hidden"
+                :class="[selectedAccountIndex === index ? 'bg-app-gray-600 border-cyan-50' : 'bg-app-gray-700 ']"
+              >
+                <div class="account-app font-weight-bold text-app-text-dark-400">{{ app }}</div>
+                <div class="account-address text_2--text text-app-text-dark-400">{{ address }}</div>
+              </div>
+            </button>
+          </div>
+        </div>
+        <!-- <v-checkbox
+          v-for="({ app, address }, index) in accounts"
+          :key="bu/buttonress"
+          :input-value="selectedAccountIndex === address"
+          messages=""
+          :class="[selectedAccountIndex === address ? 'selected' : '', 'dark-theme']"
+          class="account-item-checkbox mb-2"
+          on-icon="$vuetify.icons.checkbox_marked"
+          off-icon="$vuetify.icons.checkbox_blank"
+          color="text_2--text"
+          hide-details
+          :readonly="selectedAccountIndex === address"
+          :ripple="false"
+          @click="selectAccount(index)"
+        >
+          <template #label>
+
+          </template>
+        </v-checkbox> -->
+      </div>
+      <Button id="less-details-link" large color="white" text class="px-8 mt-8 w-full white--text gmt-wallet-transfer" @click="continueToApp">
+        {{ t("login.continueToApp") }}
+      </Button>
+    </div>
   </div>
 </template>
+
+<style>
+.account-list {
+  width: 420px;
+  max-height: 300px;
+  /* overflow-y: auto; */
+  margin: auto;
+  /* padding: 0 10px; */
+}
+
+.account-item-checkbox {
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.account-app {
+  font-size: 14px;
+}
+.account-address {
+  font-size: 12px;
+}
+</style>

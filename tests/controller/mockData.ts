@@ -36,6 +36,7 @@ export const openloginFaker = [
       verifierId: "testing@tor.us",
       typeOfLogin: "google",
     },
+    accounts: [],
   },
   {
     privKey: secp256[1].getPrivate().toString("hex"),
@@ -48,6 +49,7 @@ export const openloginFaker = [
       verifierId: "testing22@tor.us",
       typeOfLogin: "google",
     },
+    accounts: [],
   },
   {
     privKey: secp256[2].getPrivate().toString("hex"),
@@ -60,6 +62,7 @@ export const openloginFaker = [
       verifierId: "testing22@tor.us",
       typeOfLogin: "google",
     },
+    accounts: [],
   },
 ];
 
