@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env.testing" });
 
-type Tabs = "home" | "transfer" | "topup" | "activity" | "settings";
+type Tabs = "home" | "transfer" | "topup" | "activity" | "settings" | "nfts";
 
 export function getDomain(): string {
   return `${process.env.TESTING_DOMAIN}`;
@@ -41,6 +41,7 @@ export async function switchTab(page: Page, tab: Tabs) {
     topup: "Select a Provider",
     activity: "Transaction Activities",
     settings: "Settings",
+    nfts: "NFTs",
   };
   await page.click(`a[href='/wallet/${tab}']`);
   await wait(1000);

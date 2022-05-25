@@ -10,6 +10,9 @@ test.describe("Settings Page", async () => {
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
   });
+  test.afterAll(async () => {
+    await page.close();
+  });
 
   test("Settings Page Should render", async () => {
     // // see navigation works correctly

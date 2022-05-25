@@ -25,6 +25,9 @@ test.describe("Activity Page", async () => {
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
   });
+  test.afterAll(async () => {
+    await page.close();
+  });
 
   test("Activity Page Should render", async () => {
     // see navigation works correctly

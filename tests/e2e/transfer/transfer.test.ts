@@ -9,6 +9,9 @@ test.describe("Transfer page", async () => {
   test.beforeAll(async ({ browser }) => {
     page = await login(await browser.newContext());
   });
+  test.afterAll(async () => {
+    await page.close();
+  });
 
   test("Transfer Page Should render", async () => {
     // see navigation works correctly

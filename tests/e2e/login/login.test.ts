@@ -33,4 +33,5 @@ test("Should Login successfully", async ({ context }) => {
   await page.click("text=Settings");
   await wait(1000);
   expect(page.url().includes("/wallet/settings")).toBeTruthy();
+  await page.close();
 });
