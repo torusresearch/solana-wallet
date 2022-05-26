@@ -136,14 +136,16 @@ async function endLogin() {
       } catch (error2: unknown) {
         log.error("Failed to derive app-scoped keys", error2);
       }
-      if (accounts.length === 1) continueToApp();
-      accountsProps.value = accounts;
     }
+
+    if (accounts.length <= 1) continueToApp();
+
+    accountsProps.value = accounts;
+    loading.value = false;
   } catch (error) {
     log.error(error);
     // TODO: Display error to user and show crisp chat
   }
-  loading.value = false;
 }
 
 endLogin();
@@ -155,12 +157,12 @@ endLogin();
     <div v-else>
       <div class="text-xl text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
       <div>
-        <div class="account-list overflow-hidden">
+        <div class="account-list overflow-y-scroll no-scrollbar">
           <button
             v-for="({ app, address }, index) in accountsProps"
             :key="address"
             :value="index"
-            class="flex flex-col overflow-hidden w-full pt-1 pb-1 hover:border-cyan-100"
+            class="flex flex-col overflow-hidden w-full mt-1 mb-1 hover:border-cyan-100"
             @click="() => selectAccount(index)"
           >
             <div
