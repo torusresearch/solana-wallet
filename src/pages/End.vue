@@ -19,7 +19,7 @@ import config from "@/config";
 import { generateTorusAuthHeaders } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
-import { OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
+import { APPLE, OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
 
 const { t } = useI18n();
 
@@ -87,6 +87,17 @@ async function endLogin() {
     const { instanceId } = appState;
     channel = instanceId;
 
+    // Main wallet's Account
+    const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    const typeOfLoginDisplay = userInfo.typeOfLogin.charAt(0).toUpperCase() + userInfo.typeOfLogin.slice(1);
+    const accountDisplay = (userInfo.typeOfLogin !== APPLE && userInfo.email) || userInfo.name;
+    accounts.push({
+      app: `${typeOfLoginDisplay} ${accountDisplay}`,
+      privKey,
+      name: `Solana Wallet ${window.location.origin}`,
+      address: `${Keypair.fromSecretKey(secretKey).publicKey.toBase58()}`,
+    });
+
     // derive app scoped keys from tkey
     const userDapps: Record<string, string> = {};
     // const keys: { privKey: string; name: string; address: string }[] = [];
@@ -121,13 +132,6 @@ async function endLogin() {
         });
       } catch (error2: unknown) {
         log.error("Failed to derive app-scoped keys", error2);
-        const { sk } = getED25519Key(privKey.padStart(64, "0"));
-        accounts.push({
-          app: "Solana Wallet",
-          privKey,
-          name: `Solana Wallet ${window.location.origin}`,
-          address: `${Keypair.fromSecretKey(sk).publicKey.toBase58()}`,
-        });
       }
       if (accounts.length === 1) continueToApp();
       accountsProps.value = accounts;
@@ -164,45 +168,24 @@ endLogin();
     <BoxLoader v-if="loading" />
     <div v-else>
       <div class="text-xl text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
-      <div class="account-list mb-8">
-        <div>
-          <div class="account-list overflow-hidden">
-            <button
-              v-for="({ app, address }, index) in accountsProps"
-              :key="address"
-              :value="index"
-              class="flex flex-col overflow-hidden w-full pt-1 pb-1 hover:border-cyan-100"
-              @click="() => selectAccount(index)"
+      <div>
+        <div class="account-list overflow-hidden">
+          <button
+            v-for="({ app, address }, index) in accountsProps"
+            :key="address"
+            :value="index"
+            class="flex flex-col overflow-hidden w-full pt-1 pb-1 hover:border-cyan-100"
+            @click="() => selectAccount(index)"
+          >
+            <div
+              class="flex flex-col account-item-checkbox w-full overflow-hidden"
+              :class="[selectedAccountIndex === index ? 'bg-app-gray-600 border-cyan-50' : 'bg-app-gray-700 ']"
             >
-              <div
-                class="flex flex-col account-item-checkbox w-full overflow-hidden"
-                :class="[selectedAccountIndex === index ? 'bg-app-gray-600 border-cyan-50' : 'bg-app-gray-700 ']"
-              >
-                <div class="account-app font-weight-bold text-app-text-dark-400">{{ app }}</div>
-                <div class="account-address text_2--text text-app-text-dark-400">{{ address }}</div>
-              </div>
-            </button>
-          </div>
+              <div class="account-app font-weight-bold text-app-text-dark-400">{{ app }}</div>
+              <div class="account-address text_2--text text-app-text-dark-400">{{ address }}</div>
+            </div>
+          </button>
         </div>
-        <!-- <v-checkbox
-          v-for="({ app, address }, index) in accounts"
-          :key="bu/buttonress"
-          :input-value="selectedAccountIndex === address"
-          messages=""
-          :class="[selectedAccountIndex === address ? 'selected' : '', 'dark-theme']"
-          class="account-item-checkbox mb-2"
-          on-icon="$vuetify.icons.checkbox_marked"
-          off-icon="$vuetify.icons.checkbox_blank"
-          color="text_2--text"
-          hide-details
-          :readonly="selectedAccountIndex === address"
-          :ripple="false"
-          @click="selectAccount(index)"
-        >
-          <template #label>
-
-          </template>
-        </v-checkbox> -->
       </div>
       <Button id="less-details-link" large color="white" text class="px-8 mt-8 w-full white--text gmt-wallet-transfer" @click="continueToApp">
         {{ t("login.continueToApp") }}

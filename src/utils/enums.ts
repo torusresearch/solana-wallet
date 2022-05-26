@@ -169,7 +169,7 @@ export const REDDIT = "reddit";
 export const DISCORD = "discord";
 export const GITHUB = "github";
 export const TWITTER = "twitter";
-
+export const APPLE = "apple";
 export interface TransferType {
   label: string;
   value: string;
