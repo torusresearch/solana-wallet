@@ -16,7 +16,7 @@ import { useRoute } from "vue-router";
 
 import { BoxLoader } from "@/components/common";
 import config from "@/config";
-import { generateTorusAuthHeaders } from "@/utils/helpers";
+import { generateTorusAuthHeaders, openCrispChat } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
 import { APPLE, OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
@@ -143,8 +143,9 @@ async function endLogin() {
     accountsProps.value = accounts;
     loading.value = false;
   } catch (error) {
-    log.error(error);
     // TODO: Display error to user and show crisp chat
+    log.error(error);
+    openCrispChat();
   }
 }
 
