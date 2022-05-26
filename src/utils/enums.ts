@@ -37,6 +37,7 @@ export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0
 
 export type ProjectAccountType = {
   app: string;
+  solanaPrivKey: string;
   privKey: string;
   name: string;
   address: string;
@@ -44,7 +45,6 @@ export type ProjectAccountType = {
 
 export type OpenLoginPopupResponse = {
   privKey: string;
-  solanaPrivKey: string;
   userInfo: OpenloginUserInfo;
   accounts: ProjectAccountType[];
 };

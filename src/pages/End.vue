@@ -8,6 +8,7 @@ import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { subkey } from "@toruslabs/openlogin-subkey";
 import { safeatob } from "@toruslabs/openlogin-utils";
 import Button from "@toruslabs/vue-components/common/Button.vue";
+import base58 from "bs58";
 import log from "loglevel";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -90,11 +91,13 @@ async function endLogin() {
     const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
     const typeOfLoginDisplay = userInfo.typeOfLogin.charAt(0).toUpperCase() + userInfo.typeOfLogin.slice(1);
     const accountDisplay = (userInfo.typeOfLogin !== APPLE && userInfo.email) || userInfo.name;
+    const mainKeyPair = Keypair.fromSecretKey(secretKey);
     accounts.push({
       app: `${typeOfLoginDisplay} ${accountDisplay}`,
+      solanaPrivKey: base58.encode(mainKeyPair.secretKey),
       privKey,
       name: `Solana Wallet ${window.location.origin}`,
-      address: `${Keypair.fromSecretKey(secretKey).publicKey.toBase58()}`,
+      address: `${mainKeyPair.publicKey.toBase58()}`,
     });
 
     // derive app scoped keys from tkey
@@ -124,7 +127,7 @@ async function endLogin() {
           userDapps[keyPair.publicKey.toBase58()] = `${project.name} (${project.hostname})`;
           accounts.push({
             app: `${project.name}`,
-            solanaPrivKey: Buffer.from(keyPair.secretKey).toString("hex"),
+            solanaPrivKey: base58.encode(keyPair.secretKey),
             privKey: paddedSubKey,
             name: `${project.name} (${project.hostname})`,
             address: keyPair.publicKey.toBase58(),
