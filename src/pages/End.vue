@@ -7,7 +7,6 @@ import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { subkey } from "@toruslabs/openlogin-subkey";
 import { safeatob } from "@toruslabs/openlogin-utils";
-// import {} from "@toruslabs/vue-components";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import log from "loglevel";
 import { ref } from "vue";
@@ -109,7 +108,7 @@ async function endLogin() {
         const headers = generateTorusAuthHeaders(oAuthPrivateKey);
         log.info(headers, "headers");
         const response = await get<{ user_projects: [{ last_login: string; project_id: string; hostname: string; name: string }] }>(
-          `${config.developerDashboardUrl}/projects/user-projects?chain_namespace=evm`,
+          `${config.developerDashboardUrl}/projects/user-projects?chain_namespace=solana`,
           {
             headers,
           }
@@ -125,7 +124,8 @@ async function endLogin() {
           userDapps[keyPair.publicKey.toBase58()] = `${project.name} (${project.hostname})`;
           accounts.push({
             app: `${project.name}`,
-            privKey: Buffer.from(keyPair.secretKey).toString("hex"),
+            solanaPrivKey: Buffer.from(keyPair.secretKey).toString("hex"),
+            privKey: paddedSubKey,
             name: `${project.name} (${project.hostname})`,
             address: keyPair.publicKey.toBase58(),
           });
@@ -142,24 +142,7 @@ async function endLogin() {
   }
   loading.value = false;
 }
-// accounts.push({
-//   app: "test",
-//   privKey: "testkey",
-//   name: "test",
-//   address: "testaddres 0000",
-// });
-// accounts.push({
-//   app: "test1",
-//   privKey: "testkey",
-//   name: "test",
-//   address: "testaddres 0000",
-// });
-// accounts.push({
-//   app: "test2",
-//   privKey: "testkey",
-//   name: "test",
-//   address: "testaddres 0000",
-// });
+
 endLogin();
 </script>
 

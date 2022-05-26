@@ -44,6 +44,7 @@ export type ProjectAccountType = {
 
 export type OpenLoginPopupResponse = {
   privKey: string;
+  solanaPrivKey: string;
   userInfo: OpenloginUserInfo;
   accounts: ProjectAccountType[];
 };

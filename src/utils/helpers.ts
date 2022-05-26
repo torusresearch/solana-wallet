@@ -3,10 +3,9 @@ import { PublicKey } from "@solana/web3.js";
 import { concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
-import { keccak256 } from "@toruslabs/openlogin-utils";
 import bowser from "bowser";
 import copyToClipboard from "copy-to-clipboard";
-import { ecsign, privateToAddress } from "ethereumjs-util";
+import { ecsign, keccak, privateToAddress, toBuffer } from "ethereumjs-util";
 import log from "loglevel";
 
 import config from "@/config";
@@ -305,9 +304,9 @@ export function generateTorusAuthHeaders(privateKey: string) {
   const publicAddress = `0x${privateToAddress(Buffer.from(privateKey, "hex")).toString("hex")}`;
   const challengeString = ((challenge - (challenge % 1000)) / 1000).toString();
   const message = getTorusMessage(Buffer.from(challengeString, "utf8"));
-  const hash = keccak256(message.toString("hex"));
-  const messageSig = ecsign(Buffer.from(hash.slice(2), "hex"), Buffer.from(privateKey, "hex"));
-  const signature = concatSig(Buffer.from(messageSig.v.toString()), messageSig.r, messageSig.s);
+  const hash = keccak(message);
+  const messageSig = ecsign(hash, Buffer.from(privateKey, "hex"));
+  const signature = concatSig(toBuffer(messageSig.v), messageSig.r, messageSig.s);
   const authHeaders = {
     "Auth-Challenge": challengeString,
     "Auth-Signature": signature,

@@ -26,6 +26,7 @@ export const sKeyPair = [
 
 export const openloginFaker = [
   {
+    solanaPrivKey: "",
     privKey: secp256[0].getPrivate().toString("hex"),
     userInfo: {
       email: "testing@tor.us",
@@ -39,6 +40,7 @@ export const openloginFaker = [
     accounts: [],
   },
   {
+    solanaPrivKey: "",
     privKey: secp256[1].getPrivate().toString("hex"),
     userInfo: {
       email: "testing11@tor.us",
@@ -52,6 +54,7 @@ export const openloginFaker = [
     accounts: [],
   },
   {
+    solanaPrivKey: "",
     privKey: secp256[2].getPrivate().toString("hex"),
     userInfo: {
       email: "testing22@tor.us",
