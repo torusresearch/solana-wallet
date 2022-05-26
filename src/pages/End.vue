@@ -168,9 +168,9 @@ endLogin();
           >
             <div
               class="flex flex-col account-item-checkbox w-full overflow-hidden"
-              :class="[selectedAccountIndex === index ? 'bg-app-gray-600 border-cyan-50' : 'bg-app-gray-700 ']"
+              :class="[selectedAccountIndex === index ? 'bg-app-gray-600 border-2 border-cyan-300' : 'bg-app-gray-700 ']"
             >
-              <div class="account-app font-weight-bold text-app-text-dark-400">{{ app }}</div>
+              <div class="account-app font-bold text-app-text-dark-400">{{ app }}</div>
               <div class="account-address text_2--text text-app-text-dark-400">{{ address }}</div>
             </div>
           </button>
