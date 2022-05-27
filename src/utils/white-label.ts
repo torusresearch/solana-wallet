@@ -1,4 +1,10 @@
+import color from "color";
+
 import { NAVIGATION_LIST } from "@/utils/enums";
+
+const lighten = (target: string, val: number) => color(target).lighten(val).rgb().string();
+
+const darken = (target: string, val: number) => color(target).darken(val).rgb().string();
 
 let wasThemeChanged = false;
 export function overrideTheme() {
@@ -19,7 +25,7 @@ export function getWhiteLabel(): any {
   }
 }
 export function isWhiteLabelActive(): boolean {
-  return !!Object.keys(getWhiteLabel());
+  return Object.keys(getWhiteLabel()).length > 0;
 }
 
 export function isWhiteLabelDark() {
@@ -38,15 +44,15 @@ export function isTopupHidden(): boolean {
 export function applyWhiteLabelThings() {
   const brandColor = getBrandColor();
   if (brandColor) {
-    // change the primary color
-    const style = document.createElement("style");
-    style.type = "text/css";
-    style.innerHTML = `.wl-color { color: ${brandColor} !important} 
-    .wl-background { background-color: ${brandColor} !important} 
-    .wl-background:hover { background-color: ${brandColor}cc !important}
-    .wl-border-color { border-color: ${brandColor}}
-    .wl-background-no-hover { background-color: ${brandColor} !important};`;
-    document.getElementsByTagName("head")[0].appendChild(style);
+    document.documentElement.style.setProperty("--color-primary-100", lighten(brandColor, 0.8));
+    document.documentElement.style.setProperty("--color-primary-200", lighten(brandColor, 0.64));
+    document.documentElement.style.setProperty("--color-primary-300", lighten(brandColor, 0.4));
+    document.documentElement.style.setProperty("--color-primary-400", lighten(brandColor, 0.24));
+    document.documentElement.style.setProperty("--color-primary-500", brandColor);
+    document.documentElement.style.setProperty("--color-primary-600", darken(brandColor, 0.24));
+    document.documentElement.style.setProperty("--color-primary-700", darken(brandColor, 0.4));
+    document.documentElement.style.setProperty("--color-primary-800", darken(brandColor, 0.64));
+    document.documentElement.style.setProperty("--color-primary-900", darken(brandColor, 0.8));
   }
 
   if (isTopupHidden()) {
@@ -67,6 +73,14 @@ export function getWhiteLabelLocale(): string {
 
 export function getOverrideTranslations(lang: string): any {
   return getWhiteLabel()?.customTranslations?.[lang] || {};
+}
+
+export function getWhiteLabelAppName(): string {
+  return getWhiteLabel()?.name || "";
+}
+
+export function getWhiteLabelAppUrl(): string {
+  return getWhiteLabel()?.url || "";
 }
 
 export function setWhiteLabel(whiteLabel: any) {

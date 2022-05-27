@@ -1,4 +1,17 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+
+:root {
+  --color-primary-100: #ffffff;
+  --color-primary-200: #ffffff;
+  --color-primary-300: #e0c7ff;
+  --color-primary-400: #c493ff;
+  --color-primary-500: #9945ff;
+  --color-primary-600: #6f00f6;
+  --color-primary-700: #5800c2;
+  --color-primary-800: #350075;
+  --color-primary-900: #1d0041;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

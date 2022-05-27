@@ -1,13 +1,4 @@
-const lighten = (color, val) =>
-  require("color")(color).lighten(val).rgb().string();
-
-const darken = (color, val) =>
-  require("color")(color).darken(val).rgb().string();
-
 const tailwindColors = require("tailwindcss/colors");
-const appColors = {
-  primary: "#9945ff",
-};
 
 module.exports = {
   content: [
@@ -28,15 +19,15 @@ module.exports = {
       colors: {
         app: {
           primary: {
-            100: lighten(appColors.primary, 0.8),
-            200: lighten(appColors.primary, 0.64),
-            300: lighten(appColors.primary, 0.4),
-            400: lighten(appColors.primary, 0.24),
-            500: appColors.primary,
-            600: darken(appColors.primary, 0.24),
-            700: darken(appColors.primary, 0.4),
-            800: darken(appColors.primary, 0.64),
-            900: darken(appColors.primary, 0.8),
+            100: 'var(--color-primary-100)',
+            200: 'var(--color-primary-200)',
+            300: 'var(--color-primary-300)',
+            400: 'var(--color-primary-400)',
+            500: 'var(--color-primary-500)',
+            600: 'var(--color-primary-600)',
+            700: 'var(--color-primary-700)',
+            800: 'var(--color-primary-800)',
+            900: 'var(--color-primary-900)',
           },
           secondary: "#47B2FD",
           secondary2: "#DAF0FF",
@@ -44,7 +35,7 @@ module.exports = {
             400: "#A2A5B5",
             500: "#5C6C7F",
             600: "#0F1222",
-            accent: appColors.primary,
+            accent: 'var(--color-primary-500)',
             dark: {
               white: "#FFFFFF",
               400: "#EEF2F4",
@@ -82,6 +73,9 @@ module.exports = {
         "gt-xs": { min: "440px" }, // mobile
         "lt-sm": { max: "640px" }, // less than sm
         "lt-md": { max: "768px" }, // less than md
+      },
+      backgroundImage: {
+        "gradient-conic": "conic-gradient(transparent, var(--tw-gradient-to))",
       },
     },
   },

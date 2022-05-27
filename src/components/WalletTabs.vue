@@ -59,11 +59,11 @@ const logout = async () => {
               :to="`/wallet/${value.route}`"
               :class="[
                 key === tab
-                  ? 'border-app-primary-500 text-app-primary-500 wl-border-color'
+                  ? 'border-app-primary-500'
                   : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
-                'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium wl-color ',
+                'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium text-app-primary-500 ',
               ]"
-              :aria-current="key === tab ? 'page wl-border-bottom-color' : undefined"
+              :aria-current="key === tab ? 'page border-b-app-primary-500' : undefined"
               >{{ t(value.name) }}</router-link
             >
           </div>
@@ -108,7 +108,7 @@ const logout = async () => {
       >
         <div
           class="flex flex-col h-full items-center justify-center select-none w-16 py-1"
-          :class="[key === tab ? 'active-border wl-border-color' : '']"
+          :class="[key === tab ? 'active-border bg-app-primary-500' : '']"
         >
           <img
             :src="value.icon"

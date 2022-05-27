@@ -5,8 +5,6 @@ import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import TorusLogo from "@/assets/torus-logo.svg";
-import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import { LOGIN_CONFIG } from "@/utils/enums";
@@ -65,11 +63,11 @@ const refDiv = ref(null);
                   {{ t("login.setupWallet") }}
                 </h1>
                 <div
-                  class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-gray-500 bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
+                  class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
                   @click="closeModal"
                   @keydown="closeModal"
                 >
-                  <XIcon class="w-5 h-5 text-white text-opacity-70 hover:text-opacity-100" />
+                  <XIcon class="w-5 h-5 text-app-gray-800 dark:text-white text-opacity-70 hover:text-opacity-100" />
                 </div>
               </DialogTitle>
               <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-4 text-center px-7">
@@ -84,9 +82,19 @@ const refDiv = ref(null);
                   @on-hover="setActiveButton"
                 />
               </div>
-              <div class="w-full mt-6 mb-12 text-center">
-                <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
-                <img :src="ControllerModule.isDarkMode ? TorusLogoLightURL : TorusLogo" alt="Torus Logo" class="h-4 w-auto opacity-70 inline-block" />
+              <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 font-light mt-6">
+                {{ t("dappLogin.selfCustodial") }}
+              </div>
+              <img src="../../assets/web3auth-logo.svg" alt="web3auth logo" />
+              <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 font-light mb-12">
+                <a
+                  class="font-body text-xs text-app-text-400 dark:text-app-text-dark-600 font-light underline"
+                  href="https://docs.web3auth.io/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {{ t("dappLogin.howWorks") }}
+                </a>
               </div>
               <div
                 v-if="otherWallets === 'true'"

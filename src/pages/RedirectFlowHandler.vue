@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 
-import BoxLoader from "@/components/common/BoxLoader.vue";
+import { BoxLoader } from "@/components/common";
 
 import ControllerModule from "../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";

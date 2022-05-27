@@ -88,13 +88,13 @@ const refDiv = ref(null);
                       class="w-10 h-10 mr-2 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
                       @click="() => showWallet('wallet/transfer')"
                     >
-                      <ArrowBoldForvardIcon class="w-4 h-4 text-app-primary-500 wl-color" />
+                      <ArrowBoldForvardIcon class="w-4 h-4 text-app-primary-500" />
                     </button>
                     <button
                       class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
                       @click="() => showWallet('wallet/topup')"
                     >
-                      <PlusIcon class="w-4 h-4 text-app-primary-500 wl-color" />
+                      <PlusIcon class="w-4 h-4 text-app-primary-500" />
                     </button>
                   </div>
                 </div>
@@ -124,7 +124,7 @@ const refDiv = ref(null);
                   </div>
                 </div>
               </div>
-              <button class="torus-widget__button wl-background-no-hover">
+              <button class="torus-widget__button">
                 <img
                   class="torus-widget__button-img"
                   :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || SolanaLogoLight"

@@ -118,7 +118,7 @@ const totalFiatCostString = computed(() => {
           </span>
 
           <p
-            class="text-right mt-4 text-sm cursor-pointer ml-auto text-app-text-accent wl-color"
+            class="text-right mt-4 text-sm cursor-pointer ml-auto text-app-primary-500"
             @click="() => (expand_inst = !expand_inst)"
             @keydown.enter="() => (expand_inst = !expand_inst)"
           >

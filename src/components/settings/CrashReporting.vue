@@ -16,7 +16,7 @@ const enabled = computed(() => ControllerModule.crashReport);
     <div class="flex items-center">
       <Switch
         :model="enabled"
-        :class="enabled ? 'bg-app-primary-500 wl-background' : 'bg-app-gray-600'"
+        :class="enabled ? 'bg-app-primary-500' : 'bg-app-gray-600'"
         class="relative inline-flex items-center h-6 rounded-full w-11 mr-2"
         @update:model-value="(v) => ControllerModule.setCrashReport(!ControllerModule.crashReport)"
       >

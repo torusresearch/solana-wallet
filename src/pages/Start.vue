@@ -27,7 +27,7 @@ startLogin();
 </script>
 
 <template>
-  <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
+  <div class="min-h-screen bg-white dark:bg-app-gray-800 flex flex-col justify-center items-center">
     <BoxLoader />
   </div>
 </template>

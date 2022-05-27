@@ -56,7 +56,7 @@ const updateCurrency = (newCurrency: string) => {
           v-ga="HomePageInteractions.TOPUP"
           :block="true"
           variant="tertiary"
-          class="w-full mr-3 wl-color"
+          class="w-full mr-3 text-app-primary-500"
           @click="router.push('/wallet/topup')"
           >{{ t("walletHome.topUp") }}</Button
         >
@@ -64,7 +64,7 @@ const updateCurrency = (newCurrency: string) => {
           v-ga="HomePageInteractions.TRANSFER"
           :block="true"
           variant="tertiary"
-          class="w-full wl-color"
+          class="w-full text-app-primary-500"
           @click="router.push('/wallet/transfer')"
           >{{ t("walletHome.transfer") }}</Button
         >

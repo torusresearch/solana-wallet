@@ -44,17 +44,17 @@ const showWallet = (path: string) => {
       @on-close="closePanel"
       @show-wallet="showWallet"
     />
-    <button v-if="isLoggedIn" class="torus-widget__button wl-background-no-hover" @click="togglePanel">
+    <button v-if="isLoggedIn" class="torus-widget__button" @click="togglePanel">
       <img
         class="torus-widget__button-img"
         :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || SolanaLogoLight"
         alt="Login icon"
       />
     </button>
-    <button v-else-if="isLoginInProgress" class="torus-widget__button wl-background-no-hover">
+    <button v-else-if="isLoginInProgress" class="torus-widget__button">
       <RoundLoader class="w-5 h-5" color="border-white" />
     </button>
-    <button v-else class="torus-widget__button wl-background-no-hover torus-widget__button--toggle" @click="onLogin">
+    <button v-else class="torus-widget__button torus-widget__button--toggle" @click="onLogin">
       <img class="torus-widget__button-img" :src="LoginUrl" alt="Login iasdconwr" />
       <span class="torus-widget__button-text">{{ t("emailLogin.loginNoSpace") }}</span>
     </button>
