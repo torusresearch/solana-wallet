@@ -46,6 +46,7 @@ const logout = async () => {
           <router-link to="/wallet/home">
             <img
               class="block h-4 w-auto"
+              :class="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) ? 'h-7 w-auto' : 'h-4 w-auto'"
               :src="ControllerModule.isDarkMode ? getWhiteLabelLogoLight() || SolanaLightLogoURL : getWhiteLabelLogoDark() || SolanaLogoURL"
               alt="Solana Logo"
             />

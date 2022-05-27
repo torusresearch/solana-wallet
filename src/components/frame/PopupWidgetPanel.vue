@@ -15,7 +15,7 @@ import SolanaLogoLight from "@/assets/solana-light.svg";
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white-label";
+import { getWhiteLabelLogoLight } from "@/utils/white-label";
 
 const { t } = useI18n();
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
@@ -81,7 +81,10 @@ const refDiv = ref(null);
                 <div class="flex mt-5 -mb-2 text-app-text-500 dark:text-app-text-dark-500">
                   <div>
                     <div class="text-xs">{{ t("dappPopup.totalValue") }}</div>
-                    <div class="text-base font-semibold">{{ formattedBalance }} {{ currentFiatCurrency?.toUpperCase() }}</div>
+                    <div class="text-base font-semibold">
+                      {{ formattedBalance }}
+                      {{ currentFiatCurrency?.toUpperCase() }}
+                    </div>
                   </div>
                   <div class="ml-auto flex">
                     <button
@@ -103,33 +106,30 @@ const refDiv = ref(null);
                 </div>
                 <div class="mt-5">
                   <div class="flex border-b pb-1">
-                    <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("dappPopup.recentActivity") }}</div>
+                    <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">
+                      {{ t("dappPopup.recentActivity") }}
+                    </div>
                     <div class="ml-auto">
                       <Button variant="text" @click="() => showWallet('wallet/home')">{{ t("dappPopup.openWallet") }}</Button>
                     </div>
                   </div>
                   <div v-if="lastTransaction" class="flex w-full items-center mt-2">
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
-                      <img
-                        :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || SolanaLogo"
-                        alt="activity icon"
-                      />
+                      <img :src="getWhiteLabelLogoLight() || SolanaLogo" alt="activity icon" />
                     </div>
                     <div class="flex grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
                       <div>
                         <div>{{ t("dappPopup.lastSign") }}</div>
-                        <div>{{ addressSlicer(lastTransaction.signature) }}</div>
+                        <div>
+                          {{ addressSlicer(lastTransaction.signature) }}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               <button class="torus-widget__button">
-                <img
-                  class="torus-widget__button-img"
-                  :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || SolanaLogoLight"
-                  alt="Login icon"
-                />
+                <img class="torus-widget__button-img" :src="getWhiteLabelLogoLight() || SolanaLogoLight" alt="Login icon" />
               </button>
             </div>
           </TransitionChild>

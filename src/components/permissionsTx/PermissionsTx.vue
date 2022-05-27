@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { CheckCircleIcon } from "@heroicons/vue/solid";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
@@ -74,7 +74,7 @@ function openLink() {
 
         <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
-            <img :src="SubtractURL" alt="Message Info" class="mr-2" />
+            <CheckCircleIcon class="w-4 h-4 mr-2 text-app-primary-500" />
             <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">
               {{ decodedInst.length }} {{ t("walletSettings.transactionInstructions") }}
             </p>
