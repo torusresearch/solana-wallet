@@ -1453,8 +1453,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
       if (req.params?.messageOnly) {
+        // HOTFIX
+        const msgObj = Message.from(Buffer.from(msg, "hex"));
+        const tx = Transaction.populate(msgObj);
+        // web3js issue, first compile might be incorrecte if signer is not set
+        tx.serializeMessage();
+        const messageToSign = tx.serializeMessage();
+        const signature = this.keyringController.signMessage(messageToSign, this.selectedAddress);
         // fix for inconsistent account serialization
-        const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        // const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
         return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
       }
 
@@ -1476,7 +1483,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
-      const signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
+      // HOTFIX
+      const msgObj = Message.from(Buffer.from(message, "hex"));
+      const tx = Transaction.populate(msgObj);
+      // web3js issue, first compile might be incorrecte if signer is not set
+      tx.serializeMessage();
+      const messageToSign = tx.serializeMessage();
+      const signature = this.keyringController.signMessage(messageToSign, this.selectedAddress);
 
       return JSON.stringify({
         publicKey: this.selectedAddress,
