@@ -58,6 +58,7 @@ export interface OpenLoginBackendState {
   userInfo?: UserInfo;
   publicKey: string;
   privateKey: string;
+  accounts: ProjectAccountType[];
 }
 
 export interface TorusControllerState extends BaseState {
@@ -72,6 +73,7 @@ export interface TorusControllerState extends BaseState {
   TokenInfoState: TokenInfoState;
   RelayMap: { [relay: string]: string };
   RelayKeyHostMap: { [Pubkey: string]: string };
+  UserDapp: Map<string, string>;
 }
 
 export interface TorusControllerConfig extends BaseConfig {

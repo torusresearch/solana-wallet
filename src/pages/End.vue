@@ -57,7 +57,8 @@ const continueToApp = async () => {
   } catch (error) {
     log.error(error, "something went wrong");
   }
-  loading.value = false;
+  // expecting popup closed
+  // loading.value = false;
 };
 
 async function endLogin() {
@@ -138,7 +139,10 @@ async function endLogin() {
       }
     }
 
-    if (accounts.length <= 1) continueToApp();
+    if (accounts.length <= 1) {
+      continueToApp();
+      return;
+    }
 
     accountsProps.value = accounts;
     loading.value = false;
