@@ -328,6 +328,19 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public init({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }): void {
     log.info(_config, _state, "restoring config & state");
 
+    const initialState = _state;
+    // overwrite google node with default node
+    // overwrite custom node with default node when isMain is True
+    if ((isMain && initialState.NetworkControllerState?.isCustomNetwork) || !initialState.NetworkControllerState?.isCustomNetwork) {
+      let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
+      if (initialState.NetworkControllerState) {
+        if (initialState.NetworkControllerState.providerConfig.chainId === "0x02") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
+        if (initialState.NetworkControllerState.providerConfig.chainId === "0x03") defaultNetwork = WALLET_SUPPORTED_NETWORKS.devnet;
+        initialState.NetworkControllerState.providerConfig = defaultNetwork;
+        log.info("unsupported api.google rpc endpoint, replaced with default rpc endpoint");
+      }
+    }
+
     this.storageLayer = new TorusStorageLayer({ hostUrl: config.openloginStateAPI });
     // BaseController methods
     this.initialize();
@@ -545,10 +558,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async calculateTxFee(): Promise<{ blockHash: string; fee: number }> {
-    const blockHash = (await this.connection.getRecentBlockhash("finalized")).blockhash;
+  async calculateTxFee(): Promise<{ blockHash: string; fee: number; height: number }> {
+    const latestBlockHash = await this.connection.getLatestBlockhash("finalized");
+    const blockHash = latestBlockHash.blockhash;
+    const height = latestBlockHash.lastValidBlockHeight;
     const fee = (await this.connection.getFeeCalculatorForBlockhash(blockHash)).value?.lamportsPerSignature || 0;
-    return { blockHash, fee };
+    return { blockHash, fee, height };
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
@@ -629,7 +644,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     );
     transaction.add(transferInstructions);
 
-    transaction.recentBlockhash = (await connection.getRecentBlockhash("finalized")).blockhash;
+    transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
     transaction.feePayer = new PublicKey(this.selectedAddress);
     return this.transfer(transaction);
   }
@@ -1270,45 +1285,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return allTransactions;
   }
 
-  getDappStorageKey() {
-    let dappStorageKey = this.origin;
-    if (isMain) {
-      // wallet popup with dappOrigin
-      const { search } = window.location;
-      const searchParams = new URLSearchParams(search);
-      const redirectflowOrigin = searchParams.get("resolveRoute");
-      if (redirectflowOrigin) {
-        dappStorageKey = redirectflowOrigin;
-      } else {
-        // If the popup is opened from a dapp, use the dapp origin as the dappStorageKey
-        const instanceIdOrigin = searchParams.get("instanceId") || "";
-        const dappOriginURL = sessionStorage.getItem(instanceIdOrigin);
-        if (dappOriginURL) {
-          dappStorageKey = dappOriginURL;
-          // sessionStorage.setItem("dappOriginURL", dappOriginURL); // Set for refresh use
-          // this.dappOriginURL = dappOriginURL;
-        }
-        // else: default wallet case
-      }
-    } else {
-      // Override is set from discover page
-      const override = localStorage.getItem(`dappOriginURL-${this.origin}`);
-
-      // Session override is used in case of refresh
-      const sessionOverride = sessionStorage.getItem("dappOriginURL");
-      if (override) {
-        dappStorageKey = override;
-        sessionStorage.setItem("dappOriginURL", override); // Set for refresh use
-        localStorage.removeItem(`dappOriginURL-${this.origin}`); // Remove to avoid reentrancy on solana.tor.us keys
-        log.info(`Key restored for - ${override} on ${this.origin}`);
-      } else if (sessionOverride) {
-        dappStorageKey = sessionOverride;
-        log.info(`Key restored using refresh for - ${sessionOverride} on ${this.origin}`);
-      }
-    }
-    return dappStorageKey;
-  }
-
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
     const ecc_privateKey = eccrypto.generatePrivate();
@@ -1321,7 +1297,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      // session should be priority and there should be only one login in one browser tab session
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+
+      const dappOriginURL = sessionStorage.getItem("dappOriginURL");
+      if (!dappOriginURL) window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
+      else if (dappOriginURL) {
+        // if dappOriginUrl exist, save ephemeral keystate to localstorage tagged to dappOriginUrl
+        // So than next login can skip full login flow
+        window.localStorage?.setItem(`${EPHERMAL_KEY}-${dappOriginURL}`, stringify(keyState));
+      }
+
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
@@ -1339,9 +1325,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
 
     try {
-      const dappStorageKey = this.getDappStorageKey();
-      log.info(dappStorageKey);
-      const value = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      const dappOriginURL = sessionStorage.getItem("dappOriginURL") || this.origin;
+
+      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappOriginURL}`);
+      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const value = sessionKey || localKey;
+
+      // Saving to SessionStorage - user refresh with restored key
+      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -1361,40 +1352,43 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
         log.info("try to restore key");
         let address;
-        if (this.preferencesController.state.identities[decryptedState.publicKey]) {
-          // Try key restore with session state intact.
-          // Using LocalStorage to save state, hence could not check with selected address
-          // if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+        try {
+          if (this.preferencesController.state.identities[decryptedState.publicKey]) {
+            // Try key restore with session state intact.
+            // Using LocalStorage to save state, hence could not check with selected address
+            // if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
 
-          log.info("login without userinfo");
-          // Restore keyringController only ( no Sync / initPreferenes )
-          address = await this.addAccount(decryptedState.privateKey);
+            log.info("login without userinfo");
+            // Restore keyringController only ( no Sync / initPreferenes )
+            address = await this.addAccount(decryptedState.privateKey);
 
-          // required to set selectedAddress before check for jwt
-          this.preferencesController.setSelectedAddress(address);
+            // required to set selectedAddress before check for jwt
+            this.preferencesController.setSelectedAddress(address);
 
-          // valid private key needed to refreshJwt,
-          const jwt = this.preferencesController.state.identities[address]?.jwtToken;
+            // valid private key needed to refreshJwt,
+            const jwt = this.preferencesController.state.identities[address]?.jwtToken;
 
-          if (jwt) {
-            const expire = parseJwt(jwt).exp;
-            if (expire < Date.now() / 1000) {
-              await this.refreshJwt();
+            if (jwt) {
+              const expire = parseJwt(jwt).exp;
+              if (expire < Date.now() / 1000) {
+                await this.refreshJwt();
+              }
             }
+          } else {
+            // restore with userInfo ( full login as preference state not available )
+            address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
           }
-        } else {
-          // restore with userInfo ( full login as preference state not available )
-          address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
+          // This call sync and refresh blockchain state
+          this.setSelectedAccount(address, true);
+          return true;
+        } catch (e) {
+          log.error(e, "Error restoring state after successfull decrypt!");
         }
-
-        // This call sync and refresh blockchain state
-        this.setSelectedAccount(address, true);
-        return true;
       }
       log.warn("Invalid or no key in local storage");
       return false;
     } catch (error) {
-      log.error(error, "Error restoring state!");
+      log.warn(error, "Error restoring state!");
       return false;
     }
   }

@@ -2,13 +2,14 @@
 import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { BigNumber } from "bignumber.js";
+import BigNumber from "bignumber.js";
 import log from "loglevel";
-import { onMounted, reactive, ref } from "vue";
+import { onErrorCaptured, onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
+import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
@@ -49,8 +50,11 @@ const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
-
+onErrorCaptured(() => {
+  openCrispChat();
+});
 onMounted(async () => {
+  hideCrispButton();
   try {
     let txData: Partial<TransactionChannelDataType>;
     if (!isRedirectFlow) {
@@ -95,10 +99,8 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    const block = await ControllerModule.torus.connection.getRecentBlockhash("finalized");
-
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : block.feeCalculator.lamportsPerSignature;
+    const txFee = isGasless ? 0 : (await ControllerModule.torus.calculateTxFee()).fee;
 
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
@@ -118,11 +120,12 @@ onMounted(async () => {
 
       const txAmount = decoded[0].lamports;
 
-      const totalSolCost = new BigNumber(txFee).plus(txAmount).div(LAMPORTS_PER_SOL);
+      const totalSolCost = new BigNumber(txFee).plus(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL);
       finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
       finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
-      finalTxData.totalSolAmount = new BigNumber(txAmount).div(LAMPORTS_PER_SOL).toNumber();
+      finalTxData.totalSolAmount = new BigNumber(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL).toNumber();
       finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+
       finalTxData.totalSolCost = totalSolCost.toString();
       finalTxData.transactionType = "";
       finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
@@ -132,6 +135,7 @@ onMounted(async () => {
     }
   } catch (error) {
     log.error(error, "error in tx");
+    openCrispChat();
   }
 });
 
