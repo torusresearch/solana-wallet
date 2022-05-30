@@ -1,5 +1,11 @@
 import * as borsh from "@project-serum/borsh";
-import { PublicKey } from "@solana/web3.js";
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
@@ -322,4 +328,54 @@ export function getImgProxyUrl(originalUrl?: string) {
   }
 
   return `${proxyUrl}/plain/${originalUrl}`;
+}
+
+// Generate Solana Transaction
+export async function generateSPLTransaction(
+  receiver: string,
+  amount: number,
+  selectedToken: Partial<SolAndSplToken>,
+  sender: string,
+  connection: Connection
+): Promise<Transaction> {
+  const transaction = new Transaction();
+  const tokenMintAddress = selectedToken.mintAddress as string;
+  const decimals = selectedToken.balance?.decimals || 0;
+  const mintAccount = new PublicKey(tokenMintAddress);
+  const signer = new PublicKey(sender); // add gasless transactions
+  const sourceTokenAccount = await getAssociatedTokenAddress(mintAccount, signer, false);
+  const receiverAccount = new PublicKey(receiver);
+
+  let associatedTokenAccount = receiverAccount;
+  try {
+    associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiverAccount, false);
+  } catch (e) {
+    log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
+  }
+
+  const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
+
+  if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
+    const newAccount = await createAssociatedTokenAccountInstruction(
+      new PublicKey(sender),
+      associatedTokenAccount,
+      receiverAccount,
+      new PublicKey(tokenMintAddress)
+    );
+    transaction.add(newAccount);
+  }
+  const transferInstructions = createTransferCheckedInstruction(
+    sourceTokenAccount,
+    mintAccount,
+    associatedTokenAccount,
+    signer,
+    amount,
+    decimals,
+    []
+  );
+  transaction.add(transferInstructions);
+
+  transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
+  transaction.feePayer = new PublicKey(sender);
+  return transaction;
 }

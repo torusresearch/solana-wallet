@@ -6,7 +6,7 @@ import { tokens } from "@/components/transfer/token-helper";
 import TransferSPL from "@/components/transfer/TransferSPL.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay } from "../utils/helpers";
+import { delay, generateSPLTransaction } from "../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
@@ -30,11 +30,16 @@ async function confirmTransfer() {
   await delay(500);
   try {
     if (selectedSplToken.value) {
-      const res = await ControllerModule.torus.transferSpl(
+      const splTransaction = await generateSPLTransaction(
         params.receiver_add,
+
         params.amount * 10 ** (selectedSplToken.value?.balance?.decimals || 0),
-        selectedSplToken.value
+        selectedSplToken.value,
+        ControllerModule.selectedAddress,
+        ControllerModule.connection
       );
+      const res = await ControllerModule.torus.transfer(splTransaction);
+
       redirectToResult(jsonrpc, { signature: res, success: true, method }, req_id, resolveRoute);
     } else redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false }, req_id, resolveRoute);
   } catch (error) {

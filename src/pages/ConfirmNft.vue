@@ -6,7 +6,7 @@ import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper"
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay } from "../utils/helpers";
+import { delay, generateSPLTransaction } from "../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
@@ -30,7 +30,14 @@ async function confirmTransfer() {
   await delay(500);
   try {
     if (selectedNft.value) {
-      const res = await ControllerModule.torus.transferSpl(params.receiver_add, 1, selectedNft.value);
+      const splTransaction = await generateSPLTransaction(
+        params.receiver_add,
+        1,
+        selectedNft.value,
+        ControllerModule.selectedAddress,
+        ControllerModule.connection
+      );
+      const res = await ControllerModule.torus.transfer(splTransaction);
       redirectToResult(jsonrpc, { signature: res, success: true, method }, req_id, resolveRoute);
     } else redirectToResult(jsonrpc, { message: "Selected NFT not found", success: false, method }, req_id, resolveRoute);
   } catch (error) {

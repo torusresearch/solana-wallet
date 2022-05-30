@@ -15,7 +15,7 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, ruleVerifierId } from "@/utils/helpers";
+import { delay, generateSPLTransaction, ruleVerifierId } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -39,6 +39,7 @@ const transferTo = computed({
 });
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
+const transaction = ref<Transaction>();
 const transactionFee = ref(0);
 const blockhash = ref("");
 const lastValidBlockHeight = ref(0);
@@ -212,6 +213,44 @@ const rules = computed(() => {
 });
 
 const $v = useVuelidate(rules, { transferTo, sendAmount });
+/**
+ * converts the fiatValue from selected fiat currency to selected crypto currency
+ * @param fiatValue - amount of fiat
+ */
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
+const generateTransaction = async (amount: number): Promise<Transaction> => {
+  if (selectedToken?.value?.mintAddress) {
+    // SPL TRANSFER
+    transaction.value = await generateSPLTransaction(
+      resolvedAddress.value,
+      amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
+      selectedToken.value as SolAndSplToken,
+      ControllerModule.selectedAddress,
+      ControllerModule.connection
+    );
+  } else {
+    // SOL TRANSFER
+    const instuctions = SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
+      toPubkey: new PublicKey(resolvedAddress.value),
+      lamports: amount * LAMPORTS_PER_SOL,
+    });
+    transaction.value = new Transaction({
+      blockhash: blockhash.value,
+      lastValidBlockHeight: lastValidBlockHeight.value,
+      feePayer: new PublicKey(ControllerModule.selectedAddress),
+    }).add(instuctions);
+  }
+  return transaction.value;
+};
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -255,53 +294,24 @@ const openModal = async () => {
   }
 
   // This can't be guarantee
+
   const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee();
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
+
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
+  transaction.value = await generateTransaction(amount);
   transferDisabled.value = false;
 };
 
-/**
- * converts the fiatValue from selected fiat currency to selected crypto currency
- * @param fiatValue - amount of fiat
- */
-function convertFiatToCrypto(fiatValue = 1) {
-  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
-  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
-  if (selectedCrypto === "sol") {
-    return fiatValue / solConversionRate.value;
-  }
-  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
-}
-
 const confirmTransfer = async () => {
   trackUserClick(TransferPageInteractions.CONFIRM);
-  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
-    if (selectedToken?.value?.mintAddress) {
-      // SPL TRANSFER
-      await ControllerModule.torus.transferSpl(
-        resolvedAddress.value,
-        amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken.value as SolAndSplToken
-      );
-    } else {
-      // SOL TRANSFER
-      const instuctions = SystemProgram.transfer({
-        fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(resolvedAddress.value),
-        lamports: amount * LAMPORTS_PER_SOL,
-      });
-      const tx = new Transaction({
-        blockhash: blockhash.value,
-        lastValidBlockHeight: lastValidBlockHeight.value,
-        feePayer: new PublicKey(ControllerModule.selectedAddress),
-      }).add(instuctions);
-      await ControllerModule.torus.transfer(tx);
-    }
+    if (!transaction.value) throw new Error("Invalid Transaction");
+    await ControllerModule.torus.transfer(transaction.value);
     // resetForm();
     transferConfirmed.value = true;
     showMessageModal({
