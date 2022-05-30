@@ -1629,7 +1629,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
       privateKey: req.params?.privateKey,
       publicKey: this.selectedAddress,
       userInfo: req.params?.userInfo,
-      accounts: [],
+      accounts: [
+        {
+          privKey: "",
+          address: this.selectedAddress,
+          solanaPrivKey: req.params?.privateKey,
+          app: `${req.params?.userInfo.email}`,
+          name: `${req.params?.userInfo.email}`,
+        },
+      ],
     });
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
