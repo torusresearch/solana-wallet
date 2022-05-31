@@ -84,7 +84,9 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
             return registration.unregister();
           })
           .then(() => {
-            window.location.reload();
+            if (window && !window.loginInProgress) {
+              window.location.reload();
+            }
             return undefined;
           })
           .catch((error) => {
