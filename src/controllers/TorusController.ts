@@ -45,6 +45,7 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
+import { post } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
@@ -94,6 +95,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
   CONTROLLER_MODULE_KEY,
+  ImportToken,
   KeyState,
   OpenLoginBackendState,
   OpenLoginPopupResponse,
@@ -238,6 +240,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   get selectedAddress(): string {
     return this.preferencesController?.state.selectedAddress;
+  }
+
+  get existingTokenAddress(): string[] {
+    const tokenList = this.tokenInfoController?.state?.tokenInfoMap || {};
+    return Object.keys(tokenList);
   }
 
   get tokens(): { [address: string]: SolanaToken[] } {
@@ -529,6 +536,20 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
+  importCustomToken = async (token: ImportToken) => {
+    const { tokenContractAddress, tokenName, tokenSymbol } = token;
+    let tokenPrecision = 0;
+    const tokenInfo: any = await this.connection.getParsedAccountInfo(new PublicKey(tokenContractAddress));
+    if (tokenInfo?.value?.data?.parsed?.info?.decimals) tokenPrecision = tokenInfo.value.data.parsed.info.decimals;
+    else if (!tokenInfo?.value) throw new Error("token history not found ");
+    return post(`${this.config.TokensInfoConfig.api}/customtoken`, {
+      tokenContractAddress,
+      tokenName,
+      tokenSymbol,
+      tokenPrecision,
+    });
+  };
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
@@ -541,6 +562,31 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const hashedInputName = await getHashedName(input);
     const inputDomainKey = await getNameAccountKey(hashedInputName, undefined, SOL_TLD_AUTHORITY);
     return { inputDomainKey, hashedInputName };
+  }
+
+  async importToken(importTokenState: ImportToken) {
+    const tokenAccount = new PublicKey(importTokenState.tokenContractAddress);
+    const myAccount = new PublicKey(this.selectedAddress);
+    let transaction: Transaction;
+    try {
+      const associatedTokenAccount = await getAssociatedTokenAddress(tokenAccount, myAccount, false);
+      // console.log({associatedTokenAccount: associatedTokenAccount.toBase58()}, {myAccount: myAccount.toBase58()})
+      transaction = new Transaction().add(createAssociatedTokenAccountInstruction(myAccount, associatedTokenAccount, myAccount, tokenAccount));
+      transaction.recentBlockhash = (await this.connection.getLatestBlockhash("finalized")).blockhash;
+      transaction.feePayer = myAccount;
+      return await this.transfer(transaction);
+    } catch (err) {
+      throw new Error((err as Error)?.message || JSON.stringify(err));
+    }
+  }
+
+  async fetchTokenFromContractAddress(mintAddress: string) {
+    try {
+      return await this.tokenInfoController.fetchTokenInfo([mintAddress]);
+    } catch (err) {
+      log.error(err, `Error in fetchTokenInfo for mintAddress ${mintAddress}`);
+      throw new Error(`Error in fetchTokenInfo for mintAddress ${mintAddress}`);
+    }
   }
 
   async getSNSAccount(

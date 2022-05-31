@@ -224,6 +224,12 @@ export const BUTTON_POSITION = {
 
 export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_POSITION];
 
+export interface ImportToken {
+  tokenContractAddress: string;
+  tokenSymbol: string;
+  tokenName: string;
+}
+
 export interface EmbedInitParams {
   buttonPosition: BUTTON_POSITION_TYPE;
   isIFrameFullScreen: boolean;

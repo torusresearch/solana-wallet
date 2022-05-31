@@ -24,6 +24,7 @@ export enum HomePageInteractions {
   COPY_PUB = "home page - copied pub key",
   REFRESH = "home page - refresh tokens",
   SPL_TOKENS = "home page - spl token",
+  IMPORT_TOKENS = "home page - import tokens",
 }
 
 export enum TransferPageInteractions {
