@@ -1312,14 +1312,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       // session should be priority and there should be only one login in one browser tab session
       window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-
-      const dappOriginURL = sessionStorage.getItem("dappOriginURL");
-      if (!dappOriginURL) window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
-      else if (dappOriginURL) {
-        // if dappOriginUrl exist, save ephemeral keystate to localstorage tagged to dappOriginUrl
-        // So than next login can skip full login flow
-        window.localStorage?.setItem(`${EPHERMAL_KEY}-${dappOriginURL}`, stringify(keyState));
-      }
+      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
 
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
@@ -1338,9 +1331,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
 
     try {
-      const dappOriginURL = sessionStorage.getItem("dappOriginURL") || this.origin;
-
-      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappOriginURL}`);
+      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
       const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
       const value = sessionKey || localKey;
 
