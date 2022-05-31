@@ -2,9 +2,8 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
-import BigNumber from "bignumber.js";
 import log from "loglevel";
-import { computed, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button, TextField } from "@/components/common";
@@ -16,18 +15,14 @@ const props = withDefaults(
   defineProps<{
     isOpen?: boolean;
     tokenList?: any;
-    txFees?: number;
     importDisabled?: boolean;
     pricePerToken?: number;
-    currency?: string;
   }>(),
   {
     isOpen: false,
     tokenList: [],
     importDisabled: false,
-    txFees: 0,
     pricePerToken: 0,
-    currency: "",
   }
 );
 
@@ -76,11 +71,6 @@ function setImportTokenState(contractAddress: string, name: string, symbol: stri
   importTokenState.tokenName = setEmpty || name ? name : importTokenState.tokenContractAddress;
   importTokenState.tokenSymbol = setEmpty || symbol ? symbol : importTokenState.tokenSymbol;
 }
-
-const fiatTxFeeString = computed(() => {
-  const { pricePerToken, txFees, currency } = props;
-  return `${new BigNumber(txFees).multipliedBy(pricePerToken).toFixed(5).toString()} ${currency}`;
-});
 
 function resetState() {
   setImportTokenState("", "", "", true);
@@ -154,11 +144,6 @@ const refDiv = ref(null);
                   <TextField v-model="importTokenState.tokenName" :errors="$v.tokenName.$errors" />
                 </div>
               </form>
-              <div class="col-span-3 sm:col-span-2">
-                <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">
-                  Transaction Cost : {{ props.txFees }} SOL / {{ fiatTxFeeString }}
-                </div>
-              </div>
               <div class="flex flex-row items-center my-6 mx-3">
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
                   {{ t("walletTransfer.cancel") }}

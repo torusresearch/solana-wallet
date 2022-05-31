@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import throttle from "lodash-es/throttle";
 import { computed, defineAsyncComponent, ref } from "vue";
@@ -26,8 +25,6 @@ const isImportTokenOpen = ref(false);
 const tokenList = computed(() => ControllerModule.existingTokenAddress);
 const connection = computed(() => ControllerModule.torus.connection);
 const importDisabled = ref(true);
-const transactionFee = ref(0);
-const currency = ref("");
 
 const asyncTokensAssetsBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokensAssetsBalance" */ "@/components/TokensAssetsBalance.vue"),
@@ -44,10 +41,7 @@ const refreshTokens = throttle(() => {
 }, 500);
 
 const importTokens = async () => {
-  currency.value = ControllerModule.torus.currentCurrency;
   isImportTokenOpen.value = true;
-  const { fee } = await ControllerModule.torus.calculateTxFee();
-  transactionFee.value = fee / LAMPORTS_PER_SOL;
   importDisabled.value = false;
 };
 
@@ -163,8 +157,6 @@ const lastUpdateString = computed(() => {
       :token-list="tokenList"
       :is-open="isImportTokenOpen"
       :import-disabled="importDisabled"
-      :tx-fees="transactionFee"
-      :currency="currency"
       @import-canceled="importCanceled"
       @import-confirm="importConfirm"
     />
