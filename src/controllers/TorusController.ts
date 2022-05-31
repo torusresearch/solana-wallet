@@ -536,7 +536,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
   };
 
   importCustomToken = async (token: ImportToken) => {
-    await this.tokenInfoController.importCustomToken(token);
+    try {
+      const result = await this.tokenInfoController.importCustomToken(token);
+      const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
+      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
+      return result;
+    } catch (err: any) {
+      log.error(err);
+      throw new Error(err || "Unable to create token");
+    }
   };
 
   setOrigin(origin: string): void {
