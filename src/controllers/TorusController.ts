@@ -45,7 +45,6 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
-import { post } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
@@ -537,17 +536,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   };
 
   importCustomToken = async (token: ImportToken) => {
-    const { tokenContractAddress, tokenName, tokenSymbol } = token;
-    let tokenPrecision = 0;
-    const tokenInfo: any = await this.connection.getParsedAccountInfo(new PublicKey(tokenContractAddress));
-    if (tokenInfo?.value?.data?.parsed?.info?.decimals) tokenPrecision = tokenInfo.value.data.parsed.info.decimals;
-    else if (!tokenInfo?.value) throw new Error("token history not found ");
-    return post(`${this.config.TokensInfoConfig.api}/customtoken`, {
-      tokenContractAddress,
-      tokenName,
-      tokenSymbol,
-      tokenPrecision,
-    });
+    await this.tokenInfoController.importCustomToken(token);
   };
 
   setOrigin(origin: string): void {
