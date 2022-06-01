@@ -1432,7 +1432,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const allTransactions = req.params?.message?.map((msg) => {
       if (req.params?.messageOnly) {
         // fix for inconsistent account serialization
-        const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        let signature: Uint8Array;
+        if (this.origin === "https://www.fractal.is") {
+          const msgObj = Message.from(Buffer.from(msg, "hex"));
+          const tx = Transaction.populate(msgObj);
+          tx.compileMessage();
+          const targetMessage = tx.compileMessage();
+          signature = this.keyringController.signMessage(targetMessage.serialize(), this.selectedAddress);
+        } else {
+          signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        }
+        // const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
         return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
       }
 
@@ -1450,11 +1460,20 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const message = req.params?.message;
     if (!message) throw new Error("Empty message from embed");
 
+    let signature: Uint8Array;
     if (req.params?.messageOnly) {
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
-      const signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
+      if (this.origin === "https://www.fractal.is") {
+        const msgObj = Message.from(Buffer.from(message, "hex"));
+        const tx = Transaction.populate(msgObj);
+        tx.compileMessage();
+        const targetMessage = tx.compileMessage();
+        signature = this.keyringController.signMessage(targetMessage.serialize(), this.selectedAddress);
+      } else {
+        signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
+      }
 
       return JSON.stringify({
         publicKey: this.selectedAddress,
