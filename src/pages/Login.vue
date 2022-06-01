@@ -43,9 +43,16 @@ onMounted(() => {
   if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
+const saveLoginStateToWindow = (value: boolean): void => {
+  if (typeof window !== "undefined") {
+    window.loginInProgress = value;
+  }
+};
+
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
   try {
     isLoading.value = true;
+    saveLoginStateToWindow(isLoading.value);
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: emailString,
@@ -69,6 +76,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     });
   } finally {
     isLoading.value = false;
+    saveLoginStateToWindow(isLoading.value);
   }
 };
 
