@@ -44,7 +44,8 @@ export async function switchTab(page: Page, tab: Tabs) {
   };
   await page.click(`a[href='/wallet/${tab}']`);
   await wait(1000);
-  expect(page.url().includes(`/wallet/${tab}`)).toBeTruthy();
+  const rege = `.*/wallet/${tab}.*`;
+  expect(page).toHaveURL(new RegExp(rege));
   // ENSURE UI IS INTACT
   await ensureTextualElementExists(page, tabHeaders[tab]);
 }

@@ -5,6 +5,7 @@ import axios from "axios";
 import base58 from "bs58";
 import { ec as EC } from "elliptic";
 
+import type { OpenLoginBackendState } from "@/utils/enums";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 
 import { changeLanguage, getBackendDomain, getDomain, getStateDomain, wait } from "./utils";
@@ -20,7 +21,7 @@ export const IMPORT_ACC_ADDRESS = "H3N28hUVVRhZW1zyM8dGQTrKztRHhgbS1nJg9nSXghet"
 export const IMPORT_ACC_SECRET_KEY = "4md5HAy1iZvyGVuwssQu8Kn78gnm7RHfpC8FLSHcsA1Wo1JwD6jNu8vHPLLSaFxXXD753vMaFBdbZYFvvmQtborU";
 
 const storageLayer = new TorusStorageLayer({ hostUrl: getStateDomain() });
-async function getJWT(): Promise<{ success: boolean; token: string }> {
+export async function getJWT(): Promise<{ success: boolean; token: string }> {
   const { message } = (
     await axios.post(`${getBackendDomain()}/auth/message`, {
       public_address: PUB_ADDRESS,
@@ -44,7 +45,28 @@ async function getJWT(): Promise<{ success: boolean; token: string }> {
 const privKey = EPHEMERAL_KEYPAIR.getPrivate();
 
 export async function createRedisKey() {
-  const input = { publicKey: PUB_ADDRESS, privateKey: SECRET_KEY };
+  const input: OpenLoginBackendState = {
+    publicKey: PUB_ADDRESS,
+    privateKey: SECRET_KEY,
+    accounts: [
+      {
+        address: PUB_ADDRESS,
+        solanaPrivKey: SECRET_KEY,
+        privKey: "",
+        app: "test app",
+        name: "test app name",
+      },
+    ],
+    userInfo: {
+      email: "torussolanatesting@gmail.com",
+      name: "Torus Testing",
+      profileImage: "https://lh3.googleusercontent.com/a/AATXAJwH-UUrn4YSmInT-o8ptgLTq80TGs9lemvhzXXg=s96-c",
+      aggregateVerifier: "tkey-google-lrc",
+      verifier: "torus",
+      verifierId: "torussolanatesting@gmail.com",
+      typeOfLogin: "google",
+    },
+  };
   const params = storageLayer.generateMetadataParams(await TorusStorageLayer.serializeMetadataParamsInput(input, privKey), privKey);
 
   await axios.post(`${getStateDomain()}/set`, params);
@@ -52,14 +74,15 @@ export async function createRedisKey() {
 
 export async function login(context: BrowserContext, browserName: "chromium" | "webkit" | "firefox"): Promise<Page> {
   await createRedisKey();
+
   const keyFunction = `window.localStorage.setItem(
-    "controllerModule-ephemeral-http://localhost:8080",
+    "controllerModule-ephemeral",
     JSON.stringify({
       "priv_key": "${EPHEMERAL_KEYPAIR.getPrivate("hex")}",
       "pub_key": "${EPHEMERAL_KEYPAIR.getPublic("hex")}",
     })
   )`;
-  const { token } = await getJWT();
+  // const { token } = await getJWT();
   const stateFunction = `window.localStorage.setItem(
     "controllerModule",
     JSON.stringify({
@@ -67,31 +90,11 @@ export async function login(context: BrowserContext, browserName: "chromium" | "
         backendRestored: false,
         torusState: {
           "AccountTrackerState": {
-            "accounts": {
-              "${PUB_ADDRESS}": {
-                "balance": "0"
-              }
-            }
           },
           PreferencesControllerState: {
             identities: {
-              ${PUB_ADDRESS}: {
-                jwtToken: "${token}",
-                userInfo: {
-                  email: "torussolanatesting@gmail.com",
-                  name: "Torus Testing",
-                  profileImage: "https://lh3.googleusercontent.com/a/AATXAJwH-UUrn4YSmInT-o8ptgLTq80TGs9lemvhzXXg=s96-c",
-                  aggregateVerifier: "tkey-google-lrc",
-                  verifier: "torus",
-                  verifierId: "torussolanatesting@gmail.com",
-                  typeOfLogin: "google",
-                },
-                currentNetworkTxsList: [],
-                contacts: [],
-                locale: "en",
-              },
             },
-            selectedAddress: "${PUB_ADDRESS}",
+            selectedAddress: "",
           },
         },
       },
