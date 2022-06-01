@@ -1436,9 +1436,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
         if (this.origin === "https://www.fractal.is") {
           const msgObj = Message.from(Buffer.from(msg, "hex"));
           const tx = Transaction.populate(msgObj);
-          tx.compileMessage();
-          const targetMessage = tx.compileMessage();
-          signature = this.keyringController.signMessage(targetMessage.serialize(), this.selectedAddress);
+          tx.serializeMessage();
+          const targetMessage = tx.serializeMessage();
+          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
         } else {
           signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
         }
@@ -1468,9 +1468,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (this.origin === "https://www.fractal.is") {
         const msgObj = Message.from(Buffer.from(message, "hex"));
         const tx = Transaction.populate(msgObj);
-        tx.compileMessage();
-        const targetMessage = tx.compileMessage();
-        signature = this.keyringController.signMessage(targetMessage.serialize(), this.selectedAddress);
+        tx.serializeMessage();
+        const targetMessage = tx.serializeMessage();
+        signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
       } else {
         signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
       }
