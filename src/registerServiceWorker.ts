@@ -4,6 +4,8 @@
 
 import log from "loglevel";
 
+import { isMain } from "./utils/helpers";
+
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
 // will only see deployed updates on subsequent visits to a page, after all the
@@ -84,7 +86,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
             return registration.unregister();
           })
           .then(() => {
-            if (window && !window.loginInProgress) {
+            if (window && isMain && !window.loginInProgress) {
               window.location.reload();
             }
             return undefined;
