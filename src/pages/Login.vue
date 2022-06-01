@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import Loader from "@toruslabs/vue-components/common/Loader.vue";
+import { Loader } from "@toruslabs/vue-components/common";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
@@ -181,7 +181,7 @@ const onEmailLogin = () => {
       </div>
     </div>
     <div v-if="isLoading" class="spinner">
-      <Loader></Loader>
+      <Loader />
       <p class="absolute bottom-12 text-white text-center">{{ t("dappLogin.completeVerification") }}.</p>
     </div>
   </div>

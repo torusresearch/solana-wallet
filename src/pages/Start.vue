@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { Loader } from "@toruslabs/vue-components/common";
 import log from "loglevel";
 import { useRoute } from "vue-router";
-
-import { BoxLoader } from "@/components/common";
 
 import OpenLoginFactory from "../auth/OpenLogin";
 
@@ -28,6 +27,6 @@ startLogin();
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <BoxLoader />
+    <Loader />
   </div>
 </template>

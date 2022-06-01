@@ -7,14 +7,13 @@ import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { subkey } from "@toruslabs/openlogin-subkey";
 import { safeatob } from "@toruslabs/openlogin-utils";
-import Button from "@toruslabs/vue-components/common/Button.vue";
+import { Button, Loader } from "@toruslabs/vue-components/common";
 import base58 from "bs58";
 import log from "loglevel";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
-import { BoxLoader } from "@/components/common";
 import config from "@/config";
 import { generateTorusAuthHeaders, openCrispChat } from "@/utils/helpers";
 
@@ -154,7 +153,7 @@ endLogin();
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <BoxLoader v-if="loading" />
+    <Loader v-if="loading" />
     <div v-else>
       <div class="text-xl text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
       <div>
