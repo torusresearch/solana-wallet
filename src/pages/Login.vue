@@ -4,7 +4,7 @@ import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
@@ -37,7 +37,7 @@ const $v = useVuelidate(rules, { userEmail });
 
 const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
 
-onMounted(() => {
+watch(selectedAddress, () => {
   if (selectedAddress.value && isRedirectFlow)
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
   if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");

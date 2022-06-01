@@ -2,7 +2,7 @@
 import { onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { logoutWithBC } from "@/utils/helpers";
+import ControllerModule from "@/modules/controllers";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
@@ -11,7 +11,7 @@ const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlo
 const { t } = useI18n();
 
 onMounted(async () => {
-  await logoutWithBC();
+  await ControllerModule.logout();
   if (isRedirectFlow) {
     redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
   }
