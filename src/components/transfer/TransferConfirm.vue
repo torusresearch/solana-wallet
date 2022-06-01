@@ -10,7 +10,9 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import { tokens } from "@/components/transfer/token-helper";
 import ControllerModule from "@/modules/controllers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
+
+import EstimateChanges from "../payments/EstimateChanges.vue";
 
 const { t } = useI18n();
 const currency = computed(() => ControllerModule.torus.currentCurrency);
@@ -27,6 +29,9 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+    estimationInProgress: boolean;
+    estimatedBalanceChange: AccountEstimation[];
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -41,6 +46,7 @@ const props = withDefaults(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     token: tokens.value[0],
+    hasEstimationError: "",
   }
 );
 
@@ -168,14 +174,29 @@ const refDiv = ref(null);
                     </div>
                   </div>
                 </div>
+
                 <hr class="mt-3 mb-5" />
-                <div class="flex mb-5">
-                  <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
-                  <div class="ml-auto text-right">
-                    <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
-                    <div v-if="fiatAmountString" class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
+                <div class="mb-5">
+                  <div class="flex">
+                    <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
+                    <div class="ml-auto text-right">
+                      <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
+                      <div v-if="fiatAmountString" class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
+                    </div>
+                  </div>
+                  <div v-if="isSPLToken()">
+                    <!-- <hr class="mt-3 mb-5" /> -->
+                    <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">
+                      <EstimateChanges
+                        :estimated-balance-change="props.estimatedBalanceChange"
+                        :has-estimation-error="props.hasEstimationError"
+                        :is-expand="true"
+                        :estimation-in-progres="props.estimationInProgress"
+                      />
+                    </div>
                   </div>
                 </div>
+
                 <div class="flex">
                   <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.fee-max-transaction") }}</div>
                   <div class="ml-auto text-right">

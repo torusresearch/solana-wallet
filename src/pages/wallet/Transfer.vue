@@ -15,8 +15,8 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, generateSPLTransaction, ruleVerifierId } from "@/utils/helpers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { delay, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/helpers";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
@@ -47,6 +47,11 @@ const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
 const isCurrencyFiat = ref(false);
+
+const hasEstimationError = ref("");
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
+const estimationInProgress = ref(true);
+
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const solConversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
@@ -273,9 +278,24 @@ const onMessageModalClosed = () => {
 const closeModal = () => {
   isOpen.value = false;
   trackUserClick(TransferPageInteractions.CANCEL);
+  hasEstimationError.value = "";
+  estimatedBalanceChange.value = [];
+};
+
+const estimateChanges = async (tx: Transaction) => {
+  estimationInProgress.value = true;
+  try {
+    estimatedBalanceChange.value = await getEstimateBalanceChange(ControllerModule.torus.connection, tx, ControllerModule.selectedAddress);
+    hasEstimationError.value = "";
+  } catch (e) {
+    hasEstimationError.value = "Unable estimate balance changes";
+    log.info("Error in transaction simulation", e);
+  }
+  estimationInProgress.value = false;
 };
 
 const openModal = async () => {
+  transferDisabled.value = true;
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
   await $v.value.$validate();
@@ -295,13 +315,13 @@ const openModal = async () => {
 
   // This can't be guarantee
 
-  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee();
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
+  transaction.value = await generateTransaction(amount);
+  estimateChanges(transaction.value);
+  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee(transaction.value.compileMessage());
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
-
-  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
-  transaction.value = await generateTransaction(amount);
   transferDisabled.value = false;
 };
 
@@ -478,6 +498,9 @@ watch([tokens, nftTokens], () => {
       :is-open="isOpen && selectedToken.isFungible"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-cancel="closeModal"
       @on-close-modal="closeModal"
