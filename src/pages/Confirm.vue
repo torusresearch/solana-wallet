@@ -4,11 +4,12 @@ import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastCh
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
-import { onMounted, reactive, ref } from "vue";
+import { onErrorCaptured, onMounted, reactive, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
+import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
@@ -49,8 +50,11 @@ const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
-
+onErrorCaptured(() => {
+  openCrispChat();
+});
 onMounted(async () => {
+  hideCrispButton();
   try {
     let txData: Partial<TransactionChannelDataType>;
     if (!isRedirectFlow) {
@@ -131,6 +135,7 @@ onMounted(async () => {
     }
   } catch (error) {
     log.error(error, "error in tx");
+    openCrispChat();
   }
 });
 

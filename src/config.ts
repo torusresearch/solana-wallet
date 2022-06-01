@@ -4,7 +4,7 @@ import log, { LogLevelDesc } from "loglevel";
 
 import { LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY } from "./utils/enums";
 
-const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE } = process.env;
+const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE, VUE_APP_DEVELOPER_DASHBOARD_URL } = process.env;
 
 const baseUrl = window.location.origin;
 
@@ -42,6 +42,7 @@ export default {
   // openloginStateAPI: "http://localhost:4022",
   redirect_uri: redirectURI,
   dappStorageKey,
+  developerDashboardUrl: VUE_APP_DEVELOPER_DASHBOARD_URL,
 
   supportedCurrencies: ["USD", "AUD", "CAD", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "PHP", "RUB", "SGD", "UAH"],
   logosUrl: "https://images.toruswallet.io",
