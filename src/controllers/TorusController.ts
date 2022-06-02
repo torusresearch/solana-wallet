@@ -1307,6 +1307,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const keyState: KeyState = {
       priv_key: ecc_privateKey.toString("hex"),
       pub_key: ecc_publicKey.toString("hex"),
+      sol_pub_key: saveState.publicKey,
     };
 
     try {
@@ -1344,9 +1345,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
           : {
               priv_key: "",
               pub_key: "",
+              sol_pub_key: "",
             };
 
       if (keyState.priv_key && keyState.pub_key) {
+        // opportunistic login
+        this.preferencesController.setSelectedAddress(keyState.sol_pub_key);
         const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
 
         const decryptedState = metadata as OpenLoginBackendState;
