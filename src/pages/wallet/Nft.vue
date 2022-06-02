@@ -15,7 +15,7 @@ import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import { NftsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
-import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
+import { setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -23,7 +23,7 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  await logoutWithBC();
+  await ControllerModule.logout();
 };
 
 const nftMetaData = ref<NFTInfo | undefined>(undefined);

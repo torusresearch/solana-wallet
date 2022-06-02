@@ -1,18 +1,22 @@
 // const { test} = require("@playwright/test");
-import test, { expect, Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
 import { changeFiatCurrency, switchCryptoCurrency } from "../../topup.utils";
 import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Topup page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
   test.afterAll(() => {
     page.close();
   });
+
+  test.afterAll(markResult);
+  test.beforeEach(setBrowserStackTestTitle);
 
   test("Topup Page Should render", async () => {
     // // see navigation works correctly

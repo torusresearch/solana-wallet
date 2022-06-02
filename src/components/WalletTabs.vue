@@ -9,7 +9,6 @@ import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/enums";
-import { logoutWithBC } from "@/utils/helpers";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
@@ -33,7 +32,7 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  await logoutWithBC();
+  await ControllerModule.logout();
 };
 </script>
 
