@@ -1,8 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { PlaywrightTestConfig } from "@playwright/test";
+import { devices, PlaywrightTestConfig } from "@playwright/test";
 
 const config: PlaywrightTestConfig = {
   timeout: 30_000,
+  testDir: "tests/e2e",
   projects: [
     {
       name: "Chrome Stable",
@@ -10,7 +11,13 @@ const config: PlaywrightTestConfig = {
         browserName: "chromium",
         channel: "chrome",
       },
-      testDir: "tests/e2e",
+    },
+    {
+      name: "iOS Safari",
+      use: {
+        ...devices["iPad Pro 11 landscape"],
+        // trace: "retain-on-failure",
+      },
     },
   ],
 };

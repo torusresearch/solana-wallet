@@ -1,14 +1,17 @@
-import test, { expect, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS } from "../../auth-helper";
 import { ensureFirstActivityIsRecentTransaction } from "../../transfer.utils";
 import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Transfer page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
+  test.afterAll(markResult);
+  test.beforeEach(setBrowserStackTestTitle);
 
   test("Transfer Page Should render", async () => {
     // see navigation works correctly
@@ -70,8 +73,9 @@ test.describe("Transfer page", async () => {
     await page.fill("input[type='number']", transferAmount);
 
     // Click transfer, wait for popup
+    await wait(3000);
     await page.click("button >> text=Transfer");
-    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 20_000 });
     // const total = (await page.locator("div >> text=/~ [0-9.].* SOL/").first().innerText()).split(" ")[1];
     // Click confirm, wait for navigation to activities page
 
@@ -79,11 +83,13 @@ test.describe("Transfer page", async () => {
 
     await page.click("button >> text=Close");
 
+    await wait(1000);
+
     // ensure first activity to be our recent transaction
     await ensureFirstActivityIsRecentTransaction(page, `Sent ${parseFloat(transferAmount)} SOL`);
 
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load", { timeout: 10_000 });
+    await page2.waitForEvent("load", { timeout: 15_000 });
 
     // see that the transaction is success and the amount transferred is same as intended
     // expect(await page2.locator(".badge.bg-success-soft").innerText()).toEqual("Success");
@@ -102,14 +108,16 @@ test.describe("Transfer page", async () => {
     await page.click("p >> text=USD Coin (USDC)");
     await page.fill("input.combo-input-field", PUB_ADDRESS);
     await page.fill("input[type='number']", "0.01");
+    await wait(3000);
     await page.click("button >> text=Transfer");
     await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
     await page.click("button >> text=Confirm");
     await page.click("button >> text=Close");
+    await wait(1000);
     // ensure first activity to be our recent transaction
     await ensureFirstActivityIsRecentTransaction(page, "Sent 0.01 USDC");
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click(".transaction-activity")]);
-    await page2.waitForEvent("load", { timeout: 10_000 });
+    await page2.waitForEvent("load", { timeout: 15_000 });
     // await page2.waitForSelector(".badge.bg-success-soft >> text=+0.01");
     await page2.close();
   });
@@ -172,8 +180,8 @@ test.describe("Transfer page", async () => {
 
 test.skip("Transfer page using imported account", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
   });
 
   test.beforeEach(async () => {

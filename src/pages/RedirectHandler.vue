@@ -24,6 +24,6 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <!-- <Loader /> -->
+    <!-- <Loader :use-spinner="true" /> -->
   </div>
 </template>
