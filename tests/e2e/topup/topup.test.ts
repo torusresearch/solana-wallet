@@ -1,12 +1,15 @@
 // const { test} = require("@playwright/test");
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
 import { changeFiatCurrency, switchCryptoCurrency } from "../../topup.utils";
 import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
-test("Popup Page Should render", async ({ context }) => {
-  const page = await login(context);
+test.afterAll(markResult);
+test.beforeEach(setBrowserStackTestTitle);
+test("Popup Page Should render", async ({ context, browserName }) => {
+  const page = await login(context, browserName);
 
   // // see navigation works correctly
   await switchTab(page, "topup");
@@ -29,14 +32,15 @@ test("Popup Page Should render", async ({ context }) => {
   const [page2] = await Promise.all([page.waitForEvent("popup"), page.click("button:has-text('Top up')")]);
   // closing moonpay page, will show an error on top up page
   page2.close();
-  await wait(500);
+  await wait(1000);
   await ensureTextualElementExists(page, "Transaction could not complete.");
 });
 
-test("Changing of crypto/fiat currency changes the value you receive correctly", async ({ context }) => {
-  const page = await login(context);
+// USDC topup is temporarily suspended
+test.skip("Changing of crypto/fiat currency changes the value you receive correctly", async ({ context, browserName }) => {
+  const page = await login(context, browserName);
 
-  // // see navigation works correctly
+  // see navigation works correctly
   await switchTab(page, "topup");
 
   // change crypto currency to USDC (SOL)
@@ -63,8 +67,8 @@ test("Changing of crypto/fiat currency changes the value you receive correctly",
   await changeFiatCurrency(page, "USD");
 });
 
-test("Language change should work", async ({ context }) => {
-  const page = await login(context);
+test("Language change should work", async ({ context, browserName }) => {
+  const page = await login(context, browserName);
   await switchTab(page, "topup");
 
   await changeLanguage(page, "german");
