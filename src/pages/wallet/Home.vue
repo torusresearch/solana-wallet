@@ -115,7 +115,7 @@ const lastUpdateString = computed(() => {
       <asyncWalletBalance :show-buttons="true" class="w-full" />
     </div>
     <div class="mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
-      <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400"> Tokens </h2>
+      <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">Tokens</h2>
       <asyncTokensAssetsBalance />
       <!-- <div
         class="shadow dark:shadow_box border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"

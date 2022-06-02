@@ -228,6 +228,8 @@ export interface ImportToken {
   tokenContractAddress: string;
   tokenSymbol: string;
   tokenName: string;
+  network?: string;
+  publicAddress?: string;
 }
 
 export interface EmbedInitParams {

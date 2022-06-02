@@ -91,14 +91,7 @@ const onImport = async () => {
 };
 
 async function resetKeyError() {
-  if (!$v.value.tokenContractAddress.$invalid) {
-    let resultToken: any = await ControllerModule.torus.fetchTokenFromContractAddress(importTokenState.tokenContractAddress);
-    resultToken = resultToken[importTokenState.tokenContractAddress];
-    log.info({ resultToken });
-    if (resultToken) {
-      setImportTokenState("", resultToken?.name, resultToken?.symbol);
-    }
-  } else {
+  if ($v.value.tokenContractAddress.$invalid) {
     $v.value.tokenContractAddress.$touch();
   }
 }
@@ -124,7 +117,7 @@ const refDiv = ref(null);
               class="relative inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4"
             >
               <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6 w-full">
-                <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500"> Import Token </p>
+                <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">Import Token</p>
               </DialogTitle>
               <form @submit.prevent="onImport">
                 <div class="col-span-3 sm:col-span-2">

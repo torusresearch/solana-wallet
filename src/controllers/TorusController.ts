@@ -482,7 +482,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress], this.selectedAddress, this.currentNetworkName);
       // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -537,9 +537,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   importCustomToken = async (token: ImportToken) => {
     try {
+      token.publicAddress = this.selectedAddress;
+      token.network = this.currentNetworkName;
       const result = await this.tokenInfoController.importCustomToken(token);
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
-      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
+      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, this.selectedAddress, this.currentNetworkName, true);
       return result;
     } catch (err: any) {
       log.error(err);
@@ -574,15 +576,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       return await this.transfer(transaction);
     } catch (err) {
       throw new Error((err as Error)?.message || JSON.stringify(err));
-    }
-  }
-
-  async fetchTokenFromContractAddress(mintAddress: string) {
-    try {
-      return await this.tokenInfoController.fetchTokenInfo([mintAddress]);
-    } catch (err) {
-      log.error(err, `Error in fetchTokenInfo for mintAddress ${mintAddress}`);
-      throw new Error(`Error in fetchTokenInfo for mintAddress ${mintAddress}`);
     }
   }
 
