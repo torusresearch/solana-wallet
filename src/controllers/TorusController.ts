@@ -46,7 +46,6 @@ import {
 } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
-import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import {
   createEngineStream,
   JRPCEngine,
@@ -187,6 +186,7 @@ export const DEFAULT_STATE = {
   },
   RelayMap: {},
   RelayKeyHostMap: {},
+  UserDapp: new Map(),
 };
 
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
@@ -685,7 +685,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         this.preferencesController.update({ identities: omit(this.preferencesController.state.identities, address), selectedAddress: "" });
         await this.preferencesController.initPreferences({
           address,
-          calledFromEmbed: false,
+          calledFromEmbed: !isMain,
           userInfo,
           rehydrate,
         });
@@ -748,8 +748,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController.setUserTheme(theme);
   }
 
-  async refreshJwt(): Promise<void> {
-    return this.preferencesController.refreshJwt();
+  async refreshJwt(address?: string): Promise<void> {
+    const currentAddress = this.selectedAddress;
+    if (address) this.preferencesController.setSelectedAddress(address);
+    await this.preferencesController.refreshJwt();
+    this.preferencesController.setSelectedAddress(currentAddress);
   }
 
   async setDefaultCurrency(currency: string): Promise<boolean> {
@@ -1220,19 +1223,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
         communicationEngine: this.communicationEngine,
         communicationWindowManager: this.communicationManager,
       });
-      const { privKey, userInfo } = result;
-      const paddedKey = privKey.padStart(64, "0");
+      const { userInfo, accounts } = result;
 
-      // Embed login might have selectedAddress restored from storage.
-      // Need to clear preference selectedAddress on Login
-      // Do not need this due to save state to SessionStorage
+      // if iframe (Dapp), only populate selected account only.
+      // index 0 is the selected account
+      // const targetAccount = isMain ? accounts : accounts.filter((account) => account.privKey === privKey);
+      const targetAccount = isMain ? accounts : [accounts[0]];
+      if (targetAccount.length === 0) throw new Error("Login Error");
 
-      const keypair = getED25519Key(paddedKey);
-      const address = await this.addAccount(base58.encode(keypair.sk), userInfo);
+      // populate account
+      const userDapp = new Map();
+      const accountPromise = targetAccount.map((account) => {
+        userDapp.set(account.address, account.app);
+        return this.addAccount(account.solanaPrivKey, userInfo);
+      });
+      this.update({ UserDapp: userDapp });
+
+      // wait for selected account
+      const address = await accountPromise[0];
       this.setSelectedAccount(address);
 
-      if (!this.hasSelectedPrivateKey) throw new Error("Wallet Error: Invalid private key ");
-      this.saveToOpenloginBackend({ privateKey: base58.encode(keypair.sk), publicKey: this.selectedAddress, userInfo });
+      // save to openloginState backend
+      if (!this.hasSelectedPrivateKey || !this.privateKey) throw new Error("Wallet Error: Invalid private key ");
+      this.saveToOpenloginBackend({ privateKey: this.privateKey, publicKey: this.selectedAddress, userInfo, accounts: targetAccount });
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
@@ -1299,14 +1312,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       // session should be priority and there should be only one login in one browser tab session
       window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-
-      const dappOriginURL = sessionStorage.getItem("dappOriginURL");
-      if (!dappOriginURL) window.localStorage?.setItem(`${EPHERMAL_KEY}-${this.origin}`, stringify(keyState));
-      else if (dappOriginURL) {
-        // if dappOriginUrl exist, save ephemeral keystate to localstorage tagged to dappOriginUrl
-        // So than next login can skip full login flow
-        window.localStorage?.setItem(`${EPHERMAL_KEY}-${dappOriginURL}`, stringify(keyState));
-      }
+      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
 
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
@@ -1325,9 +1331,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
 
     try {
-      const dappOriginURL = sessionStorage.getItem("dappOriginURL") || this.origin;
-
-      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}-${dappOriginURL}`);
+      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
       const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
       const value = sessionKey || localKey;
 
@@ -1351,38 +1355,47 @@ export default class TorusController extends BaseController<TorusControllerConfi
           throw new Error("Private key not found in state");
         }
         log.info("try to restore key");
-        let address;
         try {
-          if (this.preferencesController.state.identities[decryptedState.publicKey]) {
-            // Try key restore with session state intact.
-            // Using LocalStorage to save state, hence could not check with selected address
-            // if (decryptedState.publicKey !== this.selectedAddress) throw new Error("Incorrect public address");
+          // populate accounts
+          const userDapp = new Map();
+          const accountPromise = decryptedState.accounts.map(async (account) => {
+            userDapp.set(account.address, account.app);
 
-            log.info("login without userinfo");
-            // Restore keyringController only ( no Sync / initPreferenes )
-            address = await this.addAccount(decryptedState.privateKey);
+            let address;
+            if (this.preferencesController.state.identities[account.address]) {
+              // Try key restore with session state (localstorage) intact.
+              log.info("login without userinfo, use prefrence controller state");
+              // Restore keyringController only ( no Sync / initPreferenes )
+              address = await this.addAccount(account.solanaPrivKey);
 
-            // required to set selectedAddress before check for jwt
-            this.preferencesController.setSelectedAddress(address);
+              const jwt = this.preferencesController.state.identities[address]?.jwtToken;
 
-            // valid private key needed to refreshJwt,
-            const jwt = this.preferencesController.state.identities[address]?.jwtToken;
-
-            if (jwt) {
-              const expire = parseJwt(jwt).exp;
-              if (expire < Date.now() / 1000) {
-                await this.refreshJwt();
+              if (jwt) {
+                const expire = parseJwt(jwt).exp;
+                if (expire < Date.now() / 1000) {
+                  // required to set selectedAddress before jwt refresh
+                  this.preferencesController.setSelectedAddress(address);
+                  await this.refreshJwt();
+                }
               }
+            } else {
+              log.info("login with userinfo, redo solana backend login");
+              address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo);
             }
-          } else {
-            // restore with userInfo ( full login as preference state not available )
-            address = await this.addAccount(decryptedState.privateKey, decryptedState.userInfo);
-          }
+            return address;
+          });
+
+          this.update({ UserDapp: userDapp });
+
+          // find previous selected account
+          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
+          const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
-          this.setSelectedAccount(address, true);
+          this.setSelectedAccount(selectedAddress, true);
+
           return true;
         } catch (e) {
-          log.error(e, "Error restoring state after successfull decrypt!");
+          log.error(e, "Error restoring state after successful decrypt!");
         }
       }
       log.warn("Invalid or no key in local storage");
@@ -1603,7 +1616,20 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.setSelectedAccount(publicKey);
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
-    this.saveToOpenloginBackend({ privateKey: req.params?.privateKey, publicKey: this.selectedAddress, userInfo: req.params?.userInfo });
+    this.saveToOpenloginBackend({
+      privateKey: req.params?.privateKey,
+      publicKey: this.selectedAddress,
+      userInfo: req.params?.userInfo,
+      accounts: [
+        {
+          privKey: "",
+          address: this.selectedAddress,
+          solanaPrivKey: req.params?.privateKey,
+          app: `${req.params?.userInfo.email}`,
+          name: `${req.params?.userInfo.email}`,
+        },
+      ],
+    });
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {

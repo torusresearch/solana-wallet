@@ -4,7 +4,7 @@ import { Loader } from "@toruslabs/vue-components/common";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
@@ -37,15 +37,22 @@ const $v = useVuelidate(rules, { userEmail });
 
 const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
 
-onMounted(() => {
+watch(selectedAddress, () => {
   if (selectedAddress.value && isRedirectFlow)
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
   if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
+const saveLoginStateToWindow = (value: boolean): void => {
+  if (typeof window !== "undefined") {
+    window.loginInProgress = value;
+  }
+};
+
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
   try {
     isLoading.value = true;
+    saveLoginStateToWindow(isLoading.value);
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: emailString,
@@ -69,6 +76,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     });
   } finally {
     isLoading.value = false;
+    saveLoginStateToWindow(isLoading.value);
   }
 };
 

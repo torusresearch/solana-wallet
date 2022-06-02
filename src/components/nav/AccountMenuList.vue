@@ -19,18 +19,17 @@ import { copyText } from "@/utils/helpers";
 import LanguageSelector from "./LanguageSelector.vue";
 
 const { t } = useI18n();
-const props = defineProps<{
+defineProps<{
   user: UserInfo;
   selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
-const explorerUrl = computed(() => {
-  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.selectedAddress}/?cluster=${getChainIdToNetwork(
-    ControllerModule.torus.chainId
-  )}`;
-});
-
 const currency = computed(() => ControllerModule.torus.currentCurrency);
+const currentAccount = computed(() => ControllerModule.selectedAddress);
+
+const explorerUrl = (address: string) => {
+  return `${ControllerModule.torus.blockExplorerUrl}/account/${address}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
+};
 const logout = () => {
   emits("onLogout");
 };
@@ -38,13 +37,9 @@ const copySelectedAddress = (address: string) => {
   trackUserClick(GeneralInteractions.GENERAL_PUB_KEY);
   copyText(address);
 };
-
 const setSelected = async (address: string) => {
   await ControllerModule.setSelectedAccount(address);
 };
-
-const currentAccount = computed(() => ControllerModule.selectedAddress);
-
 const getWalletBalance = (address: string): string => {
   const { allBalances } = ControllerModule;
   const lamports = new BigNumber(allBalances[address]?.balance || 0);
@@ -65,9 +60,9 @@ const getWalletBalance = (address: string): string => {
     </div>
     <div class="px-3 pb-3">
       <div
-        v-for="(wallet, index) in ControllerModule.allAddresses"
+        v-for="wallet in ControllerModule.allAddresses"
         :key="wallet"
-        class="hover:shadow dark:hover:shadow-dark2 rounded-md py-2 px-3 cursor-pointer"
+        class="hover:shadow dark:hover:shadow-dark2 rounded-md py-2 px-3 cursor-pointer mb-2"
         :class="{
           'shadow dark:shadow-dark2': currentAccount === wallet,
         }"
@@ -78,7 +73,7 @@ const getWalletBalance = (address: string): string => {
           <div class="flex items-center">
             <WalletIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
             <div class="font-bold text-sm text-app-text-600 dark:text-app-text-dark-500">
-              {{ index ? `Imported Account ${index}` : user.email }}
+              {{ ControllerModule.torus.state.UserDapp.get(wallet) }}
             </div>
           </div>
           <div class="ml-auto text-xs text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ getWalletBalance(wallet) }} {{ currency }}</div>
@@ -95,7 +90,7 @@ const getWalletBalance = (address: string): string => {
               <QrcodeIcon class="w-4 h-4" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-              <a :href="explorerUrl" target="_blank" rel="noreferrer noopener" @click="(e) => e.stopImmediatePropagation()">
+              <a :href="explorerUrl(wallet)" target="_blank" rel="noreferrer noopener" @click="(e) => e.stopImmediatePropagation()">
                 <ExternalLinkIcon class="w-4 h-4" />
               </a>
             </div>

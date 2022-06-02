@@ -510,7 +510,6 @@ class ControllerModule extends VuexModule {
     }
 
     this.torus.setOrigin(origin);
-
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(
@@ -524,10 +523,9 @@ class ControllerModule extends VuexModule {
       });
       logoutChannel.close();
     }
+
     try {
-      const sessionOverride = sessionStorage.getItem("dappOriginURL");
-      const dappStorageKey = sessionOverride || this.torus.origin;
-      window.localStorage?.removeItem(`${EPHERMAL_KEY}-${dappStorageKey}`);
+      window.localStorage?.removeItem(`${EPHERMAL_KEY}`);
       window.sessionStorage?.removeItem(`${EPHERMAL_KEY}`);
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
@@ -671,7 +669,7 @@ installStorePlugin({
   key: moduleName,
   storage: LOCAL_STORAGE_KEY,
   saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
-    const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.requireKeyRestore`, `${moduleName}.torusState.KeyringControllerState`]);
+    const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.logoutRequired`, `${moduleName}.torusState.KeyringControllerState`]);
     storage?.setItem(key, JSON.stringify(requiredState));
   },
   restoreState: (key: string, storage?: Storage) => {
