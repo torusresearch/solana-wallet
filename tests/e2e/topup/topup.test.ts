@@ -1,5 +1,5 @@
 // const { test} = require("@playwright/test");
-import { expect } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 
 import { login } from "../../auth-helper";
 import { changeFiatCurrency, switchCryptoCurrency } from "../../topup.utils";

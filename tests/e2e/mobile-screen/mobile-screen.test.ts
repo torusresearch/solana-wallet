@@ -9,8 +9,8 @@ test.describe("Mobile screens", async () => {
   const tabs = ["home", "nfts", "activity", "settings", "discover"];
 
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
     page.setViewportSize({ height: 667, width: 375 }); // iPhone SE
 
     await page.evaluate(() => {

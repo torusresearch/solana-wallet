@@ -5,8 +5,8 @@ import { ensureTextualElementExists, switchNetwork, switchTab, wait } from "../.
 
 test.describe("Nfts Page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser }) => {
-    page = await login(await browser.newContext());
+  test.beforeAll(async ({ browser, browserName }) => {
+    page = await login(await browser.newContext(), browserName);
     await switchNetwork(page, "mainnet");
   });
   test.afterAll(async () => {
