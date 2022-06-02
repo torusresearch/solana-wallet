@@ -63,7 +63,7 @@ const importConfirm = async (importToken: ImportTokenInterface) => {
     // eslint-disable-next-line no-debugger
     debugger;
     addToast({
-      message: `Token could not Imported: ${err} || "Something Went Wrong`,
+      message: `Token could not Imported: ${err || "Something Went Wrong"}`,
       type: "error",
     });
   }
