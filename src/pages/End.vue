@@ -157,7 +157,7 @@ endLogin();
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <Loader v-if="loading" />
+    <Loader v-if="loading" :use-spinner="true" />
     <div v-else>
       <div class="text-xl text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
       <div>

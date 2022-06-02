@@ -188,23 +188,9 @@ const onEmailLogin = () => {
         </div>
       </div>
     </div>
-    <div v-if="isLoading" class="spinner">
-      <Loader />
+    <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
+      <Loader :use-spinner="true" />
       <p class="absolute bottom-12 text-white text-center">{{ t("dappLogin.completeVerification") }}.</p>
     </div>
   </div>
 </template>
-<style scoped>
-.spinner {
-  position: fixed;
-  background: rgba(0, 0, 0, 0.884);
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-}
-</style>
