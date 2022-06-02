@@ -75,7 +75,7 @@ test.describe("Transfer page", async () => {
     // Click transfer, wait for popup
     await wait(3000);
     await page.click("button >> text=Transfer");
-    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 10_000 });
+    await page.waitForSelector("button:not([disabled]) >> text=Confirm", { timeout: 20_000 });
     // const total = (await page.locator("div >> text=/~ [0-9.].* SOL/").first().innerText()).split(" ")[1];
     // Click confirm, wait for navigation to activities page
 
