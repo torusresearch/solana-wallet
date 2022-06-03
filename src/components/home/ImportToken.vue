@@ -44,14 +44,14 @@ const isAlnum = (value: string): boolean => {
 };
 
 const defaultImportToken = {
-  tokenContractAddress: "",
+  tokenMintAddress: "",
   tokenSymbol: "",
   tokenName: "",
 };
 const importTokenState = reactive<ImportToken>(defaultImportToken);
 
 const rules = {
-  tokenContractAddress: {
+  tokenMintAddress: {
     required: helpers.withMessage("Required", required),
     checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
     isDuplicateAddress: helpers.withMessage("Token Already Exists", isDuplicateSplToken),
@@ -67,8 +67,8 @@ const rules = {
 const $v = useVuelidate(rules, importTokenState);
 
 function setImportTokenState(contractAddress: string, name: string, symbol: string, setEmpty = false) {
-  importTokenState.tokenContractAddress = setEmpty || contractAddress ? contractAddress : importTokenState.tokenContractAddress;
-  importTokenState.tokenName = setEmpty || name ? name : importTokenState.tokenContractAddress;
+  importTokenState.tokenMintAddress = setEmpty || contractAddress ? contractAddress : importTokenState.tokenMintAddress;
+  importTokenState.tokenName = setEmpty || name ? name : importTokenState.tokenMintAddress;
   importTokenState.tokenSymbol = setEmpty || symbol ? symbol : importTokenState.tokenSymbol;
 }
 
@@ -91,8 +91,8 @@ const onImport = async () => {
 };
 
 async function resetKeyError() {
-  if ($v.value.tokenContractAddress.$invalid) {
-    $v.value.tokenContractAddress.$touch();
+  if ($v.value.tokenMintAddress.$invalid) {
+    $v.value.tokenMintAddress.$touch();
   }
 }
 const refDiv = ref(null);
@@ -122,11 +122,7 @@ const refDiv = ref(null);
               <form @submit.prevent="onImport">
                 <div class="col-span-3 sm:col-span-2">
                   <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Contract Address</div>
-                  <TextField
-                    v-model="importTokenState.tokenContractAddress"
-                    :errors="$v.tokenContractAddress.$errors"
-                    @update:model-value="resetKeyError"
-                  />
+                  <TextField v-model="importTokenState.tokenMintAddress" :errors="$v.tokenMintAddress.$errors" @update:model-value="resetKeyError" />
                 </div>
                 <div class="col-span-3 sm:col-span-2">
                   <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Symbol</div>

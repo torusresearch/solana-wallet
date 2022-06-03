@@ -365,11 +365,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
     this.initializeCommunicationProvider();
 
-    this.tokenInfoController = new TokenInfoController({
-      config: this.config.TokensInfoConfig,
-      state: this.state.TokenInfoState,
-      getConnection: this.networkController.getConnection.bind(this),
-    });
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -396,6 +391,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getConnection: this.networkController.getConnection.bind(this),
     });
 
+    this.tokenInfoController = new TokenInfoController({
+      config: this.config.TokensInfoConfig,
+      state: this.state.TokenInfoState,
+      getConnection: this.networkController.getConnection.bind(this),
+      getIdentities: () => this.preferencesController.state.identities,
+    });
     this.accountTracker = new AccountTrackerController({
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
@@ -561,22 +562,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const hashedInputName = await getHashedName(input);
     const inputDomainKey = await getNameAccountKey(hashedInputName, undefined, SOL_TLD_AUTHORITY);
     return { inputDomainKey, hashedInputName };
-  }
-
-  async importToken(importTokenState: ImportToken) {
-    const tokenAccount = new PublicKey(importTokenState.tokenContractAddress);
-    const myAccount = new PublicKey(this.selectedAddress);
-    let transaction: Transaction;
-    try {
-      const associatedTokenAccount = await getAssociatedTokenAddress(tokenAccount, myAccount, false);
-      // console.log({associatedTokenAccount: associatedTokenAccount.toBase58()}, {myAccount: myAccount.toBase58()})
-      transaction = new Transaction().add(createAssociatedTokenAccountInstruction(myAccount, associatedTokenAccount, myAccount, tokenAccount));
-      transaction.recentBlockhash = (await this.connection.getLatestBlockhash("finalized")).blockhash;
-      transaction.feePayer = myAccount;
-      return await this.transfer(transaction);
-    } catch (err) {
-      throw new Error((err as Error)?.message || JSON.stringify(err));
-    }
   }
 
   async getSNSAccount(
