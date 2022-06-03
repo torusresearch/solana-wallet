@@ -3,6 +3,8 @@ const pkg = require("./package.json");
 const { ProvidePlugin } = require("webpack");
 
 const p = require('path');
+const depsList = Object.keys(pkg.dependencies);
+
 module.exports = {
     pages: {
         index: {
@@ -23,6 +25,7 @@ module.exports = {
         config.resolve.alias = {
             ...config.resolve.alias,
             'bn.js': p.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
+            ...(depsList.includes("lodash") && { lodash: path.resolve(__dirname, "node_modules/lodash-es") }),
         }
         config.plugins.push(new ProvidePlugin({Buffer: ["buffer", "Buffer"]}));
         config.plugins.push(new ProvidePlugin({process: ["process/browser"]}));

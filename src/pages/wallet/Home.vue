@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import throttle from "lodash-es/throttle";
+import throttle from "lodash/throttle";
 import { computed, defineAsyncComponent } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -9,8 +9,8 @@ import SolanaLogoLight from "@/assets/solana-logo-light.svg";
 import WalletIcon from "@/assets/wallet.svg";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
+import { NAVIGATION_LIST } from "@/utils/mobNav";
 
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useVuelidate, ValidationRuleWithParams } from "@vuelidate/core";
-import throttle from "lodash-es/throttle";
+import throttle from "lodash/throttle";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";

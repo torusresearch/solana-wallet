@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import memoize from "lodash-es/memoize";
+import memoize from "lodash/memoize";
 
 import ControllerModule from "@/modules/controllers";
 
