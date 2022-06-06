@@ -551,14 +551,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async calculateTxFee(message: Message): Promise<{ blockHash: string; fee: number; height: number }> {
-    const latestBlockHash = await this.connection.getLatestBlockhash("finalized");
-    const blockHash = latestBlockHash.blockhash;
-    const height = latestBlockHash.lastValidBlockHeight;
-    const fee = await this.connection.getFeeForMessage(message);
-    return { blockHash, fee: fee.value, height };
-  }
-
   async approveSignTransaction(txId: string): Promise<void> {
     await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }

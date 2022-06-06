@@ -9,7 +9,7 @@ import {
   RawMint,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { Connection, LAMPORTS_PER_SOL, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
 import { addressSlicer, concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
@@ -491,4 +491,12 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Trans
     // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
     throw new Error("Failed to simulate transaction for balance change");
   }
+}
+
+export async function calculateTxFee(message: Message, connection: Connection): Promise<{ blockHash: string; fee: number; height: number }> {
+  const latestBlockHash = await connection.getLatestBlockhash("finalized");
+  const blockHash = latestBlockHash.blockhash;
+  const height = latestBlockHash.lastValidBlockHeight;
+  const fee = await connection.getFeeForMessage(message);
+  return { blockHash, fee: fee.value, height };
 }
