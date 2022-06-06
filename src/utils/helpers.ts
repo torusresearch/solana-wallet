@@ -314,3 +314,12 @@ export function generateTorusAuthHeaders(privateKey: string) {
   };
   return authHeaders;
 }
+
+export function getImgProxyUrl(originalUrl?: string) {
+  const proxyUrl = process.env.VUE_APP_IMGPROXY_URL || "";
+  if (!originalUrl?.startsWith("http") || !proxyUrl.length) {
+    return originalUrl;
+  }
+
+  return `${proxyUrl}/plain/${originalUrl}`;
+}
