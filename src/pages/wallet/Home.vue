@@ -142,9 +142,7 @@ const lastUpdateString = computed(() => {
         <div class="dark:shadow_down flex flex-col justify-between items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
           <span class="text-app-text-400 text-xs mt-2">Don't See Your Token?</span>
           <div class="p-1 border-t">
-            <Button v-ga="HomePageInteractions.REFRESH" class="ml-auto" variant="text" @click="importTokens" @keydown="importTokens">
-              Import Token
-            </Button>
+            <Button v-ga="HomePageInteractions.REFRESH" class="ml-auto" variant="text" @click="importTokens"> Import Token </Button>
           </div>
         </div>
       </div>

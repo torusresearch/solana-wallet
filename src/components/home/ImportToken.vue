@@ -121,7 +121,7 @@ const refDiv = ref(null);
               </DialogTitle>
               <form @submit.prevent="onImport">
                 <div class="col-span-3 sm:col-span-2">
-                  <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Contract Address</div>
+                  <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Mint Address</div>
                   <TextField v-model="importTokenState.tokenMintAddress" :errors="$v.tokenMintAddress.$errors" @update:model-value="resetKeyError" />
                 </div>
                 <div class="col-span-3 sm:col-span-2">
