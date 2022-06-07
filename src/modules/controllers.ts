@@ -70,11 +70,6 @@ class ControllerModule extends VuexModule {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
   }
 
-  get existingTokenAddress(): string[] {
-    const tokenList = this.torusState.TokenInfoState?.tokenInfoMap || {};
-    return Object.keys(tokenList);
-  }
-
   get allAddresses(): string[] {
     return this.torusState.KeyringControllerState.wallets.map((x) => x.publicKey);
   }
