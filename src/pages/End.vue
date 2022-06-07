@@ -10,7 +10,7 @@ import { safeatob } from "@toruslabs/openlogin-utils";
 import { Button, Loader } from "@toruslabs/vue-components/common";
 import base58 from "bs58";
 import log from "loglevel";
-import { ref } from "vue";
+import { onErrorCaptured, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
@@ -59,6 +59,10 @@ const continueToApp = async () => {
   // expecting popup closed
   // loading.value = false;
 };
+
+onErrorCaptured(() => {
+  openCrispChat();
+});
 
 async function endLogin() {
   try {
