@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PopupWhitelabelData, ProviderConfig } from "@toruslabs/base-controllers";
-import { onMounted, reactive } from "vue";
+import { computed, onMounted, reactive, watch } from "vue";
 
 import ProviderChange1 from "@/components/providerChange/ProviderChange.vue";
 import ControllerModule from "@/modules/controllers";
@@ -30,9 +30,13 @@ onMounted(async () => {
   finalProviderData.toNetwork = params.displayName;
   finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
 });
+const currentNetwork = computed(() => ControllerModule.selectedNetworkDisplayName);
+watch(currentNetwork, () => {
+  if (currentNetwork.value === (params as ProviderConfig).displayName) redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
+});
 const approveProviderChange = async (): Promise<void> => {
   ControllerModule.torus.setNetwork(params as ProviderConfig);
-  redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
+  setTimeout(() => redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute), 5000);
 };
 const denyProviderChange = async () => {
   redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);

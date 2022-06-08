@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
 import { onMounted, reactive } from "vue";
 
@@ -10,9 +8,7 @@ import { SignMessageChannelDataType } from "@/utils/enums";
 import ControllerModule from "../../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
 
-const { isRedirectFlow, params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
-
-const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
 
 interface MsgData {
   origin: string;
@@ -28,10 +24,7 @@ onMounted(async () => {
   if (Object.keys(params).length) params.message = Uint8Array.from(Object.values(params?.message));
   let channel_msg: Partial<SignMessageChannelDataType>;
   try {
-    if (!isRedirectFlow) {
-      const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
-      channel_msg = await bcHandler.getMessageFromChannel<SignMessageChannelDataType>();
-    } else if (params?.message)
+    if (params?.message)
       channel_msg = {
         data: Buffer.from(params?.message || []).toString("hex"),
         message: Buffer.from(params?.message || []).toString(),
@@ -52,47 +45,23 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
-  if (!isRedirectFlow) {
-    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-    await bc.postMessage({
-      data: { type: POPUP_RESULT, approve: true },
-    });
-    bc.close();
-  } else {
-    const res = await ControllerModule.torus.signMessage(
-      {
-        params: {
-          data: params.message,
-        },
-        method: "sign_message",
+  const res = await ControllerModule.torus.signMessage(
+    {
+      params: {
+        data: params.message,
       },
-      true
-    );
-    redirectToResult(jsonrpc, { data: { signature: Buffer.from(res).toString("hex") }, success: true, method }, req_id, resolveRoute);
-  }
-};
-
-const closeModal = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
+      method: "sign_message",
+    },
+    true
+  );
+  redirectToResult(jsonrpc, { data: { signature: Buffer.from(res).toString("hex") }, success: true, method }, req_id, resolveRoute);
 };
 
 const rejectTxn = async () => {
-  if (!isRedirectFlow) {
-    closeModal();
-  } else {
-    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
-  }
+  redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
 };
 </script>
 
 <template>
-  <Permissions
-    :requested-from="msg_data.origin"
-    :approval-message="msg_data.message"
-    @on-approved="approveTxn"
-    @on-rejected="rejectTxn"
-    @on-close-modal="closeModal"
-  />
+  <Permissions :requested-from="msg_data.origin" :approval-message="msg_data.message" @on-approved="approveTxn" @on-rejected="rejectTxn" />
 </template>

@@ -365,7 +365,7 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
   sign_transaction: {
-    redirectPath: "/confirm",
+    redirectPath: "/redirectflow/confirm",
     requiresLogin: true,
   },
   sign_all_transactions: {

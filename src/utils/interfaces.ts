@@ -29,3 +29,15 @@ export interface ProviderChangeChannelEventData {
   currentNetwork: ChainType;
   whitelabelData: PopupWhitelabelData;
 }
+export interface FinalTxData {
+  slicedSenderAddress: string;
+  slicedReceiverAddress: string;
+  totalSolAmount: number;
+  totalSolFee: number;
+  totalFiatAmount: string;
+  totalFiatFee: string;
+  transactionType: string;
+  totalSolCost: string;
+  totalFiatCost: string;
+  isGasless: boolean;
+}
