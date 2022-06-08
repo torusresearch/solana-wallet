@@ -1,45 +1,20 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
-import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
+import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import BigNumber from "bignumber.js";
 import log from "loglevel";
-import { onErrorCaptured, onMounted, reactive, ref } from "vue";
+import { onErrorCaptured, onMounted, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { calculateTxFee, hideCrispButton, openCrispChat } from "@/utils/helpers";
+import { calculateTxFee, decodeAllInstruction, hideCrispButton, openCrispChat, parsingTransferAmount } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { FinalTxData } from "@/utils/interfaces";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
-interface FinalTxData {
-  slicedSenderAddress: string;
-  slicedReceiverAddress: string;
-  totalSolAmount: number;
-  totalSolFee: number;
-  totalFiatAmount: string;
-  totalFiatFee: string;
-  transactionType: string;
-  totalSolCost: string;
-  totalFiatCost: string;
-  networkDisplayName: string;
-  isGasless: boolean;
-}
-const finalTxData = reactive<FinalTxData>({
-  slicedSenderAddress: "",
-  slicedReceiverAddress: "",
-  totalSolAmount: 0,
-  totalSolFee: 0,
-  totalFiatAmount: "",
-  totalFiatFee: "",
-  transactionType: "",
-  totalSolCost: "",
-  totalFiatCost: "",
-  networkDisplayName: "",
-  isGasless: false,
-});
+const finalTxData = ref<FinalTxData>();
 
 const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
@@ -51,7 +26,6 @@ onErrorCaptured(() => {
 onMounted(async () => {
   hideCrispButton();
   try {
-    // const txData: Partial<TransactionChannelDataType>;
     const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     origin.value = txData.origin as string;
@@ -59,18 +33,7 @@ onMounted(async () => {
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded: DecodedDataType[] = [];
-      (txData.message as string[]).forEach((msg) => {
-        let tx2: Transaction;
-        if (txData.messageOnly) {
-          tx2 = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
-        } else {
-          tx2 = Transaction.from(Buffer.from(msg, "hex"));
-        }
-        tx2.instructions.forEach((inst) => {
-          decoded.push(decodeInstruction(inst));
-        });
-      });
+      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
       decodedInst.value = decoded;
       return;
     }
@@ -91,29 +54,7 @@ onMounted(async () => {
         return decodeInstruction(inst);
       });
 
-      if (tx.value.instructions.length > 1) return;
-      if (!tx.value.instructions[0].programId.equals(SystemProgram.programId)) return;
-      if (SystemInstruction.decodeInstructionType(tx.value.instructions[0]) !== "Transfer") return;
-      const decoded = tx.value.instructions.map((inst) => {
-        const decoded_inst = SystemInstruction.decodeTransfer(inst);
-        return decoded_inst;
-      });
-
-      const from = decoded[0].fromPubkey;
-      const to = decoded[0].toPubkey;
-
-      const txAmount = decoded[0].lamports;
-
-      const totalSolCost = new BigNumber(txFee).plus(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL);
-      finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
-      finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
-      finalTxData.totalSolAmount = new BigNumber(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL).toNumber();
-      finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
-
-      finalTxData.totalSolCost = totalSolCost.toString();
-      finalTxData.transactionType = "";
-      finalTxData.networkDisplayName = txData.networkDetails?.displayName as string;
-      finalTxData.isGasless = isGasless;
+      finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
     } catch (e) {
       log.error(e);
     }
@@ -144,7 +85,7 @@ const rejectTxn = async () => {
 
 <template>
   <PaymentConfirm
-    v-if="finalTxData.totalSolAmount"
+    v-if="finalTxData"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
