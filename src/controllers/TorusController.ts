@@ -255,6 +255,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.currencyController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 
+  get jwtToken(): string {
+    return this.preferencesController.state.identities[this.selectedAddress]?.jwtToken || "";
+  }
+
   get userInfo(): UserInfo {
     return this.preferencesController.state.identities[this.selectedAddress]?.userInfo || cloneDeep(DEFAULT_PREFERENCES.userInfo);
   }
@@ -369,6 +373,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.TokensInfoConfig,
       state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
+      getJwt: () => this.jwtToken,
     });
 
     this.currencyController = new CurrencyController({
@@ -481,11 +486,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.tokensTracker.on("store", async (state2) => {
-      const jwtToken = this.getAccountPreferences(this.selectedAddress)?.jwtToken || "";
-      // this.preferencesController.state.identities[this.selectedAddress]?.jwtToken || "";
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress], this.selectedAddress, this.currentNetworkName, jwtToken);
+      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress], this.selectedAddress, this.currentNetworkName);
       // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -544,9 +547,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       token.network = this.currentNetworkName;
       const result = await this.tokenInfoController.importCustomToken(token);
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
-      const jwtToken = this.getAccountPreferences(this.selectedAddress)?.jwtToken || "";
-      if (tokenList?.length)
-        await this.tokenInfoController.updateTokenInfoMap(tokenList, this.selectedAddress, this.currentNetworkName, jwtToken, true);
+      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, this.selectedAddress, this.currentNetworkName, true);
       return result;
     } catch (err: any) {
       log.error(err);
