@@ -6,12 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Redirect Flow</title>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.36.0/lib/index.iife.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.1.8/lib/index.iife.js"
         integrity="sha256-EKTEm0ROqj/PnDso+ZKsU7O4/35Cx49TtR2Br2NVSw8=" crossorigin="anonymous"></script>
 </head>
 
 <script>
+    // window.Buffer = Buffer;
+
     const generateTransaction = async () => {
         const target_network = {
             blockExplorerUrl: "https://explorer.solana.com",
@@ -23,7 +25,8 @@
             tickerName: "Solana Token",
         };
         const conn = new solanaWeb3.Connection(target_network.rpcTarget);
-        const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+        // const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+        const {blockhash , lastValidBlockHeight} = (await conn.getLatestBlockhash("finalized"));
         const TransactionInstruction = solanaWeb3.SystemProgram.transfer({
             fromPubkey: new solanaWeb3.PublicKey(
                 "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"
@@ -31,10 +34,12 @@
             toPubkey: new solanaWeb3.PublicKey(
                 "32Qy5pNBpQVdPDu458PoEtMC85nm5HEsCe4eAtUH2xfF"
             ),
-            lamports: 0.001 * Math.random() * 1000000000,
+            lamports: ( Math.floor (0.001 * Math.random() * 1000000000) ),
         });
         let transaction = new solanaWeb3.Transaction({
             recentBlockhash: blockhash,
+            blockhash: blockhash,
+            lastValidBlockHeight,
             feePayer: new solanaWeb3.PublicKey(
                 "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"
             ),
