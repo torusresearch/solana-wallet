@@ -53,11 +53,12 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
   try {
     isLoading.value = true;
     saveLoginStateToWindow(isLoading.value);
+    const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: emailString,
+      waitSaving: !!redirect,
     });
-    const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     if (redirect) router.push(`${redirect}?resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
       redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);

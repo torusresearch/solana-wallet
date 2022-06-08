@@ -43,11 +43,11 @@ const denyProviderChange = () => {
             <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">
               {{ `${t("dappPermission.currentNetwork")}:` }}
             </div>
-            <div class="col-span-3"><TextField :value="fromNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3"><TextField :model-value="fromNetwork" type="text" :disabled="true" /></div>
           </div>
           <div class="grid grid-cols-3 items-center mb-4">
             <div class="col-span-3 text-xs text-app-text-600 dark:text-app-text-dark-500 mb-2">{{ t("dappPermission.requestNew") }}</div>
-            <div class="col-span-3"><TextField :value="toNetwork" type="text" :disabled="true" /></div>
+            <div class="col-span-3"><TextField :model-value="toNetwork" type="text" :disabled="true" /></div>
           </div>
         </div>
       </div>

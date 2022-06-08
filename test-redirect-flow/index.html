@@ -114,7 +114,7 @@
         console.log("XX", requestObj);
         url = `${url}?resolveRoute=${resolvePath}#redirectflowdata=${encodedRequestObj}`;
         Object.assign(document.createElement("a"), {
-            target: "_blank",
+            // target: "_blank",
             href: url,
         }).click();
     }

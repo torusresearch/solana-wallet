@@ -1151,9 +1151,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public async triggerLogin({
     loginProvider,
     login_hint,
+    waitSaving,
   }: {
     loginProvider: LOGIN_PROVIDER_TYPE;
     login_hint?: string;
+    waitSaving?: boolean;
   }): Promise<OpenLoginPopupResponse> {
     try {
       const handler = new OpenLoginHandler({
@@ -1186,7 +1188,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // save to openloginState backend
       if (!this.hasSelectedPrivateKey || !this.privateKey) throw new Error("Wallet Error: Invalid private key ");
-      this.saveToOpenloginBackend({ privateKey: this.privateKey, publicKey: this.selectedAddress, userInfo, accounts: targetAccount });
+      const saveToOpenLogin = this.saveToOpenloginBackend({
+        privateKey: this.privateKey,
+        publicKey: this.selectedAddress,
+        userInfo,
+        accounts: targetAccount,
+      });
+      if (waitSaving) await saveToOpenLogin;
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;

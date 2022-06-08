@@ -5,6 +5,8 @@ import { onErrorCaptured, onMounted, reactive } from "vue";
 
 import { openCrispChat } from "@/utils/helpers";
 
+import ProviderChangeVue from "@/components/providerChange/ProviderChange.vue";
+
 import { ProviderChangeChannelEventData } from "../utils/interfaces";
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
@@ -54,7 +56,7 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <ProviderChange1
+  <ProviderChangeVue
     :origin="finalProviderData.origin"
     :to-network="finalProviderData.toNetwork"
     :from-network="finalProviderData.fromNetwork"

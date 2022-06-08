@@ -463,10 +463,18 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+  async triggerLogin({
+    loginProvider,
+    login_hint,
+    waitSaving,
+  }: {
+    loginProvider: LOGIN_PROVIDER_TYPE;
+    login_hint?: string;
+    waitSaving?: boolean;
+  }): Promise<void> {
     this.setLogoutRequired(false);
     // do not need to restore beyond login
-    await this.torus.triggerLogin({ loginProvider, login_hint });
+    await this.torus.triggerLogin({ loginProvider, login_hint, waitSaving });
   }
 
   @Action

@@ -345,7 +345,7 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
   set_provider: {
-    redirectPath: "/providerchange",
+    redirectPath: "/redirectflow/providerchange",
     requiresLogin: true,
   },
   topup: {
@@ -361,7 +361,7 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
   send_transaction: {
-    redirectPath: "/confirm",
+    redirectPath: "/redirectflow/confirm",
     requiresLogin: true,
   },
   sign_transaction: {
@@ -369,11 +369,11 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
   sign_all_transactions: {
-    redirectPath: "/confirm",
+    redirectPath: "/redirectflow/confirm",
     requiresLogin: true,
   },
   sign_message: {
-    redirectPath: "/confirm_message",
+    redirectPath: "/redirectflow/confirm_message",
     requiresLogin: true,
   },
   connect: {
@@ -397,7 +397,7 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
   spl_transfer: {
-    redirectPath: "/confirm_spl",
+    redirectPath: "/redirectflow/confirm_spl",
     requiresLogin: true,
   },
   nft_list: {
@@ -405,7 +405,7 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
   nft_transfer: {
-    redirectPath: "/confirm_nft",
+    redirectPath: "/redirectflow/confirm_nft",
     requiresLogin: true,
   },
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
+import { clusterApiUrl, Connection, LAMPORTS_PER_SOL, Message, SystemInstruction, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer, BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import BigNumber from "bignumber.js";
@@ -9,15 +9,10 @@ import { onErrorCaptured, onMounted, reactive, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { hideCrispButton, openCrispChat } from "@/utils/helpers";
+import { calculateTxFee, hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
-import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
-
-import ControllerModule from "../modules/controllers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
-
-const { isRedirectFlow, params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 interface FinalTxData {
   slicedSenderAddress: string;
@@ -56,22 +51,9 @@ onErrorCaptured(() => {
 onMounted(async () => {
   hideCrispButton();
   try {
-    let txData: Partial<TransactionChannelDataType>;
-    if (!isRedirectFlow) {
-      const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
-      txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
-    } else if (params?.message) {
-      txData = {
-        type: method,
-        message: params?.message,
-        messageOnly: params?.messageOnly,
-        signer: ControllerModule.selectedAddress,
-        origin: window.origin,
-      };
-    } else {
-      redirectToResult(jsonrpc, { message: "Invalid or Missing Params", method }, req_id, resolveRoute);
-      return;
-    }
+    // const txData: Partial<TransactionChannelDataType>;
+    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
+    const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     origin.value = txData.origin as string;
     network.value = txData.network || "";
 
@@ -100,7 +82,9 @@ onMounted(async () => {
     }
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : (await ControllerModule.torus.calculateTxFee()).fee;
+    const txFee = isGasless
+      ? 0
+      : (await calculateTxFee(tx.value.compileMessage(), new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")))).fee;
 
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
@@ -140,34 +124,11 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
-  if (!isRedirectFlow) {
-    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-    await bc.postMessage({
-      data: { type: POPUP_RESULT, approve: true },
-    });
-    bc.close();
-  } else {
-    let res: string | string[] | Transaction | undefined;
-    try {
-      if (method === "send_transaction" && tx.value) {
-        res = await ControllerModule.torus.transfer(tx.value, params);
-        redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
-      } else if (method === "sign_transaction" && tx.value) {
-        res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
-        redirectToResult(
-          jsonrpc,
-          { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
-          req_id,
-          resolveRoute
-        );
-      } else if (method === "sign_all_transactions") {
-        res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as any);
-        redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
-      } else throw new Error();
-    } catch (e) {
-      redirectToResult(jsonrpc, { success: false, method, error: (e as Error).message }, req_id, resolveRoute);
-    }
-  }
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
+  await bc.postMessage({
+    data: { type: POPUP_RESULT, approve: true },
+  });
+  bc.close();
 };
 
 const closeModal = async () => {
@@ -177,11 +138,7 @@ const closeModal = async () => {
 };
 
 const rejectTxn = async () => {
-  if (!isRedirectFlow) {
-    closeModal();
-  } else {
-    redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
-  }
+  closeModal();
 };
 </script>
 
