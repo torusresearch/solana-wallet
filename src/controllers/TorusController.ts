@@ -335,7 +335,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       (isMain && initialState.NetworkControllerState?.isCustomNetwork) ||
       !initialState.NetworkControllerState?.isCustomNetwork ||
       // api.mainnet-beta.solana.com having issue with rate limiting. should repalced with default
-      initialState.NetworkControllerState.providerConfig.rpcTarget.includes("api.mainnet-beta.solana.com")
+      initialState.NetworkControllerState.providerConfig.rpcTarget.includes("api.mainnet-beta.solana.com") ||
+      initialState.NetworkControllerState.providerConfig.rpcTarget.includes("api.google.mainnet-beta.solana.com")
     ) {
       let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
       if (initialState.NetworkControllerState) {
