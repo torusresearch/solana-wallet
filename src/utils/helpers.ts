@@ -448,7 +448,7 @@ export async function calculateChanges(
 
     const { decimals } = mintAccountInfos[idx];
     const preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
-    const changes = (item.amount - preTokenAmount) / BigInt(10 ** decimals);
+    const changes = Number(item.amount - preTokenAmount) / 10 ** decimals;
 
     returnResult.push({
       changes: Number(changes.toString()),
