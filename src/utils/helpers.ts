@@ -19,16 +19,7 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   return undefined;
 }
 
-export const inIframe = () => {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
-  }
-};
-
 export const isMain = window.self === window.top;
-export const isIframe = inIframe();
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
   if (selectedTypeOfLogin === SOL) {

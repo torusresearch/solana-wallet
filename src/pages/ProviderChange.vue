@@ -66,9 +66,11 @@ onMounted(async () => {
       finalProviderData.toNetwork = params.displayName;
       finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
     }
+    throw new Error("test");
   } catch (error) {
     log.error(error, "error in tx");
     openCrispChat();
+    throw new Error((error as any)?.message || `error in tx ${JSON.stringify(error)}`);
   }
 });
 const approveProviderChange = async (): Promise<void> => {
