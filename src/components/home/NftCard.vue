@@ -43,7 +43,7 @@ function cardClicked() {
           <div class="rounded-full overflow-hidden h-10 w-10">
             <img
               alt="collection"
-              :src="nftToken?.metaplexData?.offChainMetaData?.image || FallbackNft"
+              :src="getImgProxyUrl(nftToken?.metaplexData?.offChainMetaData?.image) || FallbackNft"
               class="rounded-full overflow-hidden h-10 w-10 object-cover"
               @error="setFallbackImg($event.target, FallbackNft)"
             />
