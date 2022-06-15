@@ -331,13 +331,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const initialState = _state;
     // overwrite google node with default node
     // overwrite custom node with default node when isMain is True
-    if (
-      (isMain && initialState.NetworkControllerState?.isCustomNetwork) ||
-      !initialState.NetworkControllerState?.isCustomNetwork ||
-      // api.mainnet-beta.solana.com having issue with rate limiting. should repalced with default
-      initialState.NetworkControllerState.providerConfig.rpcTarget.includes("api.mainnet-beta.solana.com") ||
-      initialState.NetworkControllerState.providerConfig.rpcTarget.includes("api.google.mainnet-beta.solana.com")
-    ) {
+    if ((isMain && initialState.NetworkControllerState?.isCustomNetwork) || !initialState.NetworkControllerState?.isCustomNetwork) {
       let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
       if (initialState.NetworkControllerState) {
         if (initialState.NetworkControllerState.providerConfig.chainId === "0x2") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
