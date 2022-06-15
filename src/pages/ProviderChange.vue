@@ -66,7 +66,6 @@ onMounted(async () => {
       finalProviderData.toNetwork = params.displayName;
       finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
     }
-    throw new Error("test");
   } catch (error) {
     log.error(error, "error in tx");
     openCrispChat();
