@@ -9,7 +9,7 @@ import FallbackNft from "@/assets/fallback-nft.svg";
 import NftCard from "@/components/home/NftCard.vue";
 import { NftsPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
+import { setFallbackImg } from "@/utils/helpers";
 
 type FETCH_STATE = "idle" | "loading" | "loaded" | "error";
 
@@ -76,7 +76,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
           <img
             v-ga="NftsPageInteractions.OPEN_COLLECTION + collection.url"
             alt="NFT collection"
-            :src="getImgProxyUrl(collection?.imgpreview) || FallbackNft"
+            :src="collection?.imgpreview || FallbackNft"
             class="h-32 w-32 rounded-full overflow-hidden border-2 border-white cursor-pointer object-cover"
             @click="openCollection(collection.url)"
             @keydown="openCollection(collection.url)"
