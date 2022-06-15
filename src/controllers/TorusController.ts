@@ -334,8 +334,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if ((isMain && initialState.NetworkControllerState?.isCustomNetwork) || !initialState.NetworkControllerState?.isCustomNetwork) {
       let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
       if (initialState.NetworkControllerState) {
-        if (initialState.NetworkControllerState.providerConfig.chainId === "0x02") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
-        if (initialState.NetworkControllerState.providerConfig.chainId === "0x03") defaultNetwork = WALLET_SUPPORTED_NETWORKS.devnet;
+        if (initialState.NetworkControllerState.providerConfig.chainId === "0x2") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
+        if (initialState.NetworkControllerState.providerConfig.chainId === "0x3") defaultNetwork = WALLET_SUPPORTED_NETWORKS.devnet;
         initialState.NetworkControllerState.providerConfig = defaultNetwork;
         log.info("unsupported api.google rpc endpoint, replaced with default rpc endpoint");
       }
