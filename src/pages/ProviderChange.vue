@@ -3,9 +3,8 @@ import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, P
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { onErrorCaptured, onMounted, reactive } from "vue";
 
-import { openCrispChat } from "@/utils/helpers";
-
 import ProviderChangeVue from "@/components/providerChange/ProviderChange.vue";
+import { openCrispChat } from "@/utils/helpers";
 
 import { ProviderChangeChannelEventData } from "../utils/interfaces";
 
