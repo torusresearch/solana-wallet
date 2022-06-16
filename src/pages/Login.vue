@@ -35,12 +35,11 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
-const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
+const hasPrivateKey = computed(() => ControllerModule.hasSelectedPrivateKey);
+const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
-watch(selectedAddress, () => {
-  if (selectedAddress.value && isRedirectFlow)
-    redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
-  if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
+watch(hasPrivateKey, () => {
+  if (hasPrivateKey.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
 const saveLoginStateToWindow = (value: boolean): void => {
@@ -53,12 +52,12 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
   try {
     isLoading.value = true;
     saveLoginStateToWindow(isLoading.value);
-    const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: emailString,
-      waitSaving: !!redirect,
+      waitSaving: isRedirectFlow,
     });
+    const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     if (redirect) router.push(`${redirect}?resolveRoute=${resolveRoute}${window.location.hash}`);
     else if (isRedirectFlow) {
       redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);

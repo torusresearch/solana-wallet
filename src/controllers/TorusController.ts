@@ -1259,15 +1259,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      // session should be priority and there should be only one login in one browser tab session
-      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
         privKey: new BN(ecc_privateKey),
       });
+      // session should be priority and there should be only one login in one browser tab session
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
     } catch (error) {
       log.error(error, "Error saving state!");
     }
