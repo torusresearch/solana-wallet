@@ -11,7 +11,7 @@ import { useI18n } from "vue-i18n";
 import FallbackNft from "@/assets/nft.png";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { setFallbackImg } from "@/utils/helpers";
+import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
@@ -112,7 +112,7 @@ const refDiv = ref(null);
               <div class="flex flex-row justify-start items-center py-6">
                 <div class="img_preview img-loader-container">
                   <img
-                    :src="props.token.metaplexData?.offChainMetaData?.image"
+                    :src="getImgProxyUrl(props.token.metaplexData?.offChainMetaData?.image)"
                     alt="TOKEN IMAGE"
                     class="img_preview"
                     @error="setFallbackImg($event.target, FallbackNft)"
