@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import { NameRegistryState } from "@bonfida/spl-name-service";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
+import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
