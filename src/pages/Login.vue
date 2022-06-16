@@ -36,9 +36,9 @@ const rules = computed(() => {
 const $v = useVuelidate(rules, { userEmail });
 
 const selectedAddress = computed(() => ControllerModule.selectedAddress);
-
-watch(selectedAddress, () => {
-  if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
+const hasSelectedPrivateKey = computed(() => ControllerModule.hasSelectedPrivateKey);
+watch(hasSelectedPrivateKey, () => {
+  if (hasSelectedPrivateKey.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
 const saveLoginStateToWindow = (value: boolean): void => {
