@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
+import ControllerModule from "@/modules/controllers";
 import { AccountEstimation } from "@/utils/interfaces";
 
 const props = withDefaults(
@@ -12,6 +13,12 @@ const props = withDefaults(
   }>(),
   {}
 );
+
+const getSymbol = (mintAddress: string) => {
+  const tokenInfoState = ControllerModule.torusState.TokenInfoState;
+  return tokenInfoState.tokenInfoMap[mintAddress]?.symbol || tokenInfoState.metaplexMetaMap[mintAddress]?.symbol || mintAddress.substring(0, 8);
+};
+
 const { t } = useI18n();
 </script>
 <template>
@@ -20,7 +27,7 @@ const { t } = useI18n();
   <div v-for="item in props.estimatedBalanceChange" :key="item.symbol" class="grid grid-cols-2 italic text-red-500 text-right">
     <div />
     <div v-if="!props.estimationInProgres" :class="item.changes >= 0 && 'text-green-400'">
-      {{ item.changes + "   " + item.symbol.substring(0, 8) }}
+      {{ item.changes + "   " + getSymbol(item.mint) }}
     </div>
     <!-- <div>{{ item.symbol }}</div> -->
   </div>
