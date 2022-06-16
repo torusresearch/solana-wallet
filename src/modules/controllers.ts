@@ -641,10 +641,12 @@ class ControllerModule extends VuexModule {
         res = { pubkey: await this.torus.getGaslessPublicKey() };
         break;
       case "get_accounts":
-        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        res = [this.selectedAddress];
         break;
       case "solana_request_accounts":
-        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        res = [this.selectedAddress];
         break;
       case "nft_list":
         await delay(15000);

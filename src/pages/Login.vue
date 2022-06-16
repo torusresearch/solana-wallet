@@ -35,11 +35,9 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
-const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
+const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
 watch(selectedAddress, () => {
-  if (selectedAddress.value && isRedirectFlow)
-    redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
   if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
