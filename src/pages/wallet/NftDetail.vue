@@ -6,6 +6,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
+import RoundLoader from "@/components/common/RoundLoader.vue";
 import NftCard from "@/components/home/NftCard.vue";
 import { NftsPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
@@ -71,6 +72,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
     <span class="text-app-text-500 nft-title">You have {{ nfts.length }} NFTs</span>
     <div v-if="nfts.length === 0" class="w-full shadow dark:shadow-dark bg-white dark:bg-app-gray-700 rounded-md mt-10 p-12 pt-8">
       <span class="text-app-text-500 dark:text-app-text-dark-400 text-center inline-block">{{ getNftFetchMessage(exploreNFTSFetchState) }}</span>
+      <RoundLoader v-if="exploreNFTSFetchState == 'loading'" class="w-10 h-10 mx-auto mb-4" color="border-white" />
       <div v-if="exploreNFTS.length" class="flex flex-wrap justify-center mt-12">
         <div v-for="collection in exploreNFTS" :key="collection.url" class="flex flex-col items-center m-4 w-48 popular-nft">
           <img
