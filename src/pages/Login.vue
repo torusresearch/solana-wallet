@@ -9,6 +9,10 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import Landing from "@/assets/auth/landing.svg";
+import DiscordLoginImage from "@/assets/auth/login-discord.svg";
+import FacebookLoginImage from "@/assets/auth/login-facebook.svg";
+import GoogleLoginImage from "@/assets/auth/login-google.svg";
+import TwitterLoginImage from "@/assets/auth/login-twitter.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
@@ -34,7 +38,6 @@ const rules = computed(() => {
   };
 });
 const $v = useVuelidate(rules, { userEmail });
-
 const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
 
 watch(selectedAddress, () => {
@@ -93,12 +96,12 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
-          <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
+          <img height="1.5rem" width="auto" class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
           <div class="flex items-center border-b w-56 pb-4 mb-9">
             <div class="mr-2 text-base text-app-text-500 dark:text-app-text-dark-500">
               {{ t("dappLogin.buildOn") }}
             </div>
-            <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+            <img height="12px" width="auto" class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </div>
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4" :style="{ maxWidth: '360px' }">
             {{ t("login.title") }}
@@ -106,24 +109,23 @@ const onEmailLogin = () => {
           <div class="grid grid-cols-3 gap-2 w-full">
             <div class="col-span-3">
               <Button v-ga="LoginInteractions.LOGIN_GOOGLE" variant="tertiary" :block="true" class="w-full" @click="onLogin('google')"
-                ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />{{
-                  t("dappLogin.continue", { verifier: "Google" })
-                }}</Button
-              >
+                ><img width="1.5rem" height="24px" class="w-6 mr-2" :src="GoogleLoginImage" alt="Login with Google" />
+                {{ t("dappLogin.continue", { verifier: "Google" }) }}
+              </Button>
             </div>
             <div class="col-span-1">
               <Button v-ga="LoginInteractions.LOGIN_FACEBOOK" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('facebook')">
-                <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
+                <img width="1.5rem" height="auto" class="w-6" :src="FacebookLoginImage" alt="Login with Facebook" />
               </Button>
             </div>
             <div class="col-span-1">
               <Button v-ga="LoginInteractions.LOGIN_TWITTER" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('twitter')">
-                <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
+                <img width="1.5rem" height="auto" class="w-6" :src="TwitterLoginImage" alt="Login with Twitter" />
               </Button>
             </div>
             <div class="col-span-1">
               <Button v-ga="LoginInteractions.LOGIN_DISCORD" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('discord')">
-                <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-discord.8a29d113.svg" alt="" />
+                <img width="1.5rem" height="auto" class="w-6" :src="DiscordLoginImage" alt="Login with Discord" />
               </Button>
             </div>
           </div>
@@ -180,7 +182,7 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-2 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
-          <img :src="Landing" alt="" />
+          <img width="500" height="auto" :src="Landing" alt="Landing page" />
           <div class="font-header text-xl mb-2">
             {{ t("dappLogin.sendReceive") }}
           </div>
