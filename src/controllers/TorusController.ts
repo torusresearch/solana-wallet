@@ -62,6 +62,7 @@ import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
+  CustomTokenInfo,
   ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
@@ -94,7 +95,6 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
   CONTROLLER_MODULE_KEY,
-  ImportToken,
   KeyState,
   OpenLoginBackendState,
   OpenLoginPopupResponse,
@@ -374,7 +374,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
       getJwt: () => this.jwtToken,
-      getIdentities: () => this.preferencesController.state.identities,
+      getSelectedAddress: () => this.preferencesController.state.selectedAddress,
       getNetworkProviderState: () => this.networkController.state,
     });
 
@@ -543,7 +543,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
-  importCustomToken = async (token: ImportToken) => {
+  importCustomToken = async (token: CustomTokenInfo) => {
     try {
       token.publicAddress = this.selectedAddress;
       token.network = this.currentNetworkName;
