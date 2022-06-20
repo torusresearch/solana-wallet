@@ -543,7 +543,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
-  importCustomToken = async (token: CustomTokenInfo) => {
+  async importCustomToken(token: CustomTokenInfo) {
     try {
       token.publicAddress = this.selectedAddress;
       token.network = this.currentNetworkName;
@@ -555,7 +555,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(err);
       throw new Error(err || "Unable to create token");
     }
-  };
+  }
 
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
