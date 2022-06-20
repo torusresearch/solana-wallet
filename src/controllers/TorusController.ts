@@ -374,6 +374,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
       getJwt: () => this.jwtToken,
+      getIdentities: () => this.preferencesController.state.identities,
+      getNetworkProviderState: () => this.networkController.state,
     });
 
     this.currencyController = new CurrencyController({
@@ -488,7 +490,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress], this.selectedAddress, this.currentNetworkName);
+      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
       // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -547,7 +549,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       token.network = this.currentNetworkName;
       const result = await this.tokenInfoController.importCustomToken(token);
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
-      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, this.selectedAddress, this.currentNetworkName, true);
+      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
     } catch (err: any) {
       log.error(err);
