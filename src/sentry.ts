@@ -1,16 +1,27 @@
-import { Integrations } from "@sentry/browser";
+/* eslint-disable simple-import-sort/imports */
+// Disable ESLint import sorting because '@sentry' require 'vue' and 'browser' packages to be imported before 'tracking' package
 import * as Sentry from "@sentry/vue";
+import { Integrations as BrowserIntegrations } from "@sentry/browser";
+import { BrowserTracing } from "@sentry/tracing";
 import LoglevelSentryPlugin, { redactBreadcrumbData } from "@toruslabs/loglevel-sentry";
 import log from "loglevel";
 import { App } from "vue";
-
 import { handleExceptions } from "@/utils/ErrorHandler";
+import config from "./config";
 
 function getSampleRate() {
   try {
-    return Number.parseFloat(process.env.VUE_APP_SENTRY_SAMPLE_RATE || "");
+    return Number.parseFloat(process.env.VUE_APP_SENTRY_SAMPLE_RATE || "") || 0.1;
   } catch {
-    return 0.2;
+    return 0.1;
+  }
+}
+
+function getTracesSampleRate() {
+  try {
+    return Number.parseFloat(process.env.VUE_APP_SENTRY_SAMPLE_RATE || "") || 0.01;
+  } catch {
+    return 0.01;
   }
 }
 
@@ -21,7 +32,13 @@ export function installSentry(Vue: App) {
     environment: process.env.VUE_APP_MODE,
     release: `solana-wallet@${process.env.VUE_APP_SOLANA_BUILD_VERSION}`,
     autoSessionTracking: true,
-    integrations: [new Integrations.Breadcrumbs({ console: true })],
+    integrations: [
+      new BrowserIntegrations.Breadcrumbs({ console: false }),
+      new BrowserTracing({
+        tracingOrigins: [config.api, config.metadataHost, config.commonApiHost, config.openloginStateAPI],
+      }),
+    ],
+    tracesSampleRate: getTracesSampleRate(),
     sampleRate: getSampleRate(),
     normalizeDepth: 5,
     ignoreErrors: [

@@ -1,12 +1,15 @@
 // const { test} = require("@playwright/test");
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 import { login } from "../../auth-helper";
 import { wait } from "../../utils";
+import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
-test("Should Login successfully", async ({ context }) => {
+test.afterAll(markResult);
+test.beforeEach(setBrowserStackTestTitle);
+test("Should Login successfully", async ({ context, browserName }) => {
   // ------------ STEP1: Login -----------
-  const page = await login(context);
+  const page = await login(context, browserName);
 
   // ------------ Check if navbar routing works-----------
   // Click text=Home
@@ -33,4 +36,5 @@ test("Should Login successfully", async ({ context }) => {
   await page.click("text=Settings");
   await wait(1000);
   expect(page.url().includes("/wallet/settings")).toBeTruthy();
+  await page.close();
 });

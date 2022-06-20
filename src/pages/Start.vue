@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import { Loader } from "@toruslabs/vue-components/common";
 import log from "loglevel";
+import { onErrorCaptured } from "vue";
 import { useRoute } from "vue-router";
 
-import { BoxLoader } from "@/components/common";
+import { openCrispChat } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
 
+onErrorCaptured(() => {
+  openCrispChat();
+});
 async function startLogin() {
   try {
     const { query } = useRoute();
@@ -20,6 +25,7 @@ async function startLogin() {
     });
   } catch (error) {
     log.error(error);
+    openCrispChat();
   }
 }
 
@@ -28,6 +34,6 @@ startLogin();
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <BoxLoader />
+    <Loader :use-spinner="true" />
   </div>
 </template>

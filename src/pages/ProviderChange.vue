@@ -10,12 +10,14 @@ import {
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { ProviderChangeChannelEventData } from "@toruslabs/solana-controllers";
 import Button from "@toruslabs/vue-components/common/Button.vue";
-import { onMounted, reactive } from "vue";
+import log from "loglevel";
+import { onErrorCaptured, onMounted, reactive } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { openCrispChat } from "@/utils/helpers";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
@@ -48,18 +50,26 @@ const finalProviderData = reactive<FinalTxData>({
     theme: "light",
   },
 });
-
+onErrorCaptured(() => {
+  openCrispChat();
+});
 onMounted(async () => {
-  if (!isRedirectFlow) {
-    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
-    const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
-    finalProviderData.origin = providerData.origin;
-    finalProviderData.toNetwork = providerData.newNetwork.displayName;
-    finalProviderData.fromNetwork = providerData.currentNetwork;
-    finalProviderData.whitelabelData = providerData.whitelabelData;
-  } else {
-    finalProviderData.toNetwork = params.displayName;
-    finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+  try {
+    if (!isRedirectFlow) {
+      const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL);
+      const providerData = await bcHandler.getMessageFromChannel<ProviderChangeChannelEventData>();
+      finalProviderData.origin = providerData.origin;
+      finalProviderData.toNetwork = providerData.newNetwork.displayName;
+      finalProviderData.fromNetwork = providerData.currentNetwork;
+      finalProviderData.whitelabelData = providerData.whitelabelData;
+    } else {
+      finalProviderData.toNetwork = params.displayName;
+      finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+    }
+  } catch (error) {
+    log.error(error, "error in tx");
+    openCrispChat();
+    throw new Error((error as any)?.message || `error in tx ${JSON.stringify(error)}`);
   }
 });
 const approveProviderChange = async (): Promise<void> => {

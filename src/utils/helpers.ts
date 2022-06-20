@@ -1,9 +1,11 @@
 import * as borsh from "@project-serum/borsh";
 import { PublicKey } from "@solana/web3.js";
+import { concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
 import bowser from "bowser";
 import copyToClipboard from "copy-to-clipboard";
+import { ecsign, keccak, privateToAddress, toBuffer } from "ethereumjs-util";
 import log from "loglevel";
 
 import config from "@/config";
@@ -290,4 +292,34 @@ export function openCrispChat() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   window.$crisp.push(["do", "chat:show"]);
+}
+
+export function getTorusMessage(message: Buffer): Buffer {
+  const prefix = Buffer.from(`\u0019${window.location.hostname} Signed Message:\n${message.length.toString()}`, "utf8");
+  return Buffer.concat([prefix, message]);
+}
+
+export function generateTorusAuthHeaders(privateKey: string) {
+  const challenge = Date.now();
+  const publicAddress = `0x${privateToAddress(Buffer.from(privateKey, "hex")).toString("hex")}`;
+  const challengeString = ((challenge - (challenge % 1000)) / 1000).toString();
+  const message = getTorusMessage(Buffer.from(challengeString, "utf8"));
+  const hash = keccak(message);
+  const messageSig = ecsign(hash, Buffer.from(privateKey, "hex"));
+  const signature = concatSig(toBuffer(messageSig.v), messageSig.r, messageSig.s);
+  const authHeaders = {
+    "Auth-Challenge": challengeString,
+    "Auth-Signature": signature,
+    "Auth-Public-Address": publicAddress,
+  };
+  return authHeaders;
+}
+
+export function getImgProxyUrl(originalUrl?: string) {
+  const proxyUrl = process.env.VUE_APP_IMGPROXY_URL || "";
+  if (!originalUrl?.startsWith("http") || !proxyUrl.length) {
+    return originalUrl;
+  }
+
+  return `${proxyUrl}/plain/${originalUrl}`;
 }

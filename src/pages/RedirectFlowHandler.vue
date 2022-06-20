@@ -1,7 +1,6 @@
 <script setup lang="ts">
+import { Loader } from "@toruslabs/vue-components/common";
 import { onMounted } from "vue";
-
-import BoxLoader from "@/components/common/BoxLoader.vue";
 
 import ControllerModule from "../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
@@ -16,6 +15,6 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <BoxLoader />
+    <Loader />
   </div>
 </template>

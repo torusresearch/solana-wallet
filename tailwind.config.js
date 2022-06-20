@@ -78,6 +78,9 @@ module.exports = {
         dark: "0px 14px 28px rgba(92, 108, 127, 0.06);",
         dark2: "5px 5px 10px #212121, -5px -5px 10px rgb(55 56 60 / 25%)",
       },
+      backgroundImage: {
+        "gradient-conic": "conic-gradient(transparent, var(--tw-gradient-to))",
+      },
       screens: {
         "gt-xs": { min: "440px" }, // mobile
         "lt-sm": { max: "640px" }, // less than sm

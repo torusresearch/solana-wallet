@@ -1,9 +1,9 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env.testing" });
 
-type Tabs = "home" | "transfer" | "topup" | "activity" | "settings";
+type Tabs = "home" | "transfer" | "topup" | "activity" | "settings" | "nfts";
 
 export function getDomain(): string {
   return `${process.env.TESTING_DOMAIN}`;
@@ -41,10 +41,12 @@ export async function switchTab(page: Page, tab: Tabs) {
     topup: "Select a Provider",
     activity: "Transaction Activities",
     settings: "Settings",
+    nfts: "NFTs",
   };
   await page.click(`a[href='/wallet/${tab}']`);
   await wait(1000);
-  expect(page.url().includes(`/wallet/${tab}`)).toBeTruthy();
+  const rege = `.*/wallet/${tab}.*`;
+  expect(page).toHaveURL(new RegExp(rege));
   // ENSURE UI IS INTACT
   await ensureTextualElementExists(page, tabHeaders[tab]);
 }
@@ -59,7 +61,7 @@ export async function switchNetwork(page: Page, network: "mainnet" | "testnet" |
   await switchTab(page, "settings");
   await page.click("button[id^='headlessui-listbox-button'] :text-matches('Solana .*net', 'i')");
   await page.click(`ul[role='listbox'] div >> text=${networkLabels[network]}`);
-  await page.waitForSelector(`button[id^='headlessui-listbox-button'] :has-text('${networkLabels[network]}')`, { timeout: 5_000 });
+  await page.waitForSelector(`button[id^='headlessui-listbox-button'] :has-text('${networkLabels[network]}')`, { timeout: 10_000 });
   await switchTab(page, currentTab);
 }
 
@@ -75,6 +77,9 @@ export async function changeLanguage(page: Page, language: "english" | "german" 
 
   await page.click("nav button[id^='headlessui-listbox-button'][aria-haspopup='true']");
   await page.click(`nav ul[role='listbox'] div >> text=${languageLabels[language]}`);
+  if (test.info().project.name.match(/browserstack/)) {
+    await wait(1500);
+  }
 }
 
 export async function importAccount(page: Page, privKey: string) {

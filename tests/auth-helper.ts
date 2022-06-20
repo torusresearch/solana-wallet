@@ -4,7 +4,9 @@ import nacl from "@toruslabs/tweetnacl-js";
 import axios from "axios";
 import base58 from "bs58";
 import { ec as EC } from "elliptic";
+import { memoize } from "lodash-es";
 
+import type { OpenLoginBackendState } from "@/utils/enums";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 
 import { changeLanguage, getBackendDomain, getDomain, getStateDomain, wait } from "./utils";
@@ -20,7 +22,7 @@ export const IMPORT_ACC_ADDRESS = "H3N28hUVVRhZW1zyM8dGQTrKztRHhgbS1nJg9nSXghet"
 export const IMPORT_ACC_SECRET_KEY = "4md5HAy1iZvyGVuwssQu8Kn78gnm7RHfpC8FLSHcsA1Wo1JwD6jNu8vHPLLSaFxXXD753vMaFBdbZYFvvmQtborU";
 
 const storageLayer = new TorusStorageLayer({ hostUrl: getStateDomain() });
-async function getJWT(): Promise<{ success: boolean; token: string }> {
+export const getJWT = memoize(async (): Promise<{ success: boolean; token: string }> => {
   const { message } = (
     await axios.post(`${getBackendDomain()}/auth/message`, {
       public_address: PUB_ADDRESS,
@@ -39,19 +41,41 @@ async function getJWT(): Promise<{ success: boolean; token: string }> {
       signed_message: signedMsgToString,
     })
   ).data;
-}
+});
 
 const privKey = EPHEMERAL_KEYPAIR.getPrivate();
 
-export async function createRedisKey() {
-  const input = { publicKey: PUB_ADDRESS, privateKey: SECRET_KEY };
+export const createRedisKey = memoize(async () => {
+  const input: OpenLoginBackendState = {
+    publicKey: PUB_ADDRESS,
+    privateKey: SECRET_KEY,
+    accounts: [
+      {
+        address: PUB_ADDRESS,
+        solanaPrivKey: SECRET_KEY,
+        privKey: "",
+        app: "test app",
+        name: "test app name",
+      },
+    ],
+    userInfo: {
+      email: "torussolanatesting@gmail.com",
+      name: "Torus Testing",
+      profileImage: "https://lh3.googleusercontent.com/a/AATXAJwH-UUrn4YSmInT-o8ptgLTq80TGs9lemvhzXXg=s96-c",
+      aggregateVerifier: "tkey-google-lrc",
+      verifier: "torus",
+      verifierId: "torussolanatesting@gmail.com",
+      typeOfLogin: "google",
+    },
+  };
   const params = storageLayer.generateMetadataParams(await TorusStorageLayer.serializeMetadataParamsInput(input, privKey), privKey);
 
   await axios.post(`${getStateDomain()}/set`, params);
-}
+});
 
-export async function login(context: BrowserContext): Promise<Page> {
+export async function login(context: BrowserContext, browserName: "chromium" | "webkit" | "firefox"): Promise<Page> {
   await createRedisKey();
+
   const keyFunction = `window.localStorage.setItem(
     "controllerModule-ephemeral",
     JSON.stringify({
@@ -59,7 +83,7 @@ export async function login(context: BrowserContext): Promise<Page> {
       "pub_key": "${EPHEMERAL_KEYPAIR.getPublic("hex")}",
     })
   )`;
-  const { token } = await getJWT();
+  // const { token } = await getJWT();
   const stateFunction = `window.localStorage.setItem(
     "controllerModule",
     JSON.stringify({
@@ -67,39 +91,21 @@ export async function login(context: BrowserContext): Promise<Page> {
         backendRestored: false,
         torusState: {
           "AccountTrackerState": {
-            "accounts": {
-              "${PUB_ADDRESS}": {
-                "balance": "0"
-              }
-            }
           },
           PreferencesControllerState: {
             identities: {
-              ${PUB_ADDRESS}: {
-                jwtToken: "${token}",
-                userInfo: {
-                  email: "torussolanatesting@gmail.com",
-                  name: "Torus Testing",
-                  profileImage: "https://lh3.googleusercontent.com/a/AATXAJwH-UUrn4YSmInT-o8ptgLTq80TGs9lemvhzXXg=s96-c",
-                  aggregateVerifier: "tkey-google-lrc",
-                  verifier: "torus",
-                  verifierId: "torussolanatesting@gmail.com",
-                  typeOfLogin: "google",
-                },
-                currentNetworkTxsList: [],
-                contacts: [],
-                locale: "en",
-              },
             },
-            selectedAddress: "${PUB_ADDRESS}",
+            selectedAddress: "",
           },
         },
       },
     })
   )`;
+  if (browserName === "chromium") {
+    await context.grantPermissions(["clipboard-read"]);
+  }
   await context.addInitScript({ content: keyFunction });
   await context.addInitScript({ content: stateFunction });
-  await context.grantPermissions(["clipboard-read"]);
   const page = await context.newPage();
   await page.goto(getDomain());
   await changeLanguage(page, "english");

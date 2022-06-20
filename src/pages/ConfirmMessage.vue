@@ -2,10 +2,11 @@
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
-import { onMounted, reactive } from "vue";
+import { onErrorCaptured, onMounted, reactive } from "vue";
 
 import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
+import { openCrispChat } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
@@ -22,6 +23,9 @@ interface MsgData {
 const msg_data = reactive<MsgData>({
   origin: "",
   message: "",
+});
+onErrorCaptured(() => {
+  openCrispChat();
 });
 
 onMounted(async () => {
@@ -48,6 +52,7 @@ onMounted(async () => {
     msg_data.origin = channel_msg.origin as string;
   } catch (error) {
     log.error(error, "error in tx");
+    openCrispChat();
   }
 });
 

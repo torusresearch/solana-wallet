@@ -15,7 +15,7 @@ import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import { NftsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/enums";
-import { logoutWithBC, setFallbackImg } from "@/utils/helpers";
+import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -23,7 +23,7 @@ const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
-  await logoutWithBC();
+  await ControllerModule.logout();
 };
 
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
@@ -99,7 +99,7 @@ const transferNFT = () => {
       <div class="h-[380px] w-full absolute top-0 left-0 flex justify-center items-center overflow-hidden">
         <img
           alt="NFT"
-          :src="nftMetaData.offChainMetaData?.image || FallbackNft"
+          :src="getImgProxyUrl(nftMetaData.offChainMetaData?.image) || FallbackNft"
           class="object-cover w-full h-full"
           @error="setFallbackImg($event.target, FallbackNft)"
         />
@@ -119,7 +119,7 @@ const transferNFT = () => {
           </div>
           <img
             alt="nft"
-            :src="nftMetaData.offChainMetaData?.image || FallbackNft"
+            :src="getImgProxyUrl(nftMetaData.offChainMetaData?.image) || FallbackNft"
             class="h-[480px] w-[480px] object-cover overflow-hidden rounded-lg shadow-lg"
             @error="setFallbackImg($event.target, FallbackNft)"
           />
@@ -129,7 +129,7 @@ const transferNFT = () => {
             <div v-if="nftMetaData.offChainMetaData?.collection" class="flex items-center">
               <img
                 alt="collection"
-                :src="nftMetaData.offChainMetaData?.image || FallbackNft"
+                :src="getImgProxyUrl(nftMetaData.offChainMetaData?.image) || FallbackNft"
                 class="h-5 w-5 object-cover rounded-full overflow-hidden mr-1"
                 @error="setFallbackImg($event.target, FallbackNft)"
               />
@@ -147,7 +147,7 @@ const transferNFT = () => {
               {{ nftMetaData.offChainMetaData?.description || "" }}
             </p>
             <div
-              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer"
+              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer send-nft"
               @click="transferNFT"
               @keydown="transferNFT"
             >

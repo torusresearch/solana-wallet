@@ -35,9 +35,18 @@ export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;
 export const FEATURES_DEFAULT_POPUP_WINDOW = "directories=0,titlebar=0,toolbar=0,status=0,location=0,menubar=0,height=700,width=1200";
 
-export type OpenLoginPopupResponse = {
-  userInfo: OpenloginUserInfo;
+export type ProjectAccountType = {
+  app: string;
+  solanaPrivKey: string;
   privKey: string;
+  name: string;
+  address: string;
+};
+
+export type OpenLoginPopupResponse = {
+  privKey: string;
+  userInfo: OpenloginUserInfo;
+  accounts: ProjectAccountType[];
 };
 
 export interface KeyState {
@@ -49,6 +58,7 @@ export interface OpenLoginBackendState {
   userInfo?: UserInfo;
   publicKey: string;
   privateKey: string;
+  accounts: ProjectAccountType[];
 }
 
 export interface TorusControllerState extends BaseState {
@@ -63,6 +73,7 @@ export interface TorusControllerState extends BaseState {
   TokenInfoState: TokenInfoState;
   RelayMap: { [relay: string]: string };
   RelayKeyHostMap: { [Pubkey: string]: string };
+  UserDapp: Map<string, string>;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -161,7 +172,7 @@ export const REDDIT = "reddit";
 export const DISCORD = "discord";
 export const GITHUB = "github";
 export const TWITTER = "twitter";
-
+export const APPLE = "apple";
 export interface TransferType {
   label: string;
   value: string;
