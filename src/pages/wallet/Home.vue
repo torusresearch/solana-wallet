@@ -22,7 +22,7 @@ const asyncWalletBalance = defineAsyncComponent({
 });
 
 const isImportTokenOpen = ref(false);
-const tokenList = computed(() => ControllerModule.existingTokenAddress);
+const tokenList = computed(() => ControllerModule.torus.existingTokenAddress);
 const connection = computed(() => ControllerModule.torus.connection);
 const importDisabled = ref(true);
 
@@ -138,11 +138,20 @@ const lastUpdateString = computed(() => {
         </div>
         <span class="text-app-text-400 text-xs mt-2">{{ lastUpdateString }}</span>
       </div>
-      <div class="flex flex-col w-full items-end !mt-3">
-        <div class="dark:shadow_down flex flex-col justify-between items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
-          <span class="text-app-text-400 text-xs mt-2">Don't See Your Token?</span>
-          <div class="p-1 border-t">
-            <Button v-ga="HomePageInteractions.REFRESH" class="ml-auto" variant="text" @click="importTokens"> Import Token </Button>
+      <!-- <div
+        class="shadow dark:shadow_box cursor-pointer w-auto border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex justify-end"
+      > -->
+      <div class="flex flex-col justify-end items-end">
+        <div
+          class="items -end !mt-3 p-2 shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
+        >
+          <div
+            class="dark:shadow_down text-app-primary-200 text-xs flex flex-row justify-between items-center p-1 border-b border-app-gray-300 dark:border-b-0"
+          >
+            Didn't See Your Token?
+          </div>
+          <div class="flex flex-row justify-center items-center font-normal text-gray-500 text-xs p-1">
+            <Button v-ga="HomePageInteractions.REFRESH" class="flex flex-column" variant="text" @click="importTokens"> Import Token </Button>
           </div>
         </div>
       </div>
