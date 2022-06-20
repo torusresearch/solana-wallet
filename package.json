@@ -38,7 +38,7 @@
     "@toruslabs/openlogin-jrpc": "^2.0.0",
     "@toruslabs/openlogin-subkey": "^2.0.0",
     "@toruslabs/openlogin-utils": "^2.0.0",
-    "@toruslabs/solana-controllers": "file:../controllers/packages/solana-controllers/toruslabs-solana-controllers-v2.0.1.tgz",
+    "@toruslabs/solana-controllers": "^2.0.0",
     "@toruslabs/tweetnacl-js": "^1.0.3",
     "@toruslabs/vue-components": "^2.0.1",
     "@toruslabs/vue-icons": "^2.0.0",
