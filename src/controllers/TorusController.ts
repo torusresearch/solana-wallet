@@ -61,6 +61,7 @@ import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
+  CustomTokenInfo,
   ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
@@ -240,6 +241,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController?.state.selectedAddress;
   }
 
+  get existingTokenAddress(): string[] {
+    const tokenList = this.tokenInfoController?.state?.tokenInfoMap || {};
+    return Object.keys(tokenList);
+  }
+
   get tokens(): { [address: string]: SolanaToken[] } {
     return this.tokensTracker.state.tokens || {};
   }
@@ -247,6 +253,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
   get conversionRate(): number {
     if (!this.currencyController.state.tokenPriceMap.solana) return 0;
     return this.currencyController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
+  }
+
+  get jwtToken(): string {
+    return this.preferencesController.state.identities[this.selectedAddress]?.jwtToken || "";
   }
 
   get userInfo(): UserInfo {
@@ -363,7 +373,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.TokensInfoConfig,
       state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
+      getJwt: () => this.jwtToken,
+      getSelectedAddress: () => this.preferencesController.state.selectedAddress,
+      getNetworkProviderState: () => this.networkController.state,
     });
+
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -528,6 +542,20 @@ export default class TorusController extends BaseController<TorusControllerConfi
       RelayKeyHostMap: relayKeyHost,
     });
   };
+
+  async importCustomToken(token: CustomTokenInfo) {
+    try {
+      token.publicAddress = this.selectedAddress;
+      token.network = this.currentNetworkName;
+      const result = await this.tokenInfoController.importCustomToken(token);
+      const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
+      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
+      return result;
+    } catch (err: any) {
+      log.error(JSON.stringify(await err.json()));
+      throw new Error("Unable to import token");
+    }
+  }
 
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
