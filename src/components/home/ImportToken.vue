@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
+import { CustomTokenInfo } from "@toruslabs/solana-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import log from "loglevel";
@@ -8,8 +9,6 @@ import { useI18n } from "vue-i18n";
 
 import { Button, TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-
-import { ImportToken } from "../../utils/enums";
 
 const props = withDefaults(
   defineProps<{
@@ -43,23 +42,25 @@ const isAlnum = (value: string): boolean => {
   return /^[a-zA-Z0-9]+$/.test(value);
 };
 
-const defaultImportToken = {
-  tokenMintAddress: "",
-  tokenSymbol: "",
-  tokenName: "",
+const defaultImportToken: CustomTokenInfo = {
+  address: "",
+  symbol: "",
+  name: "",
+  publicAddress: "",
+  network: "",
 };
-const importTokenState = reactive<ImportToken>(defaultImportToken);
+const importTokenState = reactive<CustomTokenInfo>(defaultImportToken);
 
 const rules = {
-  tokenMintAddress: {
+  address: {
     required: helpers.withMessage("Required", required),
     checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
     isDuplicateAddress: helpers.withMessage("Token Already Exists", isDuplicateSplToken),
   },
-  tokenSymbol: {
+  symbol: {
     required: helpers.withMessage("Required", required),
   },
-  tokenName: {
+  name: {
     required: helpers.withMessage("Required", required),
   },
 };
@@ -67,9 +68,9 @@ const rules = {
 const $v = useVuelidate(rules, importTokenState);
 
 function setImportTokenState(contractAddress: string, name: string, symbol: string, setEmpty = false) {
-  importTokenState.tokenMintAddress = setEmpty || contractAddress ? contractAddress : importTokenState.tokenMintAddress;
-  importTokenState.tokenName = setEmpty || name ? name : importTokenState.tokenMintAddress;
-  importTokenState.tokenSymbol = setEmpty || symbol ? symbol : importTokenState.tokenSymbol;
+  (importTokenState.address as string) = setEmpty || contractAddress ? contractAddress : importTokenState.address;
+  (importTokenState.name as string) = setEmpty || name ? name : importTokenState.name;
+  (importTokenState.symbol as string) = setEmpty || symbol ? symbol : importTokenState.symbol;
 }
 
 function resetState() {
@@ -91,8 +92,8 @@ const onImport = async () => {
 };
 
 async function resetKeyError() {
-  if ($v.value.tokenMintAddress.$invalid) {
-    $v.value.tokenMintAddress.$touch();
+  if ($v.value.address.$invalid) {
+    $v.value.address.$touch();
   }
 }
 const refDiv = ref(null);
@@ -122,15 +123,15 @@ const refDiv = ref(null);
               <form @submit.prevent="onImport">
                 <div class="col-span-3 sm:col-span-2">
                   <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Mint Address</div>
-                  <TextField v-model="importTokenState.tokenMintAddress" :errors="$v.tokenMintAddress.$errors" @update:model-value="resetKeyError" />
+                  <TextField v-model="importTokenState.address" :errors="$v.address.$errors" @update:model-value="resetKeyError" />
                 </div>
                 <div class="col-span-3 sm:col-span-2">
                   <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Symbol</div>
-                  <TextField v-model="importTokenState.tokenSymbol" :errors="$v.tokenSymbol.$errors" />
+                  <TextField v-model="importTokenState.symbol" :errors="$v.symbol.$errors" />
                 </div>
                 <div class="col-span-3 sm:col-span-2">
                   <div class="text-sm text-app-text-500 dark:text-app-text-dark-600 mb-1">Token Name</div>
-                  <TextField v-model="importTokenState.tokenName" :errors="$v.tokenName.$errors" />
+                  <TextField v-model="importTokenState.name" :errors="$v.name.$errors" />
                 </div>
               </form>
               <div class="flex flex-row items-center my-6 mx-3">

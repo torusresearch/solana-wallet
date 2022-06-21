@@ -56,7 +56,7 @@ const importConfirm = async (importToken: CustomTokenInfo) => {
     await ControllerModule.torus.importCustomToken(importToken);
     // close dialog and show success message
     addToast({
-      message: `Token ${importToken.tokenName} Imported Successfully`,
+      message: `Token ${importToken.name} Imported Successfully`,
       type: "success",
     });
   } catch (err) {
