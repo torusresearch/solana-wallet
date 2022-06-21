@@ -116,6 +116,18 @@ const lastUpdateString = computed(() => {
     <div class="mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
       <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">Tokens</h2>
       <asyncTokensAssetsBalance />
+      <div
+        class="shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
+      >
+        <div class="dark:shadow_down flex flex-row justify-center items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
+          <span class="flex flex-row justify-center items-center">
+            <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 truncate">Didn't See Your Token?</p></span
+          >
+        </div>
+        <div class="flex flex-row justify-center items-center font-normal text-gray-500 text-xs flex-auto px-4">
+          <Button v-ga="HomePageInteractions.REFRESH" class="flex flex-column" variant="text" @click="importTokens"> Import Token </Button>
+        </div>
+      </div>
       <!-- <div
         class="shadow dark:shadow_box border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
       >
@@ -138,23 +150,6 @@ const lastUpdateString = computed(() => {
           >
         </div>
         <span class="text-app-text-400 text-xs mt-2">{{ lastUpdateString }}</span>
-      </div>
-      <!-- <div
-        class="shadow dark:shadow_box cursor-pointer w-auto border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex justify-end"
-      > -->
-      <div class="flex flex-col justify-end items-end">
-        <div
-          class="items -end !mt-3 p-2 shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md"
-        >
-          <div
-            class="dark:shadow_down text-app-primary-200 text-xs flex flex-row justify-between items-center p-1 border-b border-app-gray-300 dark:border-b-0"
-          >
-            Didn't See Your Token?
-          </div>
-          <div class="flex flex-row justify-center items-center font-normal text-gray-500 text-xs p-1">
-            <Button v-ga="HomePageInteractions.REFRESH" class="flex flex-column" variant="text" @click="importTokens"> Import Token </Button>
-          </div>
-        </div>
       </div>
     </div>
     <ImportToken
