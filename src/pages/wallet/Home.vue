@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
 import { addressSlicer } from "@toruslabs/base-controllers";
+import { CustomTokenInfo } from "@toruslabs/solana-controllers";
 import throttle from "lodash-es/throttle";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -12,7 +13,7 @@ import ImportToken from "@/components/home/ImportToken.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
-import { ImportToken as ImportTokenInterface, NAVIGATION_LIST } from "@/utils/enums";
+import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
 
 const asyncWalletBalance = defineAsyncComponent({
@@ -49,7 +50,7 @@ const importCanceled = async () => {
   isImportTokenOpen.value = false;
 };
 
-const importConfirm = async (importToken: ImportTokenInterface) => {
+const importConfirm = async (importToken: CustomTokenInfo) => {
   isImportTokenOpen.value = false;
   try {
     await ControllerModule.torus.importCustomToken(importToken);
