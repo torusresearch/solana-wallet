@@ -552,8 +552,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
     } catch (err: any) {
-      log.error(err);
-      throw new Error(err || "Unable to create token");
+      log.error(JSON.stringify(await err.json()));
+      throw new Error("Unable to import token");
     }
   }
 
