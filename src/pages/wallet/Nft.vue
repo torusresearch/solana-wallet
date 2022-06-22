@@ -37,6 +37,7 @@ onMounted(async () => {
   if (tokenInState) {
     nftMetaData.value = tokenInState.metaplexData;
   } else {
+    // if data is not found in state
     const metaData = await ControllerModule.getNFTmetadata(mint.value);
     nftMetaData.value = metaData;
     edition.value = (metaData?.offChainMetaData as any).edition;

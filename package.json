@@ -21,7 +21,6 @@
     "@gtm-support/vue-gtm": "^1.5.0",
     "@headlessui/vue": "^1.6.2",
     "@heroicons/vue": "^1.0.6",
-    "@metaplex-foundation/mpl-token-metadata": "^1.2.4",
     "@project-serum/borsh": "^0.2.5",
     "@sentry/browser": "^7.0.0",
     "@sentry/tracing": "^7.0.0",

@@ -557,6 +557,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
+  async fetchMetaPlexNft(nftMintAddress: string[]) {
+    return this.tokenInfoController.fetchMetaPlexNft(nftMintAddress);
+  }
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
