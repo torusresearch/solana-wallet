@@ -1,5 +1,4 @@
 /* eslint-disable class-methods-use-this */
-import { NameRegistryState } from "@bonfida/spl-name-service";
 import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
