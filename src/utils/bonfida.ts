@@ -53,19 +53,19 @@ export const retrieveNftOwner = async (connection: Connection, nameAccount: Publ
  * @param connection The solana connection object to the RPC node
  * @returns
  */
-export const retrieveNfts = async (connection: Connection) => {
-  const filters = [
-    {
-      memcmp: {
-        offset: 0,
-        bytes: "3",
-      },
-    },
-  ];
+// export const retrieveNfts = async (connection: Connection) => {
+//   const filters = [
+//     {
+//       memcmp: {
+//         offset: 0,
+//         bytes: "3",
+//       },
+//     },
+//   ];
 
-  const result = await connection.getProgramAccounts(NAME_TOKENIZER_ID, {
-    filters,
-  });
-  const offset = 1 + 1 + 32 + 32;
-  return result.map((e) => new PublicKey(e.account.data.slice(offset, offset + 32)));
-};
+//   const result = await connection.getProgramAccounts(NAME_TOKENIZER_ID, {
+//     filters,
+//   });
+//   const offset = 1 + 1 + 32 + 32;
+//   return result.map((e) => new PublicKey(e.account.data.slice(offset, offset + 32)));
+// };
