@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@bonfida/spl-name-service";
+import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import {
   createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
@@ -90,6 +90,7 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import topupPlugin from "@/plugins/Topup";
+import { retrieveNftOwner } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -581,8 +582,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
     const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
-      case "sns":
-        return NameRegistryState.retrieve(this.connection, inputDomainKey);
+      case "sns": {
+        const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
+        const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
+        return { registry, nftOwner };
+      }
       case "twitter":
         return getTwitterRegistry(this.connection, address);
       default:
