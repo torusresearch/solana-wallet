@@ -42,3 +42,8 @@ export interface FinalTxData {
   totalFiatCost: string;
   isGasless: boolean;
 }
+
+export interface LogoutMessage {
+  instanceId: string;
+  timestamp: number;
+}
