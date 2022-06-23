@@ -38,6 +38,7 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import eccrypto from "@toruslabs/eccrypto";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import {
@@ -97,8 +98,9 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getLogoutBcChannelName, getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
+import { LogoutMessage } from "@/utils/interfaces";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -1239,6 +1241,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       if (waitSaving) await saveToOpenLogin;
 
+      if (isMain) {
+        this.attachLogoutBC();
+      }
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
     } catch (error) {
@@ -1383,6 +1388,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
           const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
           this.setSelectedAccount(selectedAddress, true);
+
+          // Listen to logout events across tabs
+          if (isMain) {
+            this.attachLogoutBC();
+          }
 
           return true;
         } catch (e) {
@@ -1689,5 +1699,24 @@ export default class TorusController extends BaseController<TorusControllerConfi
       loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
+  }
+
+  private attachLogoutBC() {
+    const channelName = getLogoutBcChannelName(this.origin, this.userInfo);
+    const bc = new BroadcastChannel<LogoutMessage>(channelName);
+    const start = new Date().getTime();
+    const eventListener = (msg: LogoutMessage) => {
+      const nowTime = new Date().getTime();
+      const msElapsedSinceAttach = nowTime - start;
+      const thisInstance = this.instanceId.slice(0, 8);
+      // Ignore the messages sent within 500ms of login, logic can be removed once TODO below is resolved
+      // TODO: Investigate Brave Browser receiving old logout messges from broadcast channel server
+      if (thisInstance === msg.instanceId || msElapsedSinceAttach <= 500) return;
+      bc.removeEventListener("message", eventListener);
+      bc.close()
+        .then(() => this.emit("logout", true))
+        .catch((err) => log.error("broadcastchannel close error", err));
+    };
+    bc.addEventListener("message", eventListener);
   }
 }

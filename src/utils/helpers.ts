@@ -190,10 +190,26 @@ export const parseJwt = (token: string) => {
   return JSON.parse(jsonPayload);
 };
 
-export const logoutWithBC = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  await bc.postMessage("logout");
-  bc.close();
+// Get a sufficiently unique channel name for
+// the current window
+export const getLogoutBcChannelName = (origin: string, userInfo: UserInfo) => {
+  const browser = bowser.getParser(window.navigator.userAgent);
+  const browserId = `${browser.getBrowserName()}_${browser.getBrowserVersion}`;
+  const platformId = `${browser.getOSName()}_${browser.getPlatformType()}`;
+  const userId = `${userInfo.verifier}_${userInfo.verifierId}`;
+  const id = `${userId}_${origin}_${browserId}_${platformId}`;
+  const hash = keccak(Buffer.from(id)).toString("hex");
+  return hash;
+};
+
+export const logoutWithBC = async (origin: string, _instanceId: string, userInfo: UserInfo) => {
+  const channelName = getLogoutBcChannelName(origin, userInfo);
+  const bc = new BroadcastChannel<LogoutMessage>(`${channelName}`);
+  const timestamp = new Date().getTime();
+  const instanceId = _instanceId.slice(0, 8);
+  bc.postMessage({ instanceId, timestamp })
+    .then(() => bc.close())
+    .catch((err) => log.error(err));
 };
 
 export function getBrowserKey() {

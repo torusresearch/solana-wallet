@@ -16,6 +16,8 @@ export const WALLET_SUPPORTED_NETWORKS = {
   },
 };
 
+export const CHANNEL_LOGOUT = "LOGOUT_WINDOWS_CHANNEL";
+
 // testnet: {
 //   blockExplorerUrl: "?cluster=testnet",
 //   chainId: "0x2",
