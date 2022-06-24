@@ -3,6 +3,7 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
+import debounce from "lodash-es/debounce";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -23,20 +24,9 @@ const { t } = useI18n();
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-let timeoutId: ReturnType<typeof setTimeout>;
+let snsAddressPromise: Promise<string | null>;
 const transferToInternal = ref("");
-const transferTo = computed({
-  get: () => transferToInternal.value,
-  set: (value2) => {
-    transferToInternal.value = value2;
-    // this will debounce the update and ensure that transferType is updated before validations are run
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      if (/\.sol$/g.test(value2)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
-      else transferType.value = { ...ALLOWED_VERIFIERS[0] };
-    }, 500);
-  },
-});
+const transferTo = ref("");
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transaction = ref<Transaction>();
@@ -113,7 +103,7 @@ const validVerifier = (value: string) => {
 
 async function escrowAccountVerifier(): Promise<boolean> {
   if (transferType.value.value === "sns") {
-    return !(await isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
+    return !(await isOwnerEscrow((await snsAddressPromise) as string));
   }
   return true;
 }
@@ -127,7 +117,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   if (transferType.value.value === "sns") {
     try {
-      associatedAccount = new PublicKey((await addressPromise(transferType.value.value, transferTo.value)) as string);
+      associatedAccount = new PublicKey((await snsAddressPromise) as string);
     } catch (e) {
       // since our sns validator will return false anyway
       return true;
@@ -166,7 +156,7 @@ async function snsRule(value: string): Promise<boolean> {
   if (!value) return true;
   if (transferType.value.value !== "sns") return true;
   try {
-    const address = await addressPromise(transferType.value.value, transferTo.value);
+    const address = await snsAddressPromise;
     return address !== null;
   } catch (e) {
     return false;
@@ -217,7 +207,7 @@ const rules = computed(() => {
   };
 });
 
-const $v = useVuelidate(rules, { transferTo, sendAmount });
+const $v = useVuelidate(rules, { transferTo: transferToInternal, sendAmount });
 /**
  * converts the fiatValue from selected fiat currency to selected crypto currency
  * @param fiatValue - amount of fiat
@@ -413,6 +403,16 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   selectedToken.value = $event;
   trackUserClick(TransferPageInteractions.TOKEN_SELECT + $event.mintAddress);
 }
+
+watch(
+  transferTo,
+  debounce(() => {
+    log.info(transferTo.value);
+    if (/\.sol$/g.test(transferTo.value)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
+    snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
+    transferToInternal.value = transferTo.value;
+  }, 500)
+);
 
 // reset transfer token to solana if tokens no longer has current token
 watch([tokens, nftTokens], () => {
