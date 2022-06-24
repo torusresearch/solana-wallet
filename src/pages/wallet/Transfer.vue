@@ -28,12 +28,12 @@ const transferToInternal = ref("");
 const transferTo = computed({
   get: () => transferToInternal.value,
   set: (value2) => {
+    transferToInternal.value = value2;
     // this will debounce the update and ensure that transferType is updated before validations are run
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      // eslint-disable-next-line prefer-destructuring
-      if (/\.sol$/g.test(value2)) transferType.value = ALLOWED_VERIFIERS[1];
-      transferToInternal.value = value2;
+      if (/\.sol$/g.test(value2)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
+      else transferType.value = { ...ALLOWED_VERIFIERS[0] };
     }, 500);
   },
 });
