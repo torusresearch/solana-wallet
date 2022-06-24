@@ -39,19 +39,16 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
-
 watch(selectedAddress, () => {
   if (selectedAddress.value && isRedirectFlow)
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
-  if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
+  else if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
 });
-
 const saveLoginStateToWindow = (value: boolean): void => {
   if (typeof window !== "undefined") {
     window.loginInProgress = value;
   }
 };
-
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
   try {
     isLoading.value = true;
@@ -89,6 +86,43 @@ const onEmailLogin = () => {
     onLogin(LOGIN_PROVIDER.EMAIL_PASSWORDLESS, userEmail.value);
   }
 };
+const socialLoginOptions = [
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_GOOGLE,
+    loginType: LOGIN_PROVIDER.GOOGLE,
+    imageHeight: "24px",
+    imageClass: "w-6 mr-2",
+    divClass: "col-span-3",
+    imageSrc: GoogleLoginImage,
+    imgAltText: "Login with Google",
+    buttonLoginText: true,
+    translateLoginText: "dappLogin.continue",
+    verifier: "Google",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_FACEBOOK,
+    loginType: LOGIN_PROVIDER.FACEBOOK,
+    imageSrc: FacebookLoginImage,
+    imgAltText: "Login with Facebook",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_TWITTER,
+    loginType: LOGIN_PROVIDER.TWITTER,
+    imageSrc: TwitterLoginImage,
+    imgAltText: "Login with Twitter",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_DISCORD,
+    loginType: LOGIN_PROVIDER.DISCORD,
+    src: DiscordLoginImage,
+    imgAltText: "Login with Discord",
+  },
+];
+const footerSupportLinks = [
+  { href: "https://docs.tor.us/legal/terms-and-conditions", translateText: "dappLogin.termsConditions" },
+  { href: "https://docs.tor.us/legal/privacy-policy", translateText: "dappLogin.privacyPolicy" },
+  { href: "https://t.me/TorusLabs", translateText: "dappLogin.contactUs" },
+];
 </script>
 
 <template>
@@ -107,31 +141,26 @@ const onEmailLogin = () => {
             {{ t("login.title") }}
           </div>
           <div class="grid grid-cols-3 gap-2 w-full">
-            <div class="col-span-3">
-              <Button v-ga="LoginInteractions.LOGIN_GOOGLE" variant="tertiary" :block="true" class="w-full" @click="onLogin('google')"
-                ><img width="1.5rem" height="24px" class="w-6 mr-2" :src="GoogleLoginImage" alt="Login with Google" />
-                {{ t("dappLogin.continue", { verifier: "Google" }) }}
-              </Button>
-            </div>
-            <div class="col-span-1">
-              <Button v-ga="LoginInteractions.LOGIN_FACEBOOK" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('facebook')">
-                <img width="1.5rem" height="auto" class="w-6" :src="FacebookLoginImage" alt="Login with Facebook" />
-              </Button>
-            </div>
-            <div class="col-span-1">
-              <Button v-ga="LoginInteractions.LOGIN_TWITTER" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('twitter')">
-                <img width="1.5rem" height="auto" class="w-6" :src="TwitterLoginImage" alt="Login with Twitter" />
-              </Button>
-            </div>
-            <div class="col-span-1">
-              <Button v-ga="LoginInteractions.LOGIN_DISCORD" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('discord')">
-                <img width="1.5rem" height="auto" class="w-6" :src="DiscordLoginImage" alt="Login with Discord" />
-              </Button>
-            </div>
+            <template v-for="loginButton in socialLoginOptions" :key="loginButton.loginType">
+              <div :class="loginButton.divClass || `col-span-1`">
+                <Button :v-ga="loginButton.googleAnalyticsTag" variant="tertiary" :block="true" class="w-full" @click="onLogin(loginButton.loginType)"
+                  ><img
+                    width="1.5rem"
+                    :height="loginButton.imageHeight || `auto`"
+                    :class="loginButton.imageClass || `w-6 mr-2`"
+                    :src="loginButton.imageSrc"
+                    :alt="loginButton.imgAltText"
+                  />
+                  <template v-if="loginButton.buttonLoginText">
+                    {{ t(loginButton.translateLoginText, { verifier: loginButton.verifier }) }}
+                  </template>
+                </Button>
+              </div>
+            </template>
           </div>
           <div class="mt-3 relative w-full">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-app-text-400" />
+              <div class="w-full border-t border-app-text-400"></div>
             </div>
             <div class="relative flex justify-center text-sm">
               <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
@@ -168,13 +197,9 @@ const onEmailLogin = () => {
           </div>
 
           <div class="space-x-3">
-            <a class="text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">{{
-              t("dappLogin.termsConditions")
-            }}</a>
-            <a class="text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">{{
-              t("dappLogin.privacyPolicy")
-            }}</a>
-            <a class="text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">{{ t("dappLogin.contactUs") }}</a>
+            <template v-for="footerSupportLink in footerSupportLinks" :key="footerSupportLink.translateText">
+              <a class="text-xs text-app-primary-500" :href="footerSupportLink.href" target="_blank">{{ t(footerSupportLink.translateText) }}</a>
+            </template>
           </div>
         </div>
       </div>
