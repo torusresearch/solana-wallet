@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import { NameRegistryState } from "@bonfida/spl-name-service";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
+import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -214,7 +214,7 @@ class ControllerModule extends VuexModule {
       return this.userTokens
         .reduce((acc: SolanaToken[], current: SolanaToken) => {
           const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
+          if (current.balance?.decimals !== 0 && data) {
             return [
               ...acc,
               {

@@ -3,6 +3,8 @@ import { significantDigits } from "@toruslabs/base-controllers";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
+import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
+import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
@@ -40,7 +42,11 @@ function splClicked() {
   >
     <div class="dark:shadow_down flex flex-row justify-between items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
       <span class="flex flex-row justify-start items-center">
-        <img class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3" :src="splToken?.iconURL" alt="TOKEN Logo" />
+        <img
+          class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3"
+          :src="splToken?.iconURL || (ControllerModule.isDarkMode ? SolanaLogoLight : SolanaLogoDark)"
+          alt="TOKEN Logo"
+        />
         <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p></span
       >
       <p class="font-medium text-xs leading-3 text-right text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">

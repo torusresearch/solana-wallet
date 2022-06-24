@@ -17,7 +17,6 @@
     "locale": "node ./src/scripts/importLocales.js"
   },
   "dependencies": {
-    "@bonfida/spl-name-service": "^0.1.33",
     "@gtm-support/vue-gtm": "^1.5.0",
     "@headlessui/vue": "^1.6.2",
     "@heroicons/vue": "^1.0.6",
@@ -26,9 +25,10 @@
     "@sentry/browser": "^7.0.0",
     "@sentry/tracing": "^7.0.0",
     "@sentry/vue": "^7.0.0",
+    "@solana/spl-name-service": "^0.1.4",
     "@solana/spl-token": "0.2.0",
     "@solana/web3.js": "^1.42.0",
-    "@toruslabs/base-controllers": "^2.0.0",
+    "@toruslabs/base-controllers": "^2.1.0",
     "@toruslabs/broadcast-channel": "^5.0.2",
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^3.0.0",
@@ -38,7 +38,7 @@
     "@toruslabs/openlogin-jrpc": "^2.0.0",
     "@toruslabs/openlogin-subkey": "^2.0.0",
     "@toruslabs/openlogin-utils": "^2.0.0",
-    "@toruslabs/solana-controllers": "^2.0.0",
+    "@toruslabs/solana-controllers": "^2.1.0",
     "@toruslabs/tweetnacl-js": "^1.0.3",
     "@toruslabs/vue-components": "^2.0.1",
     "@toruslabs/vue-icons": "^2.0.0",
