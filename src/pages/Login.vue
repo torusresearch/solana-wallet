@@ -114,7 +114,7 @@ const socialLoginOptions = [
   {
     googleAnalyticsTag: LoginInteractions.LOGIN_DISCORD,
     loginType: LOGIN_PROVIDER.DISCORD,
-    src: DiscordLoginImage,
+    imageSrc: DiscordLoginImage,
     imgAltText: "Login with Discord",
   },
 ];
