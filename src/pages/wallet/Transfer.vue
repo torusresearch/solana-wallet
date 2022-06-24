@@ -3,7 +3,6 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
-import debounce from "lodash-es/debounce";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -24,14 +23,18 @@ const { t } = useI18n();
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
+let timeoutId: ReturnType<typeof setTimeout>;
 const transferToInternal = ref("");
 const transferTo = computed({
   get: () => transferToInternal.value,
   set: (value2) => {
-    // debounce on API validation instead as debouncing here will cause text flickering
-    // eslint-disable-next-line prefer-destructuring
-    if (/\.sol$/g.test(value2)) transferType.value = ALLOWED_VERIFIERS[1];
     transferToInternal.value = value2;
+    // this will debounce the update and ensure that transferType is updated before validations are run
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      if (/\.sol$/g.test(value2)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
+      else transferType.value = { ...ALLOWED_VERIFIERS[0] };
+    }, 500);
   },
 });
 const resolvedAddress = ref<string>("");
@@ -193,15 +196,14 @@ const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
-const DEBOUNCE_MS = 500;
 const rules = computed(() => {
   return {
     transferTo: {
       validTransferTo: helpers.withMessage(getErrorMessage, validVerifier),
       required: helpers.withMessage(t("walletTransfer.required"), required),
-      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(debounce(snsRule, DEBOUNCE_MS))),
-      tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(debounce(tokenAddressVerifier, DEBOUNCE_MS))),
-      escrowAccount: helpers.withMessage(t("walletTransfer.escrowAccount"), helpers.withAsync(debounce(escrowAccountVerifier, DEBOUNCE_MS))),
+      addressExists: helpers.withMessage(snsError.value, helpers.withAsync(snsRule)),
+      tokenAddress: helpers.withMessage(t("walletTransfer.invalidAddress"), helpers.withAsync(tokenAddressVerifier)),
+      escrowAccount: helpers.withMessage(t("walletTransfer.escrowAccount"), helpers.withAsync(escrowAccountVerifier)),
     },
     sendAmount: {
       required: helpers.withMessage(t("walletTransfer.minTransfer"), required),
