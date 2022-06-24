@@ -176,25 +176,22 @@ const refDiv = ref(null);
                 </div>
 
                 <hr class="mt-3 mb-5" />
-                <div class="mb-5">
-                  <div class="flex">
-                    <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
-                    <div class="ml-auto text-right">
-                      <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
-                      <div v-if="fiatAmountString" class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
-                    </div>
+                <div class="flex mb-5">
+                  <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.amountToSend") }}</div>
+                  <div class="ml-auto text-right">
+                    <div class="text-xs font-bold text-app-text-500 dark:text-app-text-dark-500">{{ cryptoAmountString }}</div>
+                    <div v-if="fiatAmountString" class="text-xs text-app-text-400 dark:text-app-text-dark-600">~ {{ fiatAmountString }}</div>
                   </div>
-                  <div v-if="isSPLToken()">
-                    <!-- <hr class="mt-3 mb-5" /> -->
-                    <div class="font-body text-xs text-app-text-500 dark:text-app-text-dark-500">
-                      <EstimateChanges
-                        :estimated-balance-change="props.estimatedBalanceChange"
-                        :has-estimation-error="props.hasEstimationError"
-                        :is-expand="true"
-                        :estimation-in-progres="props.estimationInProgress"
-                      />
-                    </div>
-                  </div>
+                </div>
+
+                <div v-if="isSPLToken()" class="flex mb-5">
+                  <!-- <hr class="mt-3 mb-5" /> -->
+                  <EstimateChanges
+                    :estimated-balance-change="props.estimatedBalanceChange"
+                    :has-estimation-error="props.hasEstimationError"
+                    :is-expand="true"
+                    :estimation-in-progress="props.estimationInProgress"
+                  />
                 </div>
 
                 <div class="flex">

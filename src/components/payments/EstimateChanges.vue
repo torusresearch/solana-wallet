@@ -9,7 +9,7 @@ const props = withDefaults(
     isExpand: boolean;
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: string;
-    estimationInProgres: boolean;
+    estimationInProgress: boolean;
   }>(),
   {}
 );
@@ -22,14 +22,14 @@ const getSymbol = (mintAddress: string) => {
 const { t } = useI18n();
 </script>
 <template>
-  <div>{{ t("walletTransfer.estimated-change") }}</div>
-  <div v-if="props.estimationInProgres" class="text-right">Estimating...</div>
-  <div v-for="item in props.estimatedBalanceChange" :key="item.symbol" class="grid grid-cols-2 italic text-red-500 text-right">
-    <div />
-    <div v-if="!props.estimationInProgres" :class="item.changes >= 0 && 'text-green-400'">
-      {{ item.changes + "   " + getSymbol(item.mint) }}
+  <div class="text-xs text-app-text-500 dark:text-app-text-dark-500">{{ t("walletTransfer.estimated-change") }}</div>
+  <div class="ml-auto text-right">
+    <div v-if="props.estimationInProgress" class="text-xs italic text-app-text-500 dark:text-app-text-dark-500">Estimating...</div>
+    <div v-for="item in props.estimatedBalanceChange" :key="item.symbol" class="text-xs italic text-red-500">
+      <div v-if="!props.estimationInProgress" :class="item.changes >= 0 && 'text-green-400'">
+        {{ item.changes + "   " + (getSymbol(item.mint) || "SOL") }}
+      </div>
     </div>
-    <!-- <div>{{ item.symbol }}</div> -->
   </div>
   <div v-if="props.hasEstimationError" class="font-body text-xs font-thin text-red-500 italic text-right">
     <!-- {{ t("walletTransfer.estimated-fail") }}. -->
