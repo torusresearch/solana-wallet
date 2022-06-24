@@ -47,6 +47,7 @@ async function confirmTransfer() {
   try {
     if (selectedSplToken.value && transaction.value) {
       const res = await ControllerModule.torus.transfer(transaction.value);
+
       redirectToResult(jsonrpc, { signature: res, success: true, method }, req_id, resolveRoute);
     } else redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false }, req_id, resolveRoute);
   } catch (error) {
