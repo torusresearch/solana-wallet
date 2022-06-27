@@ -419,6 +419,13 @@ watch([tokens, nftTokens], () => {
     updateSelectedToken(tokens.value[0]);
   }
 });
+
+async function onSelectTransferType() {
+  // refresh address in case transferType changed
+  snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
+  $v.value.$reset();
+  $v.value.$touch();
+}
 </script>
 
 <template>
@@ -437,7 +444,7 @@ watch([tokens, nftTokens], () => {
                 class="w-2/3 flex-auto"
               />
               <div class="w-1/3 flex-auto mt-6">
-                <SelectField v-model="transferType" :items="transferTypes" />
+                <SelectField v-model="transferType" :items="transferTypes" @update:model-value="onSelectTransferType" />
               </div>
             </div>
 
