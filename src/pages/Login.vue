@@ -27,6 +27,44 @@ import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers
 
 const { isRedirectFlow, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
+const socialLoginOptions = [
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_GOOGLE,
+    loginType: LOGIN_PROVIDER.GOOGLE,
+    imageHeight: "24px",
+    imageClass: "w-6 mr-2",
+    divClass: "col-span-3",
+    imageSrc: GoogleLoginImage,
+    imgAltText: "Login with Google",
+    buttonLoginText: true,
+    translateLoginText: "dappLogin.continue",
+    verifier: "Google",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_FACEBOOK,
+    loginType: LOGIN_PROVIDER.FACEBOOK,
+    imageSrc: FacebookLoginImage,
+    imgAltText: "Login with Facebook",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_TWITTER,
+    loginType: LOGIN_PROVIDER.TWITTER,
+    imageSrc: TwitterLoginImage,
+    imgAltText: "Login with Twitter",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_DISCORD,
+    loginType: LOGIN_PROVIDER.DISCORD,
+    imageSrc: DiscordLoginImage,
+    imgAltText: "Login with Discord",
+  },
+];
+const footerSupportLinks = [
+  { href: "https://docs.tor.us/legal/terms-and-conditions", translateText: "dappLogin.termsConditions" },
+  { href: "https://docs.tor.us/legal/privacy-policy", translateText: "dappLogin.privacyPolicy" },
+  { href: "https://t.me/TorusLabs", translateText: "dappLogin.contactUs" },
+];
+
 const { t } = useI18n();
 const router = useRouter();
 const userEmail = ref("");
@@ -86,43 +124,6 @@ const onEmailLogin = () => {
     onLogin(LOGIN_PROVIDER.EMAIL_PASSWORDLESS, userEmail.value);
   }
 };
-const socialLoginOptions = [
-  {
-    googleAnalyticsTag: LoginInteractions.LOGIN_GOOGLE,
-    loginType: LOGIN_PROVIDER.GOOGLE,
-    imageHeight: "24px",
-    imageClass: "w-6 mr-2",
-    divClass: "col-span-3",
-    imageSrc: GoogleLoginImage,
-    imgAltText: "Login with Google",
-    buttonLoginText: true,
-    translateLoginText: "dappLogin.continue",
-    verifier: "Google",
-  },
-  {
-    googleAnalyticsTag: LoginInteractions.LOGIN_FACEBOOK,
-    loginType: LOGIN_PROVIDER.FACEBOOK,
-    imageSrc: FacebookLoginImage,
-    imgAltText: "Login with Facebook",
-  },
-  {
-    googleAnalyticsTag: LoginInteractions.LOGIN_TWITTER,
-    loginType: LOGIN_PROVIDER.TWITTER,
-    imageSrc: TwitterLoginImage,
-    imgAltText: "Login with Twitter",
-  },
-  {
-    googleAnalyticsTag: LoginInteractions.LOGIN_DISCORD,
-    loginType: LOGIN_PROVIDER.DISCORD,
-    imageSrc: DiscordLoginImage,
-    imgAltText: "Login with Discord",
-  },
-];
-const footerSupportLinks = [
-  { href: "https://docs.tor.us/legal/terms-and-conditions", translateText: "dappLogin.termsConditions" },
-  { href: "https://docs.tor.us/legal/privacy-policy", translateText: "dappLogin.privacyPolicy" },
-  { href: "https://t.me/TorusLabs", translateText: "dappLogin.contactUs" },
-];
 </script>
 
 <template>
