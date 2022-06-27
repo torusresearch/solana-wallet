@@ -100,7 +100,7 @@ onMounted(async () => {
     }
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : (await ControllerModule.torus.calculateTxFee()).fee;
+    const txFee = isGasless ? 0 : (await ControllerModule.torus.calculateTxFee(tx.value.compileMessage())).fee;
 
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
