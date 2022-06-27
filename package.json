@@ -15,7 +15,7 @@
     "test:controller": "npx mocha  ./tests/controller/**.ts",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js",
-    "prod": "vue-cli-service serve --mode production"
+    "serve:prod": "vue-cli-service serve --mode production"
   },
   "dependencies": {
     "@gtm-support/vue-gtm": "^1.5.0",
