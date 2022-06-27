@@ -15,7 +15,7 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/helpers";
+import { calculateTxFee, delay, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/helpers";
 import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
@@ -319,7 +319,7 @@ const openModal = async () => {
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   transaction.value = await generateTransaction(amount);
   estimateChanges(transaction.value);
-  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee(transaction.value.compileMessage());
+  const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;

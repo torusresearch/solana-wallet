@@ -13,26 +13,29 @@
 
 <script>
     // window.Buffer = Buffer;
-
-    const generateTransaction = async () => {
-        const target_network = {
-            blockExplorerUrl: "https://explorer.solana.com",
-            chainId: "0x1",
-            displayName: "Solana Mainnet",
-            logo: "solana.svg",
-            rpcTarget: solanaWeb3.clusterApiUrl("mainnet-beta"),
-            ticker: "SOL",
-            tickerName: "Solana Token",
-        };
-        const conn = new solanaWeb3.Connection(target_network.rpcTarget);
+    const usdcMintAddress = ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"]
+    const nftMintAddress = ["4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"]
+    let target_network = {
+        blockExplorerUrl: "https://explorer.solana.com",
+        chainId: "0x3",
+        displayName: "Solana Devnet",
+        logo: "solana.svg",
+        rpcTarget: solanaWeb3.clusterApiUrl("devnet"),
+        ticker: "SOL",
+        tickerName: "Solana Token"
+    };
+    let selectedAddress = localStorage.getItem("selectedAddress") ;
+    let conn = localStorage.getItem("rpcTarget") ? new solanaWeb3.Connection( localStorage.getItem("rpcTarget")) : undefined;
+    const generateTransaction = async (targetAddress) => {
+        if (!conn) throw Error("no connection")
         // const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
         const {blockhash , lastValidBlockHeight} = (await conn.getLatestBlockhash("finalized"));
         const TransactionInstruction = solanaWeb3.SystemProgram.transfer({
             fromPubkey: new solanaWeb3.PublicKey(
-                "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"
+                selectedAddress
             ),
             toPubkey: new solanaWeb3.PublicKey(
-                "32Qy5pNBpQVdPDu458PoEtMC85nm5HEsCe4eAtUH2xfF"
+                targetAddress
             ),
             lamports: ( Math.floor (0.001 * Math.random() * 1000000000) ),
         });
@@ -41,7 +44,7 @@
             blockhash: blockhash,
             lastValidBlockHeight,
             feePayer: new solanaWeb3.PublicKey(
-                "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW"
+                selectedAddress
             ),
         }).add(TransactionInstruction);
         return transaction.serialize({requireAllSignatures: false, verifySignatures: false}).toString("hex");
@@ -56,42 +59,35 @@
         };
         switch (method) {
             case "set_provider":
-                requestObj.params={
-                        blockExplorerUrl: "https://explorer.solana.com",
-                        chainId: "0x2",
-                        displayName: "Solana Testnet",
-                        logo: "solana.svg",
-                        rpcTarget: solanaWeb3.clusterApiUrl("testnet"),
-                        ticker: "SOL",
-                        tickerName: "Solana Token"};
+                requestObj.params=target_network;
                 break;
             case "topup":
                 requestObj
                     .params={
                         params: {
-                            selectedAddress: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                            selectedAddress
                         },
                         provider: "moonpay"
                     };
                 break;
             case "send_transaction":
                 requestObj.params={
-                        message: await generateTransaction(),
+                        message: await generateTransaction( selectedAddress ),
                     };
                 break;
             case "send_spl_transaction":
                 requestObj.params={
-                        message: await generateSPLTransaction(),
+                        message: await generateSPLTransaction( selectedAddress ),
                     };
                 break;
             case "sign_transaction":
                 requestObj.params={
-                        message: await generateTransaction(),
+                        message: await generateTransaction( selectedAddress ),
                     };
                 break;
             case "sign_all_transactions":
                 requestObj.params={
-                        message: [await generateTransaction(), await generateTransaction(), await generateTransaction()],
+                        message: [await generateTransaction(selectedAddress), await generateTransaction(selectedAddress), await generateTransaction(selectedAddress)],
                 };
                 break;
             case "sign_message":
@@ -101,15 +97,15 @@
                 break;
             case "spl_transfer":
                 requestObj.params={
-                        mint_add: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-                        receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                        mint_add: usdcMintAddress.at(-1),
+                        receiver_add: selectedAddress,
                         amount: 0.1,
                     };
                 break;
             case "nft_transfer":
                 requestObj.params={
                         mint_add: "BAYYCCY31SRrexQKwGqDRonVzMiB2Y2HagNZQv6cNWk7",
-                        receiver_add: "C4Letg829ytf5PqyEDSdBUWs4T1GT7whYGrZsJreftgW",
+                        receiver_add: selectedAddress,
                     };
                 break;
             default:
@@ -126,6 +122,61 @@
     function abd() {
         console.log("HELLO");
     }
+
+
+
+        const processResult = (result) =>{
+            const parsedResult = JSON.parse(result).result
+            const method = parsedResult.method
+            const success = parsedResult.success;
+            switch (method) {
+
+            case "login" :
+                if ( success ) selectedAddress = parsedResult.data.selectedAddress;
+                else selectedAddress = ""
+                localStorage.setItem("selectedAddress", selectedAddress)
+                break;
+            case "set_provider":
+                console.log(target_network)
+                conn = new solanaWeb3.Connection(target_network.rpcTarget);
+                localStorage.setItem("rpcTarget", target_network.rpcTarget);
+                // change mint address?
+                //
+                break
+            case "topup":
+                break;
+            case "send_transaction":
+                break;
+            case "send_spl_transaction":
+                break;
+            case "sign_transaction":
+                break;
+            case "sign_all_transactions":
+                break;
+            case "sign_message":
+                break;
+            case "spl_transfer":
+                break;
+            case "nft_transfer":
+                break;
+            }
+        }
+        window.addEventListener("load", () => {
+            const method = new URLSearchParams(window.location.search).get(
+                "method"
+            );
+            let result = new URLSearchParams(window.location.hash.slice(1)).get(
+                "result"
+            );
+            result = result && atob(result);
+            console.log( JSON.parse(result))
+            processResult(result);
+            const displayConsole = document.querySelector("#console");
+            if (result) displayConsole.textContent = result;
+        });
+        window.addEventListener("close", ()=>{
+            localStorage.clear();
+        })
 </script>
 
 <style>
@@ -221,29 +272,13 @@
                     Sign All Transactions
                 </button>
                 <button onclick="openurl('sign_message')">Sign Message</button>
-                <button onclick="openurl('get_gasless_public_key')">
-                    Get Gasless PubKey
-                </button>
-                <button onclick="openurl('nft_list')">Get NFTs</button>
-                <button onclick="openurl('nft_transfer')">Transfer nft</button>
+                <!-- <button onclick="openurl('nft_list')">Get NFTs</button> -->
+                <button onclick="openurl('nft_transfer')">Transfer NFT</button>
             </div>
         </div>
         <div id="console" contenteditable="true"></div>
     </div>
 
-    <script>
-        window.addEventListener("load", () => {
-            const method = new URLSearchParams(window.location.search).get(
-                "method"
-            );
-            let result = new URLSearchParams(window.location.hash.slice(1)).get(
-                "result"
-            );
-            result = result && atob(result);
-            const console = document.querySelector("#console");
-            if (result) console.textContent = result;
-        });
-    </script>
 </body>
 
 </html>

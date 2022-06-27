@@ -22,11 +22,11 @@ onMounted(async () => {
   setTimeout(() => {
     if (selectedNft.value === undefined)
       redirectToResult(jsonrpc, { message: "Selected NFT not found", success: false, method }, req_id, resolveRoute);
-  }, 20_000);
+  }, 2_000);
 });
 
 watch(selectedNft, async () => {
-  if (selectedNft.value) {
+  if (selectedNft.value?.mintAddress) {
     transaction.value = await generateSPLTransaction(
       params.receiver_add,
       1,
@@ -37,6 +37,8 @@ watch(selectedNft, async () => {
 
     const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
+  } else {
+    redirectToResult(jsonrpc, { message: "Selected NFT not found", success: false, method }, req_id, resolveRoute);
   }
 });
 

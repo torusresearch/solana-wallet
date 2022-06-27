@@ -20,7 +20,7 @@ onMounted(async () => {
   setTimeout(() => {
     if (selectedSplToken.value === undefined)
       redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false, method }, req_id, resolveRoute);
-  }, 20_000);
+  }, 2_000);
 
   if (!params?.mint_add || !params.receiver_add || !params.amount)
     redirectToResult(jsonrpc, { message: "Invalid or Missing Params", success: false, method }, req_id, resolveRoute);
@@ -39,6 +39,8 @@ watch(selectedSplToken, async () => {
 
     const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
+  } else {
+    redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false, method }, req_id, resolveRoute);
   }
 });
 
