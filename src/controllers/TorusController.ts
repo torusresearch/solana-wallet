@@ -1,13 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@bonfida/spl-name-service";
-import {
-  createAssociatedTokenAccountInstruction,
-  createTransferCheckedInstruction,
-  getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -90,6 +84,7 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import topupPlugin from "@/plugins/Topup";
+import { retrieveNftOwner } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -104,7 +99,6 @@ import {
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
-import { SolAndSplToken } from "@/utils/interfaces";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -183,7 +177,7 @@ export const DEFAULT_STATE = {
     tokenInfoMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
-    unknownTokenInfo: [],
+    unknownSPLTokenInfo: [],
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -557,6 +551,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
+  async fetchMetaPlexNft(nftMintAddress: string[]) {
+    return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
+  }
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
@@ -577,8 +575,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
     const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
-      case "sns":
-        return NameRegistryState.retrieve(this.connection, inputDomainKey);
+      case "sns": {
+        const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
+        const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
+        return { registry, nftOwner };
+      }
       case "twitter":
         return getTwitterRegistry(this.connection, address);
       default:
@@ -586,12 +587,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async calculateTxFee(): Promise<{ blockHash: string; fee: number; height: number }> {
+  async calculateTxFee(message: Message): Promise<{ blockHash: string; fee: number; height: number }> {
     const latestBlockHash = await this.connection.getLatestBlockhash("finalized");
     const blockHash = latestBlockHash.blockhash;
     const height = latestBlockHash.lastValidBlockHeight;
-    const fee = (await this.connection.getFeeCalculatorForBlockhash(blockHash)).value?.lamportsPerSignature || 0;
-    return { blockHash, fee, height };
+    const fee = await this.connection.getFeeForMessage(message);
+    return { blockHash, fee: fee.value, height };
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
@@ -631,50 +632,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
     }
-  }
-
-  async transferSpl(receiver: string, amount: number, selectedToken: Partial<SolAndSplToken>): Promise<string> {
-    const { connection } = this;
-    const transaction = new Transaction();
-    const tokenMintAddress = selectedToken.mintAddress as string;
-    const decimals = selectedToken.balance?.decimals || 0;
-    const mintAccount = new PublicKey(tokenMintAddress);
-    const signer = new PublicKey(this.selectedAddress); // add gasless transactions
-    const sourceTokenAccount = await getAssociatedTokenAddress(mintAccount, signer, false);
-    const receiverAccount = new PublicKey(receiver);
-
-    let associatedTokenAccount = receiverAccount;
-    try {
-      associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiverAccount, false);
-    } catch (e) {
-      log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
-    }
-
-    const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
-
-    if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-      const newAccount = await createAssociatedTokenAccountInstruction(
-        new PublicKey(this.selectedAddress),
-        associatedTokenAccount,
-        receiverAccount,
-        new PublicKey(tokenMintAddress)
-      );
-      transaction.add(newAccount);
-    }
-    const transferInstructions = createTransferCheckedInstruction(
-      sourceTokenAccount,
-      mintAccount,
-      associatedTokenAccount,
-      signer,
-      amount,
-      decimals,
-      []
-    );
-    transaction.add(transferInstructions);
-
-    transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
-    transaction.feePayer = new PublicKey(this.selectedAddress);
-    return this.transfer(transaction);
   }
 
   getGaslessHost(_feePayer: string): string | undefined {
