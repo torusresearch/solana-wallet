@@ -1,9 +1,25 @@
-import { option, publicKey, rustEnum, struct, u8, u64 } from "@project-serum/borsh";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  DecodedApproveCheckedInstruction,
+  DecodedApproveInstruction,
+  DecodedBurnCheckedInstruction,
+  DecodedBurnInstruction,
+  DecodedCloseAccountInstruction,
+  DecodedInitializeAccountInstruction,
+  DecodedInitializeMintInstruction,
+  DecodedMintToCheckedInstruction,
+  DecodedMintToInstruction,
+  DecodedRevokeInstruction,
+  DecodedSetAuthorityInstruction,
+  DecodedTransferCheckedInstruction,
+  DecodedTransferInstruction,
+  decodeInstruction as decodeTokenInstruction1,
+  TOKEN_PROGRAM_ID,
+  TokenInstruction,
+} from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
-import BN from "bignumber.js";
 import log from "loglevel";
 
 export type DecodedDataType = {
@@ -140,168 +156,145 @@ export const decodeStakeInstruction = (inst: TransactionInstruction): DecodedDat
   };
 };
 
-export declare type TokenInstructionLayoutType =
-  | { initializeMint: { decimals: number; mintAuthority: PublicKey; freezeAuthority: PublicKey | null } }
-  | { initializeAccount: unknown }
-  | { initializeMultisig: { m: number } }
-  | { transfer: { amount: BN } }
-  | { approve: { amount: BN } }
-  | { revoke: unknown }
-  | { setAuthority: { authorityType: number; newAuthority: PublicKey | null } }
-  | { mintTo: { amount: BN } }
-  | { burn: { amount: BN } }
-  | { closeAccount: unknown }
-  | { freezeAccount: unknown }
-  | { thawAccount: unknown }
-  | { transferChecked: { amount: BN; decimals: number } }
-  | { approveChecked: { amount: BN; decimals: number } }
-  | { mintToChecked: { amount: BN; decimals: number } }
-  | { burnChecked: { amount: BN; decimals: number } };
-
-const TokenInstructionLayout = rustEnum([
-  struct([u8("decimals"), publicKey("mintAuthority"), option(publicKey(), "freezeAuthority")], "initializeMint"),
-  struct([], "initializeAccount"),
-  struct([u8("m")], "initializeMultisig"),
-  struct([u64("amount")], "transfer"),
-  struct([u64("amount")], "approve"),
-  struct([], "revoke"),
-  struct([u8("authorityType"), option(publicKey(), "newAuthority")], "setAuthority"),
-  struct([u64("amount")], "mintTo"),
-  struct([u64("amount")], "burn"),
-  struct([], "closeAccount"),
-  struct([], "freezeAccount"),
-  struct([], "thawAccount"),
-  struct([u64("amount"), u8("decimals")], "transferChecked"),
-  struct([u64("amount"), u8("decimals")], "approveChecked"),
-  struct([u64("amount"), u8("decimals")], "mintToChecked"),
-  struct([u64("amount"), u8("decimals")], "burnChecked"),
-]);
-
 function decodeTokenInstruction(instruction: TransactionInstruction): DecodedDataType {
-  const decodedData = TokenInstructionLayout.decode(instruction.data) as TokenInstructionLayoutType;
-  if ("initializeMint" in decodedData) {
+  const decoded = decodeTokenInstruction1(instruction);
+  if (decoded.data.instruction === TokenInstruction.InitializeMint) {
     const type = "initializeMint";
     const params = {
-      decimals: decodedData.initializeMint.decimals,
-      mint: instruction.keys[0].pubkey,
-      mintAuthority: decodedData.initializeMint.mintAuthority,
-      freezeAuthority: decodedData.initializeMint.freezeAuthority,
+      mint: (decoded as DecodedInitializeMintInstruction).keys.mint.pubkey,
+      decimals: decoded.data.decimals,
+      mintAuthority: decoded.data.mintAuthority,
+      freezeAuthority: decoded.data.freezeAuthority,
     };
     return { type, data: params };
   }
-  if ("initializeAccount" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.InitializeAccount) {
     const type = "initializeAccount";
+    const ikeys = (decoded as DecodedInitializeAccountInstruction).keys;
     const params = {
-      account: instruction.keys[0].pubkey,
-      mint: instruction.keys[1].pubkey,
-      owner: instruction.keys[2].pubkey,
+      account: ikeys.account.pubkey,
+      mint: ikeys.mint.pubkey,
+      owner: ikeys.owner.pubkey,
     };
     return { type, data: params };
   }
-  if ("transfer" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.Transfer) {
     const type = "transfer";
+    const ikeys = (decoded as DecodedTransferInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      destination: instruction.keys[1].pubkey,
-      owner: instruction.keys[2].pubkey,
-      amount: decodedData.transfer.amount.toNumber(),
+      source: ikeys.source.pubkey,
+      destination: ikeys.destination.pubkey,
+      owner: ikeys.owner.pubkey,
+      // Todo: use back bigint
+      amount: Number(decoded.data.amount),
     };
     return { type, data: params };
   }
-  if ("approve" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.Approve) {
     const type = "approve";
+    const ikeys = (decoded as DecodedApproveInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      delegate: instruction.keys[1].pubkey,
-      owner: instruction.keys[2].pubkey,
-      amount: decodedData.approve.amount.toNumber(),
+      account: ikeys.account.pubkey,
+      delegate: ikeys.delegate.pubkey,
+      owner: ikeys.owner.pubkey,
+      amount: decoded.data.amount,
     };
     return { type, data: params };
   }
-  if ("revoke" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.Revoke) {
     const type = "revoke";
+    const ikeys = (decoded as DecodedRevokeInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      owner: instruction.keys[1].pubkey,
+      account: ikeys.account.pubkey,
+      owner: ikeys.owner.pubkey,
     };
     return { type, data: params };
   }
-  if ("setAuthority" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.SetAuthority) {
     const type = "setAuthority";
+    const ikeys = (decoded as DecodedSetAuthorityInstruction).keys;
     const params = {
-      target: instruction.keys[0].pubkey,
-      currentAuthority: instruction.keys[1].pubkey,
-      newAuthority: decodedData.setAuthority.newAuthority,
-      authorityType: decodedData.setAuthority.authorityType,
+      target: ikeys.account.pubkey,
+      currentAuthority: ikeys.currentAuthority.pubkey,
+      newAuthority: decoded.data.newAuthority,
+      authorityType: decoded.data.authorityType,
     };
     return { type, data: params };
   }
-  if ("mintTo" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.MintTo) {
     const type = "mintTo";
+    const ikeys = (decoded as DecodedMintToInstruction).keys;
     const params = {
-      mint: instruction.keys[0].pubkey,
-      destination: instruction.keys[1].pubkey,
-      mintAuthority: instruction.keys[2].pubkey,
-      amount: decodedData.mintTo.amount.toNumber(),
+      mint: ikeys.mint.pubkey,
+      destination: ikeys.destination.pubkey,
+      authority: ikeys.authority.pubkey,
+      amount: decoded.data.amount,
     };
     return { type, data: params };
   }
-  if ("burn" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.Burn) {
     const type = "burn";
+    const ikeys = (decoded as DecodedBurnInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      mint: instruction.keys[1].pubkey,
-      owner: instruction.keys[2].pubkey,
-      amount: decodedData.burn.amount.toNumber(),
+      account: ikeys.account.pubkey,
+      mint: ikeys.mint.pubkey,
+      owner: ikeys.owner.pubkey,
+      amount: decoded.data.amount,
     };
     return { type, data: params };
   }
-  if ("closeAccount" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.CloseAccount) {
     const type = "closeAccount";
+    const ikeys = (decoded as DecodedCloseAccountInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      destination: instruction.keys[1].pubkey,
-      owner: instruction.keys[2].pubkey,
+      account: ikeys.account.pubkey,
+      destination: ikeys.destination.pubkey,
+      authority: ikeys.authority.pubkey,
     };
     return { type, data: params };
   }
-  if ("transferChecked" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.TransferChecked) {
     const type = "transferChecked";
+    const ikeys = (decoded as DecodedTransferCheckedInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      destination: instruction.keys[2].pubkey,
-      owner: instruction.keys[3].pubkey,
-      amount: decodedData.transferChecked.amount.toNumber(),
+      source: ikeys.source.pubkey,
+      destination: ikeys.destination.pubkey,
+      owner: ikeys.owner.pubkey,
+      // Todo: use back bigint
+      amount: Number(decoded.data.amount),
     };
     return { type, data: params };
   }
-  if ("approveChecked" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.ApproveChecked) {
     const type = "approveChecked";
+    const ikeys = (decoded as DecodedApproveCheckedInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      delegate: instruction.keys[2].pubkey,
-      owner: instruction.keys[3].pubkey,
-      amount: decodedData.approveChecked.amount.toNumber(),
+      account: ikeys.account.pubkey,
+      delegate: ikeys.delegate.pubkey,
+      owner: ikeys.owner.pubkey,
+      amount: decoded.data.amount,
     };
     return { type, data: params };
   }
-  if ("mintToChecked" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.MintToChecked) {
     const type = "mintToChecked";
+    const ikeys = (decoded as DecodedMintToCheckedInstruction).keys;
     const params = {
-      mint: instruction.keys[0].pubkey,
-      destination: instruction.keys[1].pubkey,
-      mintAuthority: instruction.keys[2].pubkey,
-      amount: decodedData.mintToChecked.amount.toNumber(),
+      mint: ikeys.mint.pubkey,
+      destination: ikeys.destination.pubkey,
+      authority: ikeys.authority.pubkey,
+      amount: decoded.data.amount,
     };
     return { type, data: params };
   }
-  if ("burnChecked" in decodedData) {
+  if (decoded.data.instruction === TokenInstruction.BurnChecked) {
     const type = "burnChecked";
+    const ikeys = (decoded as DecodedBurnCheckedInstruction).keys;
     const params = {
-      source: instruction.keys[0].pubkey,
-      mint: instruction.keys[1].pubkey,
-      owner: instruction.keys[2].pubkey,
-      amount: decodedData.burnChecked.amount.toNumber(),
+      account: ikeys.account.pubkey,
+      mint: ikeys.mint.pubkey,
+      owner: ikeys.owner.pubkey,
+      amount: decoded.data.amount,
     };
     return { type, data: params };
   }
@@ -337,10 +330,33 @@ export const constructTokenData = (
   // reconstruct Transaction as transaction object function is not accessible
   const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
 
+  // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
+  let intrestedInstructionidx = 0;
+  const instructionLength = instructions.length;
+
+  if (instructionLength > 1 && instructionLength <= 3) {
+    const createInstructionIdx = instructions.findIndex((inst) => {
+      if (inst.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID)) {
+        return inst.data.length === 0;
+      }
+      return false;
+    });
+    if (createInstructionIdx >= 0) {
+      const transferIdx = instructions.findIndex((inst) => {
+        if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
+          const parseInst = decodeTokenInstruction(inst);
+          return ["transfer", "transferChecked"].includes(parseInst.type);
+        }
+        return false;
+      });
+      intrestedInstructionidx = transferIdx;
+    }
+  }
+
   // Expect SPL token transfer transaction have only 1 instruction
-  if (instructions.length === 1) {
-    if (TOKEN_PROGRAM_ID.equals(instructions[0].programId)) {
-      const decoded = decodeTokenInstruction(instructions[0]);
+  if (instructions.length === 1 || intrestedInstructionidx > 0) {
+    if (TOKEN_PROGRAM_ID.equals(instructions[intrestedInstructionidx].programId)) {
+      const decoded = decodeTokenInstruction(instructions[intrestedInstructionidx]);
       // There are transfer and transferChecked type
       if (decoded.type.includes("transfer")) {
         const from = new PublicKey(decoded.data.source || "").toBase58();

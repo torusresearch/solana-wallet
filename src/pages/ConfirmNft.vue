@@ -43,15 +43,8 @@ watch(selectedNft, async () => {
 async function confirmTransfer() {
   await delay(500);
   try {
-    if (selectedNft.value) {
-      const splTransaction = await generateSPLTransaction(
-        params.receiver_add,
-        1,
-        selectedNft.value,
-        ControllerModule.selectedAddress,
-        ControllerModule.connection
-      );
-      const res = await ControllerModule.torus.transfer(splTransaction);
+    if (selectedNft.value && transaction.value) {
+      const res = await ControllerModule.torus.transfer(transaction.value);
       redirectToResult(jsonrpc, { signature: res, success: true, method }, req_id, resolveRoute);
     } else redirectToResult(jsonrpc, { message: "Selected NFT not found", success: false, method }, req_id, resolveRoute);
   } catch (error) {

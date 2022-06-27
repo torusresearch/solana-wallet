@@ -1,6 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { NameRegistryState } from "@bonfida/spl-name-service";
-import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
+import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -23,7 +22,6 @@ import {
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
@@ -214,7 +212,7 @@ class ControllerModule extends VuexModule {
       return this.userTokens
         .reduce((acc: SolanaToken[], current: SolanaToken) => {
           const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
+          if (current.balance?.decimals !== 0 && data) {
             return [
               ...acc,
               {
@@ -298,18 +296,9 @@ class ControllerModule extends VuexModule {
   @Action
   public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
     try {
-      const pda = await Metadata.getPDA(mint_address);
-      const { connection } = this;
-      const pdaInfo = await connection.getAccountInfo(pda);
-      if (pdaInfo) {
-        const metadata = new Metadata(pda, pdaInfo);
-        const response = await get(metadata.data.data.uri);
-        return {
-          ...metadata.data.data,
-          offChainMetaData: response as NFTInfo["offChainMetaData"],
-        };
-      }
-      throw new Error();
+      const token = await this.torus.fetchMetaPlexNft([mint_address]);
+      log.info({ token });
+      return token[mint_address];
     } catch (error) {
       return undefined;
     }

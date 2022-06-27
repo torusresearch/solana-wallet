@@ -4,11 +4,15 @@ import { Loader } from "@toruslabs/vue-components/common";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import Landing from "@/assets/auth/landing.svg";
+import DiscordLoginImage from "@/assets/auth/login-discord.svg";
+import FacebookLoginImage from "@/assets/auth/login-facebook.svg";
+import GoogleLoginImage from "@/assets/auth/login-google.svg";
+import TwitterLoginImage from "@/assets/auth/login-twitter.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import TorusLogoURL from "@/assets/torus-logo.svg";
@@ -23,6 +27,44 @@ import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers
 
 const { isRedirectFlow, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
+const socialLoginOptions = [
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_GOOGLE,
+    loginType: LOGIN_PROVIDER.GOOGLE,
+    imageHeight: "24px",
+    imageClass: "w-6 mr-2",
+    divClass: "col-span-3",
+    imageSrc: GoogleLoginImage,
+    imgAltText: "Login with Google",
+    buttonLoginText: true,
+    translateLoginText: "dappLogin.continue",
+    verifier: "Google",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_FACEBOOK,
+    loginType: LOGIN_PROVIDER.FACEBOOK,
+    imageSrc: FacebookLoginImage,
+    imgAltText: "Login with Facebook",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_TWITTER,
+    loginType: LOGIN_PROVIDER.TWITTER,
+    imageSrc: TwitterLoginImage,
+    imgAltText: "Login with Twitter",
+  },
+  {
+    googleAnalyticsTag: LoginInteractions.LOGIN_DISCORD,
+    loginType: LOGIN_PROVIDER.DISCORD,
+    imageSrc: DiscordLoginImage,
+    imgAltText: "Login with Discord",
+  },
+];
+const footerSupportLinks = [
+  { href: "https://docs.tor.us/legal/terms-and-conditions", translateText: "dappLogin.termsConditions" },
+  { href: "https://docs.tor.us/legal/privacy-policy", translateText: "dappLogin.privacyPolicy" },
+  { href: "https://t.me/TorusLabs", translateText: "dappLogin.contactUs" },
+];
+
 const { t } = useI18n();
 const router = useRouter();
 const userEmail = ref("");
@@ -35,11 +77,17 @@ const rules = computed(() => {
 });
 const $v = useVuelidate(rules, { userEmail });
 
-const hasPrivateKey = computed(() => ControllerModule.hasSelectedPrivateKey);
+const hasSelectedPrivateKey = computed(() => ControllerModule.hasSelectedPrivateKey);
 const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
-watch(hasPrivateKey, () => {
-  if (hasPrivateKey.value && !isRedirectFlow) router.push("/wallet/home");
+onMounted(() => {
+  if (hasSelectedPrivateKey.value && isRedirectFlow) {
+    redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
+  }
+});
+
+watch(hasSelectedPrivateKey, () => {
+  if (hasSelectedPrivateKey.value && !isRedirectFlow) router.push("/wallet/home");
 });
 
 const saveLoginStateToWindow = (value: boolean): void => {
@@ -47,7 +95,6 @@ const saveLoginStateToWindow = (value: boolean): void => {
     window.loginInProgress = value;
   }
 };
-
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string) => {
   try {
     isLoading.value = true;
@@ -93,43 +140,37 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-12 w-full">
         <div class="col-start-2 col-end-12 xl:col-start-3 xl:col-end-10">
-          <img class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
+          <img height="1.5rem" width="auto" class="block mb-4 h-6 w-auto" :src="app.isDarkMode ? TorusLogoLightURL : TorusLogoURL" alt="Torus Logo" />
           <div class="flex items-center border-b w-56 pb-4 mb-9">
             <div class="mr-2 text-base text-app-text-500 dark:text-app-text-dark-500">
               {{ t("dappLogin.buildOn") }}
             </div>
-            <img class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+            <img height="12px" width="auto" class="h-3 w-auto" :src="app.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
           </div>
           <div class="font-header text-app-text-500 dark:text-app-text-dark-400 text-3xl mb-4" :style="{ maxWidth: '360px' }">
             {{ t("login.title") }}
           </div>
           <div class="grid grid-cols-3 gap-2 w-full">
-            <div class="col-span-3">
-              <Button v-ga="LoginInteractions.LOGIN_GOOGLE" variant="tertiary" :block="true" class="w-full" @click="onLogin('google')"
-                ><img class="w-6 mr-2" src="https://app.tor.us/v1.13.2/img/login-google.aca78493.svg" alt="" />{{
-                  t("dappLogin.continue", { verifier: "Google" })
-                }}</Button
-              >
-            </div>
-            <div class="col-span-1">
-              <Button v-ga="LoginInteractions.LOGIN_FACEBOOK" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('facebook')">
-                <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-facebook.14920ebc.svg" alt="" />
-              </Button>
-            </div>
-            <div class="col-span-1">
-              <Button v-ga="LoginInteractions.LOGIN_TWITTER" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('twitter')">
-                <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-twitter.9caed22d.svg" alt="" />
-              </Button>
-            </div>
-            <div class="col-span-1">
-              <Button v-ga="LoginInteractions.LOGIN_DISCORD" variant="tertiary" icon :block="true" class="w-full" @click="onLogin('discord')">
-                <img class="w-6" src="https://app.tor.us/v1.13.2/img/login-discord.8a29d113.svg" alt="" />
-              </Button>
-            </div>
+            <template v-for="loginButton in socialLoginOptions" :key="loginButton.loginType">
+              <div :class="loginButton.divClass || `col-span-1`">
+                <Button :v-ga="loginButton.googleAnalyticsTag" variant="tertiary" :block="true" class="w-full" @click="onLogin(loginButton.loginType)"
+                  ><img
+                    width="1.5rem"
+                    :height="loginButton.imageHeight || `auto`"
+                    :class="loginButton.imageClass || `w-6 mr-2`"
+                    :src="loginButton.imageSrc"
+                    :alt="loginButton.imgAltText"
+                  />
+                  <template v-if="loginButton.buttonLoginText">
+                    {{ t(loginButton.translateLoginText, { verifier: loginButton.verifier }) }}
+                  </template>
+                </Button>
+              </div>
+            </template>
           </div>
           <div class="mt-3 relative w-full">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-app-text-400" />
+              <div class="w-full border-t border-app-text-400"></div>
             </div>
             <div class="relative flex justify-center text-sm">
               <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
@@ -166,13 +207,9 @@ const onEmailLogin = () => {
           </div>
 
           <div class="space-x-3">
-            <a class="text-xs text-app-primary-500" href="https://docs.tor.us/legal/terms-and-conditions" target="_blank">{{
-              t("dappLogin.termsConditions")
-            }}</a>
-            <a class="text-xs text-app-primary-500" href="https://docs.tor.us/legal/privacy-policy" target="_blank">{{
-              t("dappLogin.privacyPolicy")
-            }}</a>
-            <a class="text-xs text-app-primary-500" href="https://t.me/TorusLabs" target="_blank">{{ t("dappLogin.contactUs") }}</a>
+            <template v-for="footerSupportLink in footerSupportLinks" :key="footerSupportLink.translateText">
+              <a class="text-xs text-app-primary-500" :href="footerSupportLink.href" target="_blank">{{ t(footerSupportLink.translateText) }}</a>
+            </template>
           </div>
         </div>
       </div>
@@ -180,7 +217,7 @@ const onEmailLogin = () => {
     <div class="col-span-6 md:col-span-2 lg:col-span-3 h-full flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
-          <img :src="Landing" alt="" />
+          <img width="500" height="auto" :src="Landing" alt="Landing page" />
           <div class="font-header text-xl mb-2">
             {{ t("dappLogin.sendReceive") }}
           </div>

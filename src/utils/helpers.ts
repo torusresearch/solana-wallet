@@ -451,8 +451,8 @@ export async function calculateChanges(
     returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selectedAddress });
   }
 
-  // calcualte token account changes
-  // compare post token account with currenc token account.
+  // calculate token account changes
+  // compare post token account with current token account.
   postTokenDetails.forEach(async (item, idx) => {
     const mint = item.mint.toBase58();
     const symbol = addressSlicer(item.mint.toBase58());
@@ -500,7 +500,7 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Trans
   } catch (e) {
     log.warn(e);
     // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
-    throw new Error("Failed to simulate transaction for balance change");
+    throw new Error("Failed to simulate transaction for balance change", e as Error);
   }
 }
 
