@@ -248,8 +248,9 @@ const generateTransaction = async (amount: number): Promise<Transaction> => {
       toPubkey: new PublicKey(resolvedAddress.value),
       lamports: amount * LAMPORTS_PER_SOL,
     });
+    const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
     transaction.value = new Transaction({
-      blockhash: blockhash.value,
+      blockhash: latestBlockhash.blockhash,
       lastValidBlockHeight: lastValidBlockHeight.value,
       feePayer: new PublicKey(ControllerModule.selectedAddress),
     }).add(instuctions);
