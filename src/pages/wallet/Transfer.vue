@@ -15,8 +15,8 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, ruleVerifierId } from "@/utils/helpers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { delay, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/helpers";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 const { t } = useI18n();
 
@@ -39,6 +39,7 @@ const transferTo = computed({
 });
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
+const transaction = ref<Transaction>();
 const transactionFee = ref(0);
 const blockhash = ref("");
 const lastValidBlockHeight = ref(0);
@@ -46,6 +47,11 @@ const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
 const isCurrencyFiat = ref(false);
+
+const hasEstimationError = ref("");
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
+const estimationInProgress = ref(true);
+
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const solConversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
@@ -212,6 +218,44 @@ const rules = computed(() => {
 });
 
 const $v = useVuelidate(rules, { transferTo, sendAmount });
+/**
+ * converts the fiatValue from selected fiat currency to selected crypto currency
+ * @param fiatValue - amount of fiat
+ */
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
+const generateTransaction = async (amount: number): Promise<Transaction> => {
+  if (selectedToken?.value?.mintAddress) {
+    // SPL TRANSFER
+    transaction.value = await generateSPLTransaction(
+      resolvedAddress.value,
+      amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
+      selectedToken.value as SolAndSplToken,
+      ControllerModule.selectedAddress,
+      ControllerModule.connection
+    );
+  } else {
+    // SOL TRANSFER
+    const instuctions = SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
+      toPubkey: new PublicKey(resolvedAddress.value),
+      lamports: amount * LAMPORTS_PER_SOL,
+    });
+    transaction.value = new Transaction({
+      blockhash: blockhash.value,
+      lastValidBlockHeight: lastValidBlockHeight.value,
+      feePayer: new PublicKey(ControllerModule.selectedAddress),
+    }).add(instuctions);
+  }
+  return transaction.value;
+};
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -234,9 +278,24 @@ const onMessageModalClosed = () => {
 const closeModal = () => {
   isOpen.value = false;
   trackUserClick(TransferPageInteractions.CANCEL);
+  hasEstimationError.value = "";
+  estimatedBalanceChange.value = [];
+};
+
+const estimateChanges = async (tx: Transaction) => {
+  estimationInProgress.value = true;
+  try {
+    estimatedBalanceChange.value = await getEstimateBalanceChange(ControllerModule.torus.connection, tx, ControllerModule.selectedAddress);
+    hasEstimationError.value = "";
+  } catch (e) {
+    hasEstimationError.value = "Unable estimate balance changes";
+    log.info("Error in transaction simulation", e);
+  }
+  estimationInProgress.value = false;
 };
 
 const openModal = async () => {
+  transferDisabled.value = true;
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
   await $v.value.$validate();
@@ -255,53 +314,24 @@ const openModal = async () => {
   }
 
   // This can't be guarantee
-  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee();
+
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
+  transaction.value = await generateTransaction(amount);
+  estimateChanges(transaction.value);
+  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee(transaction.value.compileMessage());
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
 
-/**
- * converts the fiatValue from selected fiat currency to selected crypto currency
- * @param fiatValue - amount of fiat
- */
-function convertFiatToCrypto(fiatValue = 1) {
-  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
-  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
-  if (selectedCrypto === "sol") {
-    return fiatValue / solConversionRate.value;
-  }
-  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
-}
-
 const confirmTransfer = async () => {
   trackUserClick(TransferPageInteractions.CONFIRM);
-  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
-    if (selectedToken?.value?.mintAddress) {
-      // SPL TRANSFER
-      await ControllerModule.torus.transferSpl(
-        resolvedAddress.value,
-        amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken.value as SolAndSplToken
-      );
-    } else {
-      // SOL TRANSFER
-      const instuctions = SystemProgram.transfer({
-        fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(resolvedAddress.value),
-        lamports: amount * LAMPORTS_PER_SOL,
-      });
-      const tx = new Transaction({
-        blockhash: blockhash.value,
-        lastValidBlockHeight: lastValidBlockHeight.value,
-        feePayer: new PublicKey(ControllerModule.selectedAddress),
-      }).add(instuctions);
-      await ControllerModule.torus.transfer(tx);
-    }
+    if (!transaction.value) throw new Error("Invalid Transaction");
+    await ControllerModule.torus.transfer(transaction.value);
     // resetForm();
     transferConfirmed.value = true;
     showMessageModal({
@@ -468,6 +498,9 @@ watch([tokens, nftTokens], () => {
       :is-open="isOpen && selectedToken.isFungible"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-cancel="closeModal"
       @on-close-modal="closeModal"
