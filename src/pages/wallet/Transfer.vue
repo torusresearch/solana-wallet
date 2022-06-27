@@ -407,7 +407,6 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
 watch(
   transferTo,
   debounce(() => {
-    log.info(transferTo.value);
     if (/\.sol$/g.test(transferTo.value)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
     snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
     transferToInternal.value = transferTo.value;
