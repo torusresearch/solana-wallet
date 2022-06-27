@@ -184,7 +184,7 @@ export const DEFAULT_STATE = {
     tokenInfoMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
-    unknownTokenInfo: [],
+    unknownSPLTokenInfo: [],
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -556,6 +556,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.error(JSON.stringify(await err.json()));
       throw new Error("Unable to import token");
     }
+  }
+
+  async fetchMetaPlexNft(nftMintAddress: string[]) {
+    return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
   }
 
   setOrigin(origin: string): void {

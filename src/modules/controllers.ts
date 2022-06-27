@@ -1,5 +1,4 @@
 /* eslint-disable class-methods-use-this */
-import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
 import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
@@ -23,7 +22,6 @@ import {
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
@@ -298,18 +296,9 @@ class ControllerModule extends VuexModule {
   @Action
   public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
     try {
-      const pda = await Metadata.getPDA(mint_address);
-      const { connection } = this;
-      const pdaInfo = await connection.getAccountInfo(pda);
-      if (pdaInfo) {
-        const metadata = new Metadata(pda, pdaInfo);
-        const response = await get(metadata.data.data.uri);
-        return {
-          ...metadata.data.data,
-          offChainMetaData: response as NFTInfo["offChainMetaData"],
-        };
-      }
-      throw new Error();
+      const token = await this.torus.fetchMetaPlexNft([mint_address]);
+      log.info({ token });
+      return token[mint_address];
     } catch (error) {
       return undefined;
     }
