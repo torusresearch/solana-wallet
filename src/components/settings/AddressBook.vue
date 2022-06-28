@@ -9,7 +9,7 @@ import { useI18n } from "vue-i18n";
 
 import { Button, SelectField, TextField } from "@/components/common";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, TransferType } from "@/utils/enums";
-import { ruleVerifierId } from "@/utils/helpers";
+import { ruleVerifierId } from "@/utils/solanaHelpers";
 
 const { t } = useI18n();
 const searchFilter = ref("");

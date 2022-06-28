@@ -6,8 +6,9 @@ import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper"
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, generateSPLTransaction } from "../utils/helpers";
+import { delay } from "../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { generateSPLTransaction } from "../utils/solanaHelpers";
 
 const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 

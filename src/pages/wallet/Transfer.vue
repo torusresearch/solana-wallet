@@ -16,8 +16,9 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/helpers";
+import { delay } from "@/utils/helpers";
 import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
+import { generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/solanaHelpers";
 
 const { t } = useI18n();
 

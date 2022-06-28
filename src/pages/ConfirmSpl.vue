@@ -6,8 +6,9 @@ import { tokens } from "@/components/transfer/token-helper";
 import TransferSPL from "@/components/transfer/TransferSPL.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, generateSPLTransaction } from "../utils/helpers";
+import { delay } from "../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { generateSPLTransaction } from "../utils/solanaHelpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
 
