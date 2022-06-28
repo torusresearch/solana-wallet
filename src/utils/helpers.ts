@@ -237,7 +237,7 @@ export async function recordDapp(origin: string) {
       platform: browser.getPlatform().type || "desktop",
       origin,
     };
-    await post(`${config.api}/dapps/record`, { ...recordLoginPayload });
+    post(`${config.api}/dapps/record`, { ...recordLoginPayload });
   } catch (e) {
     log.error(e, "ERROR RECORDING DAPP");
   }

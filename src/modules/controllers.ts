@@ -515,7 +515,6 @@ class ControllerModule extends VuexModule {
 
     try {
       window.localStorage?.removeItem(`${EPHERMAL_KEY}`);
-      window.sessionStorage?.removeItem(`${EPHERMAL_KEY}`);
     } catch (error) {
       log.error(new Error("LocalStorage unavailable"));
     }

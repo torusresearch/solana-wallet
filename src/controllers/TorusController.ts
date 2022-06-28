@@ -1296,8 +1296,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       // session should be priority and there should be only one login in one browser tab session
-      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
       window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+      // window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
 
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
@@ -1309,6 +1309,59 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
+  // async getOrSetUserMap(privKey: string) {
+  //   const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(privKey, "hex") });
+
+  //   const decryptedState = metadata as OpenLoginBackendState;
+
+  //   if (!decryptedState.privateKey) {
+  //     throw new Error("Private key not found in state");
+  //   }
+  //   log.info("try to restore key");
+  //   try {
+  //     // populate accounts
+  //     const userDapp = new Map();
+  //     const accountPromise = decryptedState.accounts.map(async (account) => {
+  //       userDapp.set(account.address, account.app);
+
+  //       let address;
+  //       if (this.preferencesController.state.identities[account.address]) {
+  //         // Try key restore with session state (localstorage) intact.
+  //         log.info("login without userinfo, use prefrence controller state");
+  //         // Restore keyringController only ( no Sync / initPreferenes )
+  //         address = await this.addAccount(account.solanaPrivKey);
+
+  //         const jwt = this.preferencesController.state.identities[address]?.jwtToken;
+
+  //         if (jwt) {
+  //           const expire = parseJwt(jwt).exp;
+  //           if (expire < Date.now() / 1000) {
+  //             // required to set selectedAddress before jwt refresh
+  //             this.preferencesController.setSelectedAddress(address);
+  //             await this.refreshJwt();
+  //           }
+  //         }
+  //       } else {
+  //         log.info("login with userinfo, redo solana backend login");
+  //         address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo);
+  //       }
+  //       return address;
+  //     });
+
+  //     this.update({ UserDapp: userDapp });
+
+  //     // find previous selected account
+  //     const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
+  //     const selectedAddress = await accountPromise[selectedIndex];
+  //     // This call sync and refresh blockchain state
+  //     this.setSelectedAccount(selectedAddress, true);
+
+  //     return true;
+  //   } catch (e) {
+  //     log.error(e, "Error restoring state after successful decrypt!");
+  //   }
+  // }
+
   async restoreFromBackend(): Promise<boolean> {
     // has selected keypair (logged in)
     if (this.hasSelectedPrivateKey) {
@@ -1317,22 +1370,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
-      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
-      const value = sessionKey || localKey;
 
-      // Saving to SessionStorage - user refresh with restored key
-      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
-
-      const keyState: KeyState =
-        typeof value === "string"
-          ? JSON.parse(value)
-          : {
-              priv_key: "",
-              pub_key: "",
-            };
-
-      if (keyState.priv_key && keyState.pub_key) {
-        const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
+      const privKey: string = JSON.parse(localKey as string)?.priv_key;
+      if (privKey) {
+        const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(privKey, "hex") });
 
         const decryptedState = metadata as OpenLoginBackendState;
 
