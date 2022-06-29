@@ -46,7 +46,7 @@ export async function restoreOrlogout() {
   if (!result) ControllerModule.setLogoutRequired(true);
 }
 
-export async function beforeEachResolve(to: RouteLocationNormalized) {
+export async function beforeEachResolver(to: RouteLocationNormalized) {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
   const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
@@ -56,21 +56,21 @@ export async function beforeEachResolve(to: RouteLocationNormalized) {
     return { name: "404", query: to.query, hash: to.hash };
   }
   if (authMeta === AuthStates.AUTHENTICATED) {
-    // user tried to access a authenticated route without being authenticated
+    // User tried to access a authenticated route without being authenticated
     if (!isLoggedIn() && !isRedirectFlow) {
       return "/login";
     }
-    // restore will skip if keypair is exist in restore function
+    // Restore will skip if keypair is exist in restore function
     restoreOrlogout();
-    // route is authenticated and so is user, good to go
+    // Route is authenticated and so is user, good to go
     config({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
   } else if (authMeta === AuthStates.NON_AUTHENTICATED) {
-    // user tried to access a un-authenticated route being authenticated
+    // User tried to access a un-authenticated route being authenticated
     if (isLoggedIn() && !isRedirectFlow) {
       return "/";
     }
 
-    // route is non-authenticated and so is user, good to go
+    // Route is non-authenticated and so is user, good to go
     config({ user_id: `notLoggedIn_${getBrowserKey()}` });
   }
   return true;
@@ -242,18 +242,19 @@ export const walletRoutes = [
 ];
 
 const isSolanaBackendUrl = (apiUrl: string) => {
-  // should only refresh jwt if our backend api throws 403 error
+  // Should only refresh JWT if our backend api throws 403 error
   return appConfig.api === new URL(apiUrl)?.origin;
 };
 
-// token refresh logic
-// will intercept each outgoing fetch call and refresh token when it 403 thrown from our backend
+// JWT refresh logic
+// Will intercept each outgoing fetch call and refresh token when it 403 thrown from our backend
 const { fetch: originalFetch } = window;
 window.fetch = async (...args) => {
   const [resource, routerConfig] = args;
   const response = await originalFetch(resource, routerConfig);
-  // if token is expired api throws 403 error
+  // If token is expired api throws 403 error
   if (response.status === 403 && isSolanaBackendUrl(response.url)) {
+    // Refresh JWT token
     await ControllerModule.torus.refreshJwt();
   }
   return response;
