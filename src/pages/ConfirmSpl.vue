@@ -6,7 +6,7 @@ import { tokens } from "@/components/transfer/token-helper";
 import TransferSPL from "@/components/transfer/TransferSPL.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, generateSPLTransaction } from "../utils/helpers";
+import { calculateTxFee, delay, generateSPLTransaction } from "../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
@@ -37,7 +37,7 @@ watch(selectedSplToken, async () => {
       ControllerModule.connection
     );
 
-    const { fee } = await ControllerModule.torus.calculateTxFee(transaction.value.compileMessage());
+    const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }
 });

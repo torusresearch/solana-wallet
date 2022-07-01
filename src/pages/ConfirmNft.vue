@@ -6,7 +6,7 @@ import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper"
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../modules/controllers";
-import { delay, generateSPLTransaction } from "../utils/helpers";
+import { calculateTxFee, delay, generateSPLTransaction } from "../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
 
 const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
@@ -35,7 +35,7 @@ watch(selectedNft, async () => {
       ControllerModule.connection
     );
 
-    const { fee } = await ControllerModule.torus.calculateTxFee(transaction.value.compileMessage());
+    const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }
 });
