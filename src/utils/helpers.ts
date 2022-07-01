@@ -9,10 +9,20 @@ import {
   RawMint,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { Connection, LAMPORTS_PER_SOL, PublicKey, SimulatedTransactionResponse, Transaction } from "@solana/web3.js";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  Message,
+  PublicKey,
+  SimulatedTransactionResponse,
+  SystemInstruction,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import { addressSlicer, concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
+import BigNumber from "bignumber.js";
 import bowser from "bowser";
 import copyToClipboard from "copy-to-clipboard";
 import { ecsign, keccak, privateToAddress, toBuffer } from "ethereumjs-util";
@@ -22,7 +32,8 @@ import config from "@/config";
 import { addToast } from "@/modules/app";
 
 import { DISCORD, GITHUB, GOOGLE, LOCALE_EN, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
-import { AccountEstimation, ClubbedNfts, SolAndSplToken } from "./interfaces";
+import { DecodedDataType, decodeInstruction } from "./instruction_decoder";
+import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -491,4 +502,68 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Trans
     // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
     throw new Error("Failed to simulate transaction for balance change", e as Error);
   }
+}
+
+export async function calculateTxFee(message: Message, connection: Connection): Promise<{ blockHash: string; fee: number; height: number }> {
+  const latestBlockHash = await connection.getLatestBlockhash("finalized");
+  const blockHash = latestBlockHash.blockhash;
+  const height = latestBlockHash.lastValidBlockHeight;
+  const fee = await connection.getFeeForMessage(message);
+  return { blockHash, fee: fee.value, height };
+}
+
+export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
+  const decoded: DecodedDataType[] = [];
+  (messages as string[]).forEach((msg) => {
+    let tx2: Transaction;
+    if (messageOnly) {
+      tx2 = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
+    } else {
+      tx2 = Transaction.from(Buffer.from(msg, "hex"));
+    }
+    tx2.instructions.forEach((inst) => {
+      decoded.push(decodeInstruction(inst));
+    });
+  });
+  return decoded;
+}
+
+export function parsingTransferAmount(tx: Transaction, txFee: number, isGasless: boolean): FinalTxData | undefined {
+  if (tx.instructions.length > 1) return undefined;
+  if (!tx.instructions[0].programId.equals(SystemProgram.programId)) return undefined;
+  if (SystemInstruction.decodeInstructionType(tx.instructions[0]) !== "Transfer") return undefined;
+  const decoded = tx.instructions.map((inst) => {
+    const decoded_inst = SystemInstruction.decodeTransfer(inst);
+    return decoded_inst;
+  });
+
+  const from = decoded[0].fromPubkey;
+  const to = decoded[0].toPubkey;
+
+  const txAmount = decoded[0].lamports;
+
+  const totalSolCost = new BigNumber(txFee).plus(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL);
+  const finalTxData: FinalTxData = {
+    slicedSenderAddress: "",
+    slicedReceiverAddress: "",
+    totalSolAmount: 0,
+    totalSolFee: 0,
+    totalFiatAmount: "",
+    totalFiatFee: "",
+    transactionType: "",
+    totalSolCost: "",
+    totalFiatCost: "",
+    isGasless: false,
+  };
+
+  finalTxData.slicedSenderAddress = addressSlicer(from.toBase58());
+  finalTxData.slicedReceiverAddress = addressSlicer(to.toBase58());
+  finalTxData.totalSolAmount = new BigNumber(new BigNumber(txAmount.toString())).div(LAMPORTS_PER_SOL).toNumber();
+  finalTxData.totalSolFee = new BigNumber(txFee).div(LAMPORTS_PER_SOL).toNumber();
+
+  finalTxData.totalSolCost = totalSolCost.toString();
+  finalTxData.transactionType = "";
+  finalTxData.isGasless = isGasless;
+
+  return finalTxData;
 }

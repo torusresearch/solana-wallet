@@ -587,14 +587,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async calculateTxFee(message: Message): Promise<{ blockHash: string; fee: number; height: number }> {
-    const latestBlockHash = await this.connection.getLatestBlockhash("finalized");
-    const blockHash = latestBlockHash.blockhash;
-    const height = latestBlockHash.lastValidBlockHeight;
-    const fee = await this.connection.getFeeForMessage(message);
-    return { blockHash, fee: fee.value, height };
-  }
-
   async approveSignTransaction(txId: string): Promise<void> {
     await this.txController.approveSignTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }
@@ -1195,9 +1187,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public async triggerLogin({
     loginProvider,
     login_hint,
+    waitSaving,
   }: {
     loginProvider: LOGIN_PROVIDER_TYPE;
     login_hint?: string;
+    waitSaving?: boolean;
   }): Promise<OpenLoginPopupResponse> {
     try {
       const handler = new OpenLoginHandler({
@@ -1230,7 +1224,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // save to openloginState backend
       if (!this.hasSelectedPrivateKey || !this.privateKey) throw new Error("Wallet Error: Invalid private key ");
-      this.saveToOpenloginBackend({ privateKey: this.privateKey, publicKey: this.selectedAddress, userInfo, accounts: targetAccount });
+      const saveToOpenLogin = this.saveToOpenloginBackend({
+        privateKey: this.privateKey,
+        publicKey: this.selectedAddress,
+        userInfo,
+        accounts: targetAccount,
+      });
+      if (waitSaving) await saveToOpenLogin;
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
@@ -1295,15 +1295,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      // session should be priority and there should be only one login in one browser tab session
-      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
         privKey: new BN(ecc_privateKey),
       });
+      // session should be priority and there should be only one login in one browser tab session
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
     } catch (error) {
       log.error(error, "Error saving state!");
     }
