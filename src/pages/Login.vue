@@ -4,7 +4,7 @@ import { Loader } from "@toruslabs/vue-components/common";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import log from "loglevel";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
@@ -76,12 +76,20 @@ const rules = computed(() => {
   };
 });
 const $v = useVuelidate(rules, { userEmail });
-const selectedAddress = computed(() => ControllerModule.hasSelectedPrivateKey);
-watch(selectedAddress, () => {
-  if (selectedAddress.value && isRedirectFlow)
+
+const hasSelectedPrivateKey = computed(() => ControllerModule.hasSelectedPrivateKey);
+const selectedAddress = computed(() => ControllerModule.selectedAddress);
+
+onMounted(() => {
+  if (hasSelectedPrivateKey.value && isRedirectFlow) {
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
-  else if (selectedAddress.value && !isRedirectFlow) router.push("/wallet/home");
+  }
 });
+
+watch(hasSelectedPrivateKey, () => {
+  if (hasSelectedPrivateKey.value && !isRedirectFlow) router.push("/wallet/home");
+});
+
 const saveLoginStateToWindow = (value: boolean): void => {
   if (typeof window !== "undefined") {
     window.loginInProgress = value;
@@ -94,6 +102,7 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, emailString?: string)
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: emailString,
+      waitSaving: isRedirectFlow,
     });
     const redirect = new URLSearchParams(window.location.search).get("redirectTo"); // set by the router
     if (redirect) router.push(`${redirect}?resolveRoute=${resolveRoute}${window.location.hash}`);

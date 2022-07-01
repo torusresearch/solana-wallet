@@ -154,29 +154,65 @@ const router = createRouter({
       meta: { title: "redirecting" },
     },
     {
-      name: "redirectflow",
+      name: "redirectflowMain",
       path: "/redirectflow",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
-      meta: { title: "redirecting" },
-      beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
-        const { method = "" } = getB64DecodedData(to.hash);
-        const resolveRoute = (to.query.resolveRoute as string) || "";
-        const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
-        if (!resolveRoute || !method) return next({ name: "404", query: to.query, hash: to.hash });
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/Empty.vue"),
+      children: [
+        {
+          name: "redirectflow",
+          path: "",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
+          beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+            const { method = "" } = getB64DecodedData(to.hash);
+            const resolveRoute = (to.query.resolveRoute as string) || "";
+            const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
+            if (!resolveRoute || !method) return next({ name: "404", query: to.query, hash: to.hash });
 
-        await ControllerModule.torus.restoreFromBackend();
-        if (!ControllerModule.hasSelectedPrivateKey && requiresLogin)
-          return next({
-            name: "login",
-            query: {
-              redirectTo: shouldRedirect ? redirectPath : "/redirectflow",
-              resolveRoute,
-            },
-            hash: to.hash,
-          });
-        if (shouldRedirect) return next(`${redirectPath}?resolveRoute=${resolveRoute}${to.hash}`);
-        return next();
-      },
+            await ControllerModule.torus.restoreFromBackend();
+            if (!ControllerModule.hasSelectedPrivateKey && requiresLogin)
+              return next({
+                name: "login",
+                query: {
+                  redirectTo: shouldRedirect ? redirectPath : "/redirectflow",
+                  resolveRoute,
+                },
+                hash: to.hash,
+              });
+            if (shouldRedirect) return next(`${redirectPath}?resolveRoute=${resolveRoute}${to.hash}`);
+            return next();
+          },
+        },
+        {
+          name: "redirect_confirm",
+          path: "confirm",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM" */ "@/pages/redirectflow/Confirm.vue"),
+          meta: { title: "Confirm" },
+        },
+        {
+          name: "redirect_confirm_nft",
+          path: "confirm_nft",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_NFT" */ "@/pages/redirectflow/ConfirmNft.vue"),
+          meta: { title: "Confirm Nft" },
+        },
+        {
+          name: "redirect_confirm_spl",
+          path: "confirm_spl",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_SPL" */ "@/pages/redirectflow/ConfirmSpl.vue"),
+          meta: { title: "Confirm Spl" },
+        },
+        {
+          name: "redirect_confirm_message",
+          path: "confirm_message",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "CONFIRM_MESSAGE" */ "@/pages/redirectflow/ConfirmMessage.vue"),
+          meta: { title: "Sign Message" },
+        },
+        {
+          name: "redirect_providerchange",
+          path: "providerchange",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROVIDER_CHANGE" */ "@/pages/redirectflow/ProviderChange.vue"),
+          meta: { title: "ProviderChange" },
+        },
+      ],
     },
     {
       name: "providerchange",

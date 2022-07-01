@@ -452,10 +452,18 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+  async triggerLogin({
+    loginProvider,
+    login_hint,
+    waitSaving,
+  }: {
+    loginProvider: LOGIN_PROVIDER_TYPE;
+    login_hint?: string;
+    waitSaving?: boolean;
+  }): Promise<void> {
     this.setLogoutRequired(false);
     // do not need to restore beyond login
-    await this.torus.triggerLogin({ loginProvider, login_hint });
+    await this.torus.triggerLogin({ loginProvider, login_hint, waitSaving });
   }
 
   @Action
@@ -630,10 +638,12 @@ class ControllerModule extends VuexModule {
         res = { pubkey: await this.torus.getGaslessPublicKey() };
         break;
       case "get_accounts":
-        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        res = [this.selectedAddress];
         break;
       case "solana_request_accounts":
-        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        res = [this.selectedAddress];
         break;
       case "nft_list":
         await delay(15000);

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
-import { BroadcastChannel } from "@toruslabs/broadcast-channel";
+import { Message, Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -11,8 +9,11 @@ import { TransactionChannelDataType } from "@/utils/enums";
 import { calculateTxFee, decodeAllInstruction, hideCrispButton, openCrispChat, parsingTransferAmount } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 import { FinalTxData } from "@/utils/interfaces";
+import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
 
-const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+import ControllerModule from "../../modules/controllers";
+
+const { params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 
 const finalTxData = ref<FinalTxData>();
 
@@ -26,8 +27,19 @@ onErrorCaptured(() => {
 onMounted(async () => {
   hideCrispButton();
   try {
-    const bcHandler = new BroadcastChannelHandler(BROADCAST_CHANNELS.TRANSACTION_CHANNEL);
-    const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
+    let txData: Partial<TransactionChannelDataType>;
+    if (params?.message) {
+      txData = {
+        type: method,
+        message: params?.message,
+        messageOnly: params?.messageOnly,
+        signer: ControllerModule.selectedAddress,
+        origin: window.origin,
+      };
+    } else {
+      redirectToResult(jsonrpc, { message: "Invalid or Missing Params", method }, req_id, resolveRoute);
+      return;
+    }
     origin.value = txData.origin as string;
     network.value = txData.network || "";
 
@@ -45,9 +57,7 @@ onMounted(async () => {
     }
 
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless
-      ? 0
-      : (await calculateTxFee(tx.value.compileMessage(), new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")))).fee;
+    const txFee = isGasless ? 0 : (await calculateTxFee(tx.value.compileMessage(), ControllerModule.connection)).fee;
 
     try {
       decodedInst.value = tx.value.instructions.map((inst) => {
@@ -65,24 +75,34 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({
-    data: { type: POPUP_RESULT, approve: true },
-  });
-  bc.close();
-};
-
-const closeModal = async () => {
-  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
-  await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
-  bc.close();
+  let res: string | string[] | Transaction | undefined;
+  try {
+    if (method === "send_transaction" && tx.value) {
+      res = await ControllerModule.torus.transfer(tx.value, params);
+      redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
+    } else if (method === "sign_transaction" && tx.value) {
+      res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
+      redirectToResult(
+        jsonrpc,
+        { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
+        req_id,
+        resolveRoute
+      );
+    } else if (method === "sign_all_transactions") {
+      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as any);
+      redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
+    } else throw new Error();
+  } catch (e) {
+    redirectToResult(jsonrpc, { success: false, method, error: (e as Error).message }, req_id, resolveRoute);
+  }
 };
 
 const rejectTxn = async () => {
-  closeModal();
+  redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
 };
 </script>
 
+<!-- Could not use close modal event as it will overwrite approve transaction -->
 <template>
   <PaymentConfirm
     v-if="finalTxData"
@@ -94,7 +114,6 @@ const rejectTxn = async () => {
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
     :network="network"
-    @on-close-modal="closeModal()"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />
@@ -103,7 +122,6 @@ const rejectTxn = async () => {
     :decoded-inst="decodedInst || []"
     :origin="origin"
     :network="network"
-    @on-close-modal="closeModal()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
   />
