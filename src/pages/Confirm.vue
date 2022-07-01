@@ -8,9 +8,10 @@ import { onErrorCaptured, onMounted, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { calculateTxFee, decodeAllInstruction, hideCrispButton, openCrispChat, parsingTransferAmount } from "@/utils/helpers";
+import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
 import { FinalTxData } from "@/utils/interfaces";
+import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
