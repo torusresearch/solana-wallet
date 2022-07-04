@@ -1,0 +1,39 @@
+function abc() {
+    let b = ['twitter', 'facebook', 'discord', 'twitch', 'google', 'abc', 'linkedin'];
+    let a = [{"loginProvider":"google","name":"Google","description":"login.verifier-google-desc","logoHover":"","logoLight":"","logoDark":"","showOnModal":true,"mainOption":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"facebook","description":"","name":"Facebook","logoHover":"","logoLight":"","logoDark":"","showOnModal":true,"mainOption":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"twitter","description":"","name":"Twitter","logoHover":"","logoLight":"","logoDark":"","showOnModal":true,"mainOption":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"discord","description":"","name":"Discord","logoHover":"","logoLight":"","logoDark":"","showOnModal":true,"mainOption":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"line","description":"","name":"LINE","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"reddit","description":"","name":"Reddit","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":false,"showOnDesktop":false,"showOnMobile":false,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"apple","description":"","name":"Apple","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":true,"buttonDescription":""},{"loginProvider":"github","description":"","name":"GitHub","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":true,"buttonDescription":""},{"loginProvider":"twitch","description":"","name":"Twitch","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"linkedin","description":"","name":"LinkedIn","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"wechat","description":"","name":"WeChat","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":false,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"kakao","description":"","name":"Kakao","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":false,"buttonDescription":""},{"loginProvider":"email_passwordless","description":"login.verifier-email-desc","name":"email","logoHover":"","logoLight":"","logoDark":"","mainOption":false,"showOnModal":true,"showOnDesktop":true,"showOnMobile":true,"hasLightLogo":true,"buttonDescription":"Sign up/in with Email"}];
+    let c = ['google', 'facebook', 'reddit', 'discord', 'twitch', 'apple', 'line', 'github', 'kakao', 'linkedin', 'twitter', 'weibo', 'wechat', 'email_passwordless', 'webauthn', 'jwt'];
+    b = b.concat(c.filter((item) => b.indexOf(item) < 0))
+    let grouped = {}, unGrouped = {};
+    for(const obj of a) {
+      const seen = grouped[obj.loginProvider] || [];
+      grouped[obj.loginProvider] = obj;
+        // grouped[obj.loginProvider] = seen.concat(obj);
+    }
+    console.log({grouped}, {unGrouped})
+    const res = [];
+    for(const id of b) {
+      if(grouped[id]) {
+          // grouped[id] = {...grouped[id], mainOption: true}
+          // console.log(grouped[id])
+          res.push({...grouped[id], mainOption: true});
+      }
+    }
+   console.log(res);
+
+    // let c = a.sort(function (a1, b1) {
+    //   return b.indexOf(a1.loginProvider) - b.indexOf(b1.loginProvider);
+    // });
+    // console.log(c)
+//     const sortData = (list, order) => {
+//       const priority = {};
+//       order.forEach((item, index) => (priority[item] = index));
+//       console.log({priority})
+//       return list.sort((itemA, itemB) =>
+//           priority[itemA.loginProvider] - priority[itemB.loginProvider]
+//       );
+//     };
+
+// console.log(sortData(a, b));
+}
+
+abc()

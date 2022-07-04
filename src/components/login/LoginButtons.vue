@@ -17,6 +17,7 @@ import {
 } from "@toruslabs/vue-icons/auth";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
+// import log from "loglevel";
 import { computed, ref, RenderFunction } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -104,6 +105,16 @@ const viewMoreOptions = ref(false);
 const userEmail = ref("");
 
 const mainButtons = computed(() => {
+  // debugger;
+  // log.info({ loginButtons: props.loginButtons });
+  // log.info(
+  //   props.loginButtons.filter((button: LOGIN_CONFIG) => {
+  //     if (viewMoreOptions.value) {
+  //       return button.description === "";
+  //     }
+  //     return button.mainOption && button.description === "";
+  //   })
+  // );
   return props.loginButtons.filter((button: LOGIN_CONFIG) => {
     if (viewMoreOptions.value) {
       return button.description === "";
@@ -184,12 +195,7 @@ const onEmailLogin = () => {
       <div class="w-full border-t border-app-text-400" />
     </div>
     <div class="relative flex justify-center text-sm">
-      <span
-        :class="
-          isEmbed ? 'px-2 text-white text-opacity-80 or-text' : 'px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600'
-        "
-        >{{ t("login.or") }}</span
-      >
+      <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">{{ t("login.or") }}</span>
     </div>
   </div>
   <div :class="isEmbed ? 'mt-4 w-full' : 'sm:w-10/12 mt-3 w-full'">
@@ -225,6 +231,9 @@ button.continue {
 button.continue:hover,
 button.continue:active {
   background-color: rgba(214, 164, 255, 0.2) !important;
+}
+span.or-text {
+  background-color: #10141f;
 }
 .embed-google {
   height: 3rem !important;

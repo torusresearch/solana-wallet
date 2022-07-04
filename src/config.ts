@@ -2,6 +2,8 @@ import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE, storageAvailable } from "@torus
 import type { WhiteLabelData } from "@toruslabs/openlogin-jrpc";
 import log, { LogLevelDesc } from "loglevel";
 
+import { getBrandColor, getWhiteLabelLocale, isWhiteLabelActive, isWhiteLabelDark } from "@/utils/white_label";
+
 import { LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY } from "./utils/enums";
 
 const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE, VUE_APP_DEVELOPER_DASHBOARD_URL } = process.env;
@@ -55,11 +57,12 @@ export default {
   torusNetwork: VUE_APP_TORUS_NETWORK as OPENLOGIN_NETWORK_TYPE,
   openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE", // or BMZf6WLV8sgy7uevrgbgPi1eSXdpbBJK6DValUJjz1MuXZKj9kRzcYU10HUm-ZGFjKVVH7Yb0VXeWiKP1-v1J4c
   openLoginWhiteLabel: {
-    dark: true,
+    dark: isWhiteLabelActive() ? isWhiteLabelDark() : true,
     name: "Solana Wallet",
     theme: {
-      primary: "#9945ff",
+      primary: isWhiteLabelActive() ? getBrandColor() : "#9945ff",
     },
+    defaultLanguage: getWhiteLabelLocale() || "en",
   } as WhiteLabelData,
 
   // Topup
