@@ -11,7 +11,7 @@ import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import { LOGIN_CONFIG } from "@/utils/enums";
 import { hideCrispButton } from "@/utils/helpers";
-import { getWhiteLabelLogo } from "@/utils/white_label";
+import { getWhiteLabelLogo, isWhiteLabelActive } from "@/utils/white_label";
 
 import ControllerModule from "../../modules/controllers";
 
@@ -67,7 +67,7 @@ onMounted(() => {
           >
             <div class="login-container bg-white dark:bg-app-gray-900">
               <div class="flex w-full justify-items-start items-center">
-                <div v-if="getWhiteLabelLogo(ControllerModule.isDarkMode)" class="w-1/5 px-4 mt-8">
+                <div v-if="isWhiteLabelActive()" class="w-1/5 px-4 mt-8">
                   <img class="dapp-logo" :src="getWhiteLabelLogo(ControllerModule.isDarkMode)" alt="Dapp-logo" />
                 </div>
                 <div
@@ -78,7 +78,6 @@ onMounted(() => {
                   "
                 >
                   <DialogTitle as="div" class="focus-within:outline-none bg-transparent w-full" tabindex="0">
-                    <!-- TODO heading should be changed? -->
                     <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ t("login.setupWallet") }}</h1>
                     <div
                       class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"

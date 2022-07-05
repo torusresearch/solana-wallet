@@ -17,7 +17,6 @@ import {
 } from "@toruslabs/vue-icons/auth";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
-// import log from "loglevel";
 import { computed, ref, RenderFunction } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -105,16 +104,6 @@ const viewMoreOptions = ref(false);
 const userEmail = ref("");
 
 const mainButtons = computed(() => {
-  // debugger;
-  // log.info({ loginButtons: props.loginButtons });
-  // log.info(
-  //   props.loginButtons.filter((button: LOGIN_CONFIG) => {
-  //     if (viewMoreOptions.value) {
-  //       return button.description === "";
-  //     }
-  //     return button.mainOption && button.description === "";
-  //   })
-  // );
   return props.loginButtons.filter((button: LOGIN_CONFIG) => {
     if (viewMoreOptions.value) {
       return button.description === "";
@@ -220,9 +209,6 @@ const onEmailLogin = () => {
 </template>
 
 <style scoped>
-span.or-text {
-  background-color: #10141f;
-}
 button.continue {
   background-color: rgba(214, 164, 255, 0.12);
   color: rgb(214, 164, 255);
@@ -231,9 +217,6 @@ button.continue {
 button.continue:hover,
 button.continue:active {
   background-color: rgba(214, 164, 255, 0.2) !important;
-}
-span.or-text {
-  background-color: #10141f;
 }
 .embed-google {
   height: 3rem !important;

@@ -63,15 +63,15 @@ export function applyWhiteLabelColors(): void {
   }
 }
 
-export function getWhiteLabelLogoLight() {
-  return getWhiteLabel()?.logoLight;
+export function getWhiteLabelLogoLight(): string {
+  return getWhiteLabel()?.logoLight || "";
 }
 export function getWhiteLabelLogoDark() {
-  return getWhiteLabel()?.logoDark;
+  return getWhiteLabel()?.logoDark || "";
 }
 
-export function getWhiteLabelLogo(isDark = true) {
-  return isDark ? getWhiteLabel()?.logoDark : getWhiteLabel()?.logoLight;
+export function getWhiteLabelLogo(isDark = true): string {
+  return (isDark ? getWhiteLabel()?.logoDark : getWhiteLabel()?.logoLight) || "";
 }
 export function getLogo(isDark = true) {
   return isDark ? getWhiteLabelLogoLight() || SolanaLightLogoURL : getWhiteLabelLogoDark() || SolanaLogoURL;
@@ -79,10 +79,6 @@ export function getLogo(isDark = true) {
 
 export function getWhiteLabelLocale(): string {
   return getWhiteLabel()?.defaultLanguage || "en";
-}
-
-export function getLoginOptionsOrder(): string[] {
-  return ["twitter", "facebook", "discord"];
 }
 
 export function getWhiteLabelAppName(): string {
