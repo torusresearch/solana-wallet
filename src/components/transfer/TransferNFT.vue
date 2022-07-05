@@ -12,9 +12,10 @@ import FallbackNft from "@/assets/nft.png";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
+import EstimateChanges from "../payments/EstimateChanges.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +29,9 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+    estimationInProgress: boolean;
+    estimatedBalanceChange: AccountEstimation[];
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -144,6 +148,15 @@ const refDiv = ref(null);
                 <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
                 <p>{{ props.cryptoTxFee }} SOL</p>
               </div>
+              <div class="w-full">
+                <EstimateChanges
+                  :estimated-balance-change="props.estimatedBalanceChange"
+                  :has-estimation-error="props.hasEstimationError"
+                  :is-expand="true"
+                  :estimation-in-progress="props.estimationInProgress"
+                />
+              </div>
+
               <div class="flex flex-row items- justify-start w-full mt-8">
                 <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">

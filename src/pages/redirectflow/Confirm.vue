@@ -6,10 +6,11 @@ import { onErrorCaptured, onMounted, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { calculateTxFee, decodeAllInstruction, hideCrispButton, openCrispChat, parsingTransferAmount } from "@/utils/helpers";
+import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
-import { FinalTxData } from "@/utils/interfaces";
+import { AccountEstimation, FinalTxData } from "@/utils/interfaces";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
+import { calculateTxFee, decodeAllInstruction, getEstimateBalanceChange, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 import ControllerModule from "../../modules/controllers";
 
@@ -21,6 +22,23 @@ const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
+
+const hasEstimationError = ref("");
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
+const estimationInProgress = ref(true);
+
+const estimateChanges = async (transaction: Transaction) => {
+  estimationInProgress.value = true;
+  try {
+    estimatedBalanceChange.value = await getEstimateBalanceChange(ControllerModule.torus.connection, transaction, ControllerModule.selectedAddress);
+    hasEstimationError.value = "";
+  } catch (e) {
+    hasEstimationError.value = "Unable estimate balance changes";
+    log.info("Error in transaction simulation", e);
+  }
+  estimationInProgress.value = false;
+};
+
 onErrorCaptured(() => {
   openCrispChat();
 });
@@ -56,6 +74,7 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
+    estimateChanges(tx.value);
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : (await calculateTxFee(tx.value.compileMessage(), ControllerModule.connection)).fee;
 
@@ -114,6 +133,9 @@ const rejectTxn = async () => {
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
     :network="network"
+    :estimation-in-progress="estimationInProgress"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />
@@ -122,6 +144,9 @@ const rejectTxn = async () => {
     :decoded-inst="decodedInst || []"
     :origin="origin"
     :network="network"
+    :estimation-in-progress="estimationInProgress"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
   />

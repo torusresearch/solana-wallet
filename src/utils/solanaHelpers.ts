@@ -154,8 +154,9 @@ export async function calculateChanges(
     if (!item) return;
 
     // there is possibility the account is a mintAccount which is also owned by TOKEN PROGRAM. Check data length to filter out
-    if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner)) && item.data[0].length > MINT_SIZE) {
-      const rawAccount = AccountLayout.decode(Buffer.from(item.data[0], item.data[1] as BufferEncoding));
+    const bufferData = Buffer.from(item.data[0], item.data[1] as BufferEncoding);
+    if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner)) && bufferData.length > MINT_SIZE) {
+      const rawAccount = AccountLayout.decode(bufferData);
       const tokenDetail: Account = {
         address: new PublicKey(accountKeys[idx]),
         mint: rawAccount.mint,
@@ -246,6 +247,9 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Trans
     // Simulate Transaction with Accounts
     const result = await connection.simulateTransaction(tx.compileMessage(), undefined, Array.from(accounts.values()));
 
+    if (result.value.err) {
+      throw new Error(result.value.err.toString());
+    }
     // calculate diff of the token and sol
     return calculateChanges(connection, result.value, signer, Array.from(accounts.keys()));
   } catch (e) {
