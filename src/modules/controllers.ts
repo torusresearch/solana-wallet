@@ -42,7 +42,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
-import { didOverrideTheme, isWhiteLabelActive, isWhiteLabelDark } from "@/utils/white_label";
+import { didOverrideTheme, isWhiteLabelActive, isWhiteLabelDark, overrideTheme } from "@/utils/white_label";
 
 import store from "../store";
 import { addToast } from "./app";
@@ -353,6 +353,12 @@ class ControllerModule extends VuexModule {
   @Action
   public async setTheme(theme: THEME): Promise<void> {
     await this.torus.setTheme(theme);
+  }
+
+  @Action
+  public async changeTheme(theme: "light" | "dark") {
+    if (isWhiteLabelActive()) overrideTheme();
+    this.setTheme(theme);
   }
 
   @Action

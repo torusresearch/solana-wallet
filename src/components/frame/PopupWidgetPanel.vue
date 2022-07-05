@@ -3,7 +3,6 @@ import { Dialog, DialogOverlay, TransitionChild, TransitionRoot } from "@headles
 import { WifiIcon } from "@heroicons/vue/outline";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
-import Button from "@toruslabs/vue-components/common/Button.vue";
 import { ArrowBoldForvardIcon } from "@toruslabs/vue-icons/arrows";
 import { GoogleIcon } from "@toruslabs/vue-icons/auth";
 import { PlusIcon } from "@toruslabs/vue-icons/basic";
@@ -14,7 +13,9 @@ import { useI18n } from "vue-i18n";
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import solicon from "@/assets/solana-logo-light.svg";
+import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white_label";
 
 const { t } = useI18n();
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
@@ -109,7 +110,7 @@ const refDiv = ref(null);
                   </div>
                   <div v-if="lastTransaction" class="flex w-full items-center mt-2">
                     <div class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center">
-                      <img :src="SolanaLogo" alt="activity icon" />
+                      <img :src="getWhiteLabelLogoDark() || SolanaLogoLight" alt="activity icon" />
                     </div>
                     <div class="flex grow ml-4 text-xs text-app-text-500 dark:text-app-text-dark-500">
                       <div>
@@ -121,7 +122,7 @@ const refDiv = ref(null);
                 </div>
               </div>
               <button class="torus-widget__button">
-                <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
+                <img class="torus-widget__button-img" :src="getWhiteLabelLogoLight() || SolanaLogo" alt="Login icon" />
               </button>
             </div>
           </TransitionChild>

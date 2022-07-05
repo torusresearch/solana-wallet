@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { CheckCircleIcon } from "@heroicons/vue/solid";
 import { useI18n } from "vue-i18n";
 
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
-import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
+import ControllerModule from "@/modules/controllers";
 import { getDomainFromUrl } from "@/utils/helpers";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white_label";
 
 const { t } = useI18n();
 const props = withDefaults(
@@ -45,16 +47,20 @@ function openLink() {
   >
     <div class="content-box w-full h-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col relative">
       <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4">
-        <img class="h-7 left-5 absolute" :src="props.logoUrl" alt="Dapp Logo" />
+        <img
+          class="h-7 left-5 absolute"
+          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.logoUrl"
+          alt="Dapp Logo"
+        />
         <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 w-full">
           {{ t("dappTransfer.permission") }}
         </p>
       </div>
-      <div class="mt-4 items-center px-4 flex flex-col justify-start items-start w-full">
+      <div class="mt-4 px-4 flex flex-col justify-start items-start w-full">
         <div class="flex flex-col justify-start items-start mt-4 mb-8 w-full">
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ `${t("dappInfo.requestFrom")}:` }}</p>
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.requestedFrom" target="_blank" class="text-sm text-app-text-accent">{{ getDomainFromUrl(props.requestedFrom) }}</a>
+            <a :href="props.requestedFrom" target="_blank" class="text-sm text-app-primary-500">{{ getDomainFromUrl(props.requestedFrom) }}</a>
             <div class="h-6 w-6 flex items-center justify-center rounded-md cursor-pointer" @click="openLink" @keydown="openLink">
               <img :src="GoToLinkLogo" alt="GoToLink" />
             </div>
@@ -63,7 +69,7 @@ function openLink() {
 
         <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
-            <img :src="SubtractURL" alt="Message Info" class="mr-2" />
+            <CheckCircleIcon class="w-4 h-4 mr-2 text-app-primary-500" />
             <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">
               {{ `${t("dappTransfer.data")} ${t("dappTransfer.to")} ${t("dappTransfer.approve")}` }}
             </p>

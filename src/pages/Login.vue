@@ -19,6 +19,7 @@ import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginInteractions } from "@/directives/google-analytics";
 import { addToast, app } from "@/modules/app";
+import { isWhiteLabelDark } from "@/utils/white_label";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
@@ -226,7 +227,7 @@ const onEmailLogin = () => {
       </div>
     </div>
     <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
-      <Loader :use-spinner="true" />
+      <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" background-color="#040405" />
       <p class="absolute bottom-12 text-white text-center">{{ t("dappLogin.completeVerification") }}.</p>
     </div>
   </div>
