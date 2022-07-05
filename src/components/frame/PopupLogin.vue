@@ -65,15 +65,21 @@ onMounted(() => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="login-container bg-white dark:bg-app-gray-800">
+            <div class="login-container bg-white dark:bg-app-gray-900">
               <div class="flex w-full justify-items-start items-center">
                 <div v-if="getWhiteLabelLogo(ControllerModule.isDarkMode)" class="w-1/5 px-4 mt-8">
                   <img class="dapp-logo" :src="getWhiteLabelLogo(ControllerModule.isDarkMode)" alt="Dapp-logo" />
                 </div>
-                <div class="flex flex-col items-start w-4/5">
-                  <DialogTitle as="div" class="relative focus-within:outline-none bg-transparent w-full" tabindex="0">
+                <div
+                  :class="
+                    getWhiteLabelLogo(ControllerModule.isDarkMode)
+                      ? `flex flex-col items-start w-4/5`
+                      : `py-0 px-4 relative focus-within:outline-none bg-transparent w-full text-center`
+                  "
+                >
+                  <DialogTitle as="div" class="focus-within:outline-none bg-transparent w-full" tabindex="0">
                     <!-- TODO heading should be changed? -->
-                    <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">Sign In</h1>
+                    <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ t("login.setupWallet") }}</h1>
                     <div
                       class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
                       @click="closeModal"
@@ -82,7 +88,7 @@ onMounted(() => {
                       <XIcon class="w-5 h-5 text-app-gray-800 dark:text-white text-opacity-70 hover:text-opacity-100" />
                     </div>
                   </DialogTitle>
-                  <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1">{{ t("login.poweredBy") }}</p>
+                  <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1 pr-5">{{ t("login.poweredBy") }}</p>
                 </div>
               </div>
               <div class="mt-8 w-full px-4">
