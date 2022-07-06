@@ -15,6 +15,7 @@ import { setFallbackImg } from "@/utils/helpers";
 import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
+import EstimateChanges from "../payments/EstimateChanges.vue";
 
 const props = withDefaults(
   defineProps<{

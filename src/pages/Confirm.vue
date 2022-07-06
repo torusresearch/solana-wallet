@@ -53,7 +53,7 @@ onMounted(async () => {
       const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
       decodedInst.value = decoded;
       estimationInProgress.value = false;
-      hasEstimationError.value = "Unable to estimate balance changes";
+      hasEstimationError.value = "Failed to simulate transaction for balance changes";
       return;
     }
 
