@@ -184,7 +184,7 @@ const refDiv = ref(null);
                   </div>
                 </div>
 
-                <div v-if="isSPLToken()" class="flex mb-5">
+                <div v-if="isSPLToken()" class="mb-5 w-full">
                   <!-- <hr class="mt-3 mb-5" /> -->
                   <EstimateChanges
                     :estimated-balance-change="props.estimatedBalanceChange"

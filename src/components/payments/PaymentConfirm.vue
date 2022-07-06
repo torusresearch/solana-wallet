@@ -9,6 +9,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
+import { AccountEstimation } from "@/utils/interfaces";
 
 import InstructionDisplay from "./InstructionDisplay.vue";
 
@@ -27,6 +28,9 @@ const props = withDefaults(
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
+    estimationInProgress: boolean;
+    estimatedBalanceChange: AccountEstimation[];
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -106,7 +110,14 @@ const totalFiatCostString = computed(() => {
             <p>{{ t("walletTopUp.youSend") }}</p>
             <p>{{ props.cryptoAmount }} {{ props.token }}</p>
           </span>
-
+          <div class="mb-5 w-full">
+            <EstimateChanges
+              :estimated-balance-change="props.estimatedBalanceChange"
+              :has-estimation-error="props.hasEstimationError"
+              :is-expand="true"
+              :estimation-in-progress="props.estimationInProgress"
+            />
+          </div>
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
             <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
             <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>

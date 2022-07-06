@@ -15,9 +15,10 @@ import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { DEFAULT_STATE } from "@/controllers/TorusController";
 import controllerModule from "@/modules/controllers";
-// import { BUTTON_POSITION } from "@/utils/enums";
 import * as helper from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
+// import { BUTTON_POSITION } from "@/utils/enums";
+import * as SolanaHelper from "@/utils/solanaHelpers";
 
 import { accountInfoPromise, mockGetConnection, mockMintAddress, mockMintInfo } from "./mockConnection";
 import { mockData, openloginFaker, sKeyPair } from "./mockData";
@@ -225,7 +226,7 @@ describe("Controller Module", () => {
         isFungible: false,
         balance: { decimals: mockMintInfo[mockMintAddress[1]].decimals, amount: "0", uiAmount: 0, uiAmountString: "0" },
       };
-      const splTransaction = await helper.generateSPLTransaction(
+      const splTransaction = await SolanaHelper.generateSPLTransaction(
         sKeyPair[0].publicKey.toBase58(),
         0,
         selectedToken,

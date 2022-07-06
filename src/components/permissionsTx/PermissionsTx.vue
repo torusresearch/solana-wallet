@@ -8,8 +8,10 @@ import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import { getDomainFromUrl } from "@/utils/helpers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
+import { AccountEstimation } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
+import EstimateChanges from "../payments/EstimateChanges.vue";
 import InstructionDisplay from "../payments/InstructionDisplay.vue";
 
 const { t } = useI18n();
@@ -19,6 +21,9 @@ const props = withDefaults(
     decodedInst: DecodedDataType[];
     origin: string;
     network: string;
+    estimationInProgress: boolean;
+    estimatedBalanceChange: AccountEstimation[];
+    hasEstimationError: string;
   }>(),
   {
     logoUrl: SolanaLogoURL,
@@ -65,7 +70,14 @@ function openLink() {
             </div>
           </div>
         </div>
-
+        <div class="mb-5 w-full">
+          <EstimateChanges
+            :estimated-balance-change="props.estimatedBalanceChange"
+            :has-estimation-error="props.hasEstimationError"
+            :is-expand="true"
+            :estimation-in-progress="props.estimationInProgress"
+          />
+        </div>
         <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
             <img :src="SubtractURL" alt="Message Info" class="mr-2" />
