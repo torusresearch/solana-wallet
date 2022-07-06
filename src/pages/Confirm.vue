@@ -7,14 +7,18 @@ import { onErrorCaptured, onMounted, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
+import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
-import { FinalTxData } from "@/utils/interfaces";
-import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
+import { AccountEstimation, FinalTxData } from "@/utils/interfaces";
+import { calculateTxFee, decodeAllInstruction, getEstimateBalanceChange, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
+const hasEstimationError = ref("");
+const estimatedBalanceChange = ref<AccountEstimation[]>([]);
+const estimationInProgress = ref(true);
 const finalTxData = ref<FinalTxData>();
 
 const tx = ref<Transaction>();
@@ -24,6 +28,17 @@ const network = ref("");
 onErrorCaptured(() => {
   openCrispChat();
 });
+
+const estimateChanges = async (transaction: Transaction, connection: Connection) => {
+  try {
+    estimationInProgress.value = true;
+    estimatedBalanceChange.value = await getEstimateBalanceChange(connection, transaction, ControllerModule.selectedAddress);
+  } catch (e) {
+    hasEstimationError.value = (e as Error).message;
+    log.error("estimation error", e);
+  }
+  estimationInProgress.value = false;
+};
 onMounted(async () => {
   hideCrispButton();
   try {
@@ -32,10 +47,13 @@ onMounted(async () => {
     origin.value = txData.origin as string;
     network.value = txData.network || "";
 
+    const connection = new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"));
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
       const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
       decodedInst.value = decoded;
+      estimationInProgress.value = false;
+      hasEstimationError.value = "Failed to simulate transaction for balance changes";
       return;
     }
 
@@ -45,6 +63,7 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
+    estimateChanges(tx.value, connection);
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless
       ? 0
@@ -95,6 +114,9 @@ const rejectTxn = async () => {
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
     :network="network"
+    :estimation-in-progress="estimationInProgress"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
     @on-close-modal="closeModal()"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
@@ -104,6 +126,9 @@ const rejectTxn = async () => {
     :decoded-inst="decodedInst || []"
     :origin="origin"
     :network="network"
+    :estimation-in-progress="estimationInProgress"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
     @on-close-modal="closeModal()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"

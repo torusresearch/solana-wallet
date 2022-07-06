@@ -12,9 +12,10 @@ import FallbackSPL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { setFallbackImg } from "@/utils/helpers";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
+import EstimateChanges from "../payments/EstimateChanges.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +29,10 @@ const props = withDefaults(
     transferDisabled?: boolean;
     isOpen?: boolean;
     token: Partial<SolAndSplToken>;
+
+    estimationInProgress: boolean;
+    estimatedBalanceChange: AccountEstimation[];
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -135,6 +140,14 @@ const refDiv = ref(null);
                     <a class="property-value text-app-text-500 dark:text-app-text-dark-500" target="_blank">{{ props.cryptoAmount }}</a>
                   </div>
                 </div>
+              </div>
+              <div class="w-full">
+                <EstimateChanges
+                  :estimated-balance-change="props.estimatedBalanceChange"
+                  :has-estimation-error="props.hasEstimationError"
+                  :is-expand="true"
+                  :estimation-in-progress="props.estimationInProgress"
+                />
               </div>
               <div
                 class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-row justify-start items-center pb-8 pt-2"

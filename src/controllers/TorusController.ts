@@ -555,6 +555,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
   }
 
+  async fetchTokenInfo(mintAddress: string) {
+    const res = await this.tokenInfoController.fetchTokenInfo([mintAddress]);
+    return res[mintAddress];
+  }
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
