@@ -175,10 +175,8 @@ export async function calculateChanges(
         rentExemptReserve: null,
       };
 
-      if (tokenDetail.owner.toBase58() === selectedAddress) {
-        mintTokenAddress.push(tokenDetail.mint.toBase58());
-        postTokenDetails.push(tokenDetail);
-      }
+      mintTokenAddress.push(tokenDetail.mint.toBase58());
+      postTokenDetails.push(tokenDetail);
     }
   });
 
@@ -206,19 +204,21 @@ export async function calculateChanges(
   // calculate token account changes
   // compare post token account with current token account.
   postTokenDetails.forEach(async (item, idx) => {
-    const mint = item.mint.toBase58();
-    const symbol = addressSlicer(item.mint.toBase58());
+    if (preTokenDetails[idx]?.owner.toBase58() === selectedAddress || item.owner.toBase58() === selectedAddress) {
+      const mint = item.mint.toBase58();
+      const symbol = addressSlicer(item.mint.toBase58());
 
-    const { decimals } = mintAccountInfos[idx];
-    const preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
-    const changes = Number(item.amount - preTokenAmount) / 10 ** decimals;
+      const { decimals } = mintAccountInfos[idx];
+      const preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
+      const changes = Number(item.amount - preTokenAmount) / 10 ** decimals;
 
-    returnResult.push({
-      changes: Number(changes.toString()),
-      symbol,
-      mint,
-      address: item.address.toBase58(),
-    });
+      returnResult.push({
+        changes: Number(changes.toString()),
+        symbol,
+        mint,
+        address: item.address.toBase58(),
+      });
+    }
   });
 
   // add filter new interested program and its account
