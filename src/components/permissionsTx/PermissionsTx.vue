@@ -31,11 +31,7 @@ const props = withDefaults(
 );
 
 const expand_inst = ref(false);
-const emits = defineEmits(["onApproved", "onCancel", "onCloseModal"]);
-
-const closeModal = () => {
-  emits("onCloseModal");
-};
+const emits = defineEmits(["onApproved", "onCancel"]);
 
 const onCancel = () => {
   emits("onCancel");
@@ -43,7 +39,6 @@ const onCancel = () => {
 
 const onConfirm = () => {
   emits("onApproved");
-  closeModal();
 };
 function openLink() {
   window?.open(props?.origin, "_blank")?.focus();

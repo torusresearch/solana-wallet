@@ -45,11 +45,7 @@ const props = withDefaults(
 );
 
 const expand_inst = ref(false);
-const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
-
-const closeModal = () => {
-  emits("onCloseModal");
-};
+const emits = defineEmits(["transferConfirm", "transferCancel"]);
 
 const onCancel = () => {
   emits("transferCancel");
@@ -57,7 +53,6 @@ const onCancel = () => {
 
 const onConfirm = () => {
   emits("transferConfirm");
-  closeModal();
 };
 
 // const cryptoAmountString = computed(() => {

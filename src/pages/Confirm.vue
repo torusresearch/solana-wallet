@@ -117,7 +117,6 @@ const rejectTxn = async () => {
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
-    @on-close-modal="closeModal()"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />
@@ -129,7 +128,6 @@ const rejectTxn = async () => {
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
-    @on-close-modal="closeModal()"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
   />
