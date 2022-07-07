@@ -175,10 +175,8 @@ export async function calculateChanges(
         rentExemptReserve: null,
       };
 
-      if (tokenDetail.owner.toBase58() === selectedAddress) {
-        mintTokenAddress.push(tokenDetail.mint.toBase58());
-        postTokenDetails.push(tokenDetail);
-      }
+      mintTokenAddress.push(tokenDetail.mint.toBase58());
+      postTokenDetails.push(tokenDetail);
     }
   });
 
@@ -193,7 +191,7 @@ export async function calculateChanges(
   const mintAccounts = queryAccounts.slice(1, mintTokenAddress.length + 1);
   const tokenAccounts = queryAccounts.slice(mintTokenAddress.length + 1);
 
-  const mintAccountInfos: RawMint[] = mintAccounts.map((item) => MintLayout.decode(Buffer.from(item?.data || [])));
+  // const mintAccountInfos: RawMint[] = mintAccounts.map((item) => MintLayout.decode(Buffer.from(item?.data || [])));
   const preTokenDetails = tokenAccounts.map((item, _idx) => (item ? AccountLayout.decode(item.data) : null));
 
   // Check for holder's sol account balance changes
@@ -206,19 +204,37 @@ export async function calculateChanges(
   // calculate token account changes
   // compare post token account with current token account.
   postTokenDetails.forEach(async (item, idx) => {
-    const mint = item.mint.toBase58();
-    const symbol = addressSlicer(item.mint.toBase58());
+    // Track only tokenDetail related to selectedAddress (pre or post)
+    if (preTokenDetails[idx]?.owner.toBase58() === selectedAddress || item.owner.toBase58() === selectedAddress) {
+      let mint = item.mint.toBase58();
+      const symbol = addressSlicer(item.mint.toBase58());
 
-    const { decimals } = mintAccountInfos[idx];
-    const preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
-    const changes = Number(item.amount - preTokenAmount) / 10 ** decimals;
+      // default decimals
+      let decimals = 9;
+      const preTokenMint = preTokenDetails[idx]?.mint;
+      // incase postTokenDetail's Mint Address is system program ( account closed )
+      if (mintTokenAddress[idx] !== "11111111111111111111111111111111") {
+        const mintInfo: RawMint = MintLayout.decode(Buffer.from(mintAccounts[idx]?.data || []));
+        decimals = mintInfo.decimals;
+      } else if (preTokenMint) {
+        mint = preTokenMint.toBase58();
+        const query = await connection.getMultipleAccountsInfo([preTokenMint]);
+        const mintInfo: RawMint = MintLayout.decode(Buffer.from(query[0]?.data || []));
+        decimals = mintInfo.decimals;
+      }
+      // else throw error ?
 
-    returnResult.push({
-      changes: Number(changes.toString()),
-      symbol,
-      mint,
-      address: item.address.toBase58(),
-    });
+      // const { decimals } = mintAccountInfos[idx];
+      const preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
+      const changes = Number(item.amount - preTokenAmount) / 10 ** decimals;
+
+      returnResult.push({
+        changes: Number(changes.toString()),
+        symbol,
+        mint,
+        address: item.address.toBase58(),
+      });
+    }
   });
 
   // add filter new interested program and its account
