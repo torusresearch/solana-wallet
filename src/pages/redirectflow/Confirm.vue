@@ -51,6 +51,8 @@ onMounted(async () => {
     if (txData.type === "sign_all_transactions") {
       const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
       decodedInst.value = decoded;
+      estimationInProgress.value = false;
+      hasEstimationError.value = "Failed to simulate transaction for balance changes";
       return;
     }
 
