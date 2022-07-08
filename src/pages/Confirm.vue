@@ -6,39 +6,29 @@ import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
 import { PaymentConfirm } from "@/components/payments";
+import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
-import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
-import { AccountEstimation, FinalTxData } from "@/utils/interfaces";
-import { calculateTxFee, decodeAllInstruction, getEstimateBalanceChange, parsingTransferAmount } from "@/utils/solanaHelpers";
+import { FinalTxData } from "@/utils/interfaces";
+import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
-const hasEstimationError = ref("");
-const estimatedBalanceChange = ref<AccountEstimation[]>([]);
-const estimationInProgress = ref(true);
 const finalTxData = ref<FinalTxData>();
 
 const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
+
+const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
+
 onErrorCaptured(() => {
   openCrispChat();
 });
 
-const estimateChanges = async (transaction: Transaction, connection: Connection) => {
-  try {
-    estimationInProgress.value = true;
-    estimatedBalanceChange.value = await getEstimateBalanceChange(connection, transaction, ControllerModule.selectedAddress);
-  } catch (e) {
-    hasEstimationError.value = (e as Error).message;
-    log.error("estimation error", e);
-  }
-  estimationInProgress.value = false;
-};
 onMounted(async () => {
   hideCrispButton();
   try {
@@ -63,7 +53,7 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
-    estimateChanges(tx.value, connection);
+    estimateChanges(tx.value, connection, txData.selectedAddress);
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless
       ? 0

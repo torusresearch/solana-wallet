@@ -255,6 +255,7 @@ export type TransactionChannelDataType = {
   signer: string;
   balance: string;
   selectedCurrency: string;
+  selectedAddress: string;
   currencyRate: string;
   jwtToken: string;
   network: string;
