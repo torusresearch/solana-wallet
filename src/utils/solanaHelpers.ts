@@ -198,7 +198,7 @@ export async function calculateChanges(
   const accIdx = accountKeys.findIndex((item) => item === selectedAddress);
   if (accIdx >= 0) {
     const solchanges = ((result.accounts?.at(accIdx)?.lamports || 0) - Number(signerAccount?.lamports)) / LAMPORTS_PER_SOL;
-    returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selectedAddress });
+    returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selectedAddress, decimals: 9 });
   }
 
   // calculate token account changes
@@ -233,6 +233,7 @@ export async function calculateChanges(
         symbol,
         mint,
         address: item.address.toBase58(),
+        decimals,
       });
     }
   });

@@ -14,13 +14,13 @@ const props = defineProps<{
 }>();
 const symbols = ref<{ [mint: string]: string }>({});
 
-const updateSymbol = async (mintAddress: string) => {
+const updateSymbol = async (mintAddress: string, decimals: number) => {
   symbols.value[mintAddress] = mintAddress.substring(0, 8);
 
   const tokenInfoState = ControllerModule.torusState.TokenInfoState;
   let symbol = tokenInfoState.tokenInfoMap[mintAddress]?.symbol || tokenInfoState.metaplexMetaMap[mintAddress]?.symbol;
-  if (!symbol) symbol = (await ControllerModule.torus.fetchTokenInfo(mintAddress))?.symbol;
-  if (!symbol) symbol = (await ControllerModule.torus.fetchMetaPlexNft([mintAddress]))[mintAddress]?.symbol;
+  if (!symbol && decimals > 0) symbol = (await ControllerModule.torus.fetchTokenInfo(mintAddress))?.symbol;
+  if (!symbol && decimals === 0) symbol = (await ControllerModule.torus.fetchMetaPlexNft([mintAddress]))[mintAddress]?.symbol;
   if (symbol) symbols.value[mintAddress] = symbol;
 };
 
@@ -28,7 +28,7 @@ watch(props, () => {
   log.info(props);
   if (!props.estimationInProgress) {
     props.estimatedBalanceChange.forEach((value) => {
-      updateSymbol(value.mint);
+      updateSymbol(value.mint, value.decimals);
     });
   }
 });
