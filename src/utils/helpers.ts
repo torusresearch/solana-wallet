@@ -205,6 +205,8 @@ export const getLogoutBcChannelName = (origin: string, userInfo: UserInfo) => {
 
 export const logoutWithBC = async (origin: string, _instanceId: string, userInfo: UserInfo) => {
   const channelName = getLogoutBcChannelName(origin, userInfo);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const bc = new BroadcastChannel<LogoutMessage>(`${channelName}`, { server: { timeout: 5 } });
   const timestamp = new Date().getTime();
   const instanceId = _instanceId.slice(0, 8);
