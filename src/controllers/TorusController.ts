@@ -1704,14 +1704,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private attachLogoutBC() {
     const channelName = getLogoutBcChannelName(this.origin, this.userInfo);
     const bc = new BroadcastChannel<LogoutMessage>(channelName);
-    const start = new Date().getTime();
+    const thisInstance = this.instanceId.slice(0, 8);
     const eventListener = (msg: LogoutMessage) => {
-      const nowTime = new Date().getTime();
-      const msElapsedSinceAttach = nowTime - start;
-      const thisInstance = this.instanceId.slice(0, 8);
-      // Ignore the messages sent within 500ms of login, logic can be removed once TODO below is resolved
-      // TODO: Investigate Brave Browser receiving old logout messges from broadcast channel server
-      if (thisInstance === msg.instanceId || msElapsedSinceAttach <= 500) return;
+      if (thisInstance === msg.instanceId) return;
       bc.removeEventListener("message", eventListener);
       bc.close()
         .then(() => this.emit("logout", true))

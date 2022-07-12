@@ -1,4 +1,4 @@
-import { concatSig } from "@toruslabs/base-controllers";
+import { concatSig, UserInfo } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
 import bowser from "bowser";
@@ -10,6 +10,7 @@ import config from "@/config";
 import { addToast } from "@/modules/app";
 
 import { LOCALE_EN, LOGIN_CONFIG, STORAGE_TYPE } from "./enums";
+import { LogoutMessage } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -204,7 +205,7 @@ export const getLogoutBcChannelName = (origin: string, userInfo: UserInfo) => {
 
 export const logoutWithBC = async (origin: string, _instanceId: string, userInfo: UserInfo) => {
   const channelName = getLogoutBcChannelName(origin, userInfo);
-  const bc = new BroadcastChannel<LogoutMessage>(`${channelName}`);
+  const bc = new BroadcastChannel<LogoutMessage>(`${channelName}`, { server: { timeout: 5 } });
   const timestamp = new Date().getTime();
   const instanceId = _instanceId.slice(0, 8);
   bc.postMessage({ instanceId, timestamp })
