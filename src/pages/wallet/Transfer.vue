@@ -10,6 +10,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
+import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
@@ -17,8 +18,8 @@ import { trackUserClick, TransferPageInteractions } from "@/directives/google-an
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
-import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
-import { calculateTxFee, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/solanaHelpers";
+import { SolAndSplToken } from "@/utils/interfaces";
+import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
 const { t } = useI18n();
 
@@ -38,10 +39,6 @@ const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
 const isCurrencyFiat = ref(false);
-
-const hasEstimationError = ref("");
-const estimatedBalanceChange = ref<AccountEstimation[]>([]);
-const estimationInProgress = ref(true);
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const solConversionRate = computed(() => {
@@ -68,6 +65,8 @@ const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
 const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!selectedToken.value.price?.usd);
+
+const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
 onMounted(() => {
   const { query } = route;
@@ -274,18 +273,6 @@ const closeModal = () => {
   estimatedBalanceChange.value = [];
 };
 
-const estimateChanges = async (tx: Transaction) => {
-  estimationInProgress.value = true;
-  try {
-    estimatedBalanceChange.value = await getEstimateBalanceChange(ControllerModule.torus.connection, tx, ControllerModule.selectedAddress);
-    hasEstimationError.value = "";
-  } catch (e) {
-    hasEstimationError.value = "Unable estimate balance changes";
-    log.info("Error in transaction simulation", e);
-  }
-  estimationInProgress.value = false;
-};
-
 const openModal = async () => {
   transferDisabled.value = true;
   $v.value.$touch();
@@ -309,7 +296,7 @@ const openModal = async () => {
 
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   transaction.value = await generateTransaction(amount);
-  estimateChanges(transaction.value);
+  estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
   const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;

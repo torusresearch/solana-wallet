@@ -198,14 +198,16 @@ export async function calculateChanges(
   const accIdx = accountKeys.findIndex((item) => item === selectedAddress);
   if (accIdx >= 0) {
     const solchanges = ((result.accounts?.at(accIdx)?.lamports || 0) - Number(signerAccount?.lamports)) / LAMPORTS_PER_SOL;
-    returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selectedAddress });
+    returnResult.push({ changes: Number(solchanges.toFixed(7)), symbol: "SOL", mint: "", address: selectedAddress, decimals: 9 });
   }
 
   // calculate token account changes
   // compare post token account with current token account.
   postTokenDetails.forEach(async (item, idx) => {
     // Track only tokenDetail related to selectedAddress (pre or post)
-    if (preTokenDetails[idx]?.owner.toBase58() === selectedAddress || item.owner.toBase58() === selectedAddress) {
+    const preTokenOwner = preTokenDetails[idx]?.owner.toBase58();
+    const postTokenOwner = item.owner.toBase58();
+    if (preTokenOwner === selectedAddress || postTokenOwner === selectedAddress) {
       let mint = item.mint.toBase58();
       const symbol = addressSlicer(item.mint.toBase58());
 
@@ -225,14 +227,20 @@ export async function calculateChanges(
       // else throw error ?
 
       // const { decimals } = mintAccountInfos[idx];
-      const preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
-      const changes = Number(item.amount - preTokenAmount) / 10 ** decimals;
+      let postAmount = item.amount;
+      if (postTokenOwner !== selectedAddress) postAmount = BigInt(0);
+
+      let preTokenAmount = preTokenDetails[idx]?.amount || BigInt(0);
+      if (preTokenOwner !== selectedAddress) preTokenAmount = BigInt(0);
+
+      const changes = Number(postAmount - preTokenAmount) / 10 ** decimals;
 
       returnResult.push({
         changes: Number(changes.toString()),
         symbol,
         mint,
         address: item.address.toBase58(),
+        decimals,
       });
     }
   });

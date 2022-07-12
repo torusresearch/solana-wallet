@@ -53,7 +53,7 @@ function openLink() {
           {{ `${t("dappProvider.confirm")} ${t("dappProvider.permission")}` }}
         </p>
       </div>
-      <div class="mt-4 items-center px-4 flex flex-col justify-start items-start h-full no-scrollbar overflow-y-auto">
+      <div class="mt-4 items-center px-4 flex flex-col justify-start h-full no-scrollbar overflow-y-auto">
         <div class="flex flex-col justify-start items-start w-full mt-4 mb-6">
           <NetworkDisplay :network="network" />
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
