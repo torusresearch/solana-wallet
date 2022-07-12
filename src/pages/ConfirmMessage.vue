@@ -59,11 +59,5 @@ const rejectTxn = async () => {
 </script>
 
 <template>
-  <Permissions
-    :requested-from="msg_data.origin"
-    :approval-message="msg_data.message"
-    @on-approved="approveTxn"
-    @on-rejected="rejectTxn"
-    @on-close-modal="closeModal"
-  />
+  <Permissions :requested-from="msg_data.origin" :approval-message="msg_data.message" @on-approved="approveTxn" @on-rejected="rejectTxn" />
 </template>
