@@ -74,8 +74,7 @@ import { BigNumber } from "bignumber.js";
 import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
-import cloneDeep from "lodash-es/cloneDeep";
-import omit from "lodash-es/omit";
+import { cloneDeep, omit } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -1307,6 +1306,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         input: saveState,
         privKey: new BN(ecc_privateKey),
       });
+
       // session should be priority and there should be only one login in one browser tab session
       window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
       window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));

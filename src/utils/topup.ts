@@ -1,5 +1,11 @@
+import MobActivity from "@/assets/mob-activity.svg";
+import MobDiscover from "@/assets/mob-discover.svg";
+import MobHome from "@/assets/mob-home.svg";
+import MobNft from "@/assets/mob-nft.svg";
+import MobSettings from "@/assets/mob-settings.svg";
 import MoonpayLogo from "@/assets/moonpay-logo.svg";
 import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
+
 // import RampLogo from "@/assets/rampnetwork-logo.svg";
 // import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 
@@ -8,6 +14,15 @@ export const enum TOPUP {
   MOONPAY = "moonpay",
 }
 
+export const getNavBarLogo: { [key: string]: string } = {
+  home: MobHome,
+  transfer: MobHome,
+  topup: MobHome,
+  nfts: MobNft,
+  activity: MobActivity,
+  settings: MobSettings,
+  discover: MobDiscover,
+};
 export type TopupProvider = {
   name: string;
   description: string;

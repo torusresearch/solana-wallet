@@ -24,11 +24,21 @@ import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Net
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 
-import MobActivity from "@/assets/mob-activity.svg";
-import MobDiscover from "@/assets/mob-discover.svg";
-import MobHome from "@/assets/mob-home.svg";
-import MobNft from "@/assets/mob-nft.svg";
-import MobSettings from "@/assets/mob-settings.svg";
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore-start
+// import MobActivity from "@/assets/mob-activity.svg";
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore-start
+// import MobDiscover from "@/assets/mob-discover.svg";
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore-start
+// import MobHome from "@/assets/mob-home.svg";
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore-start`
+// import MobNft from "@/assets/mob-nft.svg";
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore-start
+// import MobSettings from "@/assets/mob-settings.svg";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
@@ -99,7 +109,7 @@ export const NAVIGATION_LIST: {
     name: string;
     title: string;
     route: string;
-    icon: string;
+    // icon: string;
     mobHidden: boolean;
   };
 } = {
@@ -107,49 +117,49 @@ export const NAVIGATION_LIST: {
     name: "navBar.home",
     title: "walletHome.walletHome",
     route: "home",
-    icon: MobHome,
+    // icon: MobHome,
     mobHidden: false,
   },
   transfer: {
     name: "navBar.transfer",
     title: "walletTransfer.transferDetails",
     route: "transfer",
-    icon: MobHome,
+    // icon: MobHome,
     mobHidden: true,
   },
   topup: {
     name: "navBar.topUp",
     title: "walletTopUp.selectProvider",
     route: "topup",
-    icon: MobHome,
+    // icon: MobHome,
     mobHidden: true,
   },
   nfts: {
     name: "navBar.nfts",
     title: "navBar.nfts",
     route: "nfts",
-    icon: MobNft,
+    // icon: MobNft,
     mobHidden: false,
   },
   activity: {
     name: "navBar.activity",
     title: "walletActivity.transactionActivities",
     route: "activity",
-    icon: MobActivity,
+    // icon: MobActivity,
     mobHidden: false,
   },
   settings: {
     name: "navBar.settings",
     title: "walletSettings.settings",
     route: "settings",
-    icon: MobSettings,
+    // icon: MobSettings,
     mobHidden: false,
   },
   discover: {
     name: "navBar.discover",
     title: "Discover",
     route: "discover",
-    icon: MobDiscover,
+    // icon: MobDiscover,
     mobHidden: false,
   },
 };

@@ -2,7 +2,7 @@
 import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
-import throttle from "lodash-es/throttle";
+import { throttle } from "lodash-es";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
