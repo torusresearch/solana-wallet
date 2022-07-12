@@ -29,7 +29,7 @@
     "@solana/spl-token": "0.2.0",
     "@solana/web3.js": "^1.42.0",
     "@toruslabs/base-controllers": "^2.1.0",
-    "@toruslabs/broadcast-channel": "^5.0.2",
+    "@toruslabs/broadcast-channel": "^6.1.0",
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^3.0.0",
     "@toruslabs/loglevel-sentry": "^4.0.0",
