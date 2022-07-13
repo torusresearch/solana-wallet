@@ -24,22 +24,6 @@ import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Net
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 
-// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// // @ts-ignore-start
-// import MobActivity from "@/assets/mob-activity.svg";
-// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// // @ts-ignore-start
-// import MobDiscover from "@/assets/mob-discover.svg";
-// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// // @ts-ignore-start
-// import MobHome from "@/assets/mob-home.svg";
-// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// // @ts-ignore-start`
-// import MobNft from "@/assets/mob-nft.svg";
-// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// // @ts-ignore-start
-// import MobSettings from "@/assets/mob-settings.svg";
-
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;

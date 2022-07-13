@@ -8,13 +8,6 @@ declare module "*.vue" {
   export default Component;
 }
 
-// declare module "*.svg" {
-//   import Vue, { VueConstructor } from "vue";
-
-//   const url: VueConstructor<Vue>;
-//   export default url;
-// }
-
 declare module "*.svg" {
   const url: string;
   export default url;
@@ -24,7 +17,3 @@ declare module "*.png" {
   const url: string;
   export default url;
 }
-// declare module "*.png";
-// declare module "*.jpg";
-// declare module "*.jpeg";
-// declare module "*.gif";

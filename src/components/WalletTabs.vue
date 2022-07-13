@@ -106,7 +106,7 @@ const logout = async () => {
           :class="[key === tab ? 'active-border' : '']"
         >
           <img
-            :src="value.name"
+            :src="value.icon"
             alt="link icon"
             class="h-5"
             :class="[key === tab ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
