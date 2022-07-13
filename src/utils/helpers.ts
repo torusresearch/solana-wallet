@@ -210,9 +210,8 @@ export const logoutWithBC = async (origin: string, _instanceId: string, userInfo
   const bc = new BroadcastChannel<LogoutMessage>(`${channelName}`, { server: { timeout: 5 } });
   const timestamp = new Date().getTime();
   const instanceId = _instanceId.slice(0, 8);
-  bc.postMessage({ instanceId, timestamp })
-    .then(() => bc.close())
-    .catch((err) => log.error(err));
+  await bc.postMessage({ instanceId, timestamp });
+  await bc.close();
 };
 
 export function getBrowserKey() {

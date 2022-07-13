@@ -219,6 +219,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private instanceId = "";
 
+  private logoutBcAttached!: boolean;
+
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
   }
@@ -777,7 +779,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {
     this.handleLogout();
     res.result = true;
-    end();
+    setTimeout(() => end(), 100); // Make sure all async ops are executed.
   }
 
   public handleLogout(): void {
@@ -1241,9 +1243,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
       if (waitSaving) await saveToOpenLogin;
 
-      if (isMain) {
-        this.attachLogoutBC();
-      }
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
     } catch (error) {
@@ -1389,11 +1388,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           // This call sync and refresh blockchain state
           this.setSelectedAccount(selectedAddress, true);
 
-          // Listen to logout events across tabs
-          if (isMain) {
-            this.attachLogoutBC();
-          }
-
+          this.attachLogoutBC();
           return true;
         } catch (e) {
           log.error(e, "Error restoring state after successful decrypt!");
@@ -1409,6 +1404,32 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async getDappList(): Promise<DiscoverDapp[]> {
     return this.preferencesController.getDappList();
+  }
+
+  attachLogoutBC() {
+    if (this.logoutBcAttached) {
+      log.warn("Logout BC already attached");
+      return;
+    }
+
+    const channelName = getLogoutBcChannelName(this.origin, this.userInfo);
+    const bc = new BroadcastChannel<LogoutMessage>(channelName);
+    this.logoutBcAttached = true;
+
+    const thisInstance = this.instanceId.slice(0, 8);
+    const eventListener = (msg: LogoutMessage) => {
+      if (thisInstance === msg.instanceId) return;
+      bc.removeEventListener("message", eventListener);
+      bc.close()
+        .then(() => {
+          this.logoutBcAttached = false;
+          this.emit("logout", true);
+          if (!isMain) this.notifyEmbedLogout();
+          return null;
+        })
+        .catch((err) => log.error("broadcastchannel close error", err));
+    };
+    bc.addEventListener("message", eventListener);
   }
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {
@@ -1699,19 +1720,5 @@ export default class TorusController extends BaseController<TorusControllerConfi
       loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
     };
     this.embedController.initializeProvider(commProviderHandlers);
-  }
-
-  private attachLogoutBC() {
-    const channelName = getLogoutBcChannelName(this.origin, this.userInfo);
-    const bc = new BroadcastChannel<LogoutMessage>(channelName);
-    const thisInstance = this.instanceId.slice(0, 8);
-    const eventListener = (msg: LogoutMessage) => {
-      if (thisInstance === msg.instanceId) return;
-      bc.removeEventListener("message", eventListener);
-      bc.close()
-        .then(() => this.emit("logout", true))
-        .catch((err) => log.error("broadcastchannel close error", err));
-    };
-    bc.addEventListener("message", eventListener);
   }
 }

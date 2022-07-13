@@ -418,6 +418,11 @@ class ControllerModule extends VuexModule {
     this.torus.on("logout", (fromBC?: boolean) => {
       this.logout(fromBC);
     });
+    this.torus.on("LOGIN_RESPONSE", (message?: string, address?: string) => {
+      if (message === null && address) {
+        this.torus.attachLogoutBC();
+      }
+    });
     this.setInstanceId(instanceId);
 
     if (!isMain) {
@@ -490,8 +495,8 @@ class ControllerModule extends VuexModule {
   async logout(fromBC?: boolean): Promise<void> {
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
-      if (!fromBC) logoutWithBC(this.torus.origin, this.instanceId, this.torus.userInfo);
     }
+    if (!fromBC) await logoutWithBC(this.torus.origin, this.instanceId, this.torus.userInfo);
     const initialState = { ...cloneDeep(DEFAULT_STATE) };
     // this.updateTorusState(initialState);
 
