@@ -13,6 +13,7 @@
     "test": "npx playwright test --config=playwright.config.ts --workers=1",
     "test:browserstack": "npx playwright test --config=playwright-browserstack.config.ts --workers=1",
     "test:controller": "npx mocha  ./tests/controller/**.ts",
+    "test:report": "nyc --reporter=text --reporter=html npm run test:controller",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js",
     "serve:prod": "vue-cli-service serve --mode production"
@@ -129,6 +130,7 @@
     "lint-staged": "^12.4.1",
     "mocha": "^10.0.0",
     "nock": "^13.2.4",
+    "nyc": "^15.1.0",
     "os-browserify": "^0.3.0",
     "postcss": "^8.4.14",
     "prettier": "^2.6.2",

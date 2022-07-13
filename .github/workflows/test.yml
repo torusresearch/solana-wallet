@@ -44,4 +44,4 @@ jobs:
         run: npm run build -- --mode testing
 
       - name: Controller Unit Tests
-        run: npm run test:controller
+        run: npm run test:report
