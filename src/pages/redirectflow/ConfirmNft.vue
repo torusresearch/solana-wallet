@@ -31,7 +31,8 @@ onMounted(async () => {
 });
 
 watch(selectedNft, async () => {
-  if (selectedNft.value?.mintAddress) {
+  if (selectedNft.value?.mintAddress && loading.value) {
+    loading.value = false;
     transaction.value = await generateSPLTransaction(
       params.receiver_add,
       1,
@@ -43,12 +44,11 @@ watch(selectedNft, async () => {
     const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
-  } else {
-    redirectToResult(jsonrpc, { message: "Selected NFT not found", success: false, method }, req_id, resolveRoute);
   }
 });
 
 async function confirmTransfer() {
+  loading.value = true;
   await delay(500);
   try {
     if (selectedNft.value && transaction.value) {
@@ -61,6 +61,7 @@ async function confirmTransfer() {
 }
 
 async function cancelTransfer() {
+  loading.value = true;
   redirectToResult(jsonrpc, { message: "Transaction cancelled", success: false, method }, req_id, resolveRoute);
 }
 </script>

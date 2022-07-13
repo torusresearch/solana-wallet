@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
+import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
 import FullDivLoader from "@/components/FullDivLoader.vue";
@@ -32,7 +33,9 @@ onMounted(async () => {
 });
 
 watch(selectedSplToken, async () => {
-  if (selectedSplToken.value) {
+  if (selectedSplToken.value && loading.value) {
+    loading.value = false;
+    log.info(selectedSplToken.value);
     transaction.value = await generateSPLTransaction(
       params.receiver_add,
 
@@ -45,9 +48,6 @@ watch(selectedSplToken, async () => {
     const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
-    loading.value = false;
-  } else {
-    redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false, method }, req_id, resolveRoute);
   }
 });
 
