@@ -104,66 +104,6 @@ export interface ControllerModuleState {
   torusState: TorusControllerState;
 }
 
-export const NAVIGATION_LIST: {
-  [key: string]: {
-    name: string;
-    title: string;
-    route: string;
-    // icon: string;
-    mobHidden: boolean;
-  };
-} = {
-  home: {
-    name: "navBar.home",
-    title: "walletHome.walletHome",
-    route: "home",
-    // icon: MobHome,
-    mobHidden: false,
-  },
-  transfer: {
-    name: "navBar.transfer",
-    title: "walletTransfer.transferDetails",
-    route: "transfer",
-    // icon: MobHome,
-    mobHidden: true,
-  },
-  topup: {
-    name: "navBar.topUp",
-    title: "walletTopUp.selectProvider",
-    route: "topup",
-    // icon: MobHome,
-    mobHidden: true,
-  },
-  nfts: {
-    name: "navBar.nfts",
-    title: "navBar.nfts",
-    route: "nfts",
-    // icon: MobNft,
-    mobHidden: false,
-  },
-  activity: {
-    name: "navBar.activity",
-    title: "walletActivity.transactionActivities",
-    route: "activity",
-    // icon: MobActivity,
-    mobHidden: false,
-  },
-  settings: {
-    name: "navBar.settings",
-    title: "walletSettings.settings",
-    route: "settings",
-    // icon: MobSettings,
-    mobHidden: false,
-  },
-  discover: {
-    name: "navBar.discover",
-    title: "Discover",
-    route: "discover",
-    // icon: MobDiscover,
-    mobHidden: false,
-  },
-};
-
 export const DEFAULT_USER_INFO = {
   aggregateVerifier: "",
   email: "",

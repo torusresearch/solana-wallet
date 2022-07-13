@@ -8,8 +8,7 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
-import { NAVIGATION_LIST } from "@/utils/enums";
-import { getNavBarLogo } from "@/utils/topup";
+import { NAVIGATION_LIST } from "@/utils/NavBarHelper";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
@@ -107,7 +106,7 @@ const logout = async () => {
           :class="[key === tab ? 'active-border' : '']"
         >
           <img
-            :src="getNavBarLogo[value.name]"
+            :src="value.name"
             alt="link icon"
             class="h-5"
             :class="[key === tab ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
