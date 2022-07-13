@@ -43,6 +43,9 @@ jobs:
       - name: Generate build
         run: npm run build -- --mode testing
 
+      - name: Controller Unit Tests
+        run: npm run test:report
+
       # Upload to S3
       - name: sync s3
         uses: jakejarvis/s3-sync-action@master
