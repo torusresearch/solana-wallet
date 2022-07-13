@@ -2,6 +2,7 @@
 import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
+import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -22,6 +23,7 @@ const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
+const loading = ref(true);
 
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
@@ -44,6 +46,7 @@ onMounted(async () => {
       decodedInst.value = decoded;
       estimationInProgress.value = false;
       hasEstimationError.value = "Failed to simulate transaction for balance changes";
+      loading.value = false;
       return;
     }
 
@@ -65,6 +68,7 @@ onMounted(async () => {
       });
 
       finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
+      loading.value = false;
     } catch (e) {
       log.error(e);
     }
@@ -75,6 +79,7 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
+  loading.value = true;
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({
     data: { type: POPUP_RESULT, approve: true },
@@ -83,6 +88,7 @@ const approveTxn = async (): Promise<void> => {
 };
 
 const closeModal = async () => {
+  loading.value = true;
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
   bc.close();
@@ -94,8 +100,11 @@ const rejectTxn = async () => {
 </script>
 
 <template>
+  <div v-if="loading" class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex flex-col justify-center items-center">
+    <Loader :use-spinner="true" />
+  </div>
   <PaymentConfirm
-    v-if="finalTxData"
+    v-else-if="finalTxData"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
