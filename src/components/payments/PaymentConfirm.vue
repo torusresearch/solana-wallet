@@ -11,6 +11,7 @@ import ControllerModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instruction_decoder";
 import { AccountEstimation } from "@/utils/interfaces";
 
+import EstimateChanges from "./EstimateChanges.vue";
 import InstructionDisplay from "./InstructionDisplay.vue";
 
 const { t } = useI18n();
@@ -79,10 +80,7 @@ const totalFiatCostString = computed(() => {
 });
 </script>
 <template>
-  <div
-    :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
-  >
+  <div class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center">
     <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-between relative">
       <div class="shadow dark:shadow-dark text-center py-6">
         <img class="h-7 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
@@ -105,7 +103,7 @@ const totalFiatCostString = computed(() => {
             <p>{{ t("walletTopUp.youSend") }}</p>
             <p>{{ props.cryptoAmount }} {{ props.token }}</p>
           </span>
-          <div class="mb-5 w-full">
+          <div v-if="false" class="mt-3 w-full">
             <EstimateChanges
               :estimated-balance-change="props.estimatedBalanceChange"
               :has-estimation-error="props.hasEstimationError"

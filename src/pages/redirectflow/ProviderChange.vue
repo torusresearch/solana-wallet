@@ -2,7 +2,7 @@
 import { PopupWhitelabelData, ProviderConfig } from "@toruslabs/base-controllers";
 import { computed, onMounted, reactive, watch } from "vue";
 
-import ProviderChange1 from "@/components/providerChange/ProviderChange.vue";
+import ProviderChangeComponent from "@/components/providerChange/ProviderChange.vue";
 import ControllerModule from "@/modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
@@ -44,7 +44,7 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <ProviderChange1
+  <ProviderChangeComponent
     :origin="finalProviderData.origin"
     :to-network="finalProviderData.toNetwork"
     :from-network="finalProviderData.fromNetwork"
