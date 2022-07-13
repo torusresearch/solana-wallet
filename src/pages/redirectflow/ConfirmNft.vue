@@ -2,6 +2,7 @@
 import { LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
 import { computed, onMounted, ref, watch } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
@@ -14,6 +15,7 @@ import { calculateTxFee, generateSPLTransaction } from "../../utils/solanaHelper
 const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
+const loading = ref(true);
 const transactionFee = ref(0);
 const transaction = ref<Transaction>();
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));
@@ -64,7 +66,9 @@ async function cancelTransfer() {
 </script>
 
 <template>
+  <FullDivLoader v-if="loading" />
   <div
+    v-else
     class="w-full h-full overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center"
   >
     <TransferNFT

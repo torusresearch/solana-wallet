@@ -1,18 +1,16 @@
-import { config, pageview } from "vue-gtag";
+import { config as gtagConfig, pageview } from "vue-gtag";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 import { getBrowserKey } from "@/utils/helpers";
 
-import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
-
 const enum AuthStates {
   AUTHENTICATED = "auth",
   NON_AUTHENTICATED = "un-auth",
 }
 
-export function isLoggedIn(): boolean {
+export function hasSelectedAddress(): boolean {
   return !!ControllerModule?.torus?.selectedAddress;
 }
 
@@ -145,30 +143,12 @@ const router = createRouter({
       name: "redirectflowMain",
       path: "/redirectflow",
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/Empty.vue"),
+      meta: { redirectflow: true },
       children: [
         {
           name: "redirectflow",
           path: "",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectFlowHandler.vue"),
-          beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
-            const { method = "" } = getB64DecodedData(to.hash);
-            const resolveRoute = (to.query.resolveRoute as string) || "";
-            const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
-            if (!resolveRoute || !method) return next({ name: "404", query: to.query, hash: to.hash });
-
-            await ControllerModule.torus.restoreFromBackend();
-            if (!ControllerModule.hasSelectedPrivateKey && requiresLogin)
-              return next({
-                name: "login",
-                query: {
-                  redirectTo: shouldRedirect ? redirectPath : "/redirectflow",
-                  resolveRoute,
-                },
-                hash: to.hash,
-              });
-            if (shouldRedirect) return next(`${redirectPath}?resolveRoute=${resolveRoute}${to.hash}`);
-            return next();
-          },
         },
         {
           name: "redirect_confirm",
@@ -254,6 +234,7 @@ const restoreOrlogout = async () => {
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
+  // const isRedirectFlow = to.meta.redirectflow;
   const isRedirectFlow = !!(to.query.resolveRoute || to.query.method);
   if (to.name === "404") return next(); // to prevent 404 redirecting to 404
   if (to.query.redirectTo) return next(); // if already redirecting, dont do anything
@@ -263,24 +244,23 @@ router.beforeEach(async (to, _, next) => {
     // restore will skip if keypair is exist in restore function
     const rol = restoreOrlogout();
     if (to.name === "walletDiscover") await rol;
-  }
-  if (isRedirectFlow && (!getB64DecodedData(to.hash).method || !to.query.resolveRoute)) return next({ name: "404", query: to.query, hash: to.hash });
 
-  if (authMeta === AuthStates.AUTHENTICATED) {
     // user tried to access a authenticated route without being authenticated
-    if (!isLoggedIn() && !isRedirectFlow) {
+    if (!hasSelectedAddress() && !isRedirectFlow) {
       return next("/login");
     }
+
     // route is authenticated and so is user, good to go
-    config({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
+    gtagConfig({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
   } else if (authMeta === AuthStates.NON_AUTHENTICATED) {
     // user tried to access a un-authenticated route being authenticated
-    if (isLoggedIn() && !isRedirectFlow) {
+    // opportunistic login flow ( restore privatekey take time, keep user login first and logout user if restore failed )
+    if (hasSelectedAddress() && !isRedirectFlow) {
       return next("/");
     }
 
     // route is non-authenticated and so is user, good to go
-    config({ user_id: `notLoggedIn_${getBrowserKey()}` });
+    gtagConfig({ user_id: `notLoggedIn_${getBrowserKey()}` });
   }
 
   return next();
