@@ -66,7 +66,7 @@ const router = createRouter({
               component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/Moonpay.vue"),
               meta: { title: "Topup - Moonpay" },
             },
-            { path: "/:catchAll(.*)", redirect: { name: "moonpay" } },
+            { path: "/wallet/topup/:catchAll(.*)", redirect: { name: "moonpay" } },
           ],
           redirect: { name: "moonpay" },
         },
@@ -121,6 +121,7 @@ const router = createRouter({
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "END" */ "@/pages/End.vue"),
       meta: { title: "End" },
     },
+    // EMBED POPUP ROUTE
     {
       name: "confirm",
       path: "/confirm",
@@ -139,6 +140,20 @@ const router = createRouter({
       component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "REDIRECT_HANDLER" */ "@/pages/RedirectHandler.vue"),
       meta: { title: "redirecting" },
     },
+    {
+      name: "providerchange",
+      path: "/providerchange",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROVIDER_CHANGE" */ "@/pages/ProviderChange.vue"),
+      meta: { title: "ProviderChange" },
+    },
+    // EMBED IFRAME ROUTE
+    {
+      name: "frame",
+      path: "/frame",
+      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
+      meta: { title: "Frame" },
+    },
+    // REDIRECTFLOW ROUTES
     {
       name: "redirectflowMain",
       path: "/redirectflow",
@@ -180,26 +195,17 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROVIDER_CHANGE" */ "@/pages/redirectflow/ProviderChange.vue"),
           meta: { title: "ProviderChange" },
         },
+        {
+          name: "404",
+          path: "not_found",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "404" */ "@/pages/redirectflow/404.vue"),
+          meta: { title: "Not Found" },
+        },
+        { path: "/redirecflow/:catchAll(.*)", redirect: { name: "404" } },
       ],
     },
-    {
-      name: "providerchange",
-      path: "/providerchange",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "PROVIDER_CHANGE" */ "@/pages/ProviderChange.vue"),
-      meta: { title: "ProviderChange" },
-    },
-    {
-      name: "frame",
-      path: "/frame",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "FRAME" */ "@/pages/Frame.vue"),
-      meta: { title: "Frame" },
-    },
-    {
-      name: "404",
-      path: "/404",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "404" */ "@/pages/404.vue"),
-      meta: { title: "404" },
-    },
+
+    { path: "/:catchAll(.*)", redirect: "/" },
   ],
 });
 

@@ -17,7 +17,7 @@ export const getB64DecodedData = (hashString: string, defaultData?: unknown) => 
 };
 
 export const getRedirectConfig = (method: string): { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } => {
-  const redirectConfig = REDIRECT_FLOW_CONFIG[method] || { redirectPath: "404", requiresLogin: false };
+  const redirectConfig = REDIRECT_FLOW_CONFIG[method] || { redirectPath: "/redirectflow/not_found", requiresLogin: false };
   return {
     redirectPath: redirectConfig.redirectPath,
     requiresLogin: redirectConfig.requiresLogin,
