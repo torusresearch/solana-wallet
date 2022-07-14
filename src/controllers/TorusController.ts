@@ -700,8 +700,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.networkController.setProviderConfig(providerConfig);
   }
 
-  getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
-    if (!this.hasSelectedPrivateKey) return undefined;
+  getAccountPreferences(address: string, skipPrivKeyCheck = false): ExtendedAddressPreferences | undefined {
+    if (skipPrivKeyCheck && !this.hasSelectedPrivateKey) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 

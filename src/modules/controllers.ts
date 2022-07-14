@@ -90,6 +90,19 @@ class ControllerModule extends VuexModule {
     );
   }
 
+  get selectedAccountPreferencesEmbed(): ExtendedAddressPreferences {
+    const preferences = this.torus.getAccountPreferences(this.selectedAddress, false);
+    return (
+      preferences || {
+        ...DEFAULT_PREFERENCES,
+        incomingBackendTransactions: [],
+        displayActivities: {},
+        network_selected: "testnet",
+        theme: "dark",
+      }
+    );
+  }
+
   get crashReport(): boolean {
     return this.selectedAccountPreferences.crashReport || false;
   }
@@ -179,6 +192,10 @@ class ControllerModule extends VuexModule {
 
   get isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
+  }
+
+  get isDarkModeEmbed(): boolean {
+    return this.selectedAccountPreferencesEmbed.theme === "dark";
   }
 
   get userTokens(): SolanaToken[] {
