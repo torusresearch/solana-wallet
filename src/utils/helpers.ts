@@ -205,21 +205,29 @@ export function getBrowserKey() {
   return id;
 }
 
-export function hideCrispButton() {
+export function getCrisp() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  window.$crisp.push(["do", "chat:hide"]);
+  const crisp = window.$crisp;
+  if (!crisp) return false;
+  return crisp;
+}
+export function isCrispClosed() {
+  const crisp = getCrisp();
+  if (crisp) crisp.is("chat:closed");
+  return false;
+}
+export function hideCrispButton() {
+  const crisp = getCrisp();
+  crisp.push(["do", "chat:hide"]);
 }
 export function showCrispButton() {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.$crisp.push(["do", "chat:show"]);
+  const crisp = getCrisp();
+  crisp.push(["do", "chat:show"]);
 }
 export function openCrispChat() {
-  showCrispButton();
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.$crisp.push(["do", "chat:show"]);
+  const crisp = getCrisp();
+  crisp.push(["do", "chat:open"]);
 }
 
 export function getTorusMessage(message: Buffer): Buffer {
