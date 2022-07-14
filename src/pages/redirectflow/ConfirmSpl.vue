@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
+import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import { tokens } from "@/components/transfer/token-helper";
 import TransferSPL from "@/components/transfer/TransferSPL.vue";
@@ -14,6 +16,7 @@ import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_help
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
+const loading = ref(true);
 const transactionFee = ref(0);
 const transaction = ref<Transaction>();
 const selectedSplToken = computed(() => tokens.value.find((token) => token.mintAddress === params.mint_add));
@@ -30,7 +33,9 @@ onMounted(async () => {
 });
 
 watch(selectedSplToken, async () => {
-  if (selectedSplToken.value) {
+  if (selectedSplToken.value && loading.value) {
+    loading.value = false;
+    log.info(selectedSplToken.value);
     transaction.value = await generateSPLTransaction(
       params.receiver_add,
 
@@ -43,12 +48,11 @@ watch(selectedSplToken, async () => {
     const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
-  } else {
-    redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false, method }, req_id, resolveRoute);
   }
 });
 
 async function confirmTransfer() {
+  loading.value = true;
   await delay(500);
   try {
     if (selectedSplToken.value && transaction.value) {
@@ -61,12 +65,15 @@ async function confirmTransfer() {
 }
 
 async function cancelTransfer() {
+  loading.value = true;
   redirectToResult(jsonrpc, { message: "Transaction cancelled", success: false, method }, req_id, resolveRoute);
 }
 </script>
 
 <template>
+  <FullDivLoader v-if="loading" />
   <div
+    v-else
     class="w-full h-full overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-center items-center"
   >
     <TransferSPL
