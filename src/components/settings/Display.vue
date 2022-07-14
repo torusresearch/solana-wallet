@@ -4,8 +4,13 @@ import { useI18n } from "vue-i18n";
 import { Button } from "@/components/common";
 import { SettingsPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { isWhiteLabelActive, overrideTheme } from "@/utils/white_label";
 
 const { t } = useI18n();
+function changeTheme(theme: "light" | "dark") {
+  if (isWhiteLabelActive()) overrideTheme();
+  ControllerModule.setTheme(theme);
+}
 </script>
 <template>
   <div class="pb-4">
@@ -17,7 +22,7 @@ const { t } = useI18n();
           class="w-full"
           :variant="ControllerModule.isDarkMode ? 'tertiary' : 'primary'"
           :block="true"
-          @click="ControllerModule.changeTheme('light')"
+          @click="changeTheme('light')"
           >{{ t("walletSettings.light") }}</Button
         >
       </div>
@@ -27,7 +32,7 @@ const { t } = useI18n();
           :variant="ControllerModule.isDarkMode ? 'primary' : 'tertiary'"
           :block="true"
           class="w-full"
-          @click="ControllerModule.changeTheme('dark')"
+          @click="changeTheme('dark')"
           >{{ t("walletSettings.dark") }}</Button
         >
       </div>
