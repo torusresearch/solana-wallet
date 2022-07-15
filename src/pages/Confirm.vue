@@ -9,6 +9,7 @@ import { onErrorCaptured, onMounted, ref } from "vue";
 import { PaymentConfirm } from "@/components/payments";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
+import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
@@ -116,6 +117,8 @@ const rejectTxn = async () => {
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
+    :price-per-sol="ControllerModule.conversionRate"
+    :currency="ControllerModule.currentCurrency"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />

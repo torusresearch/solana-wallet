@@ -1,3 +1,4 @@
+import { createTransaction, parseURL } from "@solana/pay";
 import {
   Account,
   AccountLayout,
@@ -20,6 +21,8 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
+import { get, post } from "@toruslabs/http-helpers";
+import { TokenInfo } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
@@ -346,3 +349,56 @@ export function parsingTransferAmount(tx: Transaction, txFee: number, isGasless:
 
   return finalTxData;
 }
+
+export async function generateSolanaPayTransaction(url: string, connection: Connection, feePayer: string) {
+  const { recipient, memo, amount, reference, splToken } = parseURL(url);
+  const transaction = await createTransaction(connection, new PublicKey(feePayer), recipient, amount as BigNumber, {
+    splToken,
+    reference,
+    memo,
+  });
+  log.info(transaction);
+  const block = await connection.getRecentBlockhash();
+  transaction.recentBlockhash = block.blockhash;
+  transaction.feePayer = new PublicKey(feePayer);
+  return transaction;
+}
+
+export async function getTokenInfo(mintAddress: string): Promise<Partial<TokenInfo>> {
+  // temporary solution
+  // await this.tokenInfoController.updateTokenInfoMap([
+  //   { mintAddress, tokenAddress: "", balance: { decimals: 1, amount: "0", uiAmount: 0, uiAmountString: "0" }, isFungible: true },
+  // ]);
+  // const tokenInfo = this.tokenInfoController.state.tokenInfoMap[mintAddress];
+
+  return {
+    // ...tokenInfo,
+    address: mintAddress,
+  };
+}
+
+// SolanaPay
+export const parseSolanaPayRequestLink = async (request: string, account: string) => {
+  log.info(request);
+  // get link
+  // return {"label":"<label>","icon":"<icon>"}
+  // update label and icon on tx display
+  const getResult = await get<{ label: string; icon: string }>(request);
+  // post link
+  // body {"account":"<account>"}
+  // return {"transaction":"<transaction>"} (base64)
+  const postResult = await post<{ transaction: string }>(request, { account });
+
+  const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
+  const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
+  // validate transaction
+  // if (transaction.signatures.length) {
+
+  // } else {
+
+  // }
+  // if transaction.blockhash ?
+
+  // assign transaction object
+  return { ...getResult, transaction, decodedInst };
+};
