@@ -82,14 +82,14 @@ const totalFiatCostString = computed(() => {
 </script>
 <template>
   <div
-    :class="{ dark: ControllerModule.isDarkModeEmbed }"
+    :class="{ dark: ControllerModule.isDarkMode }"
     class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
   >
     <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-between relative">
       <div class="shadow dark:shadow-dark text-center py-6">
         <img
           class="h-7 absolute left-5"
-          :src="(ControllerModule.isDarkModeEmbed ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.tokenLogoUrl || SolanaLogoURL"
+          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.tokenLogoUrl || SolanaLogoURL"
           alt="Solana Logo"
         />
         <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">

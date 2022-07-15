@@ -19,6 +19,7 @@ import {
   ProviderConfig,
   SelectedAddresssChangeChannelData,
   THEME,
+  ThemeChannelData,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
@@ -192,10 +193,6 @@ class ControllerModule extends VuexModule {
 
   get isDarkMode(): boolean {
     return this.selectedAccountPreferences.theme === "dark";
-  }
-
-  get isDarkModeEmbed(): boolean {
-    return this.selectedAccountPreferencesEmbed.theme === "dark";
   }
 
   get userTokens(): SolanaToken[] {
@@ -373,6 +370,22 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async changeTheme(theme: "light" | "dark") {
+    const instanceId = new URLSearchParams(window.location.search).get("instanceId");
+    if (instanceId) {
+      // eslint-disable-next-line no-debugger
+      debugger;
+      const themeChannel = new BroadcastChannel<PopupData<ThemeChannelData>>(
+        `${BROADCAST_CHANNELS.THEME_CHANGE}_${instanceId}`,
+        broadcastChannelOptions
+      );
+      themeChannel.postMessage({
+        data: {
+          type: BROADCAST_CHANNELS_MSGS.SET_THEME,
+          theme,
+        },
+      });
+      themeChannel.close();
+    }
     if (isWhiteLabelActive()) overrideTheme();
     this.setTheme(theme);
   }
@@ -452,6 +465,7 @@ class ControllerModule extends VuexModule {
         handleAccountImport: this.importExternalAccount.bind(this),
         handleNetworkChange: (providerConfig: ProviderConfig) => this.setNetwork(providerConfig.chainId),
         handleSelectedAddressChange: this.setSelectedAccount.bind(this),
+        handleThemeChange: this.setTheme.bind(this),
       });
       popupStoreChannel.setupStoreChannels();
     }
