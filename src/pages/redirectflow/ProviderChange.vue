@@ -29,6 +29,7 @@ const finalProviderData = reactive<FinalTxData>({
 onMounted(async () => {
   finalProviderData.toNetwork = params.displayName;
   finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+  loading.value = false;
 });
 const currentNetwork = computed(() => ControllerModule.selectedNetworkDisplayName);
 watch(currentNetwork, () => {
