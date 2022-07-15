@@ -42,12 +42,16 @@ onMounted(async () => {
     const connection = new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"));
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
-      decodedInst.value = decoded;
-      estimationInProgress.value = false;
-      hasEstimationError.value = "Failed to simulate transaction for balance changes";
-      loading.value = false;
-      return;
+      if (txData.message.length === 1) {
+        txData.message = (txData.message as string[]).at(0) || "";
+      } else {
+        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+        decodedInst.value = decoded;
+        estimationInProgress.value = false;
+        hasEstimationError.value = "Failed to simulate transaction for balance changes";
+        loading.value = false;
+        return;
+      }
     }
 
     if (txData.messageOnly) {
