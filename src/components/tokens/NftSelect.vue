@@ -4,7 +4,8 @@ import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { computed, ref, watch } from "vue";
 
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
-import { getClubbedNfts, getImgProxyUrl } from "@/utils/helpers";
+import { getImgProxyUrl } from "@/utils/helpers";
+import { getClubbedNfts } from "@/utils/solanaHelpers";
 
 const props = withDefaults(
   defineProps<{
