@@ -15,7 +15,7 @@ const props = defineProps<{
 const symbols = ref<{ [mint: string]: string }>({});
 
 const updateSymbol = async (mintAddress: string, decimals: number) => {
-  symbols.value[mintAddress] = mintAddress.substring(0, 8);
+  symbols.value[mintAddress] = mintAddress ? `${mintAddress.substring(0, 5)}...` : "SOL";
 
   const tokenInfoState = ControllerModule.torusState.TokenInfoState;
   let symbol = tokenInfoState.tokenInfoMap[mintAddress]?.symbol || tokenInfoState.metaplexMetaMap[mintAddress]?.symbol;
@@ -42,7 +42,7 @@ const { t } = useI18n();
       <div v-if="props.estimationInProgress" class="text-xs italic text-app-text-500 dark:text-app-text-dark-500">Estimating...</div>
       <div v-for="item in props.estimatedBalanceChange" :key="item.symbol" class="text-xs italic text-red-500">
         <div v-if="!props.estimationInProgress" :class="item.changes >= 0 && 'text-green-400'">
-          {{ item.changes + "   " + (symbols[item.mint] || "SOL") }}
+          {{ item.changes + "   " + symbols[item.mint] }}
         </div>
       </div>
     </div>

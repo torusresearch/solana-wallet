@@ -2,10 +2,10 @@
 import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import { PaymentConfirm } from "@/components/payments";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
@@ -104,9 +104,7 @@ const rejectTxn = async () => {
 </script>
 
 <template>
-  <div v-if="loading" class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex flex-col justify-center items-center">
-    <Loader :use-spinner="true" />
-  </div>
+  <FullDivLoader v-if="loading" />
   <PaymentConfirm
     v-else-if="finalTxData"
     :is-open="true"

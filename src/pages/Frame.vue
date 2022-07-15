@@ -87,6 +87,7 @@ watch(isIFrameFullScreen, () => {
 });
 
 onMounted(async () => {
+  hideCrispButton();
   if (!isMain) {
     await promise;
     log.info("initializing controllers with origin", dappOrigin);
