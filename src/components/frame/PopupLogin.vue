@@ -2,14 +2,13 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/solid";
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import { LOGIN_CONFIG } from "@/utils/enums";
-import { hideCrispButton } from "@/utils/helpers";
 
 withDefaults(
   defineProps<{
@@ -41,10 +40,6 @@ const setActiveButton = (provider: string) => {
   activeButton.value = provider;
 };
 const refDiv = ref(null);
-
-onMounted(() => {
-  hideCrispButton();
-});
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
