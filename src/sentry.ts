@@ -9,6 +9,8 @@ import { App } from "vue";
 import { handleExceptions } from "@/utils/ErrorHandler";
 import config from "./config";
 
+const logger = log.getLogger("error");
+
 function getSampleRate() {
   try {
     return Number.parseFloat(process.env.VUE_APP_SENTRY_SAMPLE_RATE || "") || 0.1;
@@ -71,5 +73,5 @@ export function installSentry(Vue: App) {
 
   const plugin = new LoglevelSentryPlugin(Sentry);
   Sentry.setTag("referrer", document.referrer || "self");
-  plugin.install(log);
+  plugin.install(logger);
 }

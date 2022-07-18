@@ -87,7 +87,6 @@ watch(isIFrameFullScreen, () => {
 });
 
 onMounted(async () => {
-  hideCrispButton();
   if (!isMain) {
     await promise;
     log.info("initializing controllers with origin", dappOrigin);
@@ -116,6 +115,7 @@ onMounted(async () => {
 
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
+    hideCrispButton();
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
