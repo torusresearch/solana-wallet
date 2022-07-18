@@ -1,3 +1,6 @@
+import { useRoute, useRouter } from "vue-router";
+
+import ControllerModule from "../modules/controllers";
 import { REDIRECT_FLOW_CONFIG } from "./enums";
 
 export const getB64DecodedData = (hashString: string, defaultData?: unknown) => {
@@ -14,8 +17,12 @@ export const getB64DecodedData = (hashString: string, defaultData?: unknown) => 
 };
 
 export const getRedirectConfig = (method: string): { redirectPath: string; requiresLogin: boolean; shouldRedirect: boolean } => {
-  const { redirectPath = "/", requiresLogin = false } = method ? REDIRECT_FLOW_CONFIG[method] : {};
-  return { redirectPath, requiresLogin, shouldRedirect: redirectPath !== "/" };
+  const redirectConfig = REDIRECT_FLOW_CONFIG[method] || { redirectPath: "/redirectflow/not_found", requiresLogin: false };
+  return {
+    redirectPath: redirectConfig.redirectPath,
+    requiresLogin: redirectConfig.requiresLogin,
+    shouldRedirect: redirectConfig.redirectPath !== "/",
+  };
 };
 
 export const timeoutWindowClose = (): void => {
@@ -36,10 +43,39 @@ export const redirectToResult = (jsonrpc: string, result: unknown, id: number, r
   }
 };
 
-export const useRedirectFlow = (defaultParams?: unknown) => {
-  const { params = {}, method = "", id = 1, jsonrpc = "2.0" } = getB64DecodedData(window.location.hash, defaultParams);
-  const queryParameters = new URLSearchParams(window.location.search);
-  const resolveRoute = queryParameters.get("resolveRoute") || "";
+export const useRedirectFlow = () => {
+  const route = useRoute();
+
+  const { params = {}, method = "", id = 1, jsonrpc = "2.0" } = getB64DecodedData(route.hash, route.params);
+  const { resolveRoute } = route.query;
   const isRedirectFlow = !!resolveRoute || !!method; // since method and resolveRoute are always required
-  return { params, method, req_id: id, jsonrpc, resolveRoute, isRedirectFlow };
+
+  return { params, method, req_id: id, jsonrpc, resolveRoute: resolveRoute as string, isRedirectFlow, query: route.query, hash: route.hash };
 };
+
+export async function evalRedirectflow() {
+  const { params, method, resolveRoute, req_id, jsonrpc, query, hash } = useRedirectFlow();
+  const router = useRouter();
+
+  if (!resolveRoute || !method) return router.push({ name: "404", query, hash });
+
+  const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
+
+  await ControllerModule.torus.restoreFromBackend();
+  if (!ControllerModule.hasSelectedPrivateKey && requiresLogin) {
+    return router.push({
+      name: "login",
+      query: {
+        redirectTo: shouldRedirect ? redirectPath : "/redirectflow",
+        resolveRoute,
+      },
+      hash,
+    });
+  }
+  if (shouldRedirect) return router.push(`${redirectPath}?resolveRoute=${resolveRoute}${hash}`);
+
+  const res = await ControllerModule.handleRedirectFlow({ method, params, resolveRoute });
+  if (method !== "topup") redirectToResult(jsonrpc, { data: res, method, success: true }, req_id, resolveRoute);
+  // syntax need return - temporary return string "void"
+  return "void";
+}

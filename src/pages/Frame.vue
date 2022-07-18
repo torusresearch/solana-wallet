@@ -2,11 +2,11 @@
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { isMain, promiseCreator, recordDapp } from "@/utils/helpers";
+import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -82,7 +82,12 @@ const lastTransaction = computed(() => {
   return txns[0] as SolanaTransactionActivity;
 });
 
+watch(isIFrameFullScreen, () => {
+  if (!isIFrameFullScreen.value && !isCrispClosed()) hideCrispButton();
+});
+
 onMounted(async () => {
+  hideCrispButton();
   if (!isMain) {
     await promise;
     log.info("initializing controllers with origin", dappOrigin);

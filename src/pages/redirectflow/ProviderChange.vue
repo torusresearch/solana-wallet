@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { PopupWhitelabelData, ProviderConfig } from "@toruslabs/base-controllers";
-import { computed, onMounted, reactive, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 
-import ProviderChange1 from "@/components/providerChange/ProviderChange.vue";
+import FullDivLoader from "@/components/FullDivLoader.vue";
+import ProviderChangeComponent from "@/components/providerChange/ProviderChange.vue";
 import ControllerModule from "@/modules/controllers";
-import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
 import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
-const { params, req_id, resolveRoute, method, jsonrpc } = useRedirectFlow(WALLET_SUPPORTED_NETWORKS.mainnet);
-
+const { params, req_id, resolveRoute, method, jsonrpc } = useRedirectFlow();
+const loading = ref(true);
 interface FinalTxData {
   origin: string;
   toNetwork: string;
@@ -29,22 +29,27 @@ const finalProviderData = reactive<FinalTxData>({
 onMounted(async () => {
   finalProviderData.toNetwork = params.displayName;
   finalProviderData.fromNetwork = ControllerModule.torus.currentNetworkName;
+  loading.value = false;
 });
 const currentNetwork = computed(() => ControllerModule.selectedNetworkDisplayName);
 watch(currentNetwork, () => {
   if (currentNetwork.value === (params as ProviderConfig).displayName) redirectToResult(jsonrpc, { success: true, method }, req_id, resolveRoute);
 });
 const approveProviderChange = async (): Promise<void> => {
+  loading.value = true;
   ControllerModule.torus.setNetwork(params as ProviderConfig);
   setTimeout(() => redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute), 5000);
 };
 const denyProviderChange = async () => {
+  loading.value = true;
   redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
 };
 </script>
 
 <template>
-  <ProviderChange1
+  <FullDivLoader v-if="loading" />
+  <ProviderChangeComponent
+    v-else
     :origin="finalProviderData.origin"
     :to-network="finalProviderData.toNetwork"
     :from-network="finalProviderData.fromNetwork"

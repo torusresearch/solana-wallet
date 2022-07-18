@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RedirectHandler } from "@toruslabs/base-controllers";
+import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { onMounted } from "vue";
 
 import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
@@ -24,6 +25,6 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <!-- <Loader :use-spinner="true" /> -->
+    <Loader :use-spinner="true" />
   </div>
 </template>

@@ -146,7 +146,7 @@ const refDiv = ref(null);
                 class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-row justify-start items-center pb-8 pt-2"
               >
                 <p class="flex-auto">{{ t("walletTransfer.transactionFee") }}</p>
-                <p>{{ props.cryptoTxFee }} SOL</p>
+                <p>{{ props.cryptoTxFee || "..." }} SOL</p>
               </div>
               <div class="w-full">
                 <EstimateChanges

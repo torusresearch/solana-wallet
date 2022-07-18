@@ -209,7 +209,7 @@ export async function calculateChanges(
     const postTokenOwner = item.owner.toBase58();
     if (preTokenOwner === selectedAddress || postTokenOwner === selectedAddress) {
       let mint = item.mint.toBase58();
-      const symbol = addressSlicer(item.mint.toBase58());
+      const symbol = `${item.mint.toBase58().substring(0, 5)}...`;
 
       // default decimals
       let decimals = 9;

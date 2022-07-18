@@ -2,19 +2,15 @@
 import { Loader } from "@toruslabs/vue-components/common";
 import { onMounted } from "vue";
 
-import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
-
-const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
+import { evalRedirectflow } from "../utils/redirectflowHelpers";
 
 onMounted(async () => {
-  const res = await ControllerModule.handleRedirectFlow({ method, params, resolveRoute });
-  if (method !== "topup") redirectToResult(jsonrpc, { data: res, method, success: true }, req_id, resolveRoute);
+  await evalRedirectflow();
 });
 </script>
 
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
-    <Loader />
+    <Loader :use-spinner="true" />
   </div>
 </template>

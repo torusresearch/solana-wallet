@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT, PopupWhitelabelData } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { onErrorCaptured, onMounted, reactive } from "vue";
+import { onErrorCaptured, onMounted, reactive, ref } from "vue";
 
-import ProviderChangeVue from "@/components/providerChange/ProviderChange.vue";
+import FullDivLoader from "@/components/FullDivLoader.vue";
+import ProviderChangeComponent from "@/components/providerChange/ProviderChange.vue";
 import { openCrispChat } from "@/utils/helpers";
 
 import { ProviderChangeChannelEventData } from "../utils/interfaces";
 
 const channel = `${BROADCAST_CHANNELS.PROVIDER_CHANGE_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
+const loading = ref(true);
 
 interface FinalTxData {
   origin: string;
@@ -37,9 +39,11 @@ onMounted(async () => {
   finalProviderData.toNetwork = providerData.newNetwork.displayName;
   finalProviderData.fromNetwork = providerData.currentNetwork;
   finalProviderData.whitelabelData = providerData.whitelabelData;
+  loading.value = false;
 });
 
 const approveProviderChange = async (): Promise<void> => {
+  loading.value = true;
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({
     data: { type: POPUP_RESULT, approve: true },
@@ -48,6 +52,7 @@ const approveProviderChange = async (): Promise<void> => {
 };
 
 const denyProviderChange = async () => {
+  loading.value = true;
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
   bc.close();
@@ -55,7 +60,9 @@ const denyProviderChange = async () => {
 </script>
 
 <template>
-  <ProviderChangeVue
+  <FullDivLoader v-if="loading" />
+  <ProviderChangeComponent
+    v-else
     :origin="finalProviderData.origin"
     :to-network="finalProviderData.toNetwork"
     :from-network="finalProviderData.fromNetwork"

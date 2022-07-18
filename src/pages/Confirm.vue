@@ -5,6 +5,7 @@ import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import { PaymentConfirm } from "@/components/payments";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
@@ -22,6 +23,7 @@ const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
+const loading = ref(true);
 
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
@@ -40,11 +42,16 @@ onMounted(async () => {
     const connection = new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"));
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
-      decodedInst.value = decoded;
-      estimationInProgress.value = false;
-      hasEstimationError.value = "Failed to simulate transaction for balance changes";
-      return;
+      if (txData.message.length === 1) {
+        txData.message = (txData.message as string[]).at(0) || "";
+      } else {
+        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+        decodedInst.value = decoded;
+        estimationInProgress.value = false;
+        hasEstimationError.value = "Failed to simulate transaction for balance changes";
+        loading.value = false;
+        return;
+      }
     }
 
     if (txData.messageOnly) {
@@ -65,6 +72,7 @@ onMounted(async () => {
       });
 
       finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
+      loading.value = false;
     } catch (e) {
       log.error(e);
     }
@@ -75,6 +83,7 @@ onMounted(async () => {
 });
 
 const approveTxn = async (): Promise<void> => {
+  loading.value = true;
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({
     data: { type: POPUP_RESULT, approve: true },
@@ -83,6 +92,7 @@ const approveTxn = async (): Promise<void> => {
 };
 
 const closeModal = async () => {
+  loading.value = true;
   const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
   bc.close();
@@ -94,8 +104,9 @@ const rejectTxn = async () => {
 </script>
 
 <template>
+  <FullDivLoader v-if="loading" />
   <PaymentConfirm
-    v-if="finalTxData"
+    v-else-if="finalTxData"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
