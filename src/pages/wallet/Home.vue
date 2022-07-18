@@ -13,8 +13,8 @@ import ImportToken from "@/components/home/ImportToken.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
+import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
-import { NAVIGATION_LIST } from "@/utils/NavBarHelper";
 
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),

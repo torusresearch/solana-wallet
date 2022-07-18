@@ -8,7 +8,7 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
-import { NAVIGATION_LIST } from "@/utils/NavBarHelper";
+import { NAVIGATION_LIST } from "@/utils/enums";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 

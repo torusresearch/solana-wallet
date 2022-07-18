@@ -3,7 +3,7 @@ import { Loader } from "@toruslabs/vue-components/common";
 import { onMounted } from "vue";
 
 import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
 
 const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 

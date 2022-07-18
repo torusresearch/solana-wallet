@@ -2,7 +2,7 @@
 import { RedirectHandler } from "@toruslabs/base-controllers";
 import { onMounted } from "vue";
 
-import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
 
 const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 

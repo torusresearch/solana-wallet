@@ -6,7 +6,7 @@ import ProviderChange1 from "@/components/providerChange/ProviderChange.vue";
 import ControllerModule from "@/modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, req_id, resolveRoute, method, jsonrpc } = useRedirectFlow(WALLET_SUPPORTED_NETWORKS.mainnet);
 

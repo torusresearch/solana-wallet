@@ -6,7 +6,7 @@ import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
 import ControllerModule from "../../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
 

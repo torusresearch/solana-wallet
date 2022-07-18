@@ -5,7 +5,7 @@ import { PKG } from "@/const";
 import ControllerModule from "@/modules/controllers";
 import { getBrowserKey } from "@/utils/helpers";
 
-import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflow_helpers";
+import { getB64DecodedData, getRedirectConfig } from "./utils/redirectflowHelpers";
 
 const enum AuthStates {
   AUTHENTICATED = "auth",

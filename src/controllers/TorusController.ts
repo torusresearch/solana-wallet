@@ -97,7 +97,7 @@ import {
   TransactionChannelDataType,
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
-import { constructTokenData } from "@/utils/instruction_decoder";
+import { constructTokenData } from "@/utils/instructionDecoder";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 

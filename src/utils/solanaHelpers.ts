@@ -24,7 +24,7 @@ import BigNumber from "bignumber.js";
 import log from "loglevel";
 
 import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, TWITTER } from "./enums";
-import { DecodedDataType, decodeInstruction } from "./instruction_decoder";
+import { DecodedDataType, decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
