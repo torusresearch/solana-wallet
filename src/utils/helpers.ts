@@ -1,4 +1,4 @@
-import { concatSig } from "@toruslabs/base-controllers";
+import { concatSig, UserInfo } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
 import bowser from "bowser";
@@ -10,6 +10,7 @@ import config from "@/config";
 import { addToast } from "@/modules/app";
 
 import { LOCALE_EN, LOGIN_CONFIG, STORAGE_TYPE } from "./enums";
+import { LogoutMessage } from "./interfaces";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -190,10 +191,27 @@ export const parseJwt = (token: string) => {
   return JSON.parse(jsonPayload);
 };
 
-export const logoutWithBC = async () => {
-  const bc = new BroadcastChannel("LOGOUT_WINDOWS_CHANNEL");
-  await bc.postMessage("logout");
-  bc.close();
+// Get a sufficiently unique channel name for
+// the current window
+export const getLogoutBcChannelName = (origin: string, userInfo: UserInfo) => {
+  const browser = bowser.getParser(window.navigator.userAgent);
+  const browserId = `${browser.getBrowserName()}_${browser.getBrowserVersion}`;
+  const platformId = `${browser.getOSName()}_${browser.getPlatformType()}`;
+  const userId = `${userInfo.verifier}_${userInfo.verifierId}`;
+  const id = `${userId}_${origin}_${browserId}_${platformId}`;
+  const hash = keccak(Buffer.from(id)).toString("hex");
+  return hash;
+};
+
+export const logoutWithBC = async (origin: string, _instanceId: string, userInfo: UserInfo) => {
+  const channelName = getLogoutBcChannelName(origin, userInfo);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const bc = new BroadcastChannel<LogoutMessage>(`${channelName}`, { server: { timeout: 5 } });
+  const timestamp = new Date().getTime();
+  const instanceId = _instanceId.slice(0, 8);
+  await bc.postMessage({ instanceId, timestamp });
+  await bc.close();
 };
 
 export function getBrowserKey() {

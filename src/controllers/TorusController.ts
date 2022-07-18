@@ -38,6 +38,7 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
+import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import eccrypto from "@toruslabs/eccrypto";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import {
@@ -97,8 +98,9 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getLogoutBcChannelName, getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instruction_decoder";
+import { LogoutMessage } from "@/utils/interfaces";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -216,6 +218,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private lastTokenRefresh: Date = new Date();
 
   private instanceId = "";
+
+  private logoutBcAttached!: boolean;
 
   constructor({ _config, _state }: { _config: Partial<TorusControllerConfig>; _state: Partial<TorusControllerState> }) {
     super({ config: _config, state: _state });
@@ -775,7 +779,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {
     this.handleLogout();
     res.result = true;
-    end();
+    setTimeout(() => end(), 100); // Make sure all async ops are executed.
   }
 
   public handleLogout(): void {
@@ -1384,6 +1388,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           // This call sync and refresh blockchain state
           this.setSelectedAccount(selectedAddress, true);
 
+          this.attachLogoutBC();
           return true;
         } catch (e) {
           log.error(e, "Error restoring state after successful decrypt!");
@@ -1399,6 +1404,32 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async getDappList(): Promise<DiscoverDapp[]> {
     return this.preferencesController.getDappList();
+  }
+
+  attachLogoutBC() {
+    if (this.logoutBcAttached) {
+      log.warn("Logout BC already attached");
+      return;
+    }
+
+    const channelName = getLogoutBcChannelName(this.origin, this.userInfo);
+    const bc = new BroadcastChannel<LogoutMessage>(channelName);
+    this.logoutBcAttached = true;
+
+    const thisInstance = this.instanceId.slice(0, 8);
+    const eventListener = (msg: LogoutMessage) => {
+      if (thisInstance === msg.instanceId) return;
+      bc.removeEventListener("message", eventListener);
+      bc.close()
+        .then(() => {
+          this.logoutBcAttached = false;
+          this.emit("logout", true);
+          if (!isMain) this.notifyEmbedLogout();
+          return null;
+        })
+        .catch((err) => log.error("broadcastchannel close error", err));
+    };
+    bc.addEventListener("message", eventListener);
   }
 
   private async providerRequestAccounts(req: JRPCRequest<unknown>) {

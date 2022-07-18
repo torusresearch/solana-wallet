@@ -40,7 +40,7 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { delay, isMain } from "@/utils/helpers";
+import { delay, isMain, logoutWithBC } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 
 import store from "../store";
@@ -415,9 +415,13 @@ class ControllerModule extends VuexModule {
       }
     });
 
-    this.torus.on("logout", () => {
-      // logoutWithBC();
-      this.logout();
+    this.torus.on("logout", (fromBC?: boolean) => {
+      this.logout(fromBC);
+    });
+    this.torus.on("LOGIN_RESPONSE", (message?: string, address?: string) => {
+      if (message === null && address) {
+        this.torus.attachLogoutBC();
+      }
     });
     this.setInstanceId(instanceId);
 
@@ -488,10 +492,11 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async logout(): Promise<void> {
+  async logout(fromBC?: boolean): Promise<void> {
     if (isMain && this.selectedAddress) {
       this.openloginLogout();
     }
+    if (!fromBC) await logoutWithBC(this.torus.origin, this.instanceId, this.torus.userInfo);
     const initialState = { ...cloneDeep(DEFAULT_STATE) };
     // this.updateTorusState(initialState);
 
