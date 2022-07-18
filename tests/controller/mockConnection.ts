@@ -254,6 +254,7 @@ export const mockConnection: Partial<Connection> = {
       feeCalculator: { lamportsPerSignature: 5000 },
     };
   },
+  rpcEndpoint: "http://localhost:8080/",
   getLatestBlockhash: async () => {
     return {
       blockhash: base58.encode(crypto.createHash("sha256").update(slotCounter.toString()).digest()),
