@@ -9,7 +9,7 @@ import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
 import ControllerModule from "../../modules/controllers";
 import { delay } from "../../utils/helpers";
-import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 import { calculateTxFee, generateSPLTransaction } from "../../utils/solanaHelpers";
 
 const { params, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();

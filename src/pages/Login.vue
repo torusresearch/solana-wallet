@@ -23,7 +23,7 @@ import { addToast, app } from "@/modules/app";
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
 
 const { isRedirectFlow, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 

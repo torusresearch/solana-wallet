@@ -8,7 +8,7 @@ import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { DecodedDataType } from "@/utils/instruction_decoder";
+import { DecodedDataType } from "@/utils/instructionDecoder";
 import { AccountEstimation } from "@/utils/interfaces";
 
 import EstimateChanges from "./EstimateChanges.vue";

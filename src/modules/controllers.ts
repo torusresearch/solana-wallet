@@ -27,9 +27,7 @@ import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import cloneDeep from "lodash-es/cloneDeep";
-import merge from "lodash-es/merge";
-import omit from "lodash-es/omit";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 

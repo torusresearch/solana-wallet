@@ -11,7 +11,7 @@ import { delay } from "@/utils/helpers";
 import { calculateTxFee, generateSPLTransaction } from "@/utils/solanaHelpers";
 
 import ControllerModule from "../../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();

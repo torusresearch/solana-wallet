@@ -6,7 +6,7 @@ import { BrowserTracing } from "@sentry/tracing";
 import LoglevelSentryPlugin, { redactBreadcrumbData } from "@toruslabs/loglevel-sentry";
 import log from "loglevel";
 import { App } from "vue";
-import { handleExceptions } from "@/utils/ErrorHandler";
+import { handleExceptions } from "@/utils/errorHandlers";
 import config from "./config";
 
 const logger = log.getLogger("error");

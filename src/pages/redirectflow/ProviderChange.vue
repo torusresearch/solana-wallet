@@ -6,7 +6,7 @@ import FullDivLoader from "@/components/FullDivLoader.vue";
 import ProviderChangeComponent from "@/components/providerChange/ProviderChange.vue";
 import ControllerModule from "@/modules/controllers";
 
-import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, req_id, resolveRoute, method, jsonrpc } = useRedirectFlow();
 const loading = ref(true);

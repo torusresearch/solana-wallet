@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue";
 
 import Button from "@/components/common/Button.vue";
 import { REDIRECT_FLOW_CONFIG } from "@/utils/enums";
-import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "@/utils/redirectflowHelpers";
 
 const { method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 const errorText = ref<string>("");

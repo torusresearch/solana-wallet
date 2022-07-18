@@ -7,7 +7,7 @@ import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import SubtractURL from "@/assets/subtract.svg";
 import { Button } from "@/components/common";
 import { getDomainFromUrl } from "@/utils/helpers";
-import { DecodedDataType } from "@/utils/instruction_decoder";
+import { DecodedDataType } from "@/utils/instructionDecoder";
 import { AccountEstimation } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
