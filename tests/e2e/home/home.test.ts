@@ -18,6 +18,9 @@ test.describe("Home Page", async () => {
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
   });
+  test.afterAll(async () => {
+    await page.close();
+  });
   test.afterAll(markResult);
   test.beforeEach(setBrowserStackTestTitle);
 

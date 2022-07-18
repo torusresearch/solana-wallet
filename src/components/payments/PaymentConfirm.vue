@@ -8,8 +8,10 @@ import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { DecodedDataType } from "@/utils/instruction_decoder";
+import { DecodedDataType } from "@/utils/instructionDecoder";
+import { AccountEstimation } from "@/utils/interfaces";
 
+import EstimateChanges from "./EstimateChanges.vue";
 import InstructionDisplay from "./InstructionDisplay.vue";
 
 const { t } = useI18n();
@@ -27,6 +29,9 @@ const props = withDefaults(
     tokenLogoUrl?: string;
     decodedInst: DecodedDataType[];
     network: string;
+    estimationInProgress: boolean;
+    estimatedBalanceChange: AccountEstimation[];
+    hasEstimationError: string;
   }>(),
   {
     senderPubKey: "",
@@ -41,11 +46,7 @@ const props = withDefaults(
 );
 
 const expand_inst = ref(false);
-const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
-
-const closeModal = () => {
-  emits("onCloseModal");
-};
+const emits = defineEmits(["transferConfirm", "transferCancel"]);
 
 const onCancel = () => {
   emits("transferCancel");
@@ -53,7 +54,6 @@ const onCancel = () => {
 
 const onConfirm = () => {
   emits("transferConfirm");
-  closeModal();
 };
 
 // const cryptoAmountString = computed(() => {
@@ -80,10 +80,7 @@ const totalFiatCostString = computed(() => {
 });
 </script>
 <template>
-  <div
-    :class="{ dark: ControllerModule.isDarkMode }"
-    class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center"
-  >
+  <div class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center">
     <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-between relative">
       <div class="shadow dark:shadow-dark text-center py-6">
         <img class="h-7 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
@@ -106,7 +103,14 @@ const totalFiatCostString = computed(() => {
             <p>{{ t("walletTopUp.youSend") }}</p>
             <p>{{ props.cryptoAmount }} {{ props.token }}</p>
           </span>
-
+          <div v-if="false" class="mt-3 w-full">
+            <EstimateChanges
+              :estimated-balance-change="props.estimatedBalanceChange"
+              :has-estimation-error="props.hasEstimationError"
+              :is-expand="true"
+              :estimation-in-progress="props.estimationInProgress"
+            />
+          </div>
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
             <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
             <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " " + props.token }}</p>

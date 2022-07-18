@@ -1,48 +1,46 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Mint, MintLayout, RawMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { AccountInfo, Commitment, Connection, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
-import BN from "bn.js";
 import base58 from "bs58";
 import crypto from "crypto";
 import log from "loglevel";
 
-import { MintLayout } from "@/utils/helpers";
-
 import { OffChainMetaplexUri, sKeyPair } from "./mockData";
-// import log from "loglevel";
 
 let slotCounter = 23134;
 
 export const mockMintAddress = ["CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp", "2sTumM2oVLdurFrXWKVLpipdfwwY3D9ZspLh4Yo5zK6o"];
-export const mockMintInfo: Record<string, any> = {
+export const mockMintInfo: Record<string, Mint> = {
   [mockMintAddress[0]]: {
+    address: new PublicKey(mockMintAddress[0]),
     mintAuthority: sKeyPair[0].publicKey,
     freezeAuthority: sKeyPair[0].publicKey,
     decimals: 6,
-    supply: new BN(1000000000),
+    supply: BigInt(1000000000),
     isInitialized: true,
   },
   [mockMintAddress[1]]: {
+    address: new PublicKey(mockMintAddress[1]),
     mintAuthority: sKeyPair[0].publicKey,
     freezeAuthority: sKeyPair[0].publicKey,
     decimals: 0,
-    supply: new BN(1000000000),
+    supply: BigInt(1000000000),
     isInitialized: true,
   },
 };
 
 const generateAccountInfo = async () => {
   // mint buf len 82
-  const genMintLayout = (mintInfo: any) => {
+  const genMintLayout = (mintInfo: Mint) => {
     const buf = Buffer.alloc(82);
-    const mintocz = {
-      mintAuthorityOption: new BN(0),
-      mintAuthority: mintInfo.mintAuthority,
-      supply: new BN(mintInfo.supply),
-      decimals: new BN(mintInfo.decimals),
-      isInitialized: new BN(mintInfo.isInitialized ? 1 : 0),
-      freezeAuthorityOption: new BN(0),
-      freezeAuthority: mintInfo.freezeAuthority,
+    const mintocz: RawMint = {
+      mintAuthorityOption: mintInfo.mintAuthority ? 1 : 0,
+      mintAuthority: mintInfo.mintAuthority || new PublicKey(0),
+      supply: mintInfo.supply,
+      decimals: mintInfo.decimals,
+      isInitialized: mintInfo.isInitialized,
+      freezeAuthorityOption: mintInfo.freezeAuthority ? 1 : 0,
+      freezeAuthority: mintInfo.freezeAuthority || new PublicKey(0),
     };
     const offset = MintLayout.encode(mintocz, buf);
     log.info(offset); // 82
@@ -58,10 +56,10 @@ const generateAccountInfo = async () => {
   //   isInitialized: true,
   // });
 
-  const decodeMintInfo: any = MintLayout.decode(buf);
+  // const decodeMintInfo: any = MintLayout.decode(buf);
 
-  log.info(decodeMintInfo.supply.toNumber());
-  log.info(decodeMintInfo.isInitialized);
+  // log.info(decodeMintInfo.supply.toNumber());
+  // log.info(decodeMintInfo.isInitialized);
 
   // Metaplex data Layout
   const mdpda = await Metadata.getPDA(new PublicKey(mockMintAddress[1]));
@@ -254,6 +252,13 @@ export const mockConnection: Partial<Connection> = {
     return {
       blockhash: base58.encode(crypto.createHash("sha256").update(slotCounter.toString()).digest()),
       feeCalculator: { lamportsPerSignature: 5000 },
+    };
+  },
+  rpcEndpoint: "http://localhost:8080/",
+  getLatestBlockhash: async () => {
+    return {
+      blockhash: base58.encode(crypto.createHash("sha256").update(slotCounter.toString()).digest()),
+      lastValidBlockHeight: Math.floor(Math.random() * 1000000000),
     };
   },
   getRecentBlockhashAndContext: async () => {

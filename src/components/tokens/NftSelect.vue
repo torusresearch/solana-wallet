@@ -4,7 +4,8 @@ import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { computed, ref, watch } from "vue";
 
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
-import { getClubbedNfts } from "@/utils/helpers";
+import { getImgProxyUrl } from "@/utils/helpers";
+import { getClubbedNfts } from "@/utils/solanaHelpers";
 
 const props = withDefaults(
   defineProps<{
@@ -28,7 +29,11 @@ watch(localMintAddress, () => {
       <ListboxButton class="bg-white dark:bg-app-gray-700 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
         <span v-if="selectedNft?.metaplexData?.offChainMetaData" class="flex items-center">
           <div class="shrink-0 h-6 w-6 rounded-full img-loader-container">
-            <img :src="selectedNft?.metaplexData?.offChainMetaData?.image" alt="selected token" class="shrink-0 h-6 w-6 rounded-full" />
+            <img
+              :src="getImgProxyUrl(selectedNft?.metaplexData?.offChainMetaData?.image)"
+              alt="selected token"
+              class="shrink-0 h-6 w-6 rounded-full"
+            />
           </div>
           <span class="ml-3 block truncate text-app-text-600 dark:text-app-text-dark-500">
             {{ selectedNft?.metaplexData?.offChainMetaData?.name }}

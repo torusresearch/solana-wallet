@@ -21,11 +21,7 @@ const props = withDefaults(
   }
 );
 
-const emits = defineEmits(["onApproved", "onRejected", "onCloseModal"]);
-
-const closeModal = () => {
-  emits("onCloseModal");
-};
+const emits = defineEmits(["onApproved", "onRejected"]);
 
 const onCancel = () => {
   emits("onRejected");
@@ -33,7 +29,6 @@ const onCancel = () => {
 
 const onConfirm = () => {
   emits("onApproved");
-  closeModal();
 };
 function openLink() {
   window?.open(props?.requestedFrom, "_blank")?.focus();
@@ -50,7 +45,7 @@ function openLink() {
           {{ t("dappTransfer.permission") }}
         </p>
       </div>
-      <div class="mt-4 items-center px-4 flex flex-col justify-start items-start w-full">
+      <div class="mt-4 items-center px-4 flex flex-col justify-start w-full">
         <div class="flex flex-col justify-start items-start mt-4 mb-8 w-full">
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ `${t("dappInfo.requestFrom")}:` }}</p>
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
@@ -69,7 +64,9 @@ function openLink() {
             </p>
           </div>
           <div class="w-full bg-white dark:bg-app-gray-700 h-12 mt-3 rounded-md approval-msg">
-            <p class="whitespace-pre-line break-all text-sm text-app-text-600 dark:text-app-text-dark-500 m-4">{{ props.approvalMessage }}</p>
+            <p class="whitespace-pre-line break-all text-sm text-app-text-600 dark:text-app-text-dark-500 m-4">
+              {{ props.approvalMessage }}
+            </p>
           </div>
         </div>
       </div>
@@ -89,6 +86,7 @@ hr {
   overflow: auto;
   height: 100%;
   max-height: 180px !important;
+  min-height: 180px;
 }
 
 @screen gt-xs {

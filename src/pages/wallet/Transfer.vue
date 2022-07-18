@@ -3,42 +3,35 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
+import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
+import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { delay, ruleVerifierId } from "@/utils/helpers";
+import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
 const { t } = useI18n();
 
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
 const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
-let timeoutId: ReturnType<typeof setTimeout>;
+let snsAddressPromise: Promise<string | null>;
 const transferToInternal = ref("");
-const transferTo = computed({
-  get: () => transferToInternal.value,
-  set: (value2) => {
-    // this will debounce the update and ensure that transferType is updated before validations are run
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      // eslint-disable-next-line prefer-destructuring
-      if (/\.sol$/g.test(value2)) transferType.value = ALLOWED_VERIFIERS[1];
-      transferToInternal.value = value2;
-    }, 500);
-  },
-});
+const transferTo = ref("");
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
+const transaction = ref<Transaction>();
 const transactionFee = ref(0);
 const blockhash = ref("");
 const lastValidBlockHeight = ref(0);
@@ -46,6 +39,7 @@ const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
 const isCurrencyFiat = ref(false);
+
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const solConversionRate = computed(() => {
   return ControllerModule.torus.conversionRate;
@@ -71,6 +65,8 @@ const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
 const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!selectedToken.value.price?.usd);
+
+const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
 onMounted(() => {
   const { query } = route;
@@ -107,7 +103,7 @@ const validVerifier = (value: string) => {
 
 async function escrowAccountVerifier(): Promise<boolean> {
   if (transferType.value.value === "sns") {
-    return !(await isOwnerEscrow((await addressPromise(transferType.value.value, transferTo.value)) as string));
+    return !(await isOwnerEscrow((await snsAddressPromise) as string));
   }
   return true;
 }
@@ -121,7 +117,7 @@ const tokenAddressVerifier = async (value: string) => {
 
   if (transferType.value.value === "sns") {
     try {
-      associatedAccount = new PublicKey((await addressPromise(transferType.value.value, transferTo.value)) as string);
+      associatedAccount = new PublicKey((await snsAddressPromise) as string);
     } catch (e) {
       // since our sns validator will return false anyway
       return true;
@@ -160,7 +156,7 @@ async function snsRule(value: string): Promise<boolean> {
   if (!value) return true;
   if (transferType.value.value !== "sns") return true;
   try {
-    const address = await addressPromise(transferType.value.value, transferTo.value);
+    const address = await snsAddressPromise;
     return address !== null;
   } catch (e) {
     return false;
@@ -211,7 +207,46 @@ const rules = computed(() => {
   };
 });
 
-const $v = useVuelidate(rules, { transferTo, sendAmount });
+const $v = useVuelidate(rules, { transferTo: transferToInternal, sendAmount });
+/**
+ * converts the fiatValue from selected fiat currency to selected crypto currency
+ * @param fiatValue - amount of fiat
+ */
+function convertFiatToCrypto(fiatValue = 1) {
+  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
+  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
+  if (selectedCrypto === "sol") {
+    return fiatValue / solConversionRate.value;
+  }
+  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
+}
+
+const generateTransaction = async (amount: number): Promise<Transaction> => {
+  if (selectedToken?.value?.mintAddress) {
+    // SPL TRANSFER
+    transaction.value = await generateSPLTransaction(
+      resolvedAddress.value,
+      amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
+      selectedToken.value as SolAndSplToken,
+      ControllerModule.selectedAddress,
+      ControllerModule.connection
+    );
+  } else {
+    // SOL TRANSFER
+    const instuctions = SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
+      toPubkey: new PublicKey(resolvedAddress.value),
+      lamports: amount * LAMPORTS_PER_SOL,
+    });
+    const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
+    transaction.value = new Transaction({
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: lastValidBlockHeight.value,
+      feePayer: new PublicKey(ControllerModule.selectedAddress),
+    }).add(instuctions);
+  }
+  return transaction.value;
+};
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
   const { messageDescription, messageTitle, messageStatus } = params;
@@ -234,9 +269,12 @@ const onMessageModalClosed = () => {
 const closeModal = () => {
   isOpen.value = false;
   trackUserClick(TransferPageInteractions.CANCEL);
+  hasEstimationError.value = "";
+  estimatedBalanceChange.value = [];
 };
 
 const openModal = async () => {
+  transferDisabled.value = true;
   $v.value.$touch();
   resolvedAddress.value = transferTo.value;
   await $v.value.$validate();
@@ -255,53 +293,24 @@ const openModal = async () => {
   }
 
   // This can't be guarantee
-  const { blockHash, fee, height } = await ControllerModule.torus.calculateTxFee();
+
+  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
+  transaction.value = await generateTransaction(amount);
+  estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
+  const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;
   transactionFee.value = fee / LAMPORTS_PER_SOL;
   transferDisabled.value = false;
 };
 
-/**
- * converts the fiatValue from selected fiat currency to selected crypto currency
- * @param fiatValue - amount of fiat
- */
-function convertFiatToCrypto(fiatValue = 1) {
-  const selectedCrypto = selectedToken.value.symbol?.toLowerCase();
-  const selectedFiat = (currency.value === "sol" ? "usd" : currency.value).toLowerCase();
-  if (selectedCrypto === "sol") {
-    return fiatValue / solConversionRate.value;
-  }
-  return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
-}
-
 const confirmTransfer = async () => {
   trackUserClick(TransferPageInteractions.CONFIRM);
-  const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   // Delay needed for the message modal
   await delay(500);
   try {
-    if (selectedToken?.value?.mintAddress) {
-      // SPL TRANSFER
-      await ControllerModule.torus.transferSpl(
-        resolvedAddress.value,
-        amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
-        selectedToken.value as SolAndSplToken
-      );
-    } else {
-      // SOL TRANSFER
-      const instuctions = SystemProgram.transfer({
-        fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-        toPubkey: new PublicKey(resolvedAddress.value),
-        lamports: amount * LAMPORTS_PER_SOL,
-      });
-      const tx = new Transaction({
-        blockhash: blockhash.value,
-        lastValidBlockHeight: lastValidBlockHeight.value,
-        feePayer: new PublicKey(ControllerModule.selectedAddress),
-      }).add(instuctions);
-      await ControllerModule.torus.transfer(tx);
-    }
+    if (!transaction.value) throw new Error("Invalid Transaction");
+    await ControllerModule.torus.transfer(transaction.value);
     // resetForm();
     transferConfirmed.value = true;
     showMessageModal({
@@ -383,12 +392,28 @@ function updateSelectedToken($event: Partial<SolAndSplToken>) {
   trackUserClick(TransferPageInteractions.TOKEN_SELECT + $event.mintAddress);
 }
 
+watch(
+  transferTo,
+  debounce(() => {
+    if (/\.sol$/g.test(transferTo.value)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
+    snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
+    transferToInternal.value = transferTo.value;
+  }, 500)
+);
+
 // reset transfer token to solana if tokens no longer has current token
 watch([tokens, nftTokens], () => {
   if (![...tokens.value, ...nftTokens.value].some((token) => token?.mintAddress === selectedToken.value?.mintAddress)) {
     updateSelectedToken(tokens.value[0]);
   }
 });
+
+async function onSelectTransferType() {
+  // refresh address in case transferType changed
+  snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
+  $v.value.$reset();
+  $v.value.$touch();
+}
 </script>
 
 <template>
@@ -407,7 +432,7 @@ watch([tokens, nftTokens], () => {
                 class="w-2/3 flex-auto"
               />
               <div class="w-1/3 flex-auto mt-6">
-                <SelectField v-model="transferType" :items="transferTypes" />
+                <SelectField v-model="transferType" :items="transferTypes" @update:model-value="onSelectTransferType" />
               </div>
             </div>
 
@@ -468,6 +493,9 @@ watch([tokens, nftTokens], () => {
       :is-open="isOpen && selectedToken.isFungible"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-cancel="closeModal"
       @on-close-modal="closeModal"
@@ -482,6 +510,9 @@ watch([tokens, nftTokens], () => {
       :token="selectedToken"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-reject="closeModal"
       @on-close-modal="closeModal"

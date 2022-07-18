@@ -1,5 +1,3 @@
-import * as borsh from "@project-serum/borsh";
-import { PublicKey } from "@solana/web3.js";
 import { concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
@@ -11,8 +9,7 @@ import log from "loglevel";
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
-import { DISCORD, GITHUB, GOOGLE, LOCALE_EN, LOGIN_CONFIG, REDDIT, SOL, STORAGE_TYPE, TWITTER } from "./enums";
-import { ClubbedNfts, SolAndSplToken } from "./interfaces";
+import { LOCALE_EN, LOGIN_CONFIG, STORAGE_TYPE } from "./enums";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -20,37 +17,6 @@ export function getStorage(key: STORAGE_TYPE): Storage | undefined {
 }
 
 export const isMain = window.self === window.top;
-
-export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
-  if (selectedTypeOfLogin === SOL) {
-    try {
-      new PublicKey(value);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  if (selectedTypeOfLogin === GOOGLE) {
-    return /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\dA-Za-z-]+\.)+[A-Za-z]{2,}))$/.test(value);
-  }
-  if (selectedTypeOfLogin === REDDIT) {
-    return /^[\w-]+$/.test(value) && !/\s/.test(value) && value.length >= 3 && value.length <= 20;
-  }
-  if (selectedTypeOfLogin === DISCORD) {
-    return /^\d*$/.test(value) && value.length === 18;
-  }
-
-  if (selectedTypeOfLogin === TWITTER) {
-    return /^@?(\w){1,15}$/.test(value);
-  }
-
-  if (selectedTypeOfLogin === GITHUB) {
-    return /^(?!.*(-{2}))(?!^-.*$)(?!^.*-$)[\w-]{1,39}$/.test(value);
-  }
-
-  return true;
-}
 
 export const copyText = (text: string): void => {
   copyToClipboard(text);
@@ -143,33 +109,6 @@ export function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 }
 
-export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
-  const finalData: { [collectionName: string]: ClubbedNfts } = {};
-  nfts.forEach((nft) => {
-    const metaData = nft.metaplexData?.offChainMetaData;
-    const collectionName = metaData?.collection?.family || metaData?.symbol || "unknown token";
-    const elem = finalData[collectionName];
-    if (elem) {
-      finalData[collectionName] = {
-        ...elem,
-        title: metaData?.symbol || "",
-        count: elem.count + 1,
-      };
-    } else {
-      finalData[collectionName] = {
-        title: metaData?.name || "",
-        count: 1,
-        description: metaData?.description || "",
-        img: metaData?.image || "",
-        mints: [],
-        collectionName,
-      };
-    }
-    finalData[collectionName].mints.push(`${nft?.mintAddress?.toString()}`);
-  });
-  return Object.values(finalData);
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function setFallbackImg(target: any, src: string) {
   // eslint-disable-next-line no-param-reassign
@@ -235,17 +174,6 @@ export async function recordDapp(origin: string) {
 export const backendStatePromise = promiseCreator();
 export const getRandomWindowId = () => Math.random().toString(36).slice(2);
 
-// Layout
-export const MintLayout = borsh.struct([
-  borsh.u32("mintAuthorityOption"),
-  borsh.publicKey("mintAuthority"),
-  borsh.u64("supply"),
-  borsh.u8("decimals"),
-  borsh.u8("isInitialized"),
-  borsh.u32("freezeAuthorityOption"),
-  borsh.publicKey("freezeAuthority"),
-]);
-
 export const parseJwt = (token: string) => {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -277,21 +205,29 @@ export function getBrowserKey() {
   return id;
 }
 
-export function hideCrispButton() {
+export function getCrisp() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  window.$crisp.push(["do", "chat:hide"]);
+  const crisp = window.$crisp;
+  if (!crisp) return false;
+  return crisp;
+}
+export function isCrispClosed() {
+  const crisp = getCrisp();
+  if (crisp) crisp.is("chat:closed");
+  return false;
+}
+export function hideCrispButton() {
+  const crisp = getCrisp();
+  crisp.push(["do", "chat:hide"]);
 }
 export function showCrispButton() {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.$crisp.push(["do", "chat:show"]);
+  const crisp = getCrisp();
+  crisp.push(["do", "chat:show"]);
 }
 export function openCrispChat() {
-  showCrispButton();
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.$crisp.push(["do", "chat:show"]);
+  const crisp = getCrisp();
+  crisp.push(["do", "chat:open"]);
 }
 
 export function getTorusMessage(message: Buffer): Buffer {
@@ -313,4 +249,13 @@ export function generateTorusAuthHeaders(privateKey: string) {
     "Auth-Public-Address": publicAddress,
   };
   return authHeaders;
+}
+
+export function getImgProxyUrl(originalUrl?: string) {
+  const proxyUrl = process.env.VUE_APP_IMGPROXY_URL || "";
+  if (!originalUrl?.startsWith("http") || !proxyUrl.length) {
+    return originalUrl;
+  }
+
+  return `${proxyUrl}/plain/${originalUrl}`;
 }

@@ -117,6 +117,9 @@ const filteredTransaction = computed(() => {
 </script>
 
 <template>
+  <div v-if="!filteredTransaction.length" class="pt-16 text-center">
+    <span class="text-lg text-app-text-500 dark:text-app-text-dark-600">{{ t("walletActivity.noTransaction") }}</span>
+  </div>
   <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
     <ActivityItem :activity="tx" />
   </div>

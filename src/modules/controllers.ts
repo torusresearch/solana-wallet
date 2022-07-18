@@ -1,6 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { NameRegistryState } from "@bonfida/spl-name-service";
-import { Metadata } from "@metaplex-foundation/mpl-token-metadata/dist/src/accounts/Metadata";
+import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -23,15 +22,12 @@ import {
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { get } from "@toruslabs/http-helpers";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import cloneDeep from "lodash-es/cloneDeep";
-import merge from "lodash-es/merge";
-import omit from "lodash-es/omit";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
@@ -214,7 +210,7 @@ class ControllerModule extends VuexModule {
       return this.userTokens
         .reduce((acc: SolanaToken[], current: SolanaToken) => {
           const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
+          if (current.balance?.decimals !== 0 && data) {
             return [
               ...acc,
               {
@@ -298,18 +294,9 @@ class ControllerModule extends VuexModule {
   @Action
   public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
     try {
-      const pda = await Metadata.getPDA(mint_address);
-      const { connection } = this;
-      const pdaInfo = await connection.getAccountInfo(pda);
-      if (pdaInfo) {
-        const metadata = new Metadata(pda, pdaInfo);
-        const response = await get(metadata.data.data.uri);
-        return {
-          ...metadata.data.data,
-          offChainMetaData: response as NFTInfo["offChainMetaData"],
-        };
-      }
-      throw new Error();
+      const token = await this.torus.fetchMetaPlexNft([mint_address]);
+      log.info({ token });
+      return token[mint_address];
     } catch (error) {
       return undefined;
     }
@@ -463,10 +450,18 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  async triggerLogin({ loginProvider, login_hint }: { loginProvider: LOGIN_PROVIDER_TYPE; login_hint?: string }): Promise<void> {
+  async triggerLogin({
+    loginProvider,
+    login_hint,
+    waitSaving,
+  }: {
+    loginProvider: LOGIN_PROVIDER_TYPE;
+    login_hint?: string;
+    waitSaving?: boolean;
+  }): Promise<void> {
     this.setLogoutRequired(false);
     // do not need to restore beyond login
-    await this.torus.triggerLogin({ loginProvider, login_hint });
+    await this.torus.triggerLogin({ loginProvider, login_hint, waitSaving });
   }
 
   @Action
@@ -641,10 +636,12 @@ class ControllerModule extends VuexModule {
         res = { pubkey: await this.torus.getGaslessPublicKey() };
         break;
       case "get_accounts":
-        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        res = [this.selectedAddress];
         break;
       case "solana_request_accounts":
-        res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        res = [this.selectedAddress];
         break;
       case "nft_list":
         await delay(15000);

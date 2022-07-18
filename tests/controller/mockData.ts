@@ -1,5 +1,6 @@
 import { Keypair } from "@solana/web3.js";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
+import base58 from "bs58";
 import { ec as EC } from "elliptic";
 
 export const OffChainMetaplexUri = "https://metaplex.data";
@@ -37,7 +38,15 @@ export const openloginFaker = [
       verifierId: "testing@tor.us",
       typeOfLogin: "google",
     },
-    accounts: [],
+    accounts: [
+      {
+        address: sKeyPair[0].publicKey.toBase58(),
+        app: "Google testing@tor.us",
+        name: "Solana Wallet http://localhost:8080",
+        privKey: secp256[0].getPrivate().toString("hex"),
+        solanaPrivKey: base58.encode(sKeyPair[0].secretKey),
+      },
+    ],
   },
   {
     solanaPrivKey: "",

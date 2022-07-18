@@ -4,6 +4,7 @@ import nacl from "@toruslabs/tweetnacl-js";
 import axios from "axios";
 import base58 from "bs58";
 import { ec as EC } from "elliptic";
+import { memoize } from "lodash-es";
 
 import type { OpenLoginBackendState } from "@/utils/enums";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
@@ -21,7 +22,7 @@ export const IMPORT_ACC_ADDRESS = "H3N28hUVVRhZW1zyM8dGQTrKztRHhgbS1nJg9nSXghet"
 export const IMPORT_ACC_SECRET_KEY = "4md5HAy1iZvyGVuwssQu8Kn78gnm7RHfpC8FLSHcsA1Wo1JwD6jNu8vHPLLSaFxXXD753vMaFBdbZYFvvmQtborU";
 
 const storageLayer = new TorusStorageLayer({ hostUrl: getStateDomain() });
-export async function getJWT(): Promise<{ success: boolean; token: string }> {
+export const getJWT = memoize(async (): Promise<{ success: boolean; token: string }> => {
   const { message } = (
     await axios.post(`${getBackendDomain()}/auth/message`, {
       public_address: PUB_ADDRESS,
@@ -40,11 +41,11 @@ export async function getJWT(): Promise<{ success: boolean; token: string }> {
       signed_message: signedMsgToString,
     })
   ).data;
-}
+});
 
 const privKey = EPHEMERAL_KEYPAIR.getPrivate();
 
-export async function createRedisKey() {
+export const createRedisKey = memoize(async () => {
   const input: OpenLoginBackendState = {
     publicKey: PUB_ADDRESS,
     privateKey: SECRET_KEY,
@@ -70,7 +71,7 @@ export async function createRedisKey() {
   const params = storageLayer.generateMetadataParams(await TorusStorageLayer.serializeMetadataParamsInput(input, privKey), privKey);
 
   await axios.post(`${getStateDomain()}/set`, params);
-}
+});
 
 export async function login(context: BrowserContext, browserName: "chromium" | "webkit" | "firefox"): Promise<Page> {
   await createRedisKey();

@@ -9,10 +9,8 @@ import { hideCrispButton, isMain } from "./utils/helpers";
 onBeforeMount(() => {
   if (isMain) ControllerModule.init({ origin: window.location.origin });
 
-  // hide crispbutton for iframe
-  if (!isMain) {
-    hideCrispButton();
-  }
+  // hide crispbutton on inital load
+  hideCrispButton();
 });
 </script>
 

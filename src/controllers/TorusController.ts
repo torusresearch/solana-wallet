@@ -1,13 +1,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@bonfida/spl-name-service";
-import {
-  createAssociatedTokenAccountInstruction,
-  createTransferCheckedInstruction,
-  getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -61,6 +55,7 @@ import { randomId } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
+  CustomTokenInfo,
   ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
@@ -79,8 +74,7 @@ import { BigNumber } from "bignumber.js";
 import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
-import cloneDeep from "lodash-es/cloneDeep";
-import omit from "lodash-es/omit";
+import { cloneDeep, omit } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -89,6 +83,7 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import topupPlugin from "@/plugins/Topup";
+import { retrieveNftOwner } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -102,8 +97,7 @@ import {
   TransactionChannelDataType,
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
-import { constructTokenData } from "@/utils/instruction_decoder";
-import { SolAndSplToken } from "@/utils/interfaces";
+import { constructTokenData } from "@/utils/instructionDecoder";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -182,7 +176,7 @@ export const DEFAULT_STATE = {
     tokenInfoMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
-    unknownTokenInfo: [],
+    unknownSPLTokenInfo: [],
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -240,6 +234,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController?.state.selectedAddress;
   }
 
+  get existingTokenAddress(): string[] {
+    const tokenList = this.tokenInfoController?.state?.tokenInfoMap || {};
+    return Object.keys(tokenList);
+  }
+
   get tokens(): { [address: string]: SolanaToken[] } {
     return this.tokensTracker.state.tokens || {};
   }
@@ -247,6 +246,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
   get conversionRate(): number {
     if (!this.currencyController.state.tokenPriceMap.solana) return 0;
     return this.currencyController.state.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
+  }
+
+  get jwtToken(): string {
+    return this.preferencesController.state.identities[this.selectedAddress]?.jwtToken || "";
   }
 
   get userInfo(): UserInfo {
@@ -334,8 +337,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if ((isMain && initialState.NetworkControllerState?.isCustomNetwork) || !initialState.NetworkControllerState?.isCustomNetwork) {
       let defaultNetwork = WALLET_SUPPORTED_NETWORKS.mainnet;
       if (initialState.NetworkControllerState) {
-        if (initialState.NetworkControllerState.providerConfig.chainId === "0x02") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
-        if (initialState.NetworkControllerState.providerConfig.chainId === "0x03") defaultNetwork = WALLET_SUPPORTED_NETWORKS.devnet;
+        if (initialState.NetworkControllerState.providerConfig.chainId === "0x2") defaultNetwork = WALLET_SUPPORTED_NETWORKS.testnet;
+        if (initialState.NetworkControllerState.providerConfig.chainId === "0x3") defaultNetwork = WALLET_SUPPORTED_NETWORKS.devnet;
         initialState.NetworkControllerState.providerConfig = defaultNetwork;
         log.info("unsupported api.google rpc endpoint, replaced with default rpc endpoint");
       }
@@ -363,7 +366,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.TokensInfoConfig,
       state: this.state.TokenInfoState,
       getConnection: this.networkController.getConnection.bind(this),
+      getJwt: () => this.jwtToken,
+      getSelectedAddress: () => this.preferencesController.state.selectedAddress,
+      getNetworkProviderState: () => this.networkController.state,
     });
+
     this.currencyController = new CurrencyController({
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
@@ -529,6 +536,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
+  async importCustomToken(token: CustomTokenInfo) {
+    try {
+      token.publicAddress = this.selectedAddress;
+      token.network = this.currentNetworkName;
+      const result = await this.tokenInfoController.importCustomToken(token);
+      const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
+      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
+      return result;
+    } catch (err: any) {
+      log.error(JSON.stringify(await err.json()));
+      throw new Error("Unable to import token");
+    }
+  }
+
+  async fetchMetaPlexNft(nftMintAddress: string[]) {
+    return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
+  }
+
+  async fetchTokenInfo(mintAddress: string) {
+    const res = await this.tokenInfoController.fetchTokenInfo([mintAddress]);
+    return res[mintAddress];
+  }
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
@@ -549,21 +579,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
     const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
-      case "sns":
-        return NameRegistryState.retrieve(this.connection, inputDomainKey);
+      case "sns": {
+        const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
+        const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
+        return { registry, nftOwner };
+      }
       case "twitter":
         return getTwitterRegistry(this.connection, address);
       default:
         return null;
     }
-  }
-
-  async calculateTxFee(): Promise<{ blockHash: string; fee: number; height: number }> {
-    const latestBlockHash = await this.connection.getLatestBlockhash("finalized");
-    const blockHash = latestBlockHash.blockhash;
-    const height = latestBlockHash.lastValidBlockHeight;
-    const fee = (await this.connection.getFeeCalculatorForBlockhash(blockHash)).value?.lamportsPerSignature || 0;
-    return { blockHash, fee, height };
   }
 
   async approveSignTransaction(txId: string): Promise<void> {
@@ -603,50 +628,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
     }
-  }
-
-  async transferSpl(receiver: string, amount: number, selectedToken: Partial<SolAndSplToken>): Promise<string> {
-    const { connection } = this;
-    const transaction = new Transaction();
-    const tokenMintAddress = selectedToken.mintAddress as string;
-    const decimals = selectedToken.balance?.decimals || 0;
-    const mintAccount = new PublicKey(tokenMintAddress);
-    const signer = new PublicKey(this.selectedAddress); // add gasless transactions
-    const sourceTokenAccount = await getAssociatedTokenAddress(mintAccount, signer, false);
-    const receiverAccount = new PublicKey(receiver);
-
-    let associatedTokenAccount = receiverAccount;
-    try {
-      associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiverAccount, false);
-    } catch (e) {
-      log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
-    }
-
-    const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
-
-    if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-      const newAccount = await createAssociatedTokenAccountInstruction(
-        new PublicKey(this.selectedAddress),
-        associatedTokenAccount,
-        receiverAccount,
-        new PublicKey(tokenMintAddress)
-      );
-      transaction.add(newAccount);
-    }
-    const transferInstructions = createTransferCheckedInstruction(
-      sourceTokenAccount,
-      mintAccount,
-      associatedTokenAccount,
-      signer,
-      amount,
-      decimals,
-      []
-    );
-    transaction.add(transferInstructions);
-
-    transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
-    transaction.feePayer = new PublicKey(this.selectedAddress);
-    return this.transfer(transaction);
   }
 
   getGaslessHost(_feePayer: string): string | undefined {
@@ -697,9 +678,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return address;
   }
 
-  setSelectedAccount(address: string, sync = false): void {
+  async setSelectedAccount(address: string, sync = false) {
     this.preferencesController.setSelectedAddress(address);
-    if (sync) this.preferencesController.sync(address);
+    if (sync) await this.preferencesController.sync(address);
 
     // set account in accountTracker
     this.accountTracker.syncAccounts();
@@ -1078,6 +1059,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
+        selectedAddress: this.selectedAddress,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
@@ -1134,6 +1116,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
+        selectedAddress: this.selectedAddress,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
@@ -1210,9 +1193,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public async triggerLogin({
     loginProvider,
     login_hint,
+    waitSaving,
   }: {
     loginProvider: LOGIN_PROVIDER_TYPE;
     login_hint?: string;
+    waitSaving?: boolean;
   }): Promise<OpenLoginPopupResponse> {
     try {
       const handler = new OpenLoginHandler({
@@ -1245,7 +1230,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       // save to openloginState backend
       if (!this.hasSelectedPrivateKey || !this.privateKey) throw new Error("Wallet Error: Invalid private key ");
-      this.saveToOpenloginBackend({ privateKey: this.privateKey, publicKey: this.selectedAddress, userInfo, accounts: targetAccount });
+      const saveToOpenLogin = this.saveToOpenloginBackend({
+        privateKey: this.privateKey,
+        publicKey: this.selectedAddress,
+        userInfo,
+        accounts: targetAccount,
+      });
+      if (waitSaving) await saveToOpenLogin;
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
@@ -1310,15 +1301,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     };
 
     try {
-      // session should be priority and there should be only one login in one browser tab session
-      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-
       // save encrypted ed25519
       await this.storageLayer?.setMetadata<OpenLoginBackendState>({
         input: saveState,
         privKey: new BN(ecc_privateKey),
       });
+
+      // session should be priority and there should be only one login in one browser tab session
+      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
+      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
     } catch (error) {
       log.error(error, "Error saving state!");
     }
