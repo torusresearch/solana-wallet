@@ -10,6 +10,7 @@ import { Button, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { DecodedDataType } from "@/utils/instructionDecoder";
 import { AccountEstimation } from "@/utils/interfaces";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 import EstimateChanges from "./EstimateChanges.vue";
 import InstructionDisplay from "./InstructionDisplay.vue";
@@ -83,7 +84,11 @@ const totalFiatCostString = computed(() => {
   <div class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex items-center justify-center">
     <div class="content-box h-full w-full transition-all bg-white dark:bg-app-gray-800 shadow-xl flex flex-col justify-between relative">
       <div class="shadow dark:shadow-dark text-center py-6">
-        <img class="h-7 absolute left-5" :src="props.tokenLogoUrl || SolanaLogoURL" alt="Solana Logo" />
+        <img
+          class="h-7 absolute left-5"
+          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.tokenLogoUrl || SolanaLogoURL"
+          alt="Solana Logo"
+        />
         <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
           {{ t("walletSettings.paymentConfirmation") }}
         </p>
@@ -117,7 +122,7 @@ const totalFiatCostString = computed(() => {
           </span>
 
           <p
-            class="text-right mt-4 text-sm cursor-pointer ml-auto text-app-text-accent"
+            class="text-right mt-4 text-sm cursor-pointer ml-auto text-app-primary-500"
             @click="() => (expand_inst = !expand_inst)"
             @keydown.enter="() => (expand_inst = !expand_inst)"
           >

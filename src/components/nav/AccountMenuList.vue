@@ -125,7 +125,9 @@ const getWalletBalance = (address: string): string => {
     <div>Info and Support</div>
   </div> -->
     <div class="p-4 border-t">
-      <Button v-ga="GeneralInteractions.GENERAL_LOGOUT" class="ml-auto" variant="text" @click="logout">{{ t("accountMenu.logOut") }}</Button>
+      <Button v-ga="GeneralInteractions.GENERAL_LOGOUT" class="ml-auto text-app-primary-500" variant="text" @click="logout">{{
+        t("accountMenu.logOut")
+      }}</Button>
     </div>
   </div>
 </template>

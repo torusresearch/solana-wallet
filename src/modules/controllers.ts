@@ -18,7 +18,7 @@ import {
   PopupStoreChannel,
   ProviderConfig,
   SelectedAddresssChangeChannelData,
-  THEME,
+  ThemeChannelData,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
@@ -40,6 +40,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
+import { isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import store from "../store";
 import { addToast } from "./app";
@@ -175,6 +176,7 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
+    if (isWhiteLabelSet() && !this.torus.getAccountPreferences(this.selectedAddress)) return isWhiteLabelDark();
     return this.selectedAccountPreferences.theme === "dark";
   }
 
@@ -347,8 +349,22 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  public async setTheme(theme: THEME): Promise<void> {
-    await this.torus.setTheme(theme);
+  public async changeTheme(theme: "light" | "dark") {
+    const instanceId = new URLSearchParams(window.location.search).get("instanceId");
+    if (instanceId) {
+      const themeChannel = new BroadcastChannel<PopupData<ThemeChannelData>>(
+        `${BROADCAST_CHANNELS.THEME_CHANGE}_${instanceId}`,
+        broadcastChannelOptions
+      );
+      themeChannel.postMessage({
+        data: {
+          type: BROADCAST_CHANNELS_MSGS.SET_THEME,
+          theme,
+        },
+      });
+      themeChannel.close();
+    }
+    this.torus.setTheme(theme);
   }
 
   @Action
@@ -426,6 +442,7 @@ class ControllerModule extends VuexModule {
         handleAccountImport: this.importExternalAccount.bind(this),
         handleNetworkChange: (providerConfig: ProviderConfig) => this.setNetwork(providerConfig.chainId),
         handleSelectedAddressChange: this.setSelectedAccount.bind(this),
+        handleThemeChange: this.changeTheme.bind(this),
       });
       popupStoreChannel.setupStoreChannels();
     }

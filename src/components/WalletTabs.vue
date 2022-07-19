@@ -2,19 +2,18 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import SolanaLogoURL from "@/assets/solana-dark.svg";
-import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
+import { getLogo, getWhiteLabelLocale, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
 requireLoggedIn();
 
-setLocale(i18n, ControllerModule.torus.locale || i18n.global.locale);
+setLocale(i18n, isWhiteLabelSet() ? getWhiteLabelLocale() : ControllerModule.torus.locale || i18n.global.locale);
 
 const props = withDefaults(
   defineProps<{
@@ -42,7 +41,7 @@ const logout = async () => {
       <div class="flex h-16 px-4 header-border">
         <div class="flex-1 flex items-center mr-auto">
           <router-link to="/wallet/home">
-            <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
+            <img class="block h-4 w-auto" :src="getLogo(ControllerModule.isDarkMode)" alt="Solana Logo" />
           </router-link>
         </div>
         <div class="flex flex-3">
@@ -97,13 +96,13 @@ const logout = async () => {
         v-for="(value, key) in tabs"
         :key="key"
         :to="`/wallet/${value.route}`"
-        :aria-current="key === tab ? 'page' : undefined"
+        :aria-current="key === tab ? 'page border-b-app-primary-500' : undefined"
         :class="[value.mobHidden ? 'hidden' : 'block']"
       >
         <div
           :id="key + '_link'"
           class="flex flex-col h-full items-center justify-center select-none w-16 py-1"
-          :class="[key === tab ? 'active-border' : '']"
+          :class="[key === tab ? 'active-border bg-app-primary-500' : '']"
         >
           <img
             :src="value.icon"

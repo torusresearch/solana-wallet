@@ -5,6 +5,7 @@ import { useI18n } from "vue-i18n";
 import LoginUrl from "@/assets/login.png";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import { RoundLoader } from "@/components/common";
+import { getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 import PopupWidgetPanel from "./PopupWidgetPanel.vue";
 
@@ -43,7 +44,7 @@ const showWallet = (path: string) => {
       @show-wallet="showWallet"
     />
     <button v-if="isLoggedIn" class="torus-widget__button" @click="togglePanel">
-      <img class="torus-widget__button-img" :src="SolanaLogoLight" alt="Login icon" />
+      <img class="torus-widget__button-img" :src="getWhiteLabelLogoLight() || SolanaLogoLight" alt="Login icon" />
     </button>
     <button v-else-if="isLoginInProgress" class="torus-widget__button">
       <RoundLoader class="w-5 h-5" color="border-white" />
