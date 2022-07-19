@@ -19,12 +19,12 @@ import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginInteractions } from "@/directives/google-analytics";
 import { addToast, app } from "@/modules/app";
-import { isWhiteLabelDark } from "@/utils/white_label";
+import { isWhiteLabelDark } from "@/utils/whitelabel";
 
 import { Button } from "../components/common";
 import TextField from "../components/common/TextField.vue";
 import ControllerModule from "../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
 
 const { isRedirectFlow, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 

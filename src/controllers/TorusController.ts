@@ -74,8 +74,7 @@ import { BigNumber } from "bignumber.js";
 import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
-import cloneDeep from "lodash-es/cloneDeep";
-import omit from "lodash-es/omit";
+import { cloneDeep, omit } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
@@ -98,7 +97,7 @@ import {
   TransactionChannelDataType,
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
-import { constructTokenData } from "@/utils/instruction_decoder";
+import { constructTokenData } from "@/utils/instructionDecoder";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -555,6 +554,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
   }
 
+  async fetchTokenInfo(mintAddress: string) {
+    const res = await this.tokenInfoController.fetchTokenInfo([mintAddress]);
+    return res[mintAddress];
+  }
+
   setOrigin(origin: string): void {
     this.preferencesController.setIframeOrigin(origin);
   }
@@ -674,9 +678,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return address;
   }
 
-  setSelectedAccount(address: string, sync = false): void {
+  async setSelectedAccount(address: string, sync = false) {
     this.preferencesController.setSelectedAddress(address);
-    if (sync) this.preferencesController.sync(address);
+    if (sync) await this.preferencesController.sync(address);
 
     // set account in accountTracker
     this.accountTracker.syncAccounts();
@@ -700,8 +704,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.networkController.setProviderConfig(providerConfig);
   }
 
-  getAccountPreferences(address: string, skipPrivKeyCheck = false): ExtendedAddressPreferences | undefined {
-    if (skipPrivKeyCheck && !this.hasSelectedPrivateKey) return undefined;
+  getAccountPreferences(address: string): ExtendedAddressPreferences | undefined {
+    if (!this.hasSelectedPrivateKey) return undefined;
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
@@ -1055,6 +1059,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
+        selectedAddress: this.selectedAddress,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
@@ -1111,6 +1116,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         origin: this.preferencesController.iframeOrigin,
         balance: this.userSOLBalance,
         selectedCurrency: this.currencyController.state.currentCurrency,
+        selectedAddress: this.selectedAddress,
         currencyRate: this.conversionRate.toString(),
         jwtToken: this.getAccountPreferences(this.selectedAddress)?.jwtToken || "",
         network: this.networkController.state.providerConfig.displayName,
@@ -1300,6 +1306,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         input: saveState,
         privKey: new BN(ecc_privateKey),
       });
+
       // session should be priority and there should be only one login in one browser tab session
       window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
       window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));

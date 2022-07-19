@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 
 import ControllerModule from "@/modules/controllers";
 
-import { redirectToResult, useRedirectFlow } from "../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../utils/redirectflowHelpers";
 
 const { isRedirectFlow, method, resolveRoute, req_id, jsonrpc } = useRedirectFlow();
 

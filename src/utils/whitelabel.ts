@@ -2,39 +2,33 @@ import color from "color";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
-import { NAVIGATION_LIST } from "@/utils/enums";
 import { WhiteLabelParams } from "@/utils/interfaces";
+import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const lighten = (target: string, val: number) => color(target).lighten(val).rgb().string();
 
 const darken = (target: string, val: number) => color(target).darken(val).rgb().string();
 
-let wasThemeChanged = false;
-export function overrideTheme() {
-  wasThemeChanged = true;
-}
-export function didOverrideTheme(): boolean {
-  return !!wasThemeChanged;
-}
-
 export function getWhiteLabel(): WhiteLabelParams {
   try {
     if (sessionStorage.getItem("whiteLabel")) {
-      return JSON.parse(sessionStorage.getItem("whiteLabel") || "");
+      return JSON.parse(sessionStorage.getItem("whiteLabel") || "{}");
     }
     return {};
   } catch (e) {
     return {};
   }
 }
-export function isWhiteLabelActive(): boolean {
+
+export function isWhiteLabelSet(): boolean {
   return Object.keys(getWhiteLabel()).length > 0;
 }
 
 export function isWhiteLabelDark() {
   const wl2 = getWhiteLabel();
-  return !(wl2?.theme?.isDark === false);
+  return wl2.theme?.isDark || false;
 }
+
 export function getBrandColor(): string {
   return getWhiteLabel()?.theme?.colors?.torusBrand1 || "";
 }

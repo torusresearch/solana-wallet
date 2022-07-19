@@ -14,8 +14,8 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import { NftsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { NAVIGATION_LIST } from "@/utils/enums";
 import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
+import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const router = useRouter();
 const { t } = useI18n();
@@ -172,8 +172,8 @@ const transferNFT = () => {
             <span v-if="(nftMetaData.offChainMetaData?.attributes?.length || 0) > 0" class="text-app-gray-500 text-base mb-2">Properties</span>
             <div v-if="(nftMetaData.offChainMetaData?.attributes?.length || 0) > 0" class="grid grid-cols-3 -ml-1">
               <div
-                v-for="value in nftMetaData.offChainMetaData?.attributes"
-                :key="value.trait_type"
+                v-for="(value, idx) in nftMetaData.offChainMetaData?.attributes"
+                :key="idx"
                 class="flex flex-col space-y-1 border-t-2 border-t-[#505154] m-1"
               >
                 <span class="text-app-gray-700 dark:text-app-gray-500 text-xs truncate">{{ value?.trait_type || "" }}</span>

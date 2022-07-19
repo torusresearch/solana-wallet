@@ -8,8 +8,9 @@ import FallbackNft from "@/assets/nft.png";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import solicon from "@/assets/solana-mascot.svg";
-import { getClubbedNfts, setFallbackImg } from "@/utils/helpers";
+import { setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
+import { getClubbedNfts } from "@/utils/solanaHelpers";
 
 import { getTokenFromMint, nftTokens, tokens } from "./token-helper";
 

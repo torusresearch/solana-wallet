@@ -6,14 +6,14 @@ import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/na
 import { requireLoggedIn } from "@/modules/auth";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
-import { NAVIGATION_LIST } from "@/utils/enums";
-import { getLogo, getWhiteLabelLocale, isWhiteLabelActive } from "@/utils/white_label";
+import { NAVIGATION_LIST } from "@/utils/navHelpers";
+import { getLogo, getWhiteLabelLocale, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import LanguageSelector from "./nav/LanguageSelector.vue";
 
 requireLoggedIn();
 
-setLocale(i18n, isWhiteLabelActive() ? getWhiteLabelLocale() : ControllerModule.torus.locale || i18n.global.locale);
+setLocale(i18n, isWhiteLabelSet() ? getWhiteLabelLocale() : ControllerModule.torus.locale || i18n.global.locale);
 
 const props = withDefaults(
   defineProps<{

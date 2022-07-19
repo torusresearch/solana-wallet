@@ -14,6 +14,8 @@
 <script>
     // window.Buffer = Buffer;
     const usdcMintAddress = ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"]
+    const usdcDecimals = 6;
+
     const nftMintAddress = ["4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"]
     let target_network = {
         blockExplorerUrl: "https://explorer.solana.com",
@@ -26,10 +28,14 @@
     };
     let selectedAddress = localStorage.getItem("selectedAddress") ;
     let conn = localStorage.getItem("rpcTarget") ? new solanaWeb3.Connection( localStorage.getItem("rpcTarget")) : undefined;
-    const generateTransaction = async (targetAddress) => {
+
+
+
+    const generateTransaction = async (targetAddress, instruction ) => {
         if (!conn) throw Error("no connection")
         // const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
         const {blockhash , lastValidBlockHeight} = (await conn.getLatestBlockhash("finalized"));
+
         const TransactionInstruction = solanaWeb3.SystemProgram.transfer({
             fromPubkey: new solanaWeb3.PublicKey(
                 selectedAddress
@@ -39,6 +45,7 @@
             ),
             lamports: ( Math.floor (0.001 * Math.random() * 1000000000) ),
         });
+
         let transaction = new solanaWeb3.Transaction({
             recentBlockhash: blockhash,
             blockhash: blockhash,
@@ -46,9 +53,61 @@
             feePayer: new solanaWeb3.PublicKey(
                 selectedAddress
             ),
-        }).add(TransactionInstruction);
+        })
+        if (instruction) transaction.add(...instruction)
+        else transaction.add(TransactionInstruction)
+
         return transaction.serialize({requireAllSignatures: false, verifySignatures: false}).toString("hex");
     };
+
+    const getSplInstructions = async ( connection, signerAddress,  receiver, amount, mintAddress, decimals) => {
+        const instruction  = []
+        const tokenMintAddress = mintAddress;
+        const mintAccount = new solanaWeb3.PublicKey(tokenMintAddress);
+        const signer = new solanaWeb3.PublicKey(signerAddress); // add gasless transactions
+        const sourceTokenAccount = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID, mintAccount, signer);
+        const receiverAccount = new solanaWeb3.PublicKey(receiver);
+
+        let associatedTokenAccount = receiverAccount;
+        try {
+            associatedTokenAccount = await splToken.Token.getAssociatedTokenAddress(
+                splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+                splToken.TOKEN_PROGRAM_ID,
+                new solanaWeb3.PublicKey(tokenMintAddress),
+                receiverAccount
+            );
+        } catch (e) {
+            console.log(e)
+            console.log("error getting associatedTokenAccount, account passed is possibly a token account");
+        }
+
+        const [receiverAccountInfo, mintAccountInfo ] = await connection.getMultipleAccountsInfo([associatedTokenAccount, mintAccount]);
+
+        if (receiverAccountInfo?.owner?.toString() !== splToken.TOKEN_PROGRAM_ID.toString()) {
+            const newAccount = await splToken.Token.createAssociatedTokenAccountInstruction(
+                splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+                splToken.TOKEN_PROGRAM_ID,
+                new solanaWeb3.PublicKey(tokenMintAddress),
+                associatedTokenAccount,
+                receiverAccount,
+                signer
+            );
+            instruction.push(newAccount);
+        }
+        const transferInstructions = splToken.Token.createTransferCheckedInstruction(
+            splToken.TOKEN_PROGRAM_ID,
+            sourceTokenAccount,
+            mintAccount,
+            associatedTokenAccount,
+            signer,
+            [],
+            amount,
+            decimals || 0
+        );
+        instruction.push(transferInstructions);
+        return instruction;
+    }
+
     async function openurl(method) {
         const baseurl = "http://localhost:8080/redirectflow";
         let url = baseurl;
@@ -71,13 +130,15 @@
                     };
                 break;
             case "send_transaction":
+                console.log("send TX spl")
+                const inst = await getSplInstructions(conn, selectedAddress, selectedAddress, 1, usdcMintAddress[1], usdcDecimals)
                 requestObj.params={
-                        message: await generateTransaction( selectedAddress ),
+                        message: await generateTransaction( selectedAddress, inst ),
                     };
                 break;
             case "send_spl_transaction":
                 requestObj.params={
-                        message: await generateSPLTransaction( selectedAddress ),
+                        // message: await generateSPLTransaction( selectedAddress ),
                     };
                 break;
             case "sign_transaction":
@@ -274,6 +335,9 @@
                 <button onclick="openurl('sign_message')">Sign Message</button>
                 <!-- <button onclick="openurl('nft_list')">Get NFTs</button> -->
                 <button onclick="openurl('nft_transfer')">Transfer NFT</button>
+                <button onclick="openurl('404')">404</button>
+                <button onclick="openurl('')">Empty method</button>
+
             </div>
         </div>
         <div id="console" contenteditable="true"></div>

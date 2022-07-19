@@ -2,7 +2,7 @@
 import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
-import throttle from "lodash-es/throttle";
+import { throttle } from "lodash-es";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -13,8 +13,8 @@ import ImportToken from "@/components/home/ImportToken.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
-import { NAVIGATION_LIST } from "@/utils/enums";
 import { copyText } from "@/utils/helpers";
+import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const asyncWalletBalance = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),

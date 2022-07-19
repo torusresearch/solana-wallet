@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import log from "loglevel";
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
 import ControllerModule from "../../modules/controllers";
-import { redirectToResult, useRedirectFlow } from "../../utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
-
+const loading = ref(true);
 interface MsgData {
   origin: string;
   data?: Uint8Array;
@@ -42,9 +43,11 @@ onMounted(async () => {
   } catch (error) {
     log.error(error, "error in tx");
   }
+  loading.value = false;
 });
 
 const approveTxn = async (): Promise<void> => {
+  loading.value = true;
   const res = await ControllerModule.torus.signMessage(
     {
       params: {
@@ -58,10 +61,12 @@ const approveTxn = async (): Promise<void> => {
 };
 
 const rejectTxn = async () => {
+  loading.value = true;
   redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
 };
 </script>
 
 <template>
-  <Permissions :requested-from="msg_data.origin" :approval-message="msg_data.message" @on-approved="approveTxn" @on-rejected="rejectTxn" />
+  <FullDivLoader v-if="loading" />
+  <Permissions v-else :requested-from="msg_data.origin" :approval-message="msg_data.message" @on-approved="approveTxn" @on-rejected="rejectTxn" />
 </template>

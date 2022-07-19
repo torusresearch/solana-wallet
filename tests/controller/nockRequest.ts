@@ -64,11 +64,11 @@ export default () => {
   nock(WALLET_SUPPORTED_NETWORKS.mainnet.rpcTarget)
     .persist()
     .post("/")
-    .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+    .reply(200, (_uri: string, body: JRPCRequest<unknown>) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { method, params, ...others } = body;
       // log.error(method);
-      if (method === "getHealth") {
+      if (method === "getHealth" || method === "qn_fetchNFTs") {
         const value = { ...others, result: "ok" };
         // log.error(value);
         return value;
@@ -80,11 +80,11 @@ export default () => {
   nock(WALLET_SUPPORTED_NETWORKS.testnet.rpcTarget)
     .persist()
     .post("/")
-    .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+    .reply(200, (_uri: string, body: JRPCRequest<unknown>) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { method, params, ...others } = body;
       // log.error("testnet", method);
-      if (method === "getHealth") {
+      if (method === "getHealth" || method === "qn_fetchNFTs") {
         const value = { ...others, result: "ok" };
         // log.error(value);
         return value;
@@ -95,11 +95,11 @@ export default () => {
   nock("https://api.testnet.solana.com")
     .persist()
     .post("/")
-    .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+    .reply(200, (_uri: string, body: JRPCRequest<unknown>) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { method, params, ...others } = body;
       // log.error("testnet", method);
-      if (method === "getHealth") {
+      if (method === "getHealth" || method === "qn_fetchNFTs") {
         const value = { ...others, result: "ok" };
         // log.error(value);
         return value;
@@ -112,7 +112,7 @@ export default () => {
   nock(WALLET_SUPPORTED_NETWORKS.devnet.rpcTarget)
     .persist()
     .post("/")
-    .reply(200, (_uri, body: JRPCRequest<unknown>) => {
+    .reply(200, (_uri: string, body: JRPCRequest<unknown>) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { method, params, ...others } = body;
       // log.error("devnet", method);
@@ -124,5 +124,5 @@ export default () => {
       throw new Error(`Unimplemented mock devnet rpc method ${body.method}`);
     });
 
-  nock("https://solana-openlogin-state.tor.us").persist().post("/set").reply(200);
+  nock("https://solana-openlogin-state.tor.us").persist().post("/set").reply(200, { message: "", success: true });
 };

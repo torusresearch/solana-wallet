@@ -5,7 +5,7 @@ import { useI18n } from "vue-i18n";
 import LoginUrl from "@/assets/login.png";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import { RoundLoader } from "@/components/common";
-import { getWhiteLabelLogoLight } from "@/utils/white_label";
+import { getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 import PopupWidgetPanel from "./PopupWidgetPanel.vue";
 

@@ -3,17 +3,21 @@ import { Message, Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import { PaymentConfirm } from "@/components/payments";
+import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
-import { calculateTxFee, decodeAllInstruction, hideCrispButton, openCrispChat, parsingTransferAmount } from "@/utils/helpers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { hideCrispButton, openCrispChat } from "@/utils/helpers";
+import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { FinalTxData } from "@/utils/interfaces";
-import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "@/utils/redirectflowHelpers";
+import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 import ControllerModule from "../../modules/controllers";
 
 const { params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
+const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
 const finalTxData = ref<FinalTxData>();
 
@@ -21,6 +25,8 @@ const tx = ref<Transaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
+const loading = ref(true);
+
 onErrorCaptured(() => {
   openCrispChat();
 });
@@ -47,6 +53,9 @@ onMounted(async () => {
     if (txData.type === "sign_all_transactions") {
       const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
       decodedInst.value = decoded;
+      estimationInProgress.value = false;
+      hasEstimationError.value = "Failed to simulate transaction for balance changes";
+      loading.value = false;
       return;
     }
 
@@ -56,6 +65,7 @@ onMounted(async () => {
       tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
     }
 
+    estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
     const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = isGasless ? 0 : (await calculateTxFee(tx.value.compileMessage(), ControllerModule.connection)).fee;
 
@@ -72,9 +82,11 @@ onMounted(async () => {
     log.error(error, "error in tx");
     openCrispChat();
   }
+  loading.value = false;
 });
 
 const approveTxn = async (): Promise<void> => {
+  loading.value = true;
   let res: string | string[] | Transaction | undefined;
   try {
     if (method === "send_transaction" && tx.value) {
@@ -98,14 +110,16 @@ const approveTxn = async (): Promise<void> => {
 };
 
 const rejectTxn = async () => {
+  loading.value = true;
   redirectToResult(jsonrpc, { success: false, method }, req_id, resolveRoute);
 };
 </script>
 
 <!-- Could not use close modal event as it will overwrite approve transaction -->
 <template>
+  <FullDivLoader v-if="loading" />
   <PaymentConfirm
-    v-if="finalTxData"
+    v-else-if="finalTxData"
     :is-open="true"
     :sender-pub-key="finalTxData.slicedSenderAddress"
     :receiver-pub-key="finalTxData.slicedReceiverAddress"
@@ -114,6 +128,9 @@ const rejectTxn = async () => {
     :is-gasless="finalTxData.isGasless"
     :decoded-inst="decodedInst || []"
     :network="network"
+    :estimation-in-progress="estimationInProgress"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />
@@ -122,6 +139,9 @@ const rejectTxn = async () => {
     :decoded-inst="decodedInst || []"
     :origin="origin"
     :network="network"
+    :estimation-in-progress="estimationInProgress"
+    :estimated-balance-change="estimatedBalanceChange"
+    :has-estimation-error="hasEstimationError"
     @on-approved="approveTxn()"
     @on-cancel="rejectTxn()"
   />

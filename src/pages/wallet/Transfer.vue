@@ -3,21 +3,23 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
-import debounce from "lodash-es/debounce";
+import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
+import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
-import { calculateTxFee, delay, generateSPLTransaction, getEstimateBalanceChange, ruleVerifierId } from "@/utils/helpers";
-import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
+import { delay } from "@/utils/helpers";
+import { SolAndSplToken } from "@/utils/interfaces";
+import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
 const { t } = useI18n();
 
@@ -37,10 +39,6 @@ const selectedVerifier = ref("solana");
 const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
 const isCurrencyFiat = ref(false);
-
-const hasEstimationError = ref("");
-const estimatedBalanceChange = ref<AccountEstimation[]>([]);
-const estimationInProgress = ref(true);
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const solConversionRate = computed(() => {
@@ -67,6 +65,8 @@ const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
 });
 const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!selectedToken.value.price?.usd);
+
+const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
 onMounted(() => {
   const { query } = route;
@@ -273,18 +273,6 @@ const closeModal = () => {
   estimatedBalanceChange.value = [];
 };
 
-const estimateChanges = async (tx: Transaction) => {
-  estimationInProgress.value = true;
-  try {
-    estimatedBalanceChange.value = await getEstimateBalanceChange(ControllerModule.torus.connection, tx, ControllerModule.selectedAddress);
-    hasEstimationError.value = "";
-  } catch (e) {
-    hasEstimationError.value = "Unable estimate balance changes";
-    log.info("Error in transaction simulation", e);
-  }
-  estimationInProgress.value = false;
-};
-
 const openModal = async () => {
   transferDisabled.value = true;
   $v.value.$touch();
@@ -308,7 +296,7 @@ const openModal = async () => {
 
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   transaction.value = await generateTransaction(amount);
-  estimateChanges(transaction.value);
+  estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
   const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
   blockhash.value = blockHash;
   lastValidBlockHeight.value = height;
@@ -522,6 +510,9 @@ async function onSelectTransferType() {
       :token="selectedToken"
       :crypto-tx-fee="transactionFee"
       :transfer-disabled="transferDisabled"
+      :estimation-in-progress="estimationInProgress"
+      :estimated-balance-change="estimatedBalanceChange"
+      :has-estimation-error="hasEstimationError"
       @transfer-confirm="confirmTransfer"
       @transfer-reject="closeModal"
       @on-close-modal="closeModal"

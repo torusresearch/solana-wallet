@@ -18,7 +18,6 @@ import {
   PopupStoreChannel,
   ProviderConfig,
   SelectedAddresssChangeChannelData,
-  THEME,
   ThemeChannelData,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
@@ -28,9 +27,7 @@ import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import cloneDeep from "lodash-es/cloneDeep";
-import merge from "lodash-es/merge";
-import omit from "lodash-es/omit";
+import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
@@ -43,7 +40,7 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
-import { isWhiteLabelActive, isWhiteLabelDark, overrideTheme } from "@/utils/white_label";
+import { isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import store from "../store";
 import { addToast } from "./app";
@@ -80,19 +77,6 @@ class ControllerModule extends VuexModule {
 
   get selectedAccountPreferences(): ExtendedAddressPreferences {
     const preferences = this.torus.getAccountPreferences(this.selectedAddress);
-    return (
-      preferences || {
-        ...DEFAULT_PREFERENCES,
-        incomingBackendTransactions: [],
-        displayActivities: {},
-        network_selected: "testnet",
-        theme: "dark",
-      }
-    );
-  }
-
-  get selectedAccountPreferencesEmbed(): ExtendedAddressPreferences {
-    const preferences = this.torus.getAccountPreferences(this.selectedAddress, false);
     return (
       preferences || {
         ...DEFAULT_PREFERENCES,
@@ -192,7 +176,7 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
-    if (isWhiteLabelActive() && !this.selectedAccountPreferences?.theme) return isWhiteLabelDark();
+    if (isWhiteLabelSet() && !this.selectedAccountPreferences?.theme) return isWhiteLabelDark();
     return this.selectedAccountPreferences.theme === "dark";
   }
 
@@ -365,16 +349,9 @@ class ControllerModule extends VuexModule {
   }
 
   @Action
-  public async setTheme(theme: THEME): Promise<void> {
-    await this.torus.setTheme(theme);
-  }
-
-  @Action
   public async changeTheme(theme: "light" | "dark") {
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
-      // eslint-disable-next-line no-debugger
-      debugger;
       const themeChannel = new BroadcastChannel<PopupData<ThemeChannelData>>(
         `${BROADCAST_CHANNELS.THEME_CHANGE}_${instanceId}`,
         broadcastChannelOptions
@@ -387,8 +364,7 @@ class ControllerModule extends VuexModule {
       });
       themeChannel.close();
     }
-    if (isWhiteLabelActive()) overrideTheme();
-    this.setTheme(theme);
+    this.torus.setTheme(theme);
   }
 
   @Action
@@ -466,7 +442,7 @@ class ControllerModule extends VuexModule {
         handleAccountImport: this.importExternalAccount.bind(this),
         handleNetworkChange: (providerConfig: ProviderConfig) => this.setNetwork(providerConfig.chainId),
         handleSelectedAddressChange: this.setSelectedAccount.bind(this),
-        handleThemeChange: this.setTheme.bind(this),
+        handleThemeChange: this.changeTheme.bind(this),
       });
       popupStoreChannel.setupStoreChannels();
     }

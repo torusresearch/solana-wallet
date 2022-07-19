@@ -3,7 +3,7 @@ import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { computed } from "vue";
 
-import { DecodedDataType } from "@/utils/instruction_decoder";
+import { DecodedDataType } from "@/utils/instructionDecoder";
 
 const props = withDefaults(
   defineProps<{

@@ -7,7 +7,7 @@ import VueGtag from "vue-gtag";
 import App from "@/App.vue";
 import { googleAnalyticsDirective } from "@/directives/google-analytics";
 import router from "@/router";
-import { applyWhiteLabelColors } from "@/utils/white_label";
+import { applyWhiteLabelColors } from "@/utils/whitelabel";
 
 import { i18n } from "./plugins/i18nPlugin";
 import * as serviceWorker from "./registerServiceWorker";

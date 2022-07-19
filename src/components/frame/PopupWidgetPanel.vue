@@ -15,7 +15,7 @@ import SolanaLogoLight from "@/assets/solana-light.svg";
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white_label";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 const { t } = useI18n();
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);

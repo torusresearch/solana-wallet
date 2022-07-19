@@ -6,7 +6,7 @@ import { useRouter } from "vue-router";
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import { GeneralInteractions, HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { isTopupHidden } from "@/utils/white_label";
+import { isTopupHidden } from "@/utils/whitelabel";
 
 const { t } = useI18n();
 

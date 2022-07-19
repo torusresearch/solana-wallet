@@ -21,6 +21,7 @@ export interface AccountEstimation {
   symbol: string;
   mint: string;
   address: string;
+  decimals: number;
 }
 
 export interface ProviderChangeChannelEventData {

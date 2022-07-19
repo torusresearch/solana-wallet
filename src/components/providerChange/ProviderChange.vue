@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/white_label";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 const { t } = useI18n();
 

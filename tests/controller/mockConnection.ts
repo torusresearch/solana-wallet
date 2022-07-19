@@ -56,10 +56,10 @@ const generateAccountInfo = async () => {
   //   isInitialized: true,
   // });
 
-  const decodeMintInfo: any = MintLayout.decode(buf);
+  // const decodeMintInfo: any = MintLayout.decode(buf);
 
-  log.info(decodeMintInfo.supply.toNumber());
-  log.info(decodeMintInfo.isInitialized);
+  // log.info(decodeMintInfo.supply.toNumber());
+  // log.info(decodeMintInfo.isInitialized);
 
   // Metaplex data Layout
   const mdpda = await Metadata.getPDA(new PublicKey(mockMintAddress[1]));
@@ -252,6 +252,13 @@ export const mockConnection: Partial<Connection> = {
     return {
       blockhash: base58.encode(crypto.createHash("sha256").update(slotCounter.toString()).digest()),
       feeCalculator: { lamportsPerSignature: 5000 },
+    };
+  },
+  rpcEndpoint: "http://localhost:8080/",
+  getLatestBlockhash: async () => {
+    return {
+      blockhash: base58.encode(crypto.createHash("sha256").update(slotCounter.toString()).digest()),
+      lastValidBlockHeight: Math.floor(Math.random() * 1000000000),
     };
   },
   getRecentBlockhashAndContext: async () => {

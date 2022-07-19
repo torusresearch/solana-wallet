@@ -2,13 +2,13 @@
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
-import { isMain, promiseCreator, recordDapp } from "@/utils/helpers";
-import { setWhiteLabel } from "@/utils/white_label";
+import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
+import { setWhiteLabel } from "@/utils/whitelabel";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -86,6 +86,10 @@ const lastTransaction = computed(() => {
   return txns[0] as SolanaTransactionActivity;
 });
 
+watch(isIFrameFullScreen, () => {
+  if (!isIFrameFullScreen.value && !isCrispClosed()) hideCrispButton();
+});
+
 onMounted(async () => {
   if (!isMain) {
     await promise;
@@ -115,6 +119,7 @@ onMounted(async () => {
 
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
+    hideCrispButton();
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {

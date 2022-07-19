@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DecodedDataType } from "@/utils/instruction_decoder";
+import { DecodedDataType } from "@/utils/instructionDecoder";
 
 import DecodedDisplay from "./DecodedDisplay.vue";
 

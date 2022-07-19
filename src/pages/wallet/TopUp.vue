@@ -6,7 +6,7 @@ import { useRouter } from "vue-router";
 
 import controllerModule from "@/modules/controllers";
 import { TOPUP, TopupProvider, TopupProviders } from "@/utils/topup";
-import { getBrandColor } from "@/utils/white_label";
+import { getBrandColor } from "@/utils/whitelabel";
 
 const router = useRouter();
 
