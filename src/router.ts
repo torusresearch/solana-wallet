@@ -213,6 +213,10 @@ function hasInstanceId(route: RouteLocationNormalized) {
   return Object.prototype.hasOwnProperty.call(route.query, "instanceId");
 }
 
+function combineQueryParams(fromRoute: RouteLocationNormalized, toRoute: RouteLocationNormalized) {
+  return { ...toRoute.query, ...{ instanceId: fromRoute.query.instanceId } };
+}
+
 router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized, next) => {
   if ((toRoute.name as string)?.includes("login")) {
     return next();
@@ -220,7 +224,7 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   if (!hasInstanceId(toRoute) && hasInstanceId(fromRoute)) {
     return next({
       name: toRoute.name as RouteRecordName,
-      query: fromRoute.query,
+      query: combineQueryParams(fromRoute, toRoute),
       hash: toRoute.hash,
       params: toRoute.params,
     });
