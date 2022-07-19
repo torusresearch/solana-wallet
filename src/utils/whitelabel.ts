@@ -1,7 +1,5 @@
 import color from "color";
 
-import SolanaLogoURL from "@/assets/solana-dark.svg";
-import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { WhiteLabelParams } from "@/utils/interfaces";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
@@ -66,9 +64,6 @@ export function getWhiteLabelLogoDark() {
 
 export function getWhiteLabelLogo(isDark = true): string {
   return (isDark ? getWhiteLabel()?.logoDark : getWhiteLabel()?.logoLight) || "";
-}
-export function getLogo(isDark = true) {
-  return isDark ? getWhiteLabelLogoLight() || SolanaLightLogoURL : getWhiteLabelLogoDark() || SolanaLogoURL;
 }
 
 export function getWhiteLabelLocale(): string {
