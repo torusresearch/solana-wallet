@@ -4,7 +4,9 @@ import MobHome from "@/assets/mob-home.svg";
 import MobNft from "@/assets/mob-nft.svg";
 import MobSettings from "@/assets/mob-settings.svg";
 
-export const NAVIGATION_LIST: {
+import { isTopupHidden } from "./whitelabel";
+
+const navList: {
   [key: string]: {
     name: string;
     title: string;
@@ -63,3 +65,10 @@ export const NAVIGATION_LIST: {
     mobHidden: false,
   },
 };
+
+function getNavList() {
+  if (isTopupHidden()) delete navList.topup;
+  return navList;
+}
+
+export const NAVIGATION_LIST = getNavList();

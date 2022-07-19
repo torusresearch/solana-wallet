@@ -1,7 +1,6 @@
 import color from "color";
 
 import { WhiteLabelParams } from "@/utils/interfaces";
-import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const lighten = (target: string, val: number) => color(target).lighten(val).rgb().string();
 
@@ -48,10 +47,6 @@ export function applyWhiteLabelColors(): void {
     document.documentElement.style.setProperty("--color-primary-700", darken(brandColor, 0.4));
     document.documentElement.style.setProperty("--color-primary-800", darken(brandColor, 0.64));
     document.documentElement.style.setProperty("--color-primary-900", darken(brandColor, 0.8));
-  }
-
-  if (isTopupHidden()) {
-    delete NAVIGATION_LIST.topup;
   }
 }
 
