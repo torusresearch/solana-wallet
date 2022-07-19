@@ -15,7 +15,7 @@ import SolanaLogoLight from "@/assets/solana-light.svg";
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight, isTopupHidden } from "@/utils/whitelabel";
 
 const { t } = useI18n();
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
@@ -91,6 +91,7 @@ const refDiv = ref(null);
                       <ArrowBoldForvardIcon class="w-4 h-4 text-app-primary-500" />
                     </button>
                     <button
+                      v-if="!isTopupHidden()"
                       class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
                       @click="() => showWallet('wallet/topup')"
                     >

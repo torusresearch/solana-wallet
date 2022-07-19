@@ -176,7 +176,7 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
-    if (isWhiteLabelSet() && !this.selectedAccountPreferences?.theme) return isWhiteLabelDark();
+    if (isWhiteLabelSet() && !this.torus.getAccountPreferences(this.selectedAddress)) return isWhiteLabelDark();
     return this.selectedAccountPreferences.theme === "dark";
   }
 
