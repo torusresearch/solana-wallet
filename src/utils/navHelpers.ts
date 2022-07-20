@@ -1,10 +1,14 @@
+import { omit } from "lodash-es";
+
 import MobActivity from "@/assets/mob-activity.svg";
 import MobDiscover from "@/assets/mob-discover.svg";
 import MobHome from "@/assets/mob-home.svg";
 import MobNft from "@/assets/mob-nft.svg";
 import MobSettings from "@/assets/mob-settings.svg";
 
-export const NAVIGATION_LIST: {
+import { isTopupHidden } from "./whitelabel";
+
+const navList: {
   [key: string]: {
     name: string;
     title: string;
@@ -63,3 +67,9 @@ export const NAVIGATION_LIST: {
     mobHidden: false,
   },
 };
+
+function getNavList() {
+  return isTopupHidden() ? omit(navList, "topup") : navList;
+}
+
+export const NAVIGATION_LIST = getNavList();
