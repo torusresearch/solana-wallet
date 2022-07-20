@@ -108,7 +108,7 @@ describe("Controller Module", () => {
     clock.restore();
   });
 
-  describe("#importCustomToken", async () => {
+  xdescribe("#importCustomToken", async () => {
     beforeEach(async () => {
       // const a = new TokenInfoController({
       //   config: DEFAULT_CONFIG.TokensInfoConfig,
@@ -148,7 +148,7 @@ describe("Controller Module", () => {
   });
 
   // Initialization
-  describe("#Initialization, login logout flow", () => {
+  xdescribe("#Initialization, login logout flow", () => {
     it("embed is full screeen", async () => {
       sandbox.stub(BaseEmbedController.prototype, "state").returns({ isIFrameFullScreen: false });
       const { embedIsIFrameFullScreen } = controllerModule.torus;
@@ -205,7 +205,7 @@ describe("Controller Module", () => {
     });
   });
 
-  describe("#Embeded Login Logout flow", () => {
+  xdescribe("#Embeded Login Logout flow", () => {
     // const initParams = {
     //   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
     //   apiKey: "adsf",
@@ -359,7 +359,7 @@ describe("Controller Module", () => {
   });
 
   // transfer flow
-  describe("#Transfer flow", () => {
+  xdescribe("#Transfer flow", () => {
     const transferInstruction = () => {
       return SystemProgram.transfer({
         fromPubkey: sKeyPair[0].publicKey,
