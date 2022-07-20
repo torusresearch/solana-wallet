@@ -1,3 +1,5 @@
+import { omit } from "lodash-es";
+
 import MobActivity from "@/assets/mob-activity.svg";
 import MobDiscover from "@/assets/mob-discover.svg";
 import MobHome from "@/assets/mob-home.svg";
@@ -67,8 +69,7 @@ const navList: {
 };
 
 function getNavList() {
-  if (isTopupHidden()) delete navList.topup;
-  return navList;
+  return isTopupHidden() ? omit(navList, "topup") : navList;
 }
 
 export const NAVIGATION_LIST = getNavList();
