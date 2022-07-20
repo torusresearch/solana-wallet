@@ -149,7 +149,51 @@ export const mockData = {
             mint_address: "",
           },
         ],
-
+        displayActivities: {
+          EKRG4kVcmKmrzFmq4bpbRqbiQGiXFoYUryLyrVx4JKYSgzuCS3N7fnNMenuVnSV1Ent2rqnJtPWH5c98GBeiGjp: {
+            action: "walletActivity.unknown",
+            status: "submitted",
+            id: 1847,
+            from: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+            to: "unknown-unknown-unknown-unknown-",
+            rawDate: "2022-05-26T19:59:39.000Z",
+            updatedAt: 1653595179000,
+            blockExplorerUrl:
+              "https://explorer.solana.com/tx/EKRG4kVcmKmrzFmq4bpbRqbiQGiXFoYUryLyrVx4JKYSgzuCS3N7fnNMenuVnSV1Ent2rqnJtPWH5c98GBeiGjp/?cluster=mainnet",
+            network: "mainnet",
+            chainId: "0x1",
+            signature: "EKRG4kVcmKmrzFmq4bpbRqbiQGiXFoYUryLyrVx4JKYSgzuCS3N7fnNMenuVnSV1Ent2rqnJtPWH5c98GBeiGjp",
+            fee: null,
+            type: "unknown",
+            decimal: 9,
+            logoURI: "",
+            mintAddress: "",
+          },
+          "3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D": {
+            slot: "140530275",
+            status: "finalized",
+            updatedAt: 1657162954000,
+            signature: "3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D",
+            txReceipt: "3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D",
+            blockExplorerUrl:
+              "https://explorer.solana.com/tx/3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D/?cluster=mainnet",
+            chainId: "0x1",
+            network: "mainnet",
+            rawDate: "2022-07-07T03:02:34.000Z",
+            action: "walletActivity.send",
+            type: "transferChecked",
+            decimal: 0,
+            from: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+            to: "CdkkYiLZs5iet9VDEcevuM4T8WhCUuL7Vy7dPUmL9WQg",
+            cryptoAmount: "1",
+            cryptoCurrency: "-",
+            fee: 5000,
+            send: true,
+            totalAmountString: "1.0000",
+            logoURI: "",
+            mintAddress: "ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
+          },
+        },
         contacts: [
           {
             id: 46,
@@ -184,4 +228,31 @@ export const mockData = {
     },
   },
   openLoginHandler: openloginFaker[0],
+};
+export const sampleTokens = {
+  tokens: {
+    "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW": {
+      E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz: {
+        chainId: null,
+        address: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
+        symbol: "WWW",
+        name: "WWW",
+        decimals: 9,
+        network: "Solana Testnet",
+        publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+        logoURI: "",
+      },
+      "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK": {
+        chainId: null,
+        address: "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK",
+        symbol: "SSS",
+        name: "s",
+        decimals: 9,
+        network: "Solana Testnet",
+        publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+        logoURI: "",
+      },
+    },
+    FKUPMMJM89UEuq2zGiTYHp69oD13s8ioqjYTuys2MgKP: [],
+  },
 };

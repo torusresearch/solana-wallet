@@ -545,8 +545,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
     } catch (err: any) {
-      log.error(JSON.stringify(await err.json()));
-      throw new Error("Unable to import token");
+      log.error(err);
+      throw new Error("Unable to import token", err);
     }
   }
 
@@ -718,10 +718,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async addContact(contactPayload: ContactPayload): Promise<boolean> {
+    // eslint-disable-next-line no-console
+    console.log({ contactPayload });
     return this.preferencesController.addContact(contactPayload);
   }
 
   async deleteContact(contactId: number): Promise<boolean> {
+    // eslint-disable-next-line no-console
+    console.log({ contactId });
     return this.preferencesController.deleteContact(contactId);
   }
 
@@ -1146,11 +1150,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   async embedhandleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
     const windowId = req.params?.windowId;
-    const params = req.params?.params || {};
-    const provider = TOPUP.MOONPAY;
-    // const provider = req.params?.provider || TOPUP.MOONPAY;
-    // if (!topupPlugin[provider]) throw ethErrors.provider.custom({ code: -32000, message: "Invalid topup provider" });
-    return this.handleTopup(provider, params, windowId);
+    const params = req.params?.params;
+    const provider = req.params?.provider || TOPUP.MOONPAY;
+    return this.handleTopup(provider, params as PaymentParams, windowId);
   }
 
   async handleTopup(provider: string, params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {

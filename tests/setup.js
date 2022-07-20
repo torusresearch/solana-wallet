@@ -5,7 +5,9 @@ const fetch = require("node-fetch");
 require("jsdom-global")("", {
   url: "https://solana.tor.us",
 });
-
+global.localStorage = window.localStorage;
+global.sessionStorage = window.sessionStorage;
+window.Date = Date;
 const tsConfigPath = path.resolve(".", "tsconfig.json");
 
 require("ts-node").register({

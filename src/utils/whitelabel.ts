@@ -1,9 +1,9 @@
 import color from "color";
 
-import SolanaLogoURL from "@/assets/solana-dark.svg";
-import SolanaLightLogoURL from "@/assets/solana-light.svg";
+// import SolanaLogoURL from "@/assets/solana-dark.svg";
+// import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import { WhiteLabelParams } from "@/utils/interfaces";
-import { NAVIGATION_LIST } from "@/utils/navHelpers";
+// import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const lighten = (target: string, val: number) => color(target).lighten(val).rgb().string();
 
@@ -52,9 +52,9 @@ export function applyWhiteLabelColors(): void {
     document.documentElement.style.setProperty("--color-primary-900", darken(brandColor, 0.8));
   }
 
-  if (isTopupHidden()) {
-    delete NAVIGATION_LIST.topup;
-  }
+  // if (isTopupHidden()) {
+  //   delete NAVIGATION_LIST.topup;
+  // }
 }
 
 export function getWhiteLabelLogoLight(): string {
@@ -68,7 +68,7 @@ export function getWhiteLabelLogo(isDark = true): string {
   return (isDark ? getWhiteLabel()?.logoDark : getWhiteLabel()?.logoLight) || "";
 }
 export function getLogo(isDark = true) {
-  return isDark ? getWhiteLabelLogoLight() || SolanaLightLogoURL : getWhiteLabelLogoDark() || SolanaLogoURL;
+  return isDark ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark();
 }
 
 export function getWhiteLabelLocale(): string {

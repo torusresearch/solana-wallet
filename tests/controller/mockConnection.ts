@@ -159,7 +159,7 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
             state: "initialized",
             tokenAmount: {
               amount: "0",
-              decimals: 0,
+              decimals: 1,
               uiAmount: 0,
               uiAmountString: "0",
             },
@@ -182,6 +182,36 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
         parsed: {
           info: {
             isNative: false,
+            mint: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
+            // owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
+            owner: sKeyPair[0].publicKey.toBase58(),
+            state: "initialized",
+            tokenAmount: {
+              amount: "0",
+              decimals: 1,
+              uiAmount: 0,
+              uiAmountString: "0",
+            },
+            decimals: 1,
+          },
+          type: "account",
+        },
+        program: "spl-token",
+        space: 165,
+      },
+      executable: false,
+      lamports: 2039280,
+      owner: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+      rentEpoch: 274,
+    },
+    pubkey: new PublicKey("E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz"),
+  },
+  {
+    account: {
+      data: {
+        parsed: {
+          info: {
+            isNative: false,
             mint: "CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp",
             owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
             // owner: sKeyPair[0].publicKey.toBase58(),
@@ -192,6 +222,7 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
               uiAmount: 0.699,
               uiAmountString: "0.699",
             },
+            decimals: 6,
           },
           type: "account",
         },
@@ -321,6 +352,17 @@ export const mockConnection: Partial<Connection> = {
     return {
       context: { slot: slotCounter },
       value: tokenOwned,
+    };
+  },
+
+  getParsedAccountInfo: async (accountAddress: PublicKey) => {
+    const tokenOwned = parsedTokenAccountInfo.find((item) => {
+      return item.pubkey === accountAddress;
+    });
+    log.info(tokenOwned);
+    return {
+      context: { slot: slotCounter },
+      value: parsedTokenAccountInfo[1].account,
     };
   },
 };

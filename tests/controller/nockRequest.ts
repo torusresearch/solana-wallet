@@ -4,7 +4,7 @@ import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import { mockData, OffChainMetaplexUri } from "./mockData";
+import { mockData, OffChainMetaplexUri, sampleTokens } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -54,6 +54,22 @@ export default () => {
   nockBackend.post("/auth/verify").reply(200, () => JSON.stringify(mockData.backend.verify));
 
   nockBackend.post("/user").reply(200, (_uri, _requestbody) => JSON.stringify(mockData.backend.user));
+
+  nockBackend.post("/contact").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
+
+  nockBackend.patch("/user").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
+
+  nockBackend.post("/tokeninfo").reply(200, (_uri, _requestbody) => {
+    return sampleTokens.tokens["7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW"];
+  });
+
+  nockBackend.post("/customtoken").reply(200, (_uri, _requestbody) => {
+    return { data: _requestbody, message: "Custom Token Imported", success: true };
+  });
+
+  nockBackend.post("/customtoken/fetchToken").reply(200, (_uri, _requestbody) => {
+    return { response: sampleTokens.tokens, success: true };
+  });
 
   nockBackend.post("/user/recordLogin").reply(200, () => JSON.stringify(mockData.backend.recordLogin));
 

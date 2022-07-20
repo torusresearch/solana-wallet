@@ -1,5 +1,11 @@
 import { PopupWithBcHandler } from "@toruslabs/base-controllers";
-import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS, TokenInfoController } from "@toruslabs/solana-controllers";
+import {
+  AccountTrackerController,
+  NetworkController,
+  // PreferencesController,
+  SUPPORTED_NETWORKS,
+  TokenInfoController,
+} from "@toruslabs/solana-controllers";
 import assert from "assert";
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
@@ -29,6 +35,8 @@ describe("TorusController", () => {
   let popupStub: sinon.SinonStub;
 
   let spyAccountTracker: sinon.SinonSpy;
+  // let spyPreferenceTrackerRefresh: sinon.SinonSpy;
+  // let spyPreferenceTracker: sinon.SinonSpy;
   // let spyPrefIntializeDisp: sinon.SinonSpy;
   let spyTokenInfo: sinon.SinonSpy;
 
@@ -67,6 +75,7 @@ describe("TorusController", () => {
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
+    // spyPreferenceTrackerRefresh = sandbox.spy(PreferencesController.prototype, "refreshJwt");
     // spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
     spyTokenInfo = sandbox.spy(TokenInfoController.prototype, "updateMetadata");
 
@@ -83,6 +92,16 @@ describe("TorusController", () => {
     clock.restore();
   });
 
+  // describe("#misc", () => {
+  //   it("refreshJwt", async () => {
+  //     await torusController.triggerLogin({ loginProvider: "google" });
+  //     torusController.setSelectedAccount(sKeyPair[2].publicKey.toBase58());
+  //     await torusController.restoreFromBackend();
+  //     log.info({ torusController: torusController.state.PreferencesControllerState });
+  //     assert(spyPreferenceTrackerRefresh.calledOnce);
+  //     log.info("hi there folks how are you doing ");
+  //   });
+  // });
   // on update
   describe("#On Update flow", () => {
     it("network changed trigger updates", async () => {

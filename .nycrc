@@ -1,0 +1,18 @@
+{
+  "include": [
+    "tests/controller/**.ts"
+  ],
+  "exclude": [
+    "app/Index.ts"
+  ],
+  "extension": [
+    ".ts",
+    ".js"
+  ],
+  "reporter": [
+    "json",
+    "lcov",
+    "text-summary"
+  ],
+  "report-dir": "./coverage"
+}
