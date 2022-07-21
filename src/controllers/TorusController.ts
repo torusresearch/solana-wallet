@@ -1382,7 +1382,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
           const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
-          this.setSelectedAccount(selectedAddress, true);
+          await this.setSelectedAccount(selectedAddress, true);
 
           return true;
         } catch (e) {
