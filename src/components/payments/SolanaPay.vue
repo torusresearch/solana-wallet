@@ -5,8 +5,10 @@ import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
+import MessageModal from "@/components/common/MessageModal.vue";
 import ControllerModule from "@/modules/controllers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { STATUS } from "@/utils/enums";
+import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { getTokenInfo, parseSolanaPayRequestLink } from "@/utils/solanaHelpers";
 
 import FullDivLoader from "../FullDivLoader.vue";
@@ -127,8 +129,7 @@ onMounted(async () => {
   } catch (e) {
     // invalidLink.value = true;
     if (e instanceof Error) {
-      log.error("testing parseurl");
-      invalidLink.value = e.message;
+      invalidLink.value = e.message || e.name;
     } else {
       invalidLink.value = "Invalid Link";
     }
@@ -138,11 +139,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="invalidLink" class="payContainer">
-    <div class="wrapper gt-xs:w-96 dark:shadow-dark bg-white dark:bg-app-gray-700">
-      <p>{{ invalidLink }}</p>
-      <button @click="onCancel">Go Back</button>
-    </div>
+  <div v-if="invalidLink" class="">
+    <MessageModal :is-open="!!invalidLink || false" :title="invalidLink" :status="STATUS.ERROR" @on-close="onCancel" />
   </div>
 
   <PaymentConfirm

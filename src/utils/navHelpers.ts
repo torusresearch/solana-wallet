@@ -15,6 +15,7 @@ const navList: {
     route: string;
     icon: string;
     mobHidden: boolean;
+    navHidden: boolean;
   };
 } = {
   home: {
@@ -23,6 +24,7 @@ const navList: {
     route: "home",
     icon: MobHome,
     mobHidden: false,
+    navHidden: false,
   },
   transfer: {
     name: "navBar.transfer",
@@ -30,6 +32,7 @@ const navList: {
     route: "transfer",
     icon: MobHome,
     mobHidden: true,
+    navHidden: true,
   },
   topup: {
     name: "navBar.topUp",
@@ -37,6 +40,7 @@ const navList: {
     route: "topup",
     icon: MobHome,
     mobHidden: true,
+    navHidden: true,
   },
   nfts: {
     name: "navBar.nfts",
@@ -44,6 +48,7 @@ const navList: {
     route: "nfts",
     icon: MobNft,
     mobHidden: false,
+    navHidden: false,
   },
   pay: {
     name: "navBar.pay",
@@ -51,6 +56,7 @@ const navList: {
     route: "pay",
     icon: MobActivity,
     mobHidden: true,
+    navHidden: true,
   },
   activity: {
     name: "navBar.activity",
@@ -58,6 +64,7 @@ const navList: {
     route: "activity",
     icon: MobActivity,
     mobHidden: false,
+    navHidden: false,
   },
   settings: {
     name: "navBar.settings",
@@ -65,6 +72,7 @@ const navList: {
     route: "settings",
     icon: MobSettings,
     mobHidden: false,
+    navHidden: false,
   },
   discover: {
     name: "navBar.discover",
@@ -72,6 +80,7 @@ const navList: {
     route: "discover",
     icon: MobDiscover,
     mobHidden: false,
+    navHidden: false,
   },
 };
 
