@@ -17,7 +17,7 @@ const { t } = useI18n();
           class="w-full"
           :variant="ControllerModule.isDarkMode ? 'tertiary' : 'primary'"
           :block="true"
-          @click="ControllerModule.setTheme('light')"
+          @click="ControllerModule.changeTheme('light')"
           >{{ t("walletSettings.light") }}</Button
         >
       </div>
@@ -27,7 +27,7 @@ const { t } = useI18n();
           :variant="ControllerModule.isDarkMode ? 'primary' : 'tertiary'"
           :block="true"
           class="w-full"
-          @click="ControllerModule.setTheme('dark')"
+          @click="ControllerModule.changeTheme('dark')"
           >{{ t("walletSettings.dark") }}</Button
         >
       </div>

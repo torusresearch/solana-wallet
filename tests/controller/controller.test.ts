@@ -2,7 +2,7 @@ import { PopupWithBcHandler } from "@toruslabs/base-controllers";
 import { AccountTrackerController, NetworkController, SUPPORTED_NETWORKS, TokenInfoController } from "@toruslabs/solana-controllers";
 import assert from "assert";
 import base58 from "bs58";
-import cloneDeep from "lodash-es/cloneDeep";
+import { cloneDeep } from "lodash-es";
 import log from "loglevel";
 import nock from "nock";
 import sinon from "sinon";
@@ -53,10 +53,10 @@ describe("TorusController", () => {
   beforeEach(async () => {
     nockRequest();
     // Stubing Openlogin
-    sandbox.stub(config, "baseUrl").get(() => "http://localhost");
-    sandbox.stub(config, "baseRoute").get(() => "http://localhost");
+    sandbox.stub(config, "baseUrl").get(() => "http://localhost:8080/");
+    sandbox.stub(config, "baseRoute").get(() => "http://localhost:8080/");
     sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
-      // log.error("sinon stub working");
+      log.error("sinon stub working");
       return mockData.openLoginHandler;
     });
 
@@ -167,7 +167,7 @@ describe("TorusController", () => {
         method: "getAccounts",
         params: [],
       });
-
+      log.info({ resultAfterLogin }, { sKeyPair: sKeyPair[0].publicKey.toBase58() });
       assert.deepStrictEqual(resultAfterLogin, [sKeyPair[0].publicKey.toBase58()]);
     });
 
@@ -225,7 +225,7 @@ describe("TorusController", () => {
   //         }
   //       })
 
-  //       torusController.setupUntrustedCommunication(setupMultiplex(streamTest).createStream('provider'), messageSender.url)
+  //   //       torusController.setupUntrustedCommunication(setupMultiplex(streamTest).createStream('provider'), messageSender.url)
 
   //       const message = {
   //         id: 1999133338649204,

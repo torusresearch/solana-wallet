@@ -6,8 +6,10 @@ import { BrowserTracing } from "@sentry/tracing";
 import LoglevelSentryPlugin, { redactBreadcrumbData } from "@toruslabs/loglevel-sentry";
 import log from "loglevel";
 import { App } from "vue";
-import { handleExceptions } from "@/utils/ErrorHandler";
+import { handleExceptions } from "@/utils/errorHandlers";
 import config from "./config";
+
+const logger = log.getLogger("error");
 
 function getSampleRate() {
   try {
@@ -71,5 +73,5 @@ export function installSentry(Vue: App) {
 
   const plugin = new LoglevelSentryPlugin(Sentry);
   Sentry.setTag("referrer", document.referrer || "self");
-  plugin.install(log);
+  plugin.install(logger);
 }

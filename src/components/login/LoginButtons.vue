@@ -184,12 +184,7 @@ const onEmailLogin = () => {
       <div class="w-full border-t border-app-text-400" />
     </div>
     <div class="relative flex justify-center text-sm">
-      <span
-        :class="
-          isEmbed ? 'px-2 text-white text-opacity-80 or-text' : 'px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600'
-        "
-        >{{ t("login.or") }}</span
-      >
+      <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">{{ t("login.or") }}</span>
     </div>
   </div>
   <div :class="isEmbed ? 'mt-4 w-full' : 'sm:w-10/12 mt-3 w-full'">
@@ -214,9 +209,6 @@ const onEmailLogin = () => {
 </template>
 
 <style scoped>
-span.or-text {
-  background-color: #10141f;
-}
 button.continue {
   background-color: rgba(214, 164, 255, 0.12);
   color: rgb(214, 164, 255);

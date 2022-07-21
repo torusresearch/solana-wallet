@@ -9,9 +9,9 @@ import { useEstimateChanges } from "@/components/payments/EstimateChangesComposa
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { FinalTxData } from "@/utils/interfaces";
-import { redirectToResult, useRedirectFlow } from "@/utils/redirectflow_helpers";
+import { redirectToResult, useRedirectFlow } from "@/utils/redirectflowHelpers";
 import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 import ControllerModule from "../../modules/controllers";

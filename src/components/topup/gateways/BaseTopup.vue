@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useVuelidate, ValidationRuleWithParams } from "@vuelidate/core";
-import throttle from "lodash-es/throttle";
+import { throttle } from "lodash-es";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -10,6 +10,7 @@ import { Button, RoundLoader, SelectField, TextField } from "@/components/common
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { TOPUP, TopupProviders } from "@/utils/topup";
+import { isTopupHidden } from "@/utils/whitelabel";
 
 import { RequestObject } from "./types";
 
@@ -170,6 +171,7 @@ onMounted(() => {
       </div>
       <div class="px-4 py-3 mb-4 sm:px-6">
         <Button
+          v-if="!isTopupHidden()"
           class="ml-auto mb-2"
           variant="primary"
           type="submit"

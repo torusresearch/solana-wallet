@@ -27,7 +27,7 @@ import BigNumber from "bignumber.js";
 import log from "loglevel";
 
 import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, TWITTER } from "./enums";
-import { DecodedDataType, decodeInstruction } from "./instruction_decoder";
+import { DecodedDataType, decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
@@ -212,7 +212,7 @@ export async function calculateChanges(
     const postTokenOwner = item.owner.toBase58();
     if (preTokenOwner === selectedAddress || postTokenOwner === selectedAddress) {
       let mint = item.mint.toBase58();
-      const symbol = addressSlicer(item.mint.toBase58());
+      const symbol = `${item.mint.toBase58().substring(0, 5)}...`;
 
       // default decimals
       let decimals = 9;

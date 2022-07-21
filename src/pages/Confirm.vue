@@ -2,17 +2,17 @@
 import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
+import FullDivLoader from "@/components/FullDivLoader.vue";
 import { PaymentConfirm } from "@/components/payments";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instruction_decoder";
+import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { FinalTxData } from "@/utils/interfaces";
 import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
 
@@ -43,12 +43,16 @@ onMounted(async () => {
     const connection = new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"));
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
-      decodedInst.value = decoded;
-      estimationInProgress.value = false;
-      hasEstimationError.value = "Failed to simulate transaction for balance changes";
-      loading.value = false;
-      return;
+      if (txData.message.length === 1) {
+        txData.message = (txData.message as string[]).at(0) || "";
+      } else {
+        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+        decodedInst.value = decoded;
+        estimationInProgress.value = false;
+        hasEstimationError.value = "Failed to simulate transaction for balance changes";
+        loading.value = false;
+        return;
+      }
     }
 
     if (txData.messageOnly) {
@@ -101,9 +105,7 @@ const rejectTxn = async () => {
 </script>
 
 <template>
-  <div v-if="loading" class="w-full h-full overflow-hidden bg-white dark:bg-app-gray-800 flex flex-col justify-center items-center">
-    <Loader :use-spinner="true" />
-  </div>
+  <FullDivLoader v-if="loading" />
   <PaymentConfirm
     v-else-if="finalTxData"
     :is-open="true"

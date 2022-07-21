@@ -2,7 +2,7 @@
 import { Loader } from "@toruslabs/vue-components/common";
 import { onMounted } from "vue";
 
-import { evalRedirectflow } from "../utils/redirectflow_helpers";
+import { evalRedirectflow } from "../utils/redirectflowHelpers";
 
 onMounted(async () => {
   await evalRedirectflow();

@@ -5,8 +5,10 @@ import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
 import { PopupLogin, PopupWidget } from "@/components/frame";
+import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
+import { setWhiteLabel } from "@/utils/whitelabel";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -44,7 +46,9 @@ function startLogin() {
         if (!dappOrigin) {
           dappOrigin = origin;
         }
-        const { buttonPosition, apiKey, network, dappMetadata, extraParams } = data;
+        const { buttonPosition, apiKey, network, dappMetadata, extraParams, whiteLabel } = data;
+        setWhiteLabel(whiteLabel);
+        setLocale(i18n, whiteLabel?.defaultLanguage || "en");
         if (typeof network === "string") {
           if (network === "mainnet-beta") initParams.network = WALLET_SUPPORTED_NETWORKS.mainnet;
           else if (network === "mainnet" || network === "testnet" || network === "devnet") initParams.network = WALLET_SUPPORTED_NETWORKS[network];
@@ -115,6 +119,7 @@ onMounted(async () => {
 
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
+    hideCrispButton();
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
