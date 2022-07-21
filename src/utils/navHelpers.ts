@@ -45,6 +45,13 @@ const navList: {
     icon: MobNft,
     mobHidden: false,
   },
+  pay: {
+    name: "navBar.pay",
+    title: "walletPay.pay",
+    route: "pay",
+    icon: MobActivity,
+    mobHidden: true,
+  },
   activity: {
     name: "navBar.activity",
     title: "walletActivity.transactionActivities",
