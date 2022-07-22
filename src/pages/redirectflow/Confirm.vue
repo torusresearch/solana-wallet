@@ -131,6 +131,8 @@ const rejectTxn = async () => {
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
+    :price-per-sol="ControllerModule.conversionRate"
+    :currency="ControllerModule.currentCurrency"
     @transfer-confirm="approveTxn()"
     @transfer-cancel="rejectTxn()"
   />

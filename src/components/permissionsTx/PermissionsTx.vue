@@ -26,9 +26,11 @@ const props = withDefaults(
     estimationInProgress: boolean;
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: string;
+    message?: string;
   }>(),
   {
     logoUrl: SolanaLogoURL,
+    message: "",
   }
 );
 
@@ -79,6 +81,12 @@ function openLink() {
             :estimation-in-progress="props.estimationInProgress"
           />
         </div>
+
+        <!-- Specific for Solana Pay -->
+        <div v-if="message">
+          {{ message }}
+        </div>
+
         <div class="flex flex-col justify-start items-start w-full">
           <div class="w-full flex flex-row justify-start items-center">
             <CheckCircleIcon class="w-4 h-4 mr-2 text-app-primary-500" />

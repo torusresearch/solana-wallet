@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
@@ -29,7 +29,7 @@ const props = withDefaults(
 );
 
 const { t } = useI18n();
-const tabs = NAVIGATION_LIST;
+const tabs = ref(NAVIGATION_LIST);
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const logout = async () => {
@@ -61,6 +61,7 @@ const logout = async () => {
                   ? 'border-app-primary-500 text-app-primary-500'
                   : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
                 'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
+                value.navHidden && 'hidden',
               ]"
               :aria-current="key === tab ? 'page' : undefined"
               >{{ t(value.name) }}</router-link
