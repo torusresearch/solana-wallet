@@ -87,7 +87,7 @@ function openLink() {
             </p>
           </div>
           <p
-            class="text-right mt-4 text-sm cursor-pointer text-app-text-primary-500 w-full"
+            class="text-right mt-4 text-sm cursor-pointer text-app-primary-500 w-full"
             @click="() => (expand_inst = !expand_inst)"
             @keydown="() => (expand_inst = !expand_inst)"
           >
