@@ -177,6 +177,7 @@ export const DEFAULT_STATE = {
     metaplexMetaMap: {},
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
+    unknownNFTs: [],
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -551,7 +552,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async fetchMetaPlexNft(nftMintAddress: string[]) {
-    return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
+    return TokenInfoController.fetchMetaplexNFTs(nftMintAddress, this.connection);
   }
 
   async fetchTokenInfo(mintAddress: string) {
