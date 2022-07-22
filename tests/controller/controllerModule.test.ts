@@ -108,7 +108,7 @@ describe("Controller Module", () => {
     clock.restore();
   });
 
-  xdescribe("#importCustomToken", async () => {
+  describe("#importCustomToken", async () => {
     beforeEach(async () => {
       // const a = new TokenInfoController({
       //   config: DEFAULT_CONFIG.TokensInfoConfig,
@@ -148,7 +148,7 @@ describe("Controller Module", () => {
   });
 
   // Initialization
-  xdescribe("#Initialization, login logout flow", () => {
+  describe("#Initialization, login logout flow", () => {
     it("embed is full screeen", async () => {
       sandbox.stub(BaseEmbedController.prototype, "state").returns({ isIFrameFullScreen: false });
       const { embedIsIFrameFullScreen } = controllerModule.torus;
@@ -205,7 +205,7 @@ describe("Controller Module", () => {
     });
   });
 
-  xdescribe("#Embeded Login Logout flow", () => {
+  describe("#Embeded Login Logout flow", () => {
     // const initParams = {
     //   buttonPosition: BUTTON_POSITION.BOTTOM_LEFT,
     //   apiKey: "adsf",
@@ -359,7 +359,7 @@ describe("Controller Module", () => {
   });
 
   // transfer flow
-  xdescribe("#Transfer flow", () => {
+  describe("#Transfer flow", () => {
     const transferInstruction = () => {
       return SystemProgram.transfer({
         fromPubkey: sKeyPair[0].publicKey,
@@ -681,7 +681,7 @@ describe("Controller Module", () => {
     });
 
     // add contact on null account test if condition
-    it.only("add contact", async () => {
+    it("add contact", async () => {
       // await controllerModule.triggerLogin({ loginProvider: "google" });
       // const checkIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       const dummyContact = {

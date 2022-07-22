@@ -111,6 +111,7 @@
     "assert": "^2.0.0",
     "autoprefixer": "^10.4.7",
     "axios": "^0.27.2",
+    "babel-plugin-istanbul": "^6.1.1",
     "bn.js": "^5.2.0",
     "browserstack-local": "^1.5.0",
     "c8": "^7.11.3",
@@ -142,15 +143,31 @@
     "prettier": "^2.6.2",
     "process": "^0.11.10",
     "sinon": "^12.0.1",
+    "source-map-support": "^0.5.21",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "tailwindcss": "^3.0.24",
-    "ts-node": "^10.7.0",
+    "ts-node": "^10.9.1",
     "typescript": "^4.6.4"
   },
   "engines": {
     "node": ">=14.17.0",
     "npm": ">=6.x",
     "yarn": "please use npm"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "extension": [
+      ".ts"
+    ],
+    "sourceMap": true,
+    "reporter": [
+      "html",
+      "lcov",
+      "text",
+      "text-summary"
+    ],
+    "report-dir": "./coverage"
   }
 }
