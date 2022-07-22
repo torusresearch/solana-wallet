@@ -4,7 +4,7 @@ import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import { mockData, OffChainMetaplexUri } from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, mockTokens, OffChainMetaplexUri, testNetTokenWWW } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -21,6 +21,14 @@ export default () => {
       return {
         collection: {},
       };
+    });
+
+  nock("https://moonpay-api.tor.us/")
+    .persist()
+    .get("/sign")
+    .query(true)
+    .reply(200, () => {
+      return { signature: "test" };
     });
 
   nock("https://api.coingecko.com")
@@ -54,6 +62,34 @@ export default () => {
   nockBackend.post("/auth/verify").reply(200, () => JSON.stringify(mockData.backend.verify));
 
   nockBackend.post("/user").reply(200, (_uri, _requestbody) => JSON.stringify(mockData.backend.user));
+
+  nockBackend.post("/contact").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
+
+  nockBackend
+    .delete("/contact/46")
+    .reply(200, (_uri, _requestbody) => JSON.stringify({ data: { id: 46 }, message: "Contact Deleted", success: true }));
+
+  nockBackend.patch("/user").reply(201, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, success: true }));
+
+  nockBackend.get("/billboard").reply(200, (_uri, _requestbody) => {
+    return { success: true, data: mockBillBoardEvent };
+  });
+
+  nockBackend.get("/dapps").reply(200, (_uri, _requestbody) => {
+    return { success: true, data: mockDapps };
+  });
+
+  nockBackend.post("/tokeninfo").reply(200, (_uri: string, _requestbody: { mintAddress: string }) => {
+    return { [testNetTokenWWW.address]: testNetTokenWWW };
+  });
+
+  nockBackend.post("/customtoken").reply(200, (_uri, _requestbody) => {
+    return { data: _requestbody, message: "Custom Token Imported", success: true };
+  });
+
+  nockBackend.post("/customtoken/fetchToken").reply(200, (_uri, _requestbody) => {
+    return { response: mockTokens.tokens, success: true };
+  });
 
   nockBackend.post("/user/recordLogin").reply(200, () => JSON.stringify(mockData.backend.recordLogin));
 

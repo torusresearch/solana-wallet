@@ -58,7 +58,6 @@ const orderUrl = async (
 
   const signature = await getSignature({ url: encodeURIComponent(url) });
   return new URL(`${url}&signature=${encodeURIComponent(signature)}`);
-  //   return new URL(url);
 };
 
 export default {
