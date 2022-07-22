@@ -229,19 +229,20 @@ export const mockData = {
   },
   openLoginHandler: openloginFaker[0],
 };
+export const sampleToken = {
+  chainId: null,
+  address: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
+  symbol: "WWW",
+  name: "WWW",
+  decimals: 9,
+  network: "Solana Testnet",
+  publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+  logoURI: "",
+};
 export const sampleTokens = {
   tokens: {
     "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW": {
-      E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz: {
-        chainId: null,
-        address: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
-        symbol: "WWW",
-        name: "WWW",
-        decimals: 9,
-        network: "Solana Testnet",
-        publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
-        logoURI: "",
-      },
+      E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz: sampleToken,
       "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK": {
         chainId: null,
         address: "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK",
@@ -256,3 +257,69 @@ export const sampleTokens = {
     FKUPMMJM89UEuq2zGiTYHp69oD13s8ioqjYTuys2MgKP: [],
   },
 };
+
+export const sampleEvent = {
+  eventName: "w3auth",
+  imageUrl: "https://www.web3auth.io/images/web3auth-logo.svg",
+  imageDarkUrl: "https://www.web3auth.io/images/web3auth-logo-Dark.svg",
+  description: "w3auth",
+  callToActionLinkTwo: "https://www.web3auth.io/",
+  callToActionLink: "https://www.web3auth.io/",
+  callToActionText: "click here",
+  locale: "en",
+};
+export const sampleDapps = [
+  {
+    category: "Marketplace",
+    logo: [
+      {
+        id: "att6434quBCmlsg0b",
+        url: "https://dl.airtable.com/.attachments/549760d07f4d6c5bf0f296fbb5c94e7d/c5ece7df/favicon5.ico?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=c9ac2f560807d3d8",
+        filename: "favicon (5).ico",
+        size: 12014,
+        type: "image/vnd.microsoft.icon",
+      },
+    ],
+    network: "mainnet",
+    title: "Hyperspace",
+    desc: "NFT Market place",
+    url: "https://hyperspace.xyz/",
+    torus_domain: ["solana", "solana-testing", "solana-develop"],
+  },
+  {
+    category: "DeFi",
+    logo: [
+      {
+        id: "attWIP3czFbo3bFeq",
+        width: 50,
+        height: 50,
+        url: "https://dl.airtable.com/.attachments/3a3fa6010ad8f986af5848a02876a201/919f8590/PSigc4ie_400x400.jpg?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=21414b284bf3bae5",
+        filename: "PSigc4ie_400x400.jpg",
+        size: 1007,
+        type: "image/jpeg",
+        thumbnails: {
+          small: {
+            url: "https://dl.airtable.com/.attachmentThumbnails/ef8312a7b53ba857ba1448972361ed87/57b75fe0?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=24963ffa441e2d5e",
+            width: 36,
+            height: 36,
+          },
+          large: {
+            url: "https://dl.airtable.com/.attachmentThumbnails/931d9f09d58e184fd2a263f8939d5800/5e779491?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=5f93e0447fb51326",
+            width: 50,
+            height: 50,
+          },
+          full: {
+            url: "https://dl.airtable.com/.attachmentThumbnails/ab4ec2f65b68b4d2a4cae4f507fc3e62/86438149?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=e05d60576814b071",
+            width: 3000,
+            height: 3000,
+          },
+        },
+      },
+    ],
+    network: "mainnet",
+    title: "Raydium",
+    desc: "An avenue for the evolution of DeFi",
+    url: "https://raydium.io/swap",
+    torus_domain: ["solana", "solana-testing", "solana-develop"],
+  },
+];

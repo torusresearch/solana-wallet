@@ -4,7 +4,7 @@ import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import { mockData, OffChainMetaplexUri, sampleTokens } from "./mockData";
+import { mockData, OffChainMetaplexUri, sampleDapps, sampleEvent, sampleToken, sampleTokens } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -21,6 +21,14 @@ export default () => {
       return {
         collection: {},
       };
+    });
+
+  nock("https://moonpay-api.tor.us/")
+    .persist()
+    .get("/sign")
+    .query(true)
+    .reply(200, () => {
+      return { signature: "test" };
     });
 
   nock("https://api.coingecko.com")
@@ -57,10 +65,20 @@ export default () => {
 
   nockBackend.post("/contact").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
 
+  nockBackend.delete("/contact/46").reply(200, (_uri, _requestbody) => JSON.stringify({ data: { id: 46 }, message: "Contact Added", success: true }));
+
   nockBackend.patch("/user").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
 
-  nockBackend.post("/tokeninfo").reply(200, (_uri, _requestbody) => {
-    return sampleTokens.tokens["7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW"];
+  nockBackend.get("/billboard").reply(200, (_uri, _requestbody) => {
+    return { success: true, data: sampleEvent };
+  });
+
+  nockBackend.get("/dapps").reply(200, (_uri, _requestbody) => {
+    return { success: true, data: sampleDapps };
+  });
+
+  nockBackend.post("/tokeninfo").reply(200, (_uri: string, _requestbody: { mintAddress: string }) => {
+    return { [sampleToken.address]: sampleToken };
   });
 
   nockBackend.post("/customtoken").reply(200, (_uri, _requestbody) => {

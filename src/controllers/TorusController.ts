@@ -718,14 +718,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async addContact(contactPayload: ContactPayload): Promise<boolean> {
-    // eslint-disable-next-line no-console
-    console.log({ contactPayload });
     return this.preferencesController.addContact(contactPayload);
   }
 
   async deleteContact(contactId: number): Promise<boolean> {
-    // eslint-disable-next-line no-console
-    console.log({ contactId });
     return this.preferencesController.deleteContact(contactId);
   }
 
@@ -1166,6 +1162,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     log.info(params);
     try {
       const finalUrl = await topupPlugin[provider].orderUrl(state, params, instanceId, redirectFlow, redirectURL);
+
       if (!redirectFlow) {
         const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
         const topUpPopUpWindow = new PopupWithBcHandler({
