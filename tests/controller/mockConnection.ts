@@ -359,10 +359,9 @@ export const mockConnection: Partial<Connection> = {
     const tokenOwned = parsedTokenAccountInfo.find((item) => {
       return item.pubkey === accountAddress;
     });
-    log.info(tokenOwned);
     return {
       context: { slot: slotCounter },
-      value: parsedTokenAccountInfo[1].account,
+      value: tokenOwned?.account || parsedTokenAccountInfo[1].account,
     };
   },
 };

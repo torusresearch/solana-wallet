@@ -229,7 +229,7 @@ export const mockData = {
   },
   openLoginHandler: openloginFaker[0],
 };
-export const sampleToken = {
+export const testNetTokenWWW = {
   chainId: null,
   address: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
   symbol: "WWW",
@@ -239,26 +239,27 @@ export const sampleToken = {
   publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
   logoURI: "",
 };
-export const sampleTokens = {
+const testNetTokenS = {
+  chainId: null,
+  address: "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK",
+  symbol: "SSS",
+  name: "s",
+  decimals: 9,
+  network: "Solana Testnet",
+  publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+  logoURI: "",
+};
+export const mockTokens = {
   tokens: {
     "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW": {
-      E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz: sampleToken,
-      "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK": {
-        chainId: null,
-        address: "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK",
-        symbol: "SSS",
-        name: "s",
-        decimals: 9,
-        network: "Solana Testnet",
-        publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
-        logoURI: "",
-      },
+      E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz: testNetTokenWWW,
+      "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK": testNetTokenS,
     },
     FKUPMMJM89UEuq2zGiTYHp69oD13s8ioqjYTuys2MgKP: [],
   },
 };
 
-export const sampleEvent = {
+export const mockBillBoardEvent = {
   eventName: "w3auth",
   imageUrl: "https://www.web3auth.io/images/web3auth-logo.svg",
   imageDarkUrl: "https://www.web3auth.io/images/web3auth-logo-Dark.svg",
@@ -268,7 +269,7 @@ export const sampleEvent = {
   callToActionText: "click here",
   locale: "en",
 };
-export const sampleDapps = [
+export const mockDapps = [
   {
     category: "Marketplace",
     logo: [

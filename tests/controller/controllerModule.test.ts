@@ -4,7 +4,6 @@ import { BaseEmbedController, KeyPair, PAYMENT_PROVIDER_TYPE, PopupHandler, Popu
 import eccrypto from "@toruslabs/eccrypto";
 import OpenLogin from "@toruslabs/openlogin";
 import { BasePostMessageStream, JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
-// import * as OpenLoginMethods from "@toruslabs/openlogin";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -14,11 +13,9 @@ import {
   SUPPORTED_NETWORKS,
   TokenInfoController,
   TokensTrackerController,
-  TransactionController,
 } from "@toruslabs/solana-controllers";
 import nacl from "@toruslabs/tweetnacl-js";
 import assert from "assert";
-// import {  } from 'mocha';
 import base58 from "bs58";
 import { cloneDeep } from "lodash-es";
 import log from "loglevel";
@@ -29,7 +26,6 @@ import OpenLoginFactory from "@/auth/OpenLogin";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import TorusController, { DEFAULT_STATE } from "@/controllers/TorusController";
-// import { app } from "@/modules/app";
 import controllerModule from "@/modules/controllers";
 import { KeyState } from "@/utils/enums";
 import * as helper from "@/utils/helpers";
@@ -39,7 +35,7 @@ import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { accountInfoPromise, mockGetConnection, mockMintAddress, mockMintInfo } from "./mockConnection";
-import { mockData, openloginFaker, sampleDapps, sampleEvent, sampleToken, sKeyPair } from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, openloginFaker, sKeyPair, testNetTokenWWW } from "./mockData";
 import nockRequest from "./nockRequest";
 
 describe("Controller Module", () => {
@@ -50,14 +46,12 @@ describe("Controller Module", () => {
   const noopAsync = async () => {};
   let popupResult = { approve: true };
   let popupStub: sinon.SinonStub;
-  // let addToStub: sinon.SinonStub;
-  // let storageAvailableSpy: sinon.SinonSpy<[type: string], boolean>;
 
   let spyAccountTracker: sinon.SinonSpy;
-  // let spyApproveSignTransaction: sinon.SinonSpy;
   let spyPrefIntializeDisp: sinon.SinonSpy;
 
   // init once only
+
   controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
   beforeEach(async () => {
     nockRequest();
@@ -72,7 +66,6 @@ describe("Controller Module", () => {
     sandbox.stub(TorusStorageLayer.prototype, "getMetadata").callsFake(async () => {
       return openloginFaker[1];
     });
-    // storageAvailableSpy = sandbox.spy(OpenLoginMethods, "storageAvailable");
     sandbox.stub(OpenLogin.prototype, "_getData").callsFake(async () => {
       return {};
     });
@@ -98,10 +91,8 @@ describe("Controller Module", () => {
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
-    // spyApproveSignTransaction = sandbox.spy(TransactionController.prototype, "approveSignTransaction");
     spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
     // addToStub = sandbox.spy(app.value.toastMessages, "addToast");
-    // currencyScheduleSpy = sandbox.spy(CurrencyController.prototype, "scheduleConversionInterval");
 
     // init
     // controllerModule.torus = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
@@ -116,42 +107,19 @@ describe("Controller Module", () => {
     clock.restore();
   });
 
-  describe("#importCustomToken", async () => {
-    await controllerModule.triggerLogin({ loginProvider: "google" });
-    controllerModule.torus.setSelectedAccount(sKeyPair[0].publicKey.toBase58());
-  });
-
   // Initialization
   describe("#Initialization, login logout flow", () => {
-    it("embed is full screeen", async () => {
-      sandbox.stub(BaseEmbedController.prototype, "state").returns({ isIFrameFullScreen: false });
-      const { embedIsIFrameFullScreen } = controllerModule.torus;
-      assert.equal(embedIsIFrameFullScreen, false);
-    });
     it("importCustomToken", async () => {
-      // sandbox.stub(TokenInfoController.prototype, "getConnection").callsFake(mockGetConnection);
-      // controllerModule.torus.tokenInfoController;
       sandbox.stub(TokenInfoController.prototype, "fetchTokenInfo").callsFake(async () => {
         return {};
       });
-      // sandbox.stub(TokensTrackerController.prototype, "state").returns(sampleTokens);
-      // sandbox.stub(NetworkController.prototype, "getConnection").callsFake();
-      // const updateTokenInfoSpy = sandbox.spy(TokenInfoController.prototype, "updateTokenInfoMap");
-      const result: any = await controllerModule.torus.importCustomToken({
-        address: "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK",
-        name: "test",
-        network: "testnet",
-        publicAddress: sKeyPair[0].publicKey.toBase58(),
-        symbol: "tst",
-      });
-      // assert(updateTokenInfoSpy.calledOnce);
-      // assert(importTokenInfoSpy.calledOnce);
+      const result: any = await controllerModule.torus.importCustomToken(testNetTokenWWW);
       assert.equal(true, result.success);
     });
     it("fetchTokenInfo", async () => {
       const tokenMint = "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz";
       const result = await controllerModule.torus.fetchTokenInfo(tokenMint);
-      assert.deepEqual(result, sampleToken);
+      assert.deepEqual(result, testNetTokenWWW);
     });
     it("setOrigin", async () => {
       const origin = "http://localhost:3001";
@@ -177,9 +145,7 @@ describe("Controller Module", () => {
       assert(eventEmitSpy.calledWith(windowId));
     });
     it("closeIframeFullScreen", async () => {
-      // setup comm provider enginer for torus related infos
       await controllerModule.setupCommunication("http://localhost:3001");
-      // const engine = controllerModule.torus.communicationManager
       const communicationEngineSpy = sandbox.spy(JRPCEngine.prototype, "emit");
       await controllerModule.torus.closeIframeFullScreen();
       assert(communicationEngineSpy.calledOnce);
@@ -222,10 +188,9 @@ describe("Controller Module", () => {
 
     it("refreshUserTokens", async () => {
       sinon.stub(CurrencyController.prototype, "scheduleConversionInterval").callsFake(noopAsync);
-      sinon.stub(CurrencyController.prototype, "updateConversionRate").callsFake(noopAsync);
-      // const updateConversionSpy = sinon.spy(CurrencyController.prototype, "updateConversionRate");
+      const updateConversionSpy = sinon.spy(CurrencyController.prototype, "updateConversionRate");
       await controllerModule.torus.refreshUserTokens();
-      // assert(updateConversionSpy.calledOnce);
+      assert(updateConversionSpy.calledOnce);
     });
 
     it("trigger login/logout flow", async () => {
@@ -329,43 +294,13 @@ describe("Controller Module", () => {
       // assert(controllerModule.torusState.KeyringControllerState.wallets.find((wallet) => wallet.address === sKeyPair[3].publicKey.toBase58()));
       assert(controllerModule.torusState.KeyringControllerState.wallets.find((wallet) => wallet.address === sKeyPair[0].publicKey.toBase58()));
       assert.equal(controllerModule.selectedAddress, sKeyPair[0].publicKey.toBase58());
-
-      // controllerModule.setSelectedAccount(sKeyPair[3].publicKey.toBase58());
-      // assert(spyPrefIntializeDisp.calledTwice);
-
-      // assert.equal(controllerModule.selectedAddress, sKeyPair[3].publicKey.toBase58());
-      // validate getusersolbalance
-      // validate token
     });
-
-    // it("login with private key", async () => {
-    //   // sinon.stub(window.localStorage, "getItem").callsFake(async(${EPHERMAL_KEY}) => {return {"priv_key":"309c7a8899bead3e43bafbd6a1a6bbd2590153923af39ce457495be626cef17e","pub_key":"0419da9c6df30eaff607039919ee03117534d614972551ebcdee5603d441f6e101eb822067495cd1f8e40e786f7db1311845d042a160b2b12938eb5fded2ab7ddd"}})
-    //   await controllerModule.logout();
-    //   sandbox.stub(window.localStorage, "getItem").callsFake(() => {
-    //     return JSON.stringify({
-    //       priv_key: "309c7a8899bead3e43bafbd6a1a6bbd2590153923af39ce457495be626cef17e",
-    //       pub_key:
-    //         "0419da9c6df30eaff607039919ee03117534d614972551ebcdee5603d441f6e101eb822067495cd1f8e40e786f7db1311845d042a160b2b12938eb5fded2ab7ddd",
-    //     });
-    //   });
-    //   controllerModule.torus.provider.sendAsync({
-    //     method: "solana_requestAccounts",
-    //     params: [],
-    //   });
-    //   // assert.equal(loginResult, true);
-    //   // const loginResult = controllerModule.torus.provider.sendAsync({
-    //   //   method: "solana_requestAccounts",
-    //   //   params: [],
-    //   // });
-    //   const result = await controllerModule.torus.restoreFromBackend();
-    //   assert.equal(result, true);
-    // });
 
     it("embedhandleTopUp", async () => {
       await controllerModule.triggerLogin({ loginProvider: "google" });
 
       const handleTopUpSpy = sandbox.spy(TorusController.prototype, "handleTopup");
-      const sampleRequest = {
+      const mockRequest = {
         method: "topup",
         params: {
           provider: TOPUP.MOONPAY as PAYMENT_PROVIDER_TYPE,
@@ -375,7 +310,7 @@ describe("Controller Module", () => {
         id: "05992defa7462673f245ff8e854d24911c18feb938009a445f7db56d19245fb7",
         origin: "http://localhost:3000",
       };
-      await controllerModule.torus.communicationProvider.sendAsync(sampleRequest);
+      await controllerModule.torus.communicationProvider.sendAsync(mockRequest);
       assert(handleTopUpSpy.calledOnce);
     });
 
@@ -383,22 +318,6 @@ describe("Controller Module", () => {
       await controllerModule.setLogoutRequired(true);
       assert.equal(controllerModule.logoutRequired, true);
     });
-    // it("handleTopUp", async () => {
-    //   await controllerModule.triggerLogin({ loginProvider: "google" });
-    //   controllerModule.torus.setSelectedAccount(sKeyPair[0].publicKey.toBase58());
-    //   const sampleRequest = {
-    //     method: "topup",
-    //     params: {
-    //       provider: TOPUP.MOONPAY as PAYMENT_PROVIDER_TYPE,
-    //       params: { selectedAddress: "3zLbFcrLPYk1hSdXdy1jcBRpeeXrhC47iCSjdwqsUaf9" },
-    //       windowId: "n8llxj1gnxf",
-    //     },
-    //     id: "05992defa7462673f245ff8e854d24911c18feb938009a445f7db56d19245fb7",
-    //     origin: "http://localhost:3000",
-    //   };
-    //   const result = await controllerModule.handleRedirectFlow({ method: "topup", params: sampleRequest, resolveRoute: "home" });
-    //   assert.equal(result, true);
-    // });
   });
 
   // transfer flow
@@ -751,11 +670,7 @@ describe("Controller Module", () => {
         public_address: sKeyPair[1].publicKey.toBase58(),
       };
       const result = await controllerModule.torus.addContact(dummyContact);
-      // asser`t.deepEqual([app.value.toastMessages], [{ type: "success", message: "jhi" }]);
       const newIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
-      // checkIdentities.contacts.forEach((item, idx) => {
-      //   assert.deepStrictEqual(item, mockData.backend.user.data.contacts[idx]);
-      // });
       assert.deepStrictEqual(dummyContact, newIdentities.contacts[1]);
       assert.equal(newIdentities.contacts.length, 2);
       assert.equal(result, true);
@@ -776,7 +691,6 @@ describe("Controller Module", () => {
     it("addAccount", async () => {
       await controllerModule.logout();
       const { publicKey, secretKey } = sKeyPair[1];
-      // const privKey = base58.decode(secretKey).toString("hex").slice(0, 64);
       const result = await controllerModule.torus.addAccount(base58.encode(secretKey), {
         email: "test@test.com",
         name: "test",
@@ -786,19 +700,14 @@ describe("Controller Module", () => {
         typeOfLogin: "google",
       });
       await controllerModule.torus.setSelectedAccount(publicKey.toString(), true);
-      // assert.deepEqual(controllerModule.torus.selectedAddress, publicKey);
       assert.deepEqual(result, publicKey.toString());
       assert.deepEqual(controllerModule.torus.jwtToken, mockData.backend.verify.token);
-      // console.log(controllerModule.torus.existingTokenAddress);
-      // console.log(controllerModule.torus.communicationProvider);
-      // console.log(controllerModule.torus.getAccountPreferences(sKeyPair[0].publicKey.toString()));
     });
 
     it("set theme", async () => {
       await controllerModule.torus.setTheme("light");
       const { theme } = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       assert.deepStrictEqual(theme, "light");
-      // assert.deepStrictEqual(result, true;
     });
 
     it("setCrashReport", async () => {
@@ -810,13 +719,13 @@ describe("Controller Module", () => {
     });
 
     it("refreshJwt", async () => {
-      const spyPreferenceTrackerRefresh = sandbox.spy(PreferencesController.prototype, "refreshJwt");
-      const spySetSelectedAddress = sandbox.spy(PreferencesController.prototype, "setSelectedAddress");
+      const preferenceTrackerRefreshSpy = sandbox.spy(PreferencesController.prototype, "refreshJwt");
+      const setSelectedAddressSpy = sandbox.spy(PreferencesController.prototype, "setSelectedAddress");
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
       controllerModule.torus.setSelectedAccount(sKeyPair[0].publicKey.toBase58());
       await controllerModule.torus.refreshJwt(sKeyPair[0].publicKey.toBase58());
-      assert(spyPreferenceTrackerRefresh.calledOnce);
-      assert(spySetSelectedAddress.calledWith(sKeyPair[0].publicKey.toBase58()));
+      assert(preferenceTrackerRefreshSpy.calledOnce);
+      assert(setSelectedAddressSpy.calledWith(sKeyPair[0].publicKey.toBase58()));
     });
 
     it("setCrashReport torus", async () => {
@@ -827,18 +736,10 @@ describe("Controller Module", () => {
       assert.deepStrictEqual(result, true);
       assert.deepStrictEqual(controllerModule.selectedAccountPreferences.crashReport, true);
       assert(setCrashReportSpy.calledWith(true));
-      // assert.deepStrictEqual(result, true);
-      // assert(setCrashReportSpy.calledOnce);
-      // assert.deepStrictEqual(theme, "dark");
-
-      // get account preference
-      // await getAccountPreferences
     });
 
     it("saveToOpenloginBackend", async () => {
-      const spySetMetadata = sandbox.spy(TorusStorageLayer.prototype, "setMetadata");
-      // const spyLocalStorage = sandbox.stub(global.window.localStorage, "setItem");
-      // const spySessionStorage = sandbox.stub(global.window.sessionStorage, "setItem");
+      const setMetaDataSpy = sandbox.spy(TorusStorageLayer.prototype, "setMetadata");
       const { publicKey, secretKey } = sKeyPair[1];
       sandbox.stub(eccrypto, "generatePrivate").callsFake(() => {
         return Buffer.from(secretKey);
@@ -855,23 +756,16 @@ describe("Controller Module", () => {
       };
 
       log.info({ keyState });
-      // spySessionStorage(`${EPHERMAL_KEY}`, stringify(keyState));
-      // spyLocalStorage(`${EPHERMAL_KEY}`, stringify(keyState));
       await controllerModule.torus.saveToOpenloginBackend({
         privateKey: secretKey.toString(),
         publicKey: publicKey.toString(),
         accounts: openloginFaker[1].accounts,
       });
-      assert(spySetMetadata.calledOnce);
-      spySetMetadata.restore();
-      // spySessionStorage.restore();
+      assert(setMetaDataSpy.calledOnce);
     });
 
     it("approve sign transaction", async () => {
-      popupStub.restore();
-      let handleWithHandshakeStub = sandbox.stub(PopupWithBcHandler.prototype, "handleWithHandshake").callsFake(async (_payload: unknown) => {
-        return { approve: true };
-      });
+      popupResult = { approve: true };
       // test popup
       const req = {
         method: "sign_all_transactions",
@@ -881,16 +775,10 @@ describe("Controller Module", () => {
         windowId: helper.getRandomWindowId(),
       };
       const result = await controllerModule.torus.handleTransactionPopup("123", req);
-      // assert(spyApproveSignTransaction).to;
       assert.equal(result, true);
-      handleWithHandshakeStub.restore();
-      handleWithHandshakeStub = sandbox.stub(PopupWithBcHandler.prototype, "handleWithHandshake").callsFake(async (_payload: unknown) => {
-        return { approve: false };
-      });
+      popupResult = { approve: false };
       const falseResult = await controllerModule.torus.handleTransactionPopup("123", req);
-      // assert(spyApproveSignTransaction).to;
       assert.equal(falseResult, false);
-      handleWithHandshakeStub.restore();
       popupStub.reset();
     });
 
@@ -908,8 +796,8 @@ describe("Controller Module", () => {
     });
 
     it("changeProvider", async () => {
-      await controllerModule.setupCommunication("http://localhost:3001");
       const setProviderConfigSpy = sandbox.spy(NetworkController.prototype, "setProviderConfig");
+      await controllerModule.setupCommunication("http://localhost:3001");
       const result = await controllerModule.torus.changeProvider({
         method: "set_provider",
         params: SUPPORTED_NETWORKS.testnet,
@@ -924,9 +812,6 @@ describe("Controller Module", () => {
       popupResult = { approve: false };
       const setProviderConfigSpy = sandbox.spy(NetworkController.prototype, "setProviderConfig");
 
-      // assert.throws(() => {
-      //   throw (new Error("user denied provider change request"), Error, "user denied provider change request");
-      // });
       assert.rejects(
         async () => {
           await controllerModule.torus.changeProvider({
@@ -951,7 +836,7 @@ describe("Controller Module", () => {
       const getBillBoardDataSpy = sandbox.spy(PreferencesController.prototype, "getBillBoardData");
       const result = await controllerModule.torus.getBillboardData();
       assert(getBillBoardDataSpy.called);
-      assert.deepEqual(result, sampleEvent);
+      assert.deepEqual(result, mockBillBoardEvent);
     });
     it("setLocale", async () => {
       const setUserLocaleSpy = sandbox.spy(PreferencesController.prototype, "setUserLocale");
@@ -991,9 +876,6 @@ describe("Controller Module", () => {
       assert(setNativeCurrencySpy.calledWith("SOL"));
       assert(setCurrentCurrencySpy.calledWith("INR"));
     });
-    // it("UNSAFE_signTransaction", async () => {
-    //   await controllerModule.torus.UNSAFE_signTransaction(mockData.backend.user.data.transactions[0]);
-    // });
 
     it("getAccountPreferences", async () => {
       const getAddressStateSpy = sandbox.spy(PreferencesController.prototype, "getAddressState");
@@ -1016,12 +898,7 @@ describe("Controller Module", () => {
       };
       sandbox.stub(NameRegistryState, "retrieve").callsFake(async () => nameRegistry);
       const twitterResult = await controllerModule.torus.getSNSAccount("sns", sKeyPair[0].publicKey.toBase58());
-      assert.equal(nameRegistry, (twitterResult as any).registry);
-    });
-
-    it("approveSignTransaction", async () => {
-      sandbox.stub(TransactionController.prototype, "approveSignTransaction").callsFake(noopAsync);
-      await controllerModule.torus.approveSignTransaction("123");
+      assert.deepEqual(nameRegistry, (twitterResult as any).registry);
     });
 
     it("triggerLogin selectedNetworkTransactions", async () => {
@@ -1037,7 +914,7 @@ describe("Controller Module", () => {
 
     it("getDappList", async () => {
       const dappList = await controllerModule.torus.getDappList();
-      assert.deepEqual(dappList, sampleDapps);
+      assert.deepEqual(dappList, mockDapps);
     });
 
     it("UNSAFE_signTransaction", async () => {
@@ -1047,17 +924,6 @@ describe("Controller Module", () => {
       const result = await controllerModule.torus.UNSAFE_signTransaction(tx);
       assert(signTransactionSpy.calledWith(tx, controllerModule.selectedAddress));
       assert.deepEqual(result, tx);
-    });
-
-    it("setupUnTrustedCommunication", async () => {
-      const setIframeOriginSpy = sandbox.spy(PreferencesController.prototype, "setIframeOrigin");
-      const torusStream = new BasePostMessageStream({
-        name: "iframe_torus",
-        target: "embed_torus",
-        targetWindow: window.parent,
-      });
-      controllerModule.torus.setupUnTrustedCommunication(torusStream, "http://localhost:3001");
-      assert(setIframeOriginSpy.calledOnce);
     });
 
     it("setupUnTrustedCommunication", async () => {
@@ -1119,5 +985,28 @@ describe("Controller Module", () => {
   //     // assert.equal(newIdentities.contacts.length, 2);
   //     assert.equal(result, false);
   //   });
+  // });
+
+  // it("login with private key", async () => {
+  //   // sinon.stub(window.localStorage, "getItem").callsFake(async(${EPHERMAL_KEY}) => {return {"priv_key":"309c7a8899bead3e43bafbd6a1a6bbd2590153923af39ce457495be626cef17e","pub_key":"0419da9c6df30eaff607039919ee03117534d614972551ebcdee5603d441f6e101eb822067495cd1f8e40e786f7db1311845d042a160b2b12938eb5fded2ab7ddd"}})
+  //   await controllerModule.logout();
+  //   sandbox.stub(window.localStorage, "getItem").callsFake(() => {
+  //     return JSON.stringify({
+  //       priv_key: "309c7a8899bead3e43bafbd6a1a6bbd2590153923af39ce457495be626cef17e",
+  //       pub_key:
+  //         "0419da9c6df30eaff607039919ee03117534d614972551ebcdee5603d441f6e101eb822067495cd1f8e40e786f7db1311845d042a160b2b12938eb5fded2ab7ddd",
+  //     });
+  //   });
+  //   controllerModule.torus.provider.sendAsync({
+  //     method: "solana_requestAccounts",
+  //     params: [],
+  //   });
+  //   // assert.equal(loginResult, true);
+  //   // const loginResult = controllerModule.torus.provider.sendAsync({
+  //   //   method: "solana_requestAccounts",
+  //   //   params: [],
+  //   // });
+  //   const result = await controllerModule.torus.restoreFromBackend();
+  //   assert.equal(result, true);
   // });
 });

@@ -4,7 +4,7 @@ import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import { mockData, OffChainMetaplexUri, sampleDapps, sampleEvent, sampleToken, sampleTokens } from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, mockTokens, OffChainMetaplexUri, testNetTokenWWW } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -65,20 +65,22 @@ export default () => {
 
   nockBackend.post("/contact").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
 
-  nockBackend.delete("/contact/46").reply(200, (_uri, _requestbody) => JSON.stringify({ data: { id: 46 }, message: "Contact Added", success: true }));
+  nockBackend
+    .delete("/contact/46")
+    .reply(200, (_uri, _requestbody) => JSON.stringify({ data: { id: 46 }, message: "Contact Deleted", success: true }));
 
-  nockBackend.patch("/user").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
+  nockBackend.patch("/user").reply(201, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, success: true }));
 
   nockBackend.get("/billboard").reply(200, (_uri, _requestbody) => {
-    return { success: true, data: sampleEvent };
+    return { success: true, data: mockBillBoardEvent };
   });
 
   nockBackend.get("/dapps").reply(200, (_uri, _requestbody) => {
-    return { success: true, data: sampleDapps };
+    return { success: true, data: mockDapps };
   });
 
   nockBackend.post("/tokeninfo").reply(200, (_uri: string, _requestbody: { mintAddress: string }) => {
-    return { [sampleToken.address]: sampleToken };
+    return { [testNetTokenWWW.address]: testNetTokenWWW };
   });
 
   nockBackend.post("/customtoken").reply(200, (_uri, _requestbody) => {
@@ -86,7 +88,7 @@ export default () => {
   });
 
   nockBackend.post("/customtoken/fetchToken").reply(200, (_uri, _requestbody) => {
-    return { response: sampleTokens.tokens, success: true };
+    return { response: mockTokens.tokens, success: true };
   });
 
   nockBackend.post("/user/recordLogin").reply(200, () => JSON.stringify(mockData.backend.recordLogin));
