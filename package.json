@@ -12,9 +12,8 @@
     "prepare": "husky install",
     "test": "npx playwright test --config=playwright.config.ts --workers=1",
     "test:browserstack": "npx playwright test --config=playwright-browserstack.config.ts --workers=1",
-    "test:controller": "./node_modules/.bin/mocha ./tests/controller/**.ts",
-    "test:report": "nyc --reporter=text --reporter=lcov --reporter=html npm run test:controller",
-    "test:report:nyc": "rm -rf .nyc_output && rm -rf coverage && npx nyc --reporter=text --reporter=html npm run test:controller",
+    "test:controller": "npx mocha ./tests/controller/**.ts",
+    "test:report": "rm -rf .nyc_output && rm -rf coverage && npx nyc --reporter=text --reporter=html npm run test:controller",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js",
     "serve:prod": "vue-cli-service serve --mode production"

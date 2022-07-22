@@ -1147,7 +1147,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async embedhandleTopUp(req: JRPCRequest<TopupInput>): Promise<boolean> {
     const windowId = req.params?.windowId;
     const params = req.params?.params;
-    const provider = req.params?.provider || TOPUP.MOONPAY;
+    const provider = TOPUP.MOONPAY;
     return this.handleTopup(provider, params as PaymentParams, windowId);
   }
 
