@@ -34,7 +34,7 @@ import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { accountInfoPromise, mockGetConnection, mockMintAddress, mockMintInfo } from "./mockConnection";
-import { mockBillBoardEvent, mockDapps, mockData, openloginFaker, sKeyPair, testNetTokenWWW } from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, mockNFTs, openloginFaker, sKeyPair, testNetTokenWWW } from "./mockData";
 import nockRequest from "./nockRequest";
 
 describe("Controller Module", () => {
@@ -68,7 +68,9 @@ describe("Controller Module", () => {
       return {};
     });
     sandbox.stub(TokenInfoController.prototype, "fetchMetaplexNFTs").callsFake(async () => {
-      return {};
+      return {
+        [mockNFTs[1].mintAddress]: mockNFTs[1].metaplexData,
+      };
     });
 
     sandbox.stub(OpenLoginFactory, "getInstance").callsFake(async () => {
