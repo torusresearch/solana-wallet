@@ -296,9 +296,8 @@ class ControllerModule extends VuexModule {
   @Action
   public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
     try {
-      const token = await this.torus.fetchMetaPlexNft([mint_address]);
-      log.info({ token });
-      return token[mint_address];
+      const { onChainMetadataMap } = await this.torus.fetchMetaPlexNft([mint_address]);
+      return onChainMetadataMap[mint_address];
     } catch (error) {
       return undefined;
     }
