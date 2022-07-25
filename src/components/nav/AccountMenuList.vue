@@ -7,7 +7,7 @@ import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import BigNumber from "bignumber.js";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import solicon from "@/assets/solana-logo-light.svg";
@@ -16,6 +16,7 @@ import { GeneralInteractions, trackUserClick } from "@/directives/google-analyti
 import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
 
+import QrcodeDisplay from "../home/QrcodeDisplay.vue";
 import LanguageSelector from "./LanguageSelector.vue";
 
 const { t } = useI18n();
@@ -49,6 +50,16 @@ const getWalletBalance = (address: string): string => {
   const selectedCurrency = ControllerModule.currentCurrency;
   const value = solBal.times(new BigNumber(pricePerToken));
   return value.toFixed(selectedCurrency.toLowerCase() === "sol" ? 4 : 2).toString();
+};
+
+const displayQr = ref(false);
+const qrAddress = ref("");
+const openQr = (address: string) => {
+  qrAddress.value = address;
+  displayQr.value = true;
+};
+const closeQr = () => {
+  displayQr.value = false;
 };
 </script>
 
@@ -87,7 +98,7 @@ const getWalletBalance = (address: string): string => {
               <CopyIcon class="w-4 h-4" @click.stop="() => copySelectedAddress(wallet)" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
-              <QrcodeIcon class="w-4 h-4" />
+              <QrcodeIcon class="w-4 h-4" @click.stop="() => openQr(wallet)" />
             </div>
             <div class="rounded-full w-6 h-6 flex items-center bg-gray-200 justify-center cursor-pointer">
               <a :href="explorerUrl(wallet)" target="_blank" rel="noreferrer noopener" @click="(e) => e.stopImmediatePropagation()">
@@ -130,6 +141,7 @@ const getWalletBalance = (address: string): string => {
       }}</Button>
     </div>
   </div>
+  <QrcodeDisplay :is-open="displayQr" description="" :public-address="qrAddress" @on-close="closeQr" />
 </template>
 
 <style scoped></style>
