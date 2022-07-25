@@ -87,7 +87,7 @@ export default () => {
     return { data: _requestbody, message: "Custom Token Imported", success: true };
   });
 
-  nockBackend.post("/customtoken/fetchToken").reply(200, (_uri, _requestbody) => {
+  nockBackend.post("/customToken/fetchToken").reply(200, (_uri, _requestbody) => {
     return { response: mockTokens.tokens, success: true };
   });
 
