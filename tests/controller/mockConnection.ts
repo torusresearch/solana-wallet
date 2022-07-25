@@ -1,6 +1,6 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
 import { Mint, MintLayout, RawMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AccountInfo, Commitment, Connection, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
+import { AccountInfo, Commitment, Connection, Message, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
 import base58 from "bs58";
 import crypto from "crypto";
 import log from "loglevel";
@@ -27,6 +27,20 @@ export const mockMintInfo: Record<string, Mint> = {
     supply: BigInt(1000000000),
     isInitialized: true,
   },
+};
+
+export const mockSimulateTransaction = {
+  err: null,
+  logs: null,
+  accounts: [
+    {
+      data: ["", "base64"],
+      executable: false,
+      lamports: 595644320,
+      owner: "11111111111111111111111111111111",
+      rentEpoch: 342,
+    },
+  ],
 };
 
 const generateAccountInfo = async () => {
@@ -352,6 +366,20 @@ export const mockConnection: Partial<Connection> = {
     return {
       context: { slot: slotCounter },
       value: tokenOwned,
+    };
+  },
+
+  getFeeForMessage: async (_message: Message) => {
+    return {
+      context: { slot: slotCounter },
+      value: 1,
+    };
+  },
+
+  simulateTransaction: async (_transactionOrMessage: Transaction | Message) => {
+    return {
+      context: { slot: slotCounter },
+      value: mockSimulateTransaction,
     };
   },
 

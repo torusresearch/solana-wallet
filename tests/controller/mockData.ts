@@ -324,3 +324,89 @@ export const mockDapps = [
     torus_domain: ["solana", "solana-testing", "solana-develop"],
   },
 ];
+
+export const mockNFTs = [
+  {
+    mintAddress: "fueL3hBZjLLLJHiFH9cqZoozTG3XQZ53diwFPwbzNim",
+    tokenAddress: "2cZp4t78c7XT95ti6dU2AgHVZFwzJgb9itdZzd9fqyNB",
+    balance: { amount: "1", decimals: 0, uiAmount: 1, uiAmountString: "1" },
+    isFungible: false,
+    metaplexData: {
+      name: "Fuel",
+      uri: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+      symbol: "Fuel",
+      offChainMetaData: {
+        symbol: "Fuel",
+        name: "Fuel",
+        description: "Basic hydrogen fuel cell replenishment. Low energy density, can be improved with further refinement.",
+        image: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+        collection: { name: "Fuel", family: "M1NTq6mJnYhyhRe1ZRum1v54AqHmvo4mYYGk7tcFcHn" },
+      },
+    },
+    name: "Fuel",
+    iconURL: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+    symbol: "Fuel",
+  },
+  {
+    mintAddress: "ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
+    tokenAddress: "FaTaNB1xxoj4TPA62twPr4mZ6i8yuEQE6nEypsKAiS4B",
+    balance: { amount: "2", decimals: 0, uiAmount: 2, uiAmountString: "2" },
+    isFungible: false,
+    metaplexData: {
+      name: "Ammunition",
+      symbol: "AMMO",
+      uri: "https://galaxy.staratlas.com/nfts/ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000",
+      sellerFeeBasisPoints: 0,
+      creators: null,
+      offChainMetaData: {
+        _id: "61b3f1a341ea72257bf56a22",
+        description:
+          "The most basic form of space-grade ballistic ammunition. Compatible with kinetic type slotted weaponry. Weak against energy shielding, effective against hull plating.",
+        image: "https://storage.googleapis.com/nft-assets/items/AMMO.png",
+        symbol: "AMMO",
+        name: "Ammunition",
+        collection: { name: "Ammunition", family: "Star Atlas" },
+        slots: { crewSlots: null, componentSlots: null, moduleSlots: null },
+        media: { qrInstagram: "", qrFacebook: "", sketchfab: "", audio: "", thumbnailUrl: "", gallery: null },
+        tradeSettings: { msrp: { value: 0, currencySymbol: "USDC" } },
+        deactivated: false,
+        markets: [
+          {
+            _id: "61bad156d3d4980038939be2",
+            id: "8qtV9oq8VcrUHZdEeCJ2bUM3uLwjrfJ9U9FGrCSvu34z",
+            quotePair: "ATLAS",
+            serumProgramId: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+          },
+        ],
+        primarySales: [],
+        airdrops: [],
+        createdAt: "2021-04-20T18:17:07.517Z",
+        updatedAt: "2022-02-01T05:22:05.426Z",
+        mint: "ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
+      },
+    },
+    name: "Ammunition",
+    iconURL: "https://storage.googleapis.com/nft-assets/items/AMMO.png",
+    symbol: "AMMO",
+  },
+];
+
+export const mockClubbedNFTs = [
+  {
+    title: "Fuel",
+    count: 1,
+    description: "Basic hydrogen fuel cell replenishment. Low energy density, can be improved with further refinement.",
+    img: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+    mints: ["fueL3hBZjLLLJHiFH9cqZoozTG3XQZ53diwFPwbzNim"],
+    collectionName: "M1NTq6mJnYhyhRe1ZRum1v54AqHmvo4mYYGk7tcFcHn",
+  },
+  {
+    title: "Ammunition",
+    count: 1,
+    description:
+      "The most basic form of space-grade ballistic ammunition. Compatible with kinetic type slotted weaponry. Weak against energy shielding, effective against hull plating.",
+    img: "https://storage.googleapis.com/nft-assets/items/AMMO.png",
+    mints: ["ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK"],
+    collectionName: "Star Atlas",
+  },
+];

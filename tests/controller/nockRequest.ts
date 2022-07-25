@@ -4,7 +4,7 @@ import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import { mockBillBoardEvent, mockDapps, mockData, mockTokens, OffChainMetaplexUri, testNetTokenWWW } from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, mockTokens, OffChainMetaplexUri, openloginFaker, testNetTokenWWW } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -160,5 +160,25 @@ export default () => {
       throw new Error(`Unimplemented mock devnet rpc method ${body.method}`);
     });
 
-  nock("https://solana-openlogin-state.tor.us").persist().post("/set").reply(200, { message: "", success: true });
+  nock("https://solana-openlogin-state.tor.us")
+    .persist()
+    .defaultReplyHeaders({
+      "access-control-allow-origin": "*",
+      "access-control-allow-credentials": "true",
+    })
+    .post("/set")
+    .reply(200, () => {
+      return { message: "", success: true };
+    });
+
+  nock("https://solana-openlogin-state.tor.us")
+    .persist()
+    .defaultReplyHeaders({
+      "access-control-allow-origin": "*",
+      "access-control-allow-credentials": "true",
+    })
+    .post("/get")
+    .reply(200, () => {
+      return { message: btoa(JSON.stringify(openloginFaker[0])), success: true };
+    });
 };
