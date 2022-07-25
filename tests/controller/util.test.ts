@@ -4,7 +4,7 @@ import assert from "assert";
 
 import * as solanaHelper from "@/utils/solanaHelpers";
 
-import { mockGetConnection, mockSimulateTransaction } from "./mockConnection";
+import { mockGetConnection } from "./mockConnection";
 import { mockClubbedNFTs, mockNFTs, sKeyPair } from "./mockData";
 
 describe("solana helper util", () => {
@@ -42,37 +42,37 @@ describe("solana helper util", () => {
     const result = await solanaHelper.calculateTxFee(tx.compileMessage(), mockGetConnection());
     assert.deepEqual(result.fee, 1);
   });
-  it("getEstimateBalanceChange", async () => {
-    const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
-    tx.add(transferInstruction());
-    const result = await solanaHelper.getEstimateBalanceChange(mockGetConnection(), tx, sKeyPair[0].publicKey.toBase58());
-    assert.deepEqual(result, [
-      {
-        address: "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW",
-        changes: 0,
-        decimals: 9,
-        mint: "",
-        symbol: "SOL",
-      },
-    ]);
-  });
-  it("calculateChanges", async () => {
-    const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
-    tx.add(transferInstruction());
-    const result = await solanaHelper.calculateChanges(mockGetConnection(), mockSimulateTransaction, "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW", [
-      "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW",
-      "6bS8uykyBg1dC5E4fatWaJC177KTcyW5GsGtUvNq3RPz",
-    ]);
-    assert.deepEqual(result, [
-      {
-        address: "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW",
-        changes: 0,
-        decimals: 9,
-        mint: "",
-        symbol: "SOL",
-      },
-    ]);
-  });
+  // it("getEstimateBalanceChange", async () => {
+  //   const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
+  //   tx.add(transferInstruction());
+  //   const result = await solanaHelper.getEstimateBalanceChange(mockGetConnection(), tx, sKeyPair[0].publicKey.toBase58());
+  //   assert.deepEqual(result, [
+  //     {
+  //       address: "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW",
+  //       changes: 0,
+  //       decimals: 9,
+  //       mint: "",
+  //       symbol: "SOL",
+  //     },
+  //   ]);
+  // });
+  // it("calculateChanges", async () => {
+  //   const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
+  //   tx.add(transferInstruction());
+  //   const result = await solanaHelper.calculateChanges(mockGetConnection(), mockSimulateTransaction, "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW", [
+  //     "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW",
+  //     "6bS8uykyBg1dC5E4fatWaJC177KTcyW5GsGtUvNq3RPz",
+  //   ]);
+  //   assert.deepEqual(result, [
+  //     {
+  //       address: "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW",
+  //       changes: 0,
+  //       decimals: 9,
+  //       mint: "",
+  //       symbol: "SOL",
+  //     },
+  //   ]);
+  // });
   it("getClubbedNfts", async () => {
     const result = await solanaHelper.getClubbedNfts(mockNFTs);
     assert.deepEqual(result, mockClubbedNFTs);
