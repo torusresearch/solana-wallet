@@ -41,7 +41,7 @@ jobs:
         run: npm install
 
       - name: Generate build
-        run: npm run build -- --mode testing
+        run: npm run build
 
       - name: Controller Unit Tests
         run: npm run test:report
