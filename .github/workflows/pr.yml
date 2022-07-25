@@ -40,8 +40,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Generate build
-        run: npm run build -- --mode testing
+      # - name: Generate build
+      #   run: npm run build -- --mode testing
 
       - name: Controller Unit Tests
         run: npm run test:report
