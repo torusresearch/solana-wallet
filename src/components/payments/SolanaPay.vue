@@ -9,7 +9,7 @@ import MessageModal from "@/components/common/MessageModal.vue";
 import ControllerModule from "@/modules/controllers";
 import { STATUS } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
-import { getTokenInfo, parseSolanaPayRequestLink } from "@/utils/solanaHelpers";
+import { parseSolanaPayRequestLink } from "@/utils/solanaHelpers";
 
 import FullDivLoader from "../FullDivLoader.vue";
 import PermissionsTx from "../permissionsTx/PermissionsTx.vue";
@@ -89,6 +89,17 @@ onMounted(async () => {
       transaction.value = result.transaction;
       linkParams.value = result;
     } else {
+      try {
+        const address = new PublicKey(requestLink);
+        router.push({
+          name: "walletTransfer",
+          query: {
+            receiverPubKey: address.toBase58(),
+          },
+        });
+        return;
+      } catch (e) {}
+
       const result = parseURL(requestLink);
       const { recipient, splToken, reference, memo, amount, message } = result;
       if (!amount) {
@@ -106,7 +117,8 @@ onMounted(async () => {
         return;
       }
       if (splToken) {
-        const tokenInfo = await getTokenInfo(splToken.toBase58());
+        // const tokenInfo = await getTokenInfo(splToken.toBase58());
+        const tokenInfo = ControllerModule.torusState.TokenInfoState.tokenInfoMap[splToken.toBase58()];
         if (tokenInfo.symbol) symbol.value = tokenInfo.symbol;
         else {
           symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
