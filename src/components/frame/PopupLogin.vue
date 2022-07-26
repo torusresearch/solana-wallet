@@ -5,10 +5,14 @@ import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
+import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import { LOGIN_CONFIG } from "@/utils/enums";
+import { getWhiteLabelLogo, isWhiteLabelSet } from "@/utils/whitelabel";
+
+import ControllerModule from "../../modules/controllers";
 
 withDefaults(
   defineProps<{
@@ -43,8 +47,8 @@ const refDiv = ref(null);
 </script>
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" class="dark" as="div" :initial-focus="refDiv">
-      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
+    <Dialog :open="isOpen" as="div" :initial-focus="refDiv">
+      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto" :class="{ dark: ControllerModule.isDarkMode }">
         <div class="min-h-screen px-4 flex justify-center items-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
           <TransitionChild
@@ -56,22 +60,31 @@ const refDiv = ref(null);
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="login-container">
-              <DialogTitle as="div" class="py-0 px-4 relative focus-within:outline-none bg-transparent w-full" tabindex="0">
-                <h1 class="font-bold text-white text-2xl mt-10 text-center">
-                  {{ t("login.setupWallet") }}
-                </h1>
-                <div
-                  class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-white bg-opacity-5 flex items-center justify-center"
-                  @click="closeModal"
-                  @keydown="closeModal"
-                >
-                  <XIcon class="w-5 h-5 text-white text-opacity-70 hover:text-opacity-100" />
+            <div class="login-container bg-white dark:bg-app-gray-900">
+              <div class="flex w-full justify-items-start items-center">
+                <div v-if="isWhiteLabelSet()" class="w-1/5 px-4 mt-8">
+                  <img class="dapp-logo" :src="getWhiteLabelLogo(ControllerModule.isDarkMode)" alt="Dapp-logo" />
                 </div>
-              </DialogTitle>
-              <p class="text-white text-opacity-80 font-normal text-sm mt-4 text-center px-7">
-                {{ t("login.poweredBy") }}
-              </p>
+                <div
+                  :class="
+                    getWhiteLabelLogo(ControllerModule.isDarkMode)
+                      ? `flex flex-col items-start w-4/5`
+                      : `py-0 px-4 relative focus-within:outline-none bg-transparent w-full text-center`
+                  "
+                >
+                  <DialogTitle as="div" class="focus-within:outline-none bg-transparent w-full" tabindex="0">
+                    <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ t("login.setupWallet") }}</h1>
+                    <div
+                      class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
+                      @click="closeModal"
+                      @keydown="closeModal"
+                    >
+                      <XIcon class="w-5 h-5 text-app-gray-800 dark:text-white text-opacity-70 hover:text-opacity-100" />
+                    </div>
+                  </DialogTitle>
+                  <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1 pr-5">{{ t("login.poweredBy") }}</p>
+                </div>
+              </div>
               <div class="mt-8 w-full px-4">
                 <LoginButtons
                   :is-embed="true"
@@ -82,14 +95,18 @@ const refDiv = ref(null);
                 />
               </div>
               <div class="w-full mt-6 mb-12 text-center">
-                <span class="text-white text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
-                <img :src="TorusLogoLightURL" alt="Torus Logo" class="h-4 w-auto opacity-70 inline-block" />
+                <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
+                <img
+                  :src="ControllerModule.isDarkMode ? TorusLogoLightURL : TorusLogoURL"
+                  alt="Torus Logo"
+                  class="h-4 w-auto opacity-70 inline-block"
+                />
               </div>
               <div
                 v-if="otherWallets === 'true'"
                 class="mt-auto pt-4 pb-6 px-2 w-full border-t-2 border-solid border-white border-opacity-10 text-center"
               >
-                <span class="cursor-pointer text-base text-white font-normal hover:text-opacity-80" tabindex="0">{{
+                <span class="cursor-pointer text-base dark:text-white text-app-text-600 font-normal hover:text-opacity-80" tabindex="0">{{
                   t("login.differentWallet")
                 }}</span>
               </div>
@@ -112,8 +129,6 @@ const refDiv = ref(null);
     overflow-hidden
     text-left
     transition-all
-    bg-white
-    dark:bg-app-gray-800
     shadow
     rounded-lg
     relative
@@ -121,6 +136,11 @@ const refDiv = ref(null);
   height: auto;
   font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;
-  background-color: #10141f !important;
+}
+.dapp-logo {
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 48px;
+  max-height: 48px;
 }
 </style>

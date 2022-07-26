@@ -44,7 +44,7 @@ const value = computed({
     </div>
     <div
       v-if="postfixText?.length"
-      class="text-sm text-app-text-accent cursor-pointer select-none ml-2"
+      class="text-sm cursor-pointer select-none ml-2 text-app-primary-500"
       @click="emits(`update:postfixTextClicked`)"
       @keydown="emits(`update:postfixTextClicked`)"
     >

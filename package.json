@@ -29,7 +29,7 @@
     "@solana/spl-name-service": "^0.1.4",
     "@solana/spl-token": "0.2.0",
     "@solana/web3.js": "^1.42.0",
-    "@toruslabs/base-controllers": "^2.1.0",
+    "@toruslabs/base-controllers": "^2.2.3",
     "@toruslabs/broadcast-channel": "^5.0.2",
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^3.0.0",
@@ -39,7 +39,7 @@
     "@toruslabs/openlogin-jrpc": "^2.0.0",
     "@toruslabs/openlogin-subkey": "^2.0.0",
     "@toruslabs/openlogin-utils": "^2.0.0",
-    "@toruslabs/solana-controllers": "^2.2.0",
+    "@toruslabs/solana-controllers": "^2.2.4",
     "@toruslabs/tweetnacl-js": "^1.0.3",
     "@toruslabs/vue-components": "^2.0.1",
     "@toruslabs/vue-icons": "^2.0.0",
@@ -69,7 +69,8 @@
     "vue-i18n": "^9.1.10",
     "vue-router": "^4.0.15",
     "vuex": "^4.0.2",
-    "vuex-module-decorators": "^2.0.0"
+    "vuex-module-decorators": "^2.0.0",
+    "color": "^4.2.3"
   },
   "devDependencies": {
     "@babel/register": "^7.17.7",
@@ -84,6 +85,7 @@
     "@toruslabs/eslint-config-vue": "^1.0.1",
     "@toruslabs/tweetnacl-js": "^1.0.3",
     "@types/bs58": "^4.0.1",
+    "@types/color": "^3.0.3",
     "@types/dateformat": "^5.0.0",
     "@types/jest": "^27.5.1",
     "@types/json-stable-stringify": "^1.0.34",
@@ -108,7 +110,6 @@
     "axios": "^0.27.2",
     "bn.js": "^5.2.0",
     "browserstack-local": "^1.5.0",
-    "color": "^4.2.3",
     "crypto-browserify": "^3.12.0",
     "dotenv": "^16.0.1",
     "elliptic": "^6.5.4",

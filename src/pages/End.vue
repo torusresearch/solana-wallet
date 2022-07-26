@@ -163,24 +163,26 @@ endLogin();
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
     <Loader v-if="loading" :use-spinner="true" />
     <div v-else>
-      <div class="text-xl text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
+      <div class="text-xl text-app-text-600 dark:text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
       <div>
         <div class="account-list overflow-y-scroll no-scrollbar">
           <button
             v-for="({ app, address }, index) in accountsProps"
             :key="address"
             :value="index"
-            class="flex flex-col overflow-hidden w-full mt-1 mb-1 hover:border-cyan-100"
+            class="flex flex-col overflow-hidden w-full mt-1 mb-1 hover:border-cyan-100 text-app-primary-500"
             @click="() => selectAccount(index)"
           >
             <div
               class="flex flex-col account-item-checkbox w-full overflow-hidden"
               :class="[
-                selectedAccountIndex === index ? 'bg-app-gray-600 border-2 border-cyan-300' : 'bg-app-gray-700 hover:border-cyan-600 hover:border-2 ',
+                selectedAccountIndex === index
+                  ? 'bg-white dark:bg-app-gray-600 border-2 border-cyan-300 dark:border-gray-600'
+                  : 'bg-white dark:bg-app-gray-700 hover:border-cyan-600 border border-app-gray-500 dark:border-transparent shadow dark:shadow-dark',
               ]"
             >
-              <div class="account-app font-bold text-app-text-dark-400">{{ app }}</div>
-              <div class="account-address text_2--text text-app-text-dark-400">{{ address }}</div>
+              <div class="account-app font-bold text-app-text-600 dark:text-app-text-dark-500">{{ app }}</div>
+              <div class="account-address text_2--text text-app-text-600 dark:text-app-text-dark-500">{{ address }}</div>
             </div>
           </button>
         </div>
