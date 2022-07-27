@@ -391,14 +391,6 @@ export const parseSolanaPayRequestLink = async (request: string, account: string
 
   const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
   const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
-  // validate transaction
-  // if (transaction.signatures.length) {
-
-  // } else {
-
-  // }
-  // if transaction.blockhash ?
-
   // assign transaction object
   return { ...getResult, transaction, decodedInst };
 };

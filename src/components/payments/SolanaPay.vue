@@ -85,6 +85,12 @@ onMounted(async () => {
     } else if (isUrl(requestLink)) {
       const targetLink = requestLink.slice("solana:".length);
       const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress);
+      if (result.transaction.signatures.length === 0) {
+        result.transaction.feePayer = new PublicKey(ControllerModule.selectedAddress);
+        const block = await ControllerModule.connection.getLatestBlockhash();
+        result.transaction.lastValidBlockHeight = block.lastValidBlockHeight;
+        result.transaction.recentBlockhash = block.blockhash;
+      }
       log.info(result);
       transaction.value = result.transaction;
       linkParams.value = result;
@@ -133,11 +139,12 @@ onMounted(async () => {
       tx.recentBlockhash = block.blockhash;
       tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
       transaction.value = tx;
-      estimateChanges(tx, ControllerModule.connection, ControllerModule.selectedAddress);
 
       requestParams.value = result;
       log.info(result);
     }
+    // estimate changes if transaction available
+    if (transaction.value) estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
   } catch (e) {
     // invalidLink.value = true;
     if (e instanceof Error) {
