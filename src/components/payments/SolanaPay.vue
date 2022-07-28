@@ -93,7 +93,11 @@ onMounted(async () => {
       }
       log.info(result);
       transaction.value = result.transaction;
-      linkParams.value = result;
+      linkParams.value = {
+        icon: result.icon,
+        label: result.label || targetLink,
+        decodedInst: result.decodedInst,
+      };
     } else {
       try {
         const address = new PublicKey(requestLink);
