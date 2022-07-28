@@ -26,7 +26,7 @@ const props = withDefaults(
 const invalidLink = ref("");
 const transaction = ref<Transaction>();
 const requestParams = ref<ParsedURL>();
-const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[] }>();
+const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string }>();
 const symbol = ref<string>("");
 const emits = defineEmits(["onApproved", "onCloseModal"]);
 const closeModal = () => {
@@ -66,7 +66,6 @@ onMounted(async () => {
   // set loading
   invalidLink.value = "";
   const { requestLink } = props;
-  // requestLink = "solana:http://localhost:4022/solanapay";
   try {
     const pubkey = new PublicKey(requestLink);
     router.push({
@@ -83,22 +82,39 @@ onMounted(async () => {
       // set loaded
       invalidLink.value = "Invalid Link";
     } else if (isUrl(requestLink)) {
+      // request link is an url. fetch transaction from url
       const targetLink = requestLink.slice("solana:".length);
       const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress);
+
+      // transaction validation
+
       if (result.transaction.signatures.length === 0) {
+        // empty signature - is it possible ?
+        log.info("empty signature");
         result.transaction.feePayer = new PublicKey(ControllerModule.selectedAddress);
         const block = await ControllerModule.connection.getLatestBlockhash();
         result.transaction.lastValidBlockHeight = block.lastValidBlockHeight;
         result.transaction.recentBlockhash = block.blockhash;
+      } else {
+        let signRequired = false;
+        result.transaction.signatures.forEach((sig) => {
+          if (sig.signature === null && sig.publicKey.toBase58() !== ControllerModule.selectedAddress)
+            throw new Error("Merchant Signature Verifcation Failed");
+          signRequired = signRequired || sig.publicKey.toBase58() === ControllerModule.selectedAddress;
+        });
+        if (!signRequired) throw new Error("Wallet Signature Not Required");
+        await result.transaction.serialize({ requireAllSignatures: false });
       }
       log.info(result);
       transaction.value = result.transaction;
       linkParams.value = {
         icon: result.icon,
-        label: result.label || targetLink,
+        label: result.label,
+        origin: targetLink,
         decodedInst: result.decodedInst,
       };
     } else {
+      // check for publickey format, redirect to transfer page
       try {
         const address = new PublicKey(requestLink);
         router.push({
@@ -110,9 +126,12 @@ onMounted(async () => {
         return;
       } catch (e) {}
 
+      // parse solanapay format
       const result = parseURL(requestLink);
       const { recipient, splToken, reference, memo, amount, message } = result;
-      if (!amount) {
+
+      // redirect to transfer page if amount is not available
+      if (amount === undefined) {
         // redirect to transfer page
         router.push({
           name: "walletTransfer",
@@ -126,6 +145,8 @@ onMounted(async () => {
         });
         return;
       }
+
+      // get symbol if spl token
       if (splToken) {
         // const tokenInfo = await getTokenInfo(splToken.toBase58());
         const tokenInfo = ControllerModule.torusState.TokenInfoState.tokenInfoMap[splToken.toBase58()];
@@ -134,24 +155,32 @@ onMounted(async () => {
           symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
         }
       }
+
+      // create transaction based on the solanapay format
       const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
         splToken,
         reference,
         memo,
       });
+
+      // set blockhash and feepayer
       const block = await ControllerModule.connection.getLatestBlockhash();
       tx.recentBlockhash = block.blockhash;
+      tx.lastValidBlockHeight = block.lastValidBlockHeight;
       tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
-      transaction.value = tx;
 
+      // update ref state (ui)
+      transaction.value = tx;
       requestParams.value = result;
       log.info(result);
     }
+
     // estimate changes if transaction available
     if (transaction.value) estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
   } catch (e) {
     // invalidLink.value = true;
     if (e instanceof Error) {
+      if (e.name === "TokenInvalidAccountOwnerError") e.message = "mint not initialize";
       invalidLink.value = e.message || e.name;
     } else {
       invalidLink.value = "Invalid Link";
@@ -163,7 +192,7 @@ onMounted(async () => {
 
 <template>
   <div v-if="invalidLink" class="">
-    <MessageModal :is-open="!!invalidLink || false" :title="invalidLink" :status="STATUS.ERROR" @on-close="onCancel" />
+    <MessageModal :is-open="!!invalidLink || false" :title="invalidLink" :status="STATUS.ERROR" class="capitalize" @on-close="onCancel" />
   </div>
 
   <PaymentConfirm
@@ -194,7 +223,8 @@ onMounted(async () => {
     :decoded-inst="linkParams.decodedInst"
     :network="ControllerModule.selectedNetworkDisplayName"
     :logo-url="linkParams.icon"
-    :origin="linkParams.label"
+    :label="linkParams.label"
+    :origin="linkParams.origin"
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
@@ -202,17 +232,9 @@ onMounted(async () => {
     @on-cancel="onCancel"
     @on-close-modal="onCancel"
   />
-  <div v-else class="payContainer">
-    <!-- <div class="wrapper w-full md:w-96">Loading</div> -->
-    <FullDivLoader />
-  </div>
+  <FullDivLoader v-else />
 </template>
 <style>
-.payContainer {
-  height: 100%;
-  width: 100%;
-  @apply flex flex-col justify-center items-center;
-}
 .wrapper {
   @apply overflow-hidden align-middle transform shadow-xl flex-col justify-center items-center  text-center py-6;
 }
