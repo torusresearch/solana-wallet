@@ -84,27 +84,8 @@ onMounted(async () => {
     } else if (isUrl(requestLink)) {
       // request link is an url. fetch transaction from url
       const targetLink = requestLink.slice("solana:".length);
-      const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress);
+      const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress, ControllerModule.connection);
 
-      // transaction validation
-
-      if (result.transaction.signatures.length === 0) {
-        // empty signature - is it possible ?
-        log.info("empty signature");
-        result.transaction.feePayer = new PublicKey(ControllerModule.selectedAddress);
-        const block = await ControllerModule.connection.getLatestBlockhash();
-        result.transaction.lastValidBlockHeight = block.lastValidBlockHeight;
-        result.transaction.recentBlockhash = block.blockhash;
-      } else {
-        let signRequired = false;
-        result.transaction.signatures.forEach((sig) => {
-          if (sig.signature === null && sig.publicKey.toBase58() !== ControllerModule.selectedAddress)
-            throw new Error("Merchant Signature Verifcation Failed");
-          signRequired = signRequired || sig.publicKey.toBase58() === ControllerModule.selectedAddress;
-        });
-        if (!signRequired) throw new Error("Wallet Signature Not Required");
-        await result.transaction.serialize({ requireAllSignatures: false });
-      }
       log.info(result);
       transaction.value = result.transaction;
       linkParams.value = {
@@ -146,6 +127,13 @@ onMounted(async () => {
         return;
       }
 
+      // create transaction based on the solanapay format
+      const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
+        splToken,
+        reference,
+        memo,
+      });
+
       // get symbol if spl token
       if (splToken) {
         // const tokenInfo = await getTokenInfo(splToken.toBase58());
@@ -155,13 +143,6 @@ onMounted(async () => {
           symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
         }
       }
-
-      // create transaction based on the solanapay format
-      const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
-        splToken,
-        reference,
-        memo,
-      });
 
       // set blockhash and feepayer
       const block = await ControllerModule.connection.getLatestBlockhash();
