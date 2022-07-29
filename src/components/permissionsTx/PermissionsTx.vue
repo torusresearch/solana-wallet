@@ -27,10 +27,12 @@ const props = withDefaults(
     estimatedBalanceChange: AccountEstimation[];
     hasEstimationError: string;
     message?: string;
+    label?: string;
   }>(),
   {
     logoUrl: SolanaLogoURL,
     message: "",
+    label: "",
   }
 );
 
@@ -54,7 +56,7 @@ function openLink() {
       <div class="shadow dark:shadow-dark bg-white dark:bg-app-gray-700 text-center py-6 flex flex-row justify-start items-center px-4">
         <img
           class="h-7 left-5 absolute"
-          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.logoUrl"
+          :src="(ControllerModule.isDarkMode ? getWhiteLabelLogoLight() : getWhiteLabelLogoDark()) || props.logoUrl || SolanaLogoURL"
           alt="Dapp Logo"
         />
         <p class="text-center font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500 w-full">
@@ -64,7 +66,7 @@ function openLink() {
       <div class="mt-4 items-center px-4 flex flex-col justify-start h-full no-scrollbar overflow-y-auto">
         <div class="flex flex-col justify-start items-start w-full mt-4 mb-6">
           <NetworkDisplay :network="network" />
-          <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }}</p>
+          <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }} {{ props.label }}</p>
 
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
             <a :href="props.origin" target="_blank" class="text-sm text-app-primary-500">{{ getDomainFromUrl(props.origin) }}</a>
@@ -83,7 +85,8 @@ function openLink() {
         </div>
 
         <!-- Specific for Solana Pay -->
-        <div v-if="message">
+        <div v-if="message" class="w-full mb-5 text-sm text-app-text-600 dark:text-app-text-dark-500">
+          <div>Message :</div>
           {{ message }}
         </div>
 

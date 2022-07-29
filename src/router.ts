@@ -226,7 +226,7 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   if (!hasInstanceId(toRoute) && hasInstanceId(fromRoute)) {
     return next({
       name: toRoute.name as RouteRecordName,
-      query: fromRoute.query,
+      query: { ...toRoute.query, instanceId: fromRoute.query.instanceId },
       hash: toRoute.hash,
       params: toRoute.params,
     });

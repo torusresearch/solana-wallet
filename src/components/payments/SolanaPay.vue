@@ -9,7 +9,7 @@ import MessageModal from "@/components/common/MessageModal.vue";
 import ControllerModule from "@/modules/controllers";
 import { STATUS } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
-import { getTokenInfo, parseSolanaPayRequestLink } from "@/utils/solanaHelpers";
+import { parseSolanaPayRequestLink } from "@/utils/solanaHelpers";
 
 import FullDivLoader from "../FullDivLoader.vue";
 import PermissionsTx from "../permissionsTx/PermissionsTx.vue";
@@ -26,7 +26,7 @@ const props = withDefaults(
 const invalidLink = ref("");
 const transaction = ref<Transaction>();
 const requestParams = ref<ParsedURL>();
-const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[] }>();
+const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
 const emits = defineEmits(["onApproved", "onCloseModal"]);
 const closeModal = () => {
@@ -66,7 +66,6 @@ onMounted(async () => {
   // set loading
   invalidLink.value = "";
   const { requestLink } = props;
-  // requestLink = "solana:http://localhost:4022/solanapay";
   try {
     const pubkey = new PublicKey(requestLink);
     router.push({
@@ -83,15 +82,38 @@ onMounted(async () => {
       // set loaded
       invalidLink.value = "Invalid Link";
     } else if (isUrl(requestLink)) {
+      // request link is an url. fetch transaction from url
       const targetLink = requestLink.slice("solana:".length);
-      const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress);
+      const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress, ControllerModule.connection);
+
       log.info(result);
       transaction.value = result.transaction;
-      linkParams.value = result;
+      linkParams.value = {
+        icon: result.icon,
+        label: result.label,
+        origin: targetLink,
+        decodedInst: result.decodedInst,
+        message: result.message,
+      };
     } else {
+      // check for publickey format, redirect to transfer page
+      try {
+        const address = new PublicKey(requestLink);
+        router.push({
+          name: "walletTransfer",
+          query: {
+            receiverPubKey: address.toBase58(),
+          },
+        });
+        return;
+      } catch (e) {}
+
+      // parse solanapay format
       const result = parseURL(requestLink);
       const { recipient, splToken, reference, memo, amount, message } = result;
-      if (!amount) {
+
+      // redirect to transfer page if amount is not available
+      if (amount === undefined) {
         // redirect to transfer page
         router.push({
           name: "walletTransfer",
@@ -105,30 +127,42 @@ onMounted(async () => {
         });
         return;
       }
-      if (splToken) {
-        const tokenInfo = await getTokenInfo(splToken.toBase58());
-        if (tokenInfo.symbol) symbol.value = tokenInfo.symbol;
-        else {
-          symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
-        }
-      }
+
+      // create transaction based on the solanapay format
       const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
         splToken,
         reference,
         memo,
       });
+
+      // get symbol if spl token
+      if (splToken) {
+        // const tokenInfo = await getTokenInfo(splToken.toBase58());
+        const tokenInfo = ControllerModule.torusState.TokenInfoState.tokenInfoMap[splToken.toBase58()];
+        if (tokenInfo.symbol) symbol.value = tokenInfo.symbol;
+        else {
+          symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
+        }
+      }
+
+      // set blockhash and feepayer
       const block = await ControllerModule.connection.getLatestBlockhash();
       tx.recentBlockhash = block.blockhash;
+      tx.lastValidBlockHeight = block.lastValidBlockHeight;
       tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
-      transaction.value = tx;
-      estimateChanges(tx, ControllerModule.connection, ControllerModule.selectedAddress);
 
+      // update ref state (ui)
+      transaction.value = tx;
       requestParams.value = result;
       log.info(result);
     }
+
+    // estimate changes if transaction available
+    if (transaction.value) estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
   } catch (e) {
     // invalidLink.value = true;
     if (e instanceof Error) {
+      if (e.name === "TokenInvalidAccountOwnerError") e.message = "mint not initialize";
       invalidLink.value = e.message || e.name;
     } else {
       invalidLink.value = "Invalid Link";
@@ -140,7 +174,7 @@ onMounted(async () => {
 
 <template>
   <div v-if="invalidLink" class="">
-    <MessageModal :is-open="!!invalidLink || false" :title="invalidLink" :status="STATUS.ERROR" @on-close="onCancel" />
+    <MessageModal :is-open="!!invalidLink || false" :title="invalidLink" :status="STATUS.ERROR" class="capitalize" @on-close="onCancel" />
   </div>
 
   <PaymentConfirm
@@ -171,7 +205,9 @@ onMounted(async () => {
     :decoded-inst="linkParams.decodedInst"
     :network="ControllerModule.selectedNetworkDisplayName"
     :logo-url="linkParams.icon"
-    :origin="linkParams.label"
+    :label="linkParams.label"
+    :origin="linkParams.origin"
+    :message="linkParams.message"
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
@@ -179,17 +215,9 @@ onMounted(async () => {
     @on-cancel="onCancel"
     @on-close-modal="onCancel"
   />
-  <div v-else class="payContainer">
-    <!-- <div class="wrapper w-full md:w-96">Loading</div> -->
-    <FullDivLoader />
-  </div>
+  <FullDivLoader v-else />
 </template>
 <style>
-.payContainer {
-  height: 100%;
-  width: 100%;
-  @apply flex flex-col justify-center items-center;
-}
 .wrapper {
   @apply overflow-hidden align-middle transform shadow-xl flex-col justify-center items-center  text-center py-6;
 }

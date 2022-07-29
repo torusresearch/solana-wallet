@@ -69,7 +69,7 @@ const onConfirm = () => {
 const totalCryptoCostString = computed(() => {
   if (props.token !== "SOL") {
     let total = `${props.cryptoAmount} ${props.token}`;
-    if (!props.isGasless) total += `${props.cryptoTxFee} SOL`;
+    if (!props.isGasless) total += ` + ${props.cryptoTxFee} SOL`;
     return total;
   }
   const totalCost = new BigNumber(props.cryptoAmount).plus(props.cryptoTxFee);
