@@ -85,7 +85,8 @@ function openLink() {
         </div>
 
         <!-- Specific for Solana Pay -->
-        <div v-if="message">
+        <div v-if="message" class="w-full mb-5 text-sm text-app-text-600 dark:text-app-text-dark-500">
+          <div>Message :</div>
           {{ message }}
         </div>
 

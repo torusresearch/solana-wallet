@@ -368,7 +368,7 @@ export const parseSolanaPayRequestLink = async (request: string, account: string
   // post link
   // body {"account":"<account>"}
   // return {"transaction":"<transaction>"} (base64)
-  const postResult = await post<{ transaction: string }>(request, { account });
+  const postResult = await post<{ transaction: string; message?: string }>(request, { account });
 
   const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
   const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
@@ -384,5 +384,5 @@ export const parseSolanaPayRequestLink = async (request: string, account: string
     validateUrlTransactionSignature(transaction, account);
   }
 
-  return { ...getResult, transaction, decodedInst };
+  return { ...getResult, transaction, decodedInst, message: postResult.message || "" };
 };

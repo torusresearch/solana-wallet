@@ -26,7 +26,7 @@ const props = withDefaults(
 const invalidLink = ref("");
 const transaction = ref<Transaction>();
 const requestParams = ref<ParsedURL>();
-const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string }>();
+const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
 const emits = defineEmits(["onApproved", "onCloseModal"]);
 const closeModal = () => {
@@ -93,6 +93,7 @@ onMounted(async () => {
         label: result.label,
         origin: targetLink,
         decodedInst: result.decodedInst,
+        message: result.message,
       };
     } else {
       // check for publickey format, redirect to transfer page
@@ -206,6 +207,7 @@ onMounted(async () => {
     :logo-url="linkParams.icon"
     :label="linkParams.label"
     :origin="linkParams.origin"
+    :message="linkParams.message"
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
