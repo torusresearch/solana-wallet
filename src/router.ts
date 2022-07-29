@@ -100,6 +100,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "Discover" */ "@/pages/wallet/Discover.vue"),
           meta: { title: "Discover", tab: "discover" },
         },
+        {
+          name: "pay",
+          path: "pay",
+          component: () => import("@/pages/wallet/Pay.vue"),
+          meta: { title: "Solana Pay", tab: "pay" },
+        },
       ],
     },
     // AUTH STATE INDEPENDENT ROUTES

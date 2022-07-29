@@ -20,6 +20,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
+import { get, post } from "@toruslabs/http-helpers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
@@ -346,3 +347,42 @@ export function parsingTransferAmount(tx: Transaction, txFee: number, isGasless:
 
   return finalTxData;
 }
+
+// SolanaPay
+export const validateUrlTransactionSignature = (transaction: Transaction, selectedAddress: string) => {
+  let signRequired = false;
+  transaction.signatures.forEach((sig) => {
+    if (sig.signature === null && sig.publicKey.toBase58() !== selectedAddress) throw new Error("Merchant Signature Verifcation Failed");
+    signRequired = signRequired || sig.publicKey.toBase58() === selectedAddress;
+  });
+  if (!signRequired) throw new Error("Wallet Signature Not Required");
+  transaction.serialize({ requireAllSignatures: false });
+};
+
+export const parseSolanaPayRequestLink = async (request: string, account: string, connection: Connection) => {
+  log.info(request);
+  // get link
+  // return {"label":"<label>","icon":"<icon>"}
+  // update label and icon on tx display
+  const getResult = await get<{ label: string; icon: string }>(request);
+  // post link
+  // body {"account":"<account>"}
+  // return {"transaction":"<transaction>"} (base64)
+  const postResult = await post<{ transaction: string; message?: string }>(request, { account });
+
+  const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
+  const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
+  // assign transaction object
+
+  if (transaction.signatures.length === 0) {
+    log.info("empty signature");
+    transaction.feePayer = new PublicKey(account);
+    const block = await connection.getLatestBlockhash();
+    transaction.lastValidBlockHeight = block.lastValidBlockHeight;
+    transaction.recentBlockhash = block.blockhash;
+  } else {
+    validateUrlTransactionSignature(transaction, account);
+  }
+
+  return { ...getResult, transaction, decodedInst, message: postResult.message || "" };
+};
