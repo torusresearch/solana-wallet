@@ -19,7 +19,7 @@ import {
 } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
+import { SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 export type DecodedDataType = {
@@ -325,7 +325,7 @@ export const constructTokenData = (
   infoState: TokenInfoController["state"],
   rawTransaction?: string,
   tokenMap: SolanaToken[] = []
-): TokenTransferData | undefined => {
+): TokenTransactionData | undefined => {
   try {
     if (!tokenMap || !rawTransaction) return undefined;
 
