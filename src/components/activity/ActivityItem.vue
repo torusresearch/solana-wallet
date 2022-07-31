@@ -34,7 +34,7 @@ const getTxStatusColor = (status: string): string => {
 };
 
 const amountIsVisible = computed(() => {
-  return props.activity.type === "transfer" || props.activity.type === "transferChecked" || props.activity.type === "burn";
+  return ["transfer", "transferChecked", "burn", "burnChecked"].includes(props.activity.type);
 });
 </script>
 <template>
