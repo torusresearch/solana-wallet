@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
+import { createBurnInstruction, createCloseAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -628,6 +629,44 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.warn("error while submiting transaction", error);
       this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
+    }
+  }
+
+  // burn NFT
+  async burnToken(NFTtoBurn: string, senderAddress: string) {
+    try {
+      const tx = new Transaction();
+      // get the publickey of the NFT
+      const mintPublickey = new PublicKey(NFTtoBurn);
+
+      // signer pub key
+      const signer = new PublicKey(senderAddress);
+
+      // determine the associated token account of the NFT
+      const associatedAddress = await getAssociatedTokenAddress(mintPublickey, signer);
+
+      // determine the balance and decimals of the token to burn
+      const getBalance = await this.connection.getTokenAccountBalance(associatedAddress);
+      const { decimals } = getBalance.value;
+      const balance: number = getBalance?.value?.uiAmount || 0;
+      // create the burn instruction
+      const burnInstruction = createBurnInstruction(associatedAddress, mintPublickey, signer, balance * 10 ** decimals);
+      // close account instruction
+      const closeAccountInstruction = createCloseAccountInstruction(associatedAddress, signer, signer);
+
+      // recent block hash
+      const block = await this.connection.getLatestBlockhash("max");
+      tx.recentBlockhash = block.blockhash;
+      tx.feePayer = new PublicKey(this.selectedAddress);
+      // add the instructions to the transaction
+      tx.add(burnInstruction, closeAccountInstruction);
+      const result = await this.transfer(tx);
+      const newTokenList = omit(this.tokenInfoController.state.metaplexMetaMap, NFTtoBurn);
+      this.tokenInfoController.state.metaplexMetaMap = newTokenList;
+      log.info({ result });
+    } catch (error) {
+      log.error(error);
+      throw new Error("Burn NFT Failed");
     }
   }
 

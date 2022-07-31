@@ -2,7 +2,7 @@
 import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
-import { computed, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
@@ -10,11 +10,13 @@ import FallbackNft from "@/assets/fallback-nft.svg";
 import PaperAirplane from "@/assets/paper-airplane.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
+import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import LanguageSelector from "@/components/nav/LanguageSelector.vue";
-import { NftsPageInteractions, trackUserClick } from "@/directives/google-analytics";
+import { NftsPageInteractions, trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
+import { STATUS, STATUS_TYPE } from "@/utils/enums";
+import { delay, getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const router = useRouter();
@@ -22,6 +24,22 @@ const { t } = useI18n();
 const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
+const isOpen = ref(false);
+const transferDisabled = ref(false);
+
+const AsyncMessageModal = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
+});
+
+const messageModalState = reactive({
+  showMessage: false,
+  messageTitle: "",
+  messageDescription: "",
+  messageStatus: STATUS.INFO as STATUS_TYPE,
+});
+
+const showDropDown = ref(false);
+
 const logout = async () => {
   await ControllerModule.logout();
 };
@@ -29,6 +47,7 @@ const logout = async () => {
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
 const nfts = computed(() => ControllerModule.nonFungibleTokens);
 const mint = ref<string>("");
+const burnConfirmed = ref(false);
 const edition = ref<string | undefined>("");
 const isLoading = ref<boolean>(true);
 onMounted(async () => {
@@ -49,6 +68,10 @@ const goBack = () => {
   router.back();
 };
 
+const changeDropdown = () => {
+  showDropDown.value = !showDropDown.value;
+};
+
 const viewNFT = () => {
   trackUserClick(NftsPageInteractions.SOLSCAN + mint.value);
   window.open(`https://solscan.io/token/${mint.value}`, "_blank");
@@ -57,6 +80,52 @@ const viewNFT = () => {
 const transferNFT = () => {
   trackUserClick(NftsPageInteractions.SEND + mint.value);
   router.push(`/wallet/transfer?mint=${mint.value}`);
+};
+
+const openModal = async () => {
+  isOpen.value = true;
+  trackUserClick(TransferPageInteractions.INITIATE);
+};
+
+const onMessageModalClosed = () => {
+  messageModalState.showMessage = false;
+  messageModalState.messageDescription = "";
+  messageModalState.messageTitle = "";
+  messageModalState.messageStatus = STATUS.INFO;
+  if (burnConfirmed.value) {
+    router.push("/wallet/activity");
+  }
+};
+
+const closeModal = () => {
+  isOpen.value = false;
+  trackUserClick(TransferPageInteractions.CANCEL);
+};
+
+const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
+  const { messageDescription, messageTitle, messageStatus } = params;
+  messageModalState.messageDescription = messageDescription || "";
+  messageModalState.messageTitle = messageTitle;
+  messageModalState.messageStatus = messageStatus;
+  messageModalState.showMessage = true;
+};
+const confirmTransfer = async () => {
+  trackUserClick(TransferPageInteractions.CONFIRM);
+  // Delay needed for the message modal
+  await delay(500);
+  try {
+    await ControllerModule.torus.burnToken(mint.value, ControllerModule.selectedAddress);
+    burnConfirmed.value = true;
+    showMessageModal({
+      messageTitle: t("walletTransfer.transferSuccessTitle"),
+      messageStatus: STATUS.INFO,
+    });
+  } catch (error) {
+    showMessageModal({
+      messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
+      messageStatus: STATUS.ERROR,
+    });
+  }
 };
 </script>
 
@@ -117,7 +186,16 @@ const transferNFT = () => {
               <ChevronLeftIcon class="text-app-text-dark-400 h-4 w-4 mr-2" />
               <span class="text-app-text-dark-400 text-base font-light">Back</span>
             </div>
-            <DotsHorizontalIcon class="h-6 w-6 text-app-text-dark-400 cursor-pointer" />
+            <DotsHorizontalIcon class="h-6 w-6 text-app-text-dark-400 cursor-pointer" @click="changeDropdown" />
+          </div>
+          <div v-if="showDropDown" class="ml-auto w-1/3">
+            <div
+              class="rounded-md py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white cursor-pointer send-nft mb-2"
+              @click="openModal"
+              @keydown="openModal"
+            >
+              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Burn NFT</span>
+            </div>
           </div>
           <img
             alt="nft"
@@ -221,6 +299,25 @@ const transferNFT = () => {
         </div>
       </router-link>
     </div>
+    <template v-if="!isLoading">
+      <AsyncMessageModal
+        :is-open="messageModalState.showMessage"
+        :title="messageModalState.messageTitle"
+        :description="messageModalState.messageDescription"
+        :status="messageModalState.messageStatus"
+        @on-close="onMessageModalClosed"
+      />
+      <BurnNFT
+        :sender-pub-key="ControllerModule.selectedAddress"
+        :mint-address="mint"
+        :token="nftMetaData"
+        :transfer-disabled="transferDisabled"
+        :is-open="isOpen"
+        @transfer-confirm="confirmTransfer"
+        @transfer-reject="closeModal"
+        @on-close-modal="closeModal"
+      />
+    </template>
   </div>
 </template>
 <style scoped>
