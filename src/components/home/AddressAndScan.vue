@@ -10,6 +10,7 @@ import { useRouter } from "vue-router";
 import SolanaLogoLight from "@/assets/solana-logo-light.svg";
 import WalletIcon from "@/assets/wallet.svg";
 import { HomePageInteractions } from "@/directives/google-analytics";
+import ControllerModule from "@/modules/controllers";
 import { copyText } from "@/utils/helpers";
 
 import QrcodeDisplay from "./QrcodeDisplay.vue";
@@ -57,6 +58,12 @@ const closeQr = () => {
       <ScanIcon class="w-4 h-4 mr-2" />
       <span class="text-app-text-500 text-xs font-bold"> {{ t("walletHome.scanAndPay") }}</span>
     </div>
-    <QrcodeDisplay :is-open="displayQr" description="" :public-address="selectedAddress" @on-close="closeQr" />
+    <QrcodeDisplay
+      :is-open="displayQr"
+      description=""
+      :public-address="selectedAddress"
+      :is-dark-mode="ControllerModule.isDarkMode"
+      @on-close="closeQr"
+    />
   </div>
 </template>

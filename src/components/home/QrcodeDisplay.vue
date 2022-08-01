@@ -1,17 +1,28 @@
 <script setup lang="ts">
-import { Dialog, DialogOverlay, TransitionChild, TransitionRoot } from "@headlessui/vue";
+import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
+import { XIcon } from "@heroicons/vue/solid";
+import Button from "@toruslabs/vue-components/common/Button.vue";
+import { CopyIcon } from "@toruslabs/vue-icons/basic";
 import { ref } from "vue";
+
+import SolanaLogoURL from "@/assets/solana-dark.svg";
+import SolanaLightLogoURL from "@/assets/solana-light.svg";
+// import { trackUserClick } from "@/directives/google-analytics";
+import { copyText } from "@/utils/helpers";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 import Qrcode from "./Qrcode.vue";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     isOpen?: boolean;
     publicAddress: string;
     description?: string;
+    isDarkMode?: boolean;
   }>(),
   {
     isOpen: false,
+    isDarkMode: false,
     description: "",
   }
 );
@@ -22,13 +33,34 @@ const closeModal = () => {
 };
 
 const refDiv = ref(null);
+const qrsrc = ref("");
+
+const updateQrsrc = (value: string) => {
+  qrsrc.value = value;
+};
+
+const copyPrivKey = () => {
+  // trackUserClick(.COPY_PRIV);
+  copyText(props.publicAddress || "");
+};
+
+const downloadQr = () => {
+  const qrImage = qrsrc.value; // $refs['address-qr'].$el.src
+  const downloadLink = document.createElement("a");
+  downloadLink.href = qrImage;
+  downloadLink.download = "qrcode.png";
+  document.body.append(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+  document.body.removeChild(downloadLink);
+};
 </script>
 <template>
-  <TransitionRoot appear :show="isOpen" as="template">
-    <Dialog :open="isOpen" :initial-focus="refDiv" as="div" @close="closeModal">
+  <TransitionRoot appear :show="props.isOpen" as="template">
+    <Dialog :open="props.isOpen" :initial-focus="refDiv" as="div" :class="{ dark: isDarkMode }" @close="closeModal">
       <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
-          <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
+          <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-600" />
 
           <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
 
@@ -41,8 +73,29 @@ const refDiv = ref(null);
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="relative inline-block w-full md:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md">
-              <Qrcode :text="publicAddress" :csize="256" />
+            <div class="relative inline-block w-full md:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md shadow">
+              <DialogTitle as="div" class="rounded-md flex justify-center py-8 relative" tabindex="0">
+                <img
+                  class="block h-4 w-auto"
+                  :src="isDarkMode ? getWhiteLabelLogoLight() || SolanaLightLogoURL : getWhiteLabelLogoDark() || SolanaLogoURL"
+                  alt="Solana Logo"
+                />
+                <XIcon class="w-6 h-6 absolute top-3 right-3 text-app-text-500 cursor-pointer" @click="closeModal" />
+              </DialogTitle>
+
+              <div class="flex flex-col justify-center items-center">
+                <div class="text-xs flex flex-row w-full justify-center dark:text-white">
+                  <span>
+                    {{ props.publicAddress }}
+                  </span>
+                  <Button variant="text" @click="copyPrivKey()">
+                    <CopyIcon class="w-4 h-4 ml-2" />
+                    <!-- {{ t("walletSettings.clickCopy") }} -->
+                  </Button>
+                </div>
+                <Qrcode :text="props.publicAddress" :csize="256" @update:qrsrc="updateQrsrc" />
+                <Button class="w-fit mb-7" @click="downloadQr"> Download Qrcode</Button>
+              </div>
             </div>
           </TransitionChild>
         </div>

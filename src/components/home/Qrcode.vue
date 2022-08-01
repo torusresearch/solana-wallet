@@ -22,6 +22,12 @@ const props = withDefaults(
   }
 );
 
+const emits = defineEmits(["update:qrsrc"]);
+
+const updateQrsrc = (value: string) => {
+  emits("update:qrsrc", value);
+};
+
 const qrsrc = ref("");
 
 onMounted(() => {
@@ -34,17 +40,18 @@ onMounted(() => {
         radius: props.radius, // 0.0 to 0.5
         ecLevel: "H", // L, M, Q, H
         fill: props.fill, // foreground color
-        background: props.background, // color or null for transparent
+        background: "white", // props.background, // color or null for transparent
         size: props.csize, // in pixels
       },
       cv
     );
     qrsrc.value = (cv as HTMLCanvasElement).toDataURL();
+    updateQrsrc(qrsrc.value);
     cv.remove();
   } else log.error("no canvas");
 });
 </script>
 <template>
   <canvas id="qr" />
-  <img :src="qrsrc" alt="" class="m-auto p-8" />
+  <img :src="qrsrc" alt="" class="p-4 m-8 bg-white" />
 </template>
