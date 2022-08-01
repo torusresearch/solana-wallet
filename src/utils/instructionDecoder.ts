@@ -22,6 +22,9 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import { SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
+// Custom address
+const BURN_ADDRESS_INC = "1burn1nerator111111111111111111111111111111";
+
 export type DecodedDataType = {
   type: string;
   data: { [key: string]: string | PublicKey | number | bigint | undefined | null };
@@ -413,11 +416,10 @@ export const constructTokenData = (
             amount: tokenState?.balance?.uiAmount || 0,
             decimals: tokenState?.balance?.decimals as number,
             from: new PublicKey(decoded.data.owner || "").toBase58(),
-            to: "unknown-unknown-unknown-unknown-",
+            to: new PublicKey(BURN_ADDRESS_INC).toBase58(),
             mintAddress: tokenState?.mintAddress || "",
             logoURI: logoURI || "",
             conversionRate: {},
-            isBurn: true,
           };
         }
       }
