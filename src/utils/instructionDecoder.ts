@@ -336,7 +336,8 @@ export const constructTokenData = (
     const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
-    let intrestedInstructionidx = 0;
+    let interestedTransferInstructionidx = 0;
+    let interestedBurnInstructionidx = -1;
     const instructionLength = instructions.length;
 
     if (instructionLength > 1 && instructionLength <= 3) {
@@ -354,7 +355,7 @@ export const constructTokenData = (
           }
           return false;
         });
-        intrestedInstructionidx = transferIdx;
+        interestedTransferInstructionidx = transferIdx;
       } else {
         const burnIndex = instructions.findIndex((inst) => {
           if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
@@ -363,16 +364,16 @@ export const constructTokenData = (
           }
           return false;
         });
-        intrestedInstructionidx = burnIndex;
+        interestedBurnInstructionidx = burnIndex;
       }
     }
 
     // Expect SPL token transfer transaction have only 1 instruction
-    if (instructions.length === 1 || intrestedInstructionidx >= 0) {
-      if (TOKEN_PROGRAM_ID.equals(instructions[intrestedInstructionidx].programId)) {
-        const decoded = decodeTokenInstruction(instructions[intrestedInstructionidx]);
+    if (instructions.length === 1 || interestedTransferInstructionidx > 0 || interestedBurnInstructionidx > -1) {
+      if (TOKEN_PROGRAM_ID.equals(instructions[interestedTransferInstructionidx].programId)) {
+        const decoded = decodeTokenInstruction(instructions[interestedTransferInstructionidx]);
         // There are transfer and transferChecked type
-        if (decoded.type.includes("transfer") && intrestedInstructionidx > 0) {
+        if (decoded.type.includes("transfer")) {
           const from = new PublicKey(decoded.data.source || "").toBase58();
           const to = new PublicKey(decoded.data.destination || "").toBase58();
 
@@ -405,7 +406,7 @@ export const constructTokenData = (
             conversionRate: price || {},
           };
         }
-        if (decoded.type.includes("burn")) {
+        if (["burn", "burnChecked"].includes(decoded.type)) {
           const tokenState = tokenMap.find((x) => new PublicKey(x.mintAddress).equals(decoded.data.mint as PublicKey));
           const logoURI = infoState.metaplexMetaMap[tokenState?.mintAddress || ""]?.offChainMetaData?.image;
 

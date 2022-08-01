@@ -84,7 +84,7 @@ const amountIsVisible = computed(() => {
             </div>
           </div>
           <!-- Burn Instruction -->
-          <div v-if="activity.type === 'burn'">
+          <div v-if="['burn', 'burnChecked'].includes(activity.type)">
             <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
               Burnt {{ Number(activity.totalAmountString) }} {{ activity.cryptoCurrency }}
 
@@ -97,7 +97,9 @@ const amountIsVisible = computed(() => {
             </div>
           </div>
           <div
-            v-if="!(activity.type === 'transfer' || activity.type === 'transferChecked' || activity.type === 'burn')"
+            v-if="
+              !(activity.type === 'transfer' || activity.type === 'transferChecked' || activity.type === 'burn' || activity.type === 'burnChecked')
+            "
             class="text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all"
           >
             {{ activity.signature }}
@@ -113,7 +115,7 @@ const amountIsVisible = computed(() => {
       <div>
         <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
           <!-- if Burnt show minus sign -->
-          {{ activity.type === "burn" ? "-" : "" }}
+          {{ ["burn", "burnChecked"].includes(activity.type) ? "-" : "" }}
           {{ Number(activity.totalAmountString) }}
         </div>
         <div class="text-xxs text-app-text-400 dark:text-app-text-dark-600">

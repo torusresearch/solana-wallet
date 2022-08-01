@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
-import { createBurnInstruction, createCloseAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
+import { createBurnCheckedInstruction, createCloseAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -650,7 +650,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const { decimals } = getBalance.value;
       const balance: number = getBalance?.value?.uiAmount || 0;
       // create the burn instruction
-      const burnInstruction = createBurnInstruction(associatedAddress, mintPublickey, signer, balance * 10 ** decimals);
+      const burnInstruction = createBurnCheckedInstruction(associatedAddress, mintPublickey, signer, balance * 10 ** decimals, decimals);
       // close account instruction
       const closeAccountInstruction = createCloseAccountInstruction(associatedAddress, signer, signer);
 
