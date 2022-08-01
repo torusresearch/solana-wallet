@@ -180,7 +180,7 @@ const confirmTransfer = async () => {
       <div
         class="px-4 gt-xs:px-12 md:px-12 py-8 lt-md:pb-[56px] relative flex flex-col items-center w-full h-full justify-center md:flex-row md:items-start"
       >
-        <div class="flex flex-col">
+        <div class="flex flex-col relative">
           <div class="flex justify-between px-2 py-4 w-full">
             <div class="cursor-pointer flex items-center" @click="goBack" @keydown="goBack">
               <ChevronLeftIcon class="text-app-text-dark-400 h-4 w-4 mr-2" />
@@ -188,7 +188,7 @@ const confirmTransfer = async () => {
             </div>
             <DotsHorizontalIcon class="h-6 w-6 text-app-text-dark-400 cursor-pointer" @click="changeDropdown" />
           </div>
-          <div v-if="showDropDown" class="ml-auto w-1/3">
+          <div v-if="showDropDown" class="ml-auto w-1/3 absolute right-0 top-5 mt-6">
             <div
               class="rounded-md py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white cursor-pointer send-nft mb-2"
               @click="openModal"
