@@ -370,7 +370,10 @@ export const constructTokenData = (
 
     // Expect SPL token transfer transaction have only 1 instruction
     if (instructions.length === 1 || interestedTransferInstructionidx > 0 || interestedBurnInstructionidx > -1) {
-      if (TOKEN_PROGRAM_ID.equals(instructions[interestedTransferInstructionidx].programId)) {
+      if (
+        TOKEN_PROGRAM_ID.equals(instructions[interestedTransferInstructionidx].programId) ||
+        TOKEN_PROGRAM_ID.equals(instructions[interestedBurnInstructionidx].programId)
+      ) {
         const decoded = decodeTokenInstruction(instructions[interestedTransferInstructionidx]);
         // There are transfer and transferChecked type
         if (decoded.type.includes("transfer")) {

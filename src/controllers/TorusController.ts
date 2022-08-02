@@ -2,7 +2,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
-import { createBurnCheckedInstruction, createCloseAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
 import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
 import {
   BaseConfig,
@@ -99,6 +98,7 @@ import {
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instructionDecoder";
+import { burnAndCloseAccount } from "@/utils/solanaHelpers";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -635,31 +635,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   // burn NFT
   async burnToken(NFTtoBurn: string, senderAddress: string) {
     try {
-      const tx = new Transaction();
-      // get the publickey of the NFT
-      const mintPublickey = new PublicKey(NFTtoBurn);
-
-      // signer pub key
-      const signer = new PublicKey(senderAddress);
-
-      // determine the associated token account of the NFT
-      const associatedAddress = await getAssociatedTokenAddress(mintPublickey, signer);
-
-      // determine the balance and decimals of the token to burn
-      const getBalance = await this.connection.getTokenAccountBalance(associatedAddress);
-      const { decimals } = getBalance.value;
-      const balance: number = getBalance?.value?.uiAmount || 0;
-      // create the burn instruction
-      const burnInstruction = createBurnCheckedInstruction(associatedAddress, mintPublickey, signer, balance * 10 ** decimals, decimals);
-      // close account instruction
-      const closeAccountInstruction = createCloseAccountInstruction(associatedAddress, signer, signer);
-
-      // recent block hash
-      const block = await this.connection.getLatestBlockhash("max");
-      tx.recentBlockhash = block.blockhash;
-      tx.feePayer = new PublicKey(this.selectedAddress);
-      // add the instructions to the transaction
-      tx.add(burnInstruction, closeAccountInstruction);
+      const tx = await burnAndCloseAccount(NFTtoBurn, senderAddress, this.connection, this.selectedAddress);
       const result = await this.transfer(tx);
       const newTokenList = omit(this.tokenInfoController.state.metaplexMetaMap, NFTtoBurn);
       this.tokenInfoController.state.metaplexMetaMap = newTokenList;

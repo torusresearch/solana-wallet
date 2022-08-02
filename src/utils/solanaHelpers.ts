@@ -2,6 +2,8 @@ import {
   Account,
   AccountLayout,
   createAssociatedTokenAccountInstruction,
+  createBurnCheckedInstruction,
+  createCloseAccountInstruction,
   createTransferCheckedInstruction,
   getAssociatedTokenAddress,
   MINT_SIZE,
@@ -135,6 +137,36 @@ export async function generateSPLTransaction(
   transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
   transaction.feePayer = new PublicKey(sender);
   return transaction;
+}
+
+export async function burnAndCloseAccount(mintAddress: string, senderAddress: string, connection: Connection, selectedAddress: string) {
+  const tx = new Transaction();
+  // get the publickey of the NFT
+  const mintPublickey = new PublicKey(mintAddress);
+
+  // signer pub key
+  const signer = new PublicKey(senderAddress);
+
+  // determine the associated token account of the NFT
+  const associatedAddress = await getAssociatedTokenAddress(mintPublickey, signer);
+
+  // determine the balance and decimals of the token to burn
+  const getBalance = await connection.getTokenAccountBalance(associatedAddress);
+  const { decimals } = getBalance.value;
+  const balance: number = getBalance?.value?.uiAmount || 0;
+  // create the burn instruction
+  const burnInstruction = createBurnCheckedInstruction(associatedAddress, mintPublickey, signer, balance * 10 ** decimals, decimals);
+  // close account instruction
+  const closeAccountInstruction = createCloseAccountInstruction(associatedAddress, signer, signer);
+
+  // recent block hash
+  const block = await connection.getLatestBlockhash("max");
+  tx.recentBlockhash = block.blockhash;
+  tx.feePayer = new PublicKey(selectedAddress);
+  // add the instructions to the transaction
+  tx.add(burnInstruction, closeAccountInstruction);
+
+  return tx;
 }
 
 // Calculte balance changes after transaction simulation
