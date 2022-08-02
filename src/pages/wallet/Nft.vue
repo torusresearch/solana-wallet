@@ -194,7 +194,7 @@ const confirmTransfer = async () => {
               @click="openModal"
               @keydown="openModal"
             >
-              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Burn NFT</span>
+              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Burn & Close</span>
             </div>
           </div>
           <img

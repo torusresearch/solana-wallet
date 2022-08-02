@@ -336,8 +336,7 @@ export const constructTokenData = (
     const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
-    let interestedTransferInstructionidx = 0;
-    let interestedBurnInstructionidx = -1;
+    let interestedTransactionInstructionidx = -1;
     const instructionLength = instructions.length;
 
     if (instructionLength > 1 && instructionLength <= 3) {
@@ -355,7 +354,7 @@ export const constructTokenData = (
           }
           return false;
         });
-        interestedTransferInstructionidx = transferIdx;
+        interestedTransactionInstructionidx = transferIdx;
       } else {
         const burnIndex = instructions.findIndex((inst) => {
           if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
@@ -364,17 +363,15 @@ export const constructTokenData = (
           }
           return false;
         });
-        interestedBurnInstructionidx = burnIndex;
+        interestedTransactionInstructionidx = burnIndex;
       }
     }
 
     // Expect SPL token transfer transaction have only 1 instruction
-    if (instructions.length === 1 || interestedTransferInstructionidx > 0 || interestedBurnInstructionidx > -1) {
-      if (
-        TOKEN_PROGRAM_ID.equals(instructions[interestedTransferInstructionidx].programId) ||
-        TOKEN_PROGRAM_ID.equals(instructions[interestedBurnInstructionidx].programId)
-      ) {
-        const decoded = decodeTokenInstruction(instructions[interestedTransferInstructionidx]);
+    if (instructions.length === 1 || interestedTransactionInstructionidx >= 0) {
+      if (instructions.length === 1) interestedTransactionInstructionidx = 0;
+      if (TOKEN_PROGRAM_ID.equals(instructions[interestedTransactionInstructionidx].programId)) {
+        const decoded = decodeTokenInstruction(instructions[interestedTransactionInstructionidx]);
         // There are transfer and transferChecked type
         if (decoded.type.includes("transfer")) {
           const from = new PublicKey(decoded.data.source || "").toBase58();
