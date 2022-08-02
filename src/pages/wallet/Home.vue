@@ -97,7 +97,7 @@ const lastUpdateString = computed(() => {
       <asyncWalletBalance :show-buttons="true" class="w-full" />
     </div>
     <AddressAndScan class="flex md:hidden mt-3" :selected-address="ControllerModule.selectedAddress" />
-    <div class="mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
+    <div class="mt-4 md:mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
       <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">Tokens</h2>
       <asyncTokensAssetsBalance />
       <div

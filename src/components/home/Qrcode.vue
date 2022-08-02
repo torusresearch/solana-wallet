@@ -10,7 +10,7 @@ const props = withDefaults(
     radius?: number;
     fill?: string;
     background?: string | null;
-    ecLevel: QRCreator.ErrorCorrectionLevel;
+    ecLevel?: QRCreator.ErrorCorrectionLevel;
   }>(),
   {
     radius: 0.5,
@@ -18,7 +18,7 @@ const props = withDefaults(
     fill: "#000",
     background: null,
     csize: 256,
-    ecLevel: "H",
+    ecLevel: "M",
   }
 );
 
@@ -38,7 +38,7 @@ onMounted(() => {
       {
         text: props.text,
         radius: props.radius, // 0.0 to 0.5
-        ecLevel: "H", // L, M, Q, H
+        ecLevel: props.ecLevel, // L, M, Q, H
         fill: props.fill, // foreground color
         background: "white", // props.background, // color or null for transparent
         size: props.csize, // in pixels

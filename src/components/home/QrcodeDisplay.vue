@@ -57,8 +57,8 @@ const downloadQr = () => {
 </script>
 <template>
   <TransitionRoot appear :show="props.isOpen" as="template">
-    <Dialog :open="props.isOpen" :initial-focus="refDiv" as="div" :class="{ dark: isDarkMode }" @close="closeModal">
-      <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
+    <Dialog ref="refDiv" :open="props.isOpen" :initial-focus="refDiv" as="div" :class="{ dark: isDarkMode }" @close="closeModal">
+      <div class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
           <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-600" />
 
@@ -73,7 +73,7 @@ const downloadQr = () => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="relative inline-block w-full md:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md shadow">
+            <div class="relative inline-block w-fit sm:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md shadow">
               <DialogTitle as="div" class="rounded-md flex justify-center py-8 relative" tabindex="0">
                 <img
                   class="block h-4 w-auto"
@@ -84,8 +84,8 @@ const downloadQr = () => {
               </DialogTitle>
 
               <div class="flex flex-col justify-center items-center">
-                <div class="text-xs flex flex-row w-full justify-center dark:text-white">
-                  <span>
+                <div class="text-xs flex flex-row w-full justify-center dark:text-white mt-4 pl-4 pr-4">
+                  <span class="break-all">
                     {{ props.publicAddress }}
                   </span>
                   <Button variant="text" @click="copyPrivKey()">
