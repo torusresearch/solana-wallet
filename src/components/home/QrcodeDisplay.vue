@@ -9,7 +9,7 @@ import { onMounted, ref } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
-// import { trackUserClick } from "@/directives/google-analytics";
+import SolanaLogo from "@/assets/solana-mascot.svg";
 import { copyText } from "@/utils/helpers";
 import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
@@ -36,7 +36,6 @@ const refDiv = ref(null);
 const qrsrc = ref("");
 
 const copyPrivKey = () => {
-  // trackUserClick(.COPY_PRIV);
   copyText(props.publicAddress || "");
 };
 
@@ -45,17 +44,17 @@ const qr = new QRCode({
   width: 256,
   height: 256,
   type: "svg",
-  image: SolanaLogoURL,
+  image: SolanaLogo,
   dotsOptions: {
-    color: "#4267b2",
+    color: "black",
     type: "rounded",
   },
-  backgroundOptions: {
-    color: "#e9ebee",
-  },
+  // backgroundOptions: {
+  // color: "#e9ebee",
+  // },
   imageOptions: {
     crossOrigin: "anonymous",
-    margin: 20,
+    margin: 15,
   },
 });
 
