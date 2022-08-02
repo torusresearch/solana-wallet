@@ -114,7 +114,7 @@ const confirmTransfer = async () => {
   // Delay needed for the message modal
   await delay(500);
   try {
-    await ControllerModule.torus.burnToken(mint.value, ControllerModule.selectedAddress);
+    await ControllerModule.torus.burnToken(mint.value);
     burnConfirmed.value = true;
     showMessageModal({
       messageTitle: t("walletTransfer.transferSuccessTitle"),

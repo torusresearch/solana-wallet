@@ -115,7 +115,7 @@ export async function generateSPLTransaction(
   const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
   if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-    const newAccount = await createAssociatedTokenAccountInstruction(
+    const newAccount = createAssociatedTokenAccountInstruction(
       new PublicKey(sender),
       associatedTokenAccount,
       receiverAccount,
@@ -139,30 +139,27 @@ export async function generateSPLTransaction(
   return transaction;
 }
 
-export async function burnAndCloseAccount(mintAddress: string, senderAddress: string, connection: Connection, selectedAddress: string) {
+export async function burnAndCloseAccount(selectedAddress: string, associatedAddress: string, mint: string, connection: Connection) {
   const tx = new Transaction();
-  // get the publickey of the NFT
-  const mintPublickey = new PublicKey(mintAddress);
 
   // signer pub key
-  const signer = new PublicKey(senderAddress);
-
-  // determine the associated token account of the NFT
-  const associatedAddress = await getAssociatedTokenAddress(mintPublickey, signer);
+  const signer = new PublicKey(selectedAddress);
+  const associatedAddressPublicKey = new PublicKey(associatedAddress);
+  const mintPublickey = new PublicKey(mint);
 
   // determine the balance and decimals of the token to burn
-  const getBalance = await connection.getTokenAccountBalance(associatedAddress);
-  const { decimals } = getBalance.value;
-  const balance: number = getBalance?.value?.uiAmount || 0;
+  const getBalance = await connection.getTokenAccountBalance(associatedAddressPublicKey);
+  const { decimals, uiAmount } = getBalance.value;
+
   // create the burn instruction
-  const burnInstruction = createBurnCheckedInstruction(associatedAddress, mintPublickey, signer, balance * 10 ** decimals, decimals);
-  // close account instruction
-  const closeAccountInstruction = createCloseAccountInstruction(associatedAddress, signer, signer);
+  const burnInstruction = createBurnCheckedInstruction(associatedAddressPublicKey, mintPublickey, signer, (uiAmount || 0) * 10 ** decimals, decimals);
+  const closeAccountInstruction = createCloseAccountInstruction(associatedAddressPublicKey, signer, signer);
 
   // recent block hash
   const block = await connection.getLatestBlockhash("max");
   tx.recentBlockhash = block.blockhash;
   tx.feePayer = new PublicKey(selectedAddress);
+
   // add the instructions to the transaction
   tx.add(burnInstruction, closeAccountInstruction);
 

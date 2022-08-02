@@ -633,13 +633,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   // burn NFT
-  async burnToken(NFTtoBurn: string, senderAddress: string) {
+  async burnToken(NFTtoBurn: string) {
     try {
-      const tx = await burnAndCloseAccount(NFTtoBurn, senderAddress, this.connection, this.selectedAddress);
+      const currentTokens = this.tokens[this.selectedAddress];
+      const foundToken = currentTokens.find((x: SolanaToken) => {
+        return x.mintAddress === NFTtoBurn;
+      });
+
+      const associatedAddress = foundToken?.tokenAddress;
+      if (!associatedAddress) {
+        throw new Error("Token address not found in Token tracker state");
+      }
+
+      const tx = await burnAndCloseAccount(this.selectedAddress, associatedAddress, NFTtoBurn, this.connection);
       const result = await this.transfer(tx);
-      const newTokenList = omit(this.tokenInfoController.state.metaplexMetaMap, NFTtoBurn);
-      this.tokenInfoController.state.metaplexMetaMap = newTokenList;
       log.info({ result });
+
+      // remove state optimistically
+      const newState = currentTokens.filter((x) => x.mintAddress !== NFTtoBurn);
+      this.tokensTracker.update({
+        tokens: {
+          [this.selectedAddress]: newState,
+        },
+      });
     } catch (error) {
       log.error(error);
       throw new Error("Burn NFT Failed");
