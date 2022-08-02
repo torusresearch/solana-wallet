@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/solid";
+import QRCode from "@solana/qr-code-styling";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { CopyIcon } from "@toruslabs/vue-icons/basic";
-import { ref } from "vue";
+import log from "loglevel";
+import { onMounted, ref } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 // import { trackUserClick } from "@/directives/google-analytics";
 import { copyText } from "@/utils/helpers";
 import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
-
-import Qrcode from "./Qrcode.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -35,24 +35,41 @@ const closeModal = () => {
 const refDiv = ref(null);
 const qrsrc = ref("");
 
-const updateQrsrc = (value: string) => {
-  qrsrc.value = value;
-};
-
 const copyPrivKey = () => {
   // trackUserClick(.COPY_PRIV);
   copyText(props.publicAddress || "");
 };
 
+const qr = new QRCode({
+  data: props.publicAddress,
+  width: 256,
+  height: 256,
+  type: "svg",
+  image: SolanaLogoURL,
+  dotsOptions: {
+    color: "#4267b2",
+    type: "rounded",
+  },
+  backgroundOptions: {
+    color: "#e9ebee",
+  },
+  imageOptions: {
+    crossOrigin: "anonymous",
+    margin: 20,
+  },
+});
+
+onMounted(async () => {
+  const blobimg = await qr.getRawData();
+  if (blobimg) qrsrc.value = URL.createObjectURL(blobimg);
+  else {
+    log.error("invalid qr generation");
+    // popup error message:
+  }
+});
+
 const downloadQr = () => {
-  const qrImage = qrsrc.value; // $refs['address-qr'].$el.src
-  const downloadLink = document.createElement("a");
-  downloadLink.href = qrImage;
-  downloadLink.download = "qrcode.png";
-  document.body.append(downloadLink);
-  downloadLink.click();
-  downloadLink.remove();
-  document.body.removeChild(downloadLink);
+  qr.download({ name: "qrcode", extension: "svg" });
 };
 </script>
 <template>
@@ -93,7 +110,7 @@ const downloadQr = () => {
                     <!-- {{ t("walletSettings.clickCopy") }} -->
                   </Button>
                 </div>
-                <Qrcode :text="props.publicAddress" :csize="256" @update:qrsrc="updateQrsrc" />
+                <img :src="qrsrc" alt="qrcode" class="p-4 m-8 bg-white" />
                 <Button class="w-fit mb-7" @click="downloadQr"> Download Qrcode</Button>
               </div>
             </div>

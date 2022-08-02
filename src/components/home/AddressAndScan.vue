@@ -59,6 +59,7 @@ const closeQr = () => {
       <span class="text-app-text-500 text-xs font-bold"> {{ t("walletHome.scanAndPay") }}</span>
     </div>
     <QrcodeDisplay
+      v-if="displayQr"
       :is-open="displayQr"
       description=""
       :public-address="selectedAddress"

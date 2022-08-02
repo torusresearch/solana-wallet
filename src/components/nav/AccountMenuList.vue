@@ -141,7 +141,14 @@ const closeQr = () => {
       }}</Button>
     </div>
   </div>
-  <QrcodeDisplay :is-open="displayQr" description="" :public-address="qrAddress" :is-dark-mode="ControllerModule.isDarkMode" @on-close="closeQr" />
+  <QrcodeDisplay
+    v-if="displayQr"
+    :is-open="displayQr"
+    description=""
+    :public-address="qrAddress"
+    :is-dark-mode="ControllerModule.isDarkMode"
+    @on-close="closeQr"
+  />
 </template>
 
 <style scoped></style>
