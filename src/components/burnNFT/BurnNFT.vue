@@ -90,9 +90,9 @@ const refDiv = ref(null);
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
                   {{ t("walletTransfer.cancel") }}
                 </Button>
-                <Button class="flex-auto mx-2 w-1/2" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">{{
-                  t("walletTransfer.confirm")
-                }}</Button>
+                <Button class="flex-auto mx-1 p-0 w-1/2 bg-red-500" :block="true" variant="primary" :disabled="transferDisabled" @click="onConfirm">
+                  Burn & Close
+                </Button>
               </div>
             </div>
           </TransitionChild>
