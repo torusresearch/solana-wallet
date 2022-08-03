@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/solid";
-import QRCode from "@solana/qr-code-styling";
+import QRCode, { Options } from "@solana/qr-code-styling";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import { CopyIcon } from "@toruslabs/vue-icons/basic";
 import log from "loglevel";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
@@ -38,9 +38,7 @@ const qrsrc = ref("");
 const copyPrivKey = () => {
   copyText(props.publicAddress || "");
 };
-
-const qr = new QRCode({
-  data: props.publicAddress,
+const qrOptions = {
   width: 256,
   height: 256,
   type: "svg",
@@ -56,6 +54,10 @@ const qr = new QRCode({
     crossOrigin: "anonymous",
     margin: 15,
   },
+} as Partial<Options>;
+const qr = new QRCode({
+  ...qrOptions,
+  data: props.publicAddress,
 });
 
 onMounted(async () => {
@@ -70,6 +72,14 @@ onMounted(async () => {
 const downloadQr = () => {
   qr.download({ name: "qrcode", extension: "svg" });
 };
+
+const publicAddress = computed(() => props.publicAddress);
+watch(publicAddress, () => {
+  qr.update({
+    ...qrOptions,
+    data: publicAddress.value,
+  });
+});
 </script>
 <template>
   <TransitionRoot appear :show="props.isOpen" as="template">
