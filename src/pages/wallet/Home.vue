@@ -90,14 +90,14 @@ const lastUpdateString = computed(() => {
             {{ t(NAVIGATION_LIST["home"].title) }}
           </h1>
           <div class="flex items-center space-x-2">
-            <AddressAndScan class="hidden md:flex" :selected-address="ControllerModule.selectedAddress" />
+            <AddressAndScan class="hidden lg:flex" :selected-address="ControllerModule.selectedAddress" />
           </div>
         </div>
       </header>
       <asyncWalletBalance :show-buttons="true" class="w-full" />
     </div>
-    <AddressAndScan class="flex md:hidden mt-3" :selected-address="ControllerModule.selectedAddress" />
-    <div class="mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
+    <AddressAndScan class="flex lg:hidden mt-3" :selected-address="ControllerModule.selectedAddress" />
+    <div class="mt-4 lg:mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
       <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">Tokens</h2>
       <asyncTokensAssetsBalance />
       <div
