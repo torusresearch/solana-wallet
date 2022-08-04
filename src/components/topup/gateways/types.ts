@@ -13,3 +13,10 @@ export type RequestObject = {
   fiat_currency: string;
   requested_amount?: string;
 };
+
+export type QuoteResponse = {
+  fee?: number;
+  rate: number;
+  cryptoAmount: number;
+  decimals: number;
+};

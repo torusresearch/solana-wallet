@@ -82,7 +82,7 @@ import stringify from "safe-stable-stringify";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import topupPlugin from "@/plugins/Topup";
+import { topupPlugin } from "@/plugins/Topup";
 import { retrieveNftOwner } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
