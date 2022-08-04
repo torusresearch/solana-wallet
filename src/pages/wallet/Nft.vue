@@ -6,8 +6,8 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
+import PaperAirplaneDark from "@/assets/airplane-white.svg";
 import FallbackNft from "@/assets/fallback-nft.svg";
-import PaperAirplane from "@/assets/paper-airplane.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
@@ -117,12 +117,12 @@ const confirmTransfer = async () => {
     await ControllerModule.torus.burnToken(mint.value);
     burnConfirmed.value = true;
     showMessageModal({
-      messageTitle: t("walletTransfer.transferSuccessTitle"),
+      messageTitle: "Your Burn Transaction is being processed",
       messageStatus: STATUS.INFO,
     });
   } catch (error) {
     showMessageModal({
-      messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
+      messageTitle: `Burn Failed: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
       messageStatus: STATUS.ERROR,
     });
   }
@@ -190,11 +190,11 @@ const confirmTransfer = async () => {
           </div>
           <div v-if="showDropDown" class="ml-auto w-1/3 absolute right-0 top-5 mt-6">
             <div
-              class="rounded-md py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white cursor-pointer send-nft mb-2"
+              class="rounded-md py-2 flex justify-center items-center bg-white dark:bg-app-gray-800 dark:shadow-none text-app-text-600 dark:text-app-text-dark-white cursor-pointer mb-2"
               @click="openModal"
               @keydown="openModal"
             >
-              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Burn & Close</span>
+              <span class="text-md">Burn & Close</span>
             </div>
           </div>
           <img
@@ -227,12 +227,12 @@ const confirmTransfer = async () => {
               {{ nftMetaData.offChainMetaData?.description || "" }}
             </p>
             <div
-              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer send-nft"
+              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 bg-white dark:bg-app-gray-800 mt-8 cursor-pointer send-nft"
               @click="transferNFT"
               @keydown="transferNFT"
             >
-              <img alt="paper airplane" :src="PaperAirplane" class="mr-1 invert md:invert-0 dark:invert-0" />
-              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Send</span>
+              <img alt="paper airplane" :src="PaperAirplaneDark" class="mr-1 invert md:invert-0 dark:invert-0" />
+              <span class="text-app-text-dark-white dark:text-app-text-dark-white text-sm">Send</span>
             </div>
             <div
               class="rounded-full py-2 px-3 w-fit flex justify-center items-center bg-app-gray-800 bg-opacity-80 md:bg-opacity-20 md:bg-white dark:bg-white dark:bg-opacity-20 mt-3 cursor-pointer"

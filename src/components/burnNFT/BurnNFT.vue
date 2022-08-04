@@ -4,7 +4,7 @@ import { NFTInfo } from "@toruslabs/solana-controllers";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import FallbackNft from "@/assets/nft.png";
+import FallbackNft from "@/assets/fallback-nft.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
@@ -78,7 +78,7 @@ const refDiv = ref(null);
               <div class="flex flex-row justify-start items-center py-6">
                 <div class="img_preview img-loader-container">
                   <img
-                    :src="getImgProxyUrl(props.token?.offChainMetaData?.image)"
+                    :src="getImgProxyUrl(props.token?.offChainMetaData?.image) || FallbackNft"
                     alt="TOKEN IMAGE"
                     class="img_preview"
                     @error="setFallbackImg($event.target, FallbackNft)"
