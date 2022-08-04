@@ -83,10 +83,8 @@ const configDetails: TopUpProvider = {
     state: { selectedAddress: string; email: string },
     params: PaymentParams,
     instanceId: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    redirectFlow?: boolean,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    redirectURL?: string
+    _redirectFlow?: boolean,
+    _redirectURL?: string
   ) => {
     const instanceState = encodeURIComponent(
       window.btoa(
