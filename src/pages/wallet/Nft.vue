@@ -117,7 +117,7 @@ const confirmTransfer = async () => {
     await ControllerModule.torus.burnToken(mint.value);
     burnConfirmed.value = true;
     showMessageModal({
-      messageTitle: "Your Burn Transaction is being processed",
+      messageTitle: "Your transactions is submitted",
       messageStatus: STATUS.INFO,
     });
   } catch (error) {
