@@ -16,6 +16,7 @@ import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
 import EstimateChanges from "../payments/EstimateChanges.vue";
+import PreviewNFT from "./PreviewNFT.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -122,25 +123,7 @@ const refDiv = ref(null);
                     @error="setFallbackImg($event.target, FallbackNft)"
                   />
                 </div>
-                <div class="flex flex-col justify-center items-start h-full w-full ml-6">
-                  <div class="flex flex-col justify-center items-start flex-auto">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftName") }}</p>
-                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.name }}</p>
-                  </div>
-                  <div class="flex flex-col justify-center items-start flex-auto py-5 w-full">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.nftSymbol") }}</p>
-                    <p class="property-value text-app-text-500 dark:text-app-text-dark-500">{{ props.token.metaplexData?.symbol }}</p>
-                  </div>
-                  <div class="flex flex-col justify-center items-start flex-auto">
-                    <p class="property-name text-app-text-600 dark:text-app-text-dark-white">{{ t("walletTransfer.viewNFT") }}</p>
-                    <a
-                      class="property-value text-app-text-500 dark:text-app-text-dark-500"
-                      :href="`https://solscan.io/token/${props.token.mintAddress}`"
-                      target="_blank"
-                      >{{ props.token.metaplexData?.name }}</a
-                    >
-                  </div>
-                </div>
+                <PreviewNFT :token="props.token" :mint-address="props.token.mintAddress" />
               </div>
               <div
                 class="border-b border-gray-700 text-app-text-500 dark:text-app-text-dark-500 text-xs font-light flex flex-row justify-start items-center pb-8 pt-2"

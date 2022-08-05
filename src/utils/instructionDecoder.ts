@@ -19,8 +19,11 @@ import {
 } from "@solana/spl-token";
 import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { SolanaToken, TokenInfoController, TokenTransferData } from "@toruslabs/solana-controllers";
+import { SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
+
+// Custom address
+const BURN_ADDRESS_INC = "1burn1nerator111111111111111111111111111111";
 
 export type DecodedDataType = {
   type: string;
@@ -319,81 +322,115 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
   return decodeUnknownInstruction(instruction);
 };
 
+// in case of transfer/ burn
 export const constructTokenData = (
   tokenPriceMap: { [mintAddress: string]: { [currency: string]: number } },
   infoState: TokenInfoController["state"],
   rawTransaction?: string,
   tokenMap: SolanaToken[] = []
-): TokenTransferData | undefined => {
-  if (!tokenMap || !rawTransaction) return undefined;
+): TokenTransactionData | undefined => {
+  try {
+    if (!tokenMap || !rawTransaction) return undefined;
 
-  // reconstruct Transaction as transaction object function is not accessible
-  const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
+    // reconstruct Transaction as transaction object function is not accessible
+    const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
 
-  // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
-  let intrestedInstructionidx = 0;
-  const instructionLength = instructions.length;
+    // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
+    let interestedTransactionInstructionidx = -1;
+    const instructionLength = instructions.length;
 
-  if (instructionLength > 1 && instructionLength <= 3) {
-    const createInstructionIdx = instructions.findIndex((inst) => {
-      if (inst.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID)) {
-        return inst.data.length === 0;
-      }
-      return false;
-    });
-    if (createInstructionIdx >= 0) {
-      const transferIdx = instructions.findIndex((inst) => {
-        if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
-          const parseInst = decodeTokenInstruction(inst);
-          return ["transfer", "transferChecked"].includes(parseInst.type);
+    if (instructionLength > 1 && instructionLength <= 3) {
+      const createInstructionIdx = instructions.findIndex((inst) => {
+        if (inst.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID)) {
+          return inst.data.length === 0;
         }
         return false;
       });
-      intrestedInstructionidx = transferIdx;
-    }
-  }
-
-  // Expect SPL token transfer transaction have only 1 instruction
-  if (instructions.length === 1 || intrestedInstructionidx > 0) {
-    if (TOKEN_PROGRAM_ID.equals(instructions[intrestedInstructionidx].programId)) {
-      const decoded = decodeTokenInstruction(instructions[intrestedInstructionidx]);
-      // There are transfer and transferChecked type
-      if (decoded.type.includes("transfer")) {
-        const from = new PublicKey(decoded.data.source || "").toBase58();
-        const to = new PublicKey(decoded.data.destination || "").toBase58();
-
-        // get token's info data from token account address
-        const tokenState =
-          tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === to) ||
-          tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === from);
-
-        // if tokenState (info) not found, assume unknown transaction
-        if (!tokenState) return undefined;
-        // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
-        let symbol = tokenState.isFungible
-          ? infoState.tokenInfoMap[tokenState.mintAddress]?.symbol
-          : infoState.metaplexMetaMap[tokenState.mintAddress]?.symbol;
-        if (!symbol) symbol = addressSlicer(tokenState.mintAddress);
-
-        const logoURI = tokenState.isFungible
-          ? infoState.tokenInfoMap[tokenState.mintAddress]?.logoURI
-          : infoState.metaplexMetaMap[tokenState.mintAddress]?.offChainMetaData?.image;
-
-        const price = tokenPriceMap[tokenState.mintAddress];
-        return {
-          tokenName: symbol,
-          amount: decoded.data.amount as number,
-          decimals: tokenState.balance?.decimals as number,
-          from: new PublicKey(decoded.data.owner || "").toBase58(),
-          to,
-          mintAddress: tokenState.mintAddress || "",
-          logoURI: logoURI || "",
-          conversionRate: price || {},
-        };
+      if (createInstructionIdx >= 0) {
+        const transferIdx = instructions.findIndex((inst) => {
+          if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
+            const parseInst = decodeTokenInstruction(inst);
+            return ["transfer", "transferChecked"].includes(parseInst.type);
+          }
+          return false;
+        });
+        interestedTransactionInstructionidx = transferIdx;
+      } else {
+        const burnIndex = instructions.findIndex((inst) => {
+          if (inst.programId.equals(TOKEN_PROGRAM_ID)) {
+            const parseInst = decodeTokenInstruction(inst);
+            return ["burn", "burnChecked"].includes(parseInst.type);
+          }
+          return false;
+        });
+        interestedTransactionInstructionidx = burnIndex;
       }
     }
+
+    // Expect SPL token transfer transaction have only 1 instruction
+    if (instructions.length === 1 || interestedTransactionInstructionidx >= 0) {
+      if (instructions.length === 1) interestedTransactionInstructionidx = 0;
+      if (TOKEN_PROGRAM_ID.equals(instructions[interestedTransactionInstructionidx].programId)) {
+        const decoded = decodeTokenInstruction(instructions[interestedTransactionInstructionidx]);
+        // There are transfer and transferChecked type
+        if (decoded.type.includes("transfer")) {
+          const from = new PublicKey(decoded.data.source || "").toBase58();
+          const to = new PublicKey(decoded.data.destination || "").toBase58();
+
+          // get token's info data from token account address
+          const tokenState =
+            tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === to) ||
+            tokenMap.find((x) => new PublicKey(x.tokenAddress).toBase58() === from);
+
+          // if tokenState (info) not found, assume unknown transaction
+          if (!tokenState) return undefined;
+          // Expect owner is signer (selectedAddress) as only signer spl transction go thru this function
+          let symbol = tokenState.isFungible
+            ? infoState.tokenInfoMap[tokenState.mintAddress]?.symbol
+            : infoState.metaplexMetaMap[tokenState.mintAddress]?.symbol;
+          if (!symbol) symbol = addressSlicer(tokenState.mintAddress);
+
+          const logoURI = tokenState.isFungible
+            ? infoState.tokenInfoMap[tokenState.mintAddress]?.logoURI
+            : infoState.metaplexMetaMap[tokenState.mintAddress]?.offChainMetaData?.image;
+
+          const price = tokenPriceMap[tokenState.mintAddress];
+          return {
+            tokenName: symbol,
+            amount: decoded.data.amount as number,
+            decimals: tokenState.balance?.decimals as number,
+            from: new PublicKey(decoded.data.owner || "").toBase58(),
+            to,
+            mintAddress: tokenState.mintAddress || "",
+            logoURI: logoURI || "",
+            conversionRate: price || {},
+          };
+        }
+        if (["burn", "burnChecked"].includes(decoded.type)) {
+          const tokenState = tokenMap.find((x) => new PublicKey(x.mintAddress).equals(decoded.data.mint as PublicKey));
+          const logoURI = infoState.metaplexMetaMap[tokenState?.mintAddress || ""]?.offChainMetaData?.image;
+
+          let symbol = infoState.metaplexMetaMap[tokenState?.mintAddress || ""]?.symbol;
+          if (!symbol) symbol = addressSlicer(tokenState?.mintAddress || "");
+          return {
+            tokenName: symbol,
+            amount: tokenState?.balance?.uiAmount || 0,
+            decimals: tokenState?.balance?.decimals as number,
+            from: new PublicKey(decoded.data.owner || "").toBase58(),
+            to: new PublicKey(BURN_ADDRESS_INC).toBase58(),
+            mintAddress: tokenState?.mintAddress || "",
+            logoURI: logoURI || "",
+            conversionRate: {},
+          };
+        }
+      }
+    }
+    return undefined;
+  } catch (err) {
+    log.error(err);
+    // didn't throw error
+    return undefined;
   }
-  return undefined;
 };
 
 // export const toObject = (objectwithBigInt: { [key: string]: any }): any => {

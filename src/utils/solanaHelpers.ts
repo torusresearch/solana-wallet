@@ -2,6 +2,8 @@ import {
   Account,
   AccountLayout,
   createAssociatedTokenAccountInstruction,
+  createBurnCheckedInstruction,
+  createCloseAccountInstruction,
   createTransferCheckedInstruction,
   getAssociatedTokenAddress,
   MINT_SIZE,
@@ -113,7 +115,7 @@ export async function generateSPLTransaction(
   const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
   if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-    const newAccount = await createAssociatedTokenAccountInstruction(
+    const newAccount = createAssociatedTokenAccountInstruction(
       new PublicKey(sender),
       associatedTokenAccount,
       receiverAccount,
@@ -135,6 +137,33 @@ export async function generateSPLTransaction(
   transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
   transaction.feePayer = new PublicKey(sender);
   return transaction;
+}
+
+export async function burnAndCloseAccount(selectedAddress: string, associatedAddress: string, mint: string, connection: Connection) {
+  const tx = new Transaction();
+
+  // signer pub key
+  const signer = new PublicKey(selectedAddress);
+  const associatedAddressPublicKey = new PublicKey(associatedAddress);
+  const mintPublickey = new PublicKey(mint);
+
+  // determine the balance and decimals of the token to burn
+  const getBalance = await connection.getTokenAccountBalance(associatedAddressPublicKey);
+  const { decimals, uiAmount } = getBalance.value;
+
+  // create the burn instruction
+  const burnInstruction = createBurnCheckedInstruction(associatedAddressPublicKey, mintPublickey, signer, (uiAmount || 0) * 10 ** decimals, decimals);
+  const closeAccountInstruction = createCloseAccountInstruction(associatedAddressPublicKey, signer, signer);
+
+  // recent block hash
+  const block = await connection.getLatestBlockhash("max");
+  tx.recentBlockhash = block.blockhash;
+  tx.feePayer = new PublicKey(selectedAddress);
+
+  // add the instructions to the transaction
+  tx.add(burnInstruction, closeAccountInstruction);
+
+  return tx;
 }
 
 // Calculte balance changes after transaction simulation
