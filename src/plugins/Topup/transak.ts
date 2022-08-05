@@ -71,7 +71,7 @@ const configDetails: TopUpProvider = {
   name: TOPUP.TRANSAK,
   description: "walletTopUp.description",
   paymentMethod: "Apple & Google Pay / Credit/Debit Card / Bangkok Bank Mobile & iPay / Bank Transfer (sepa/gbp) / SCB Mobile & Easy",
-  fee: "0.99% - 5.5% or 5 USD",
+  fee: "0.99% - 5.5% or min 1 EUR",
   limit: "$5,000/day, $28,000/mo",
   logo: (darkMode: boolean) => {
     return darkMode ? TransakLogoLight : TransakLogo;
@@ -83,7 +83,7 @@ const configDetails: TopUpProvider = {
       symbol: "sol",
     },
   ],
-  validCurrencies: ["USD", "EUR", "GBP"].map((k) => {
+  validCurrencies: ["EUR", "GBP"].map((k) => {
     return { value: k, label: k };
   }),
 
