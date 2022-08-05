@@ -162,10 +162,10 @@ endLogin();
 <template>
   <div class="min-h-screen bg-white dark:bg-app-gray-800 flex justify-center items-center">
     <Loader v-if="loading" :use-spinner="true" />
-    <div v-else>
+    <div v-else class="account_container">
       <div class="text-xl text-app-text-600 dark:text-app-text-dark-400 font-bold mb-8 text-center">{{ t("login.selectAnAccount") }}</div>
-      <div>
-        <div class="account-list overflow-y-scroll no-scrollbar">
+      <div class="flex flex-col items-center">
+        <div class="account-list overflow-y-scroll no-scrollbar break-all">
           <button
             v-for="({ app, address }, index) in accountsProps"
             :key="address"
@@ -195,8 +195,13 @@ endLogin();
 </template>
 
 <style>
+.account_container {
+  width: 480px;
+  max-width: 90%;
+}
+
 .account-list {
-  width: 420px;
+  width: 100%;
   max-height: 300px;
   /* overflow-y: auto; */
   margin: auto;
@@ -212,6 +217,7 @@ endLogin();
 .account-app {
   font-size: 14px;
 }
+
 .account-address {
   font-size: 12px;
 }
