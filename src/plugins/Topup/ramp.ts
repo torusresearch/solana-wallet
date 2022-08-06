@@ -3,8 +3,8 @@ import { get } from "@toruslabs/http-helpers";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 
-import RampLogo from "@/assets/rampnetwork-logo.svg";
-import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
+// import RampLogo from "@/assets/rampnetwork-logo.svg";
+// import RampLogoLight from "@/assets/rampnetwork-logo-white.svg";
 import { QuoteApiResponse, QuoteAsset, QuoteResponse, RequestObject } from "@/components/topup/gateways/types";
 import config from "@/config";
 
@@ -49,9 +49,9 @@ const configDetails: TopUpProvider = {
   paymentMethod: "Credit / Debit / Apple Pay",
   fee: "0.62% to 2.9%",
   limit: "5,000€/purchase, 20,000€/mo",
-  logo: (darkMode?: boolean) => {
-    return darkMode ? RampLogoLight : RampLogo;
-  },
+  // logo: (darkMode?: boolean) => {
+  //   return darkMode ? RampLogoLight : RampLogo;
+  // },
   validCryptocurrencies: [
     {
       value: "SOL",
@@ -121,9 +121,9 @@ const configDetails: TopUpProvider = {
     return finalUrl;
   },
 
-  getLogoUrl: (darkMode?: boolean) => {
-    return darkMode ? RampLogoLight : RampLogo;
-  },
+  // getLogoUrl: (darkMode?: boolean) => {
+  //   return darkMode ? RampLogoLight : RampLogo;
+  // },
   getQuoteOnAmount: getQuote,
   getQuoteOnCrypto: getQuote,
   getQuoteOnFiat: getQuote,

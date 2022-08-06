@@ -3,8 +3,8 @@ import { get } from "@toruslabs/http-helpers";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import log from "loglevel";
 
-import MoonpayLogo from "@/assets/moonpay-logo.svg";
-import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
+// import MoonpayLogo from "@/assets/moonpay-logo.svg";
+// import MoonpayLogoLight from "@/assets/moonpay-logo-white.svg";
 import { QuoteResponse, RequestObject } from "@/components/topup/gateways/types";
 import config from "@/config";
 
@@ -65,9 +65,9 @@ const configDetails: TopUpProvider = {
   paymentMethod: "Credit / Debit Card / Bank Transfer",
   fee: "4.5% or 5 USD",
   limit: "2,000€/day, 10,000€/mo",
-  logo: (darkMode: boolean) => {
-    return darkMode ? MoonpayLogoLight : MoonpayLogo;
-  },
+  // logo: (darkMode: boolean) => {
+  //   return darkMode ? MoonpayLogoLight : MoonpayLogo;
+  // },
   validCryptocurrencies: [
     {
       value: "SOL",
@@ -115,10 +115,10 @@ const configDetails: TopUpProvider = {
     //   return new URL(url);
   },
 
-  getLogoUrl: (darkMode?: boolean) => {
-    if (darkMode) return MoonpayLogoLight;
-    return MoonpayLogo;
-  },
+  // getLogoUrl: (darkMode?: boolean) => {
+  //   if (darkMode) return MoonpayLogoLight;
+  //   return MoonpayLogo;
+  // },
 
   getQuoteOnAmount: getQuote,
   getQuoteOnCrypto: getQuote,
