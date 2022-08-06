@@ -5,15 +5,15 @@ import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import controllerModule from "@/modules/controllers";
-import { TOPUP, TopupProvider, TopupProviders } from "@/utils/topup";
+import { activeProvider, topupPlugin } from "@/plugins/Topup";
+import { TOPUP, TopUpProvider } from "@/plugins/Topup/interface";
 import { getBrandColor } from "@/utils/whitelabel";
 
 const router = useRouter();
 
 const routeName = router.currentRoute.value.name === "walletTopUp" ? TOPUP.MOONPAY : router.currentRoute.value.name;
-const selectedProvider = ref<TopupProvider>(TopupProviders[routeName?.toString() || TOPUP.MOONPAY]);
-
-const providers = Object.values(TopupProviders);
+const selectedProvider = ref<TopUpProvider>(topupPlugin[routeName?.toString() || TOPUP.MOONPAY]);
+const providers = activeProvider.map((item) => topupPlugin[item]);
 const { t } = useI18n();
 
 watch(selectedProvider, () => {

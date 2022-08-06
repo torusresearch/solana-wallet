@@ -82,7 +82,7 @@ import stringify from "safe-stable-stringify";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
-import topupPlugin from "@/plugins/Topup";
+import { topupPlugin } from "@/plugins/Topup";
 import { retrieveNftOwner } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
@@ -98,6 +98,7 @@ import {
 } from "@/utils/enums";
 import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instructionDecoder";
+import { burnAndCloseAccount } from "@/utils/solanaHelpers";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
@@ -177,6 +178,7 @@ export const DEFAULT_STATE = {
     metaplexMetaMap: {},
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
+    unknownNFTs: [],
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -551,7 +553,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async fetchMetaPlexNft(nftMintAddress: string[]) {
-    return this.tokenInfoController.fetchMetaplexNFTs(nftMintAddress);
+    return TokenInfoController.fetchMetaplexNFTs(nftMintAddress, this.connection);
   }
 
   async fetchTokenInfo(mintAddress: string) {
@@ -627,6 +629,36 @@ export default class TorusController extends BaseController<TorusControllerConfi
       log.warn("error while submiting transaction", error);
       this.txController.setTxStatusFailed(signedTransaction.transactionMeta.id, error as Error);
       throw error;
+    }
+  }
+
+  // burn NFT
+  async burnToken(NFTtoBurn: string) {
+    try {
+      const currentTokens = this.tokens[this.selectedAddress];
+      const foundToken = currentTokens.find((x: SolanaToken) => {
+        return x.mintAddress === NFTtoBurn;
+      });
+
+      const associatedAddress = foundToken?.tokenAddress;
+      if (!associatedAddress) {
+        throw new Error("Token address not found in Token tracker state");
+      }
+
+      const tx = await burnAndCloseAccount(this.selectedAddress, associatedAddress, NFTtoBurn, this.connection);
+      const result = await this.transfer(tx);
+      log.info({ result });
+
+      // remove state optimistically
+      const newState = currentTokens.filter((x) => x.mintAddress !== NFTtoBurn);
+      this.tokensTracker.update({
+        tokens: {
+          [this.selectedAddress]: newState,
+        },
+      });
+    } catch (error) {
+      log.error(error);
+      throw new Error("Burn NFT Failed");
     }
   }
 

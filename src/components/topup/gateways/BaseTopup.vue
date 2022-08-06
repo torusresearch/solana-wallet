@@ -1,48 +1,27 @@
 <script setup lang="ts">
-import { useVuelidate, ValidationRuleWithParams } from "@vuelidate/core";
+import { significantDigits } from "@toruslabs/base-controllers";
+import { useVuelidate } from "@vuelidate/core";
 import { throttle } from "lodash-es";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
-import { TOPUP, TopupProviders } from "@/utils/topup";
+import { TopUpProvider } from "@/plugins/Topup/interface";
 import { isTopupHidden } from "@/utils/whitelabel";
 
-import { RequestObject } from "./types";
+import { QuoteResponse, RequestObject } from "./types";
 
-export type QuoteResponse = {
-  fee?: number;
-  rate: number;
-  cryptoAmount: number;
-  decimals: number;
-};
-const props = withDefaults(
-  defineProps<{
-    // getQuote: (requestObject: RequestObject) => Promise<{ feeRate: number; rate: { [currency: string]: number }; decimals: number }>;
-    getQuoteOnFiat: (requestObject: RequestObject) => Promise<QuoteResponse>;
-    getQuoteOnAmount: (requestObject: RequestObject) => Promise<QuoteResponse>;
-    getQuoteOnCrypto: (requestObject: RequestObject) => Promise<QuoteResponse>;
-    rules: {
-      amount: {
-        required: ValidationRuleWithParams;
-        minValue: ValidationRuleWithParams;
-        maxValue: ValidationRuleWithParams;
-      };
-    };
-    topupProvider: string;
-  }>(),
-  {}
-);
 const { t } = useI18n();
-const router = useRouter();
-const routeName = router.currentRoute.value.name?.toString() || TOPUP.MOONPAY;
-const selectedProvider = TopupProviders[routeName];
-const selectedCryptocurrency = ref(selectedProvider.validCryptocurrencies[0]);
-const selectedCurrency = ref(selectedProvider.validCurrencies[0]);
+
+const props = defineProps<{
+  selectedProvider: TopUpProvider;
+}>();
+
+const selectedCryptocurrency = ref(props.selectedProvider.validCryptocurrencies[0]);
+const selectedCurrency = ref(props.selectedProvider.validCurrencies[0]);
 const currency = ControllerModule.torus.currentCurrency;
 
 const cryptoCurrencyRate = ref(0);
@@ -52,7 +31,7 @@ const isLoadingQuote = ref(false);
 const sendingTopup = ref(false);
 const errorMsg = ref("");
 let decimals = 0;
-const $v = useVuelidate(props.rules, { amount });
+const $v = useVuelidate(props.selectedProvider.rules, { amount });
 
 async function refreshTransferEstimate(quote: (requestObject: RequestObject) => Promise<QuoteResponse>) {
   if ($v.value.$invalid) {
@@ -82,22 +61,22 @@ async function refreshTransferEstimate(quote: (requestObject: RequestObject) => 
 
 watch(
   selectedCryptocurrency,
-  throttle(() => refreshTransferEstimate(props.getQuoteOnCrypto), 500)
+  throttle(() => refreshTransferEstimate(props.selectedProvider.getQuoteOnCrypto), 500)
 );
 watch(
   selectedCurrency,
-  throttle(() => refreshTransferEstimate(props.getQuoteOnFiat), 500)
+  throttle(() => refreshTransferEstimate(props.selectedProvider.getQuoteOnFiat), 500)
 );
 watch(
   amount,
-  throttle(() => refreshTransferEstimate(props.getQuoteOnAmount), 500)
+  throttle(() => refreshTransferEstimate(props.selectedProvider.getQuoteOnAmount), 500)
 );
 const onTopup = async () => {
   $v.value.$touch();
   if (!$v.value.$invalid) {
     sendingTopup.value = true;
     try {
-      await ControllerModule.torus.handleTopup(props.topupProvider, {
+      await ControllerModule.torus.handleTopup(props.selectedProvider.name, {
         selectedCryptoCurrency: selectedCryptocurrency.value.symbol,
         cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (decimals || 0)),
         selectedCurrency: selectedCurrency.value.value,
@@ -111,8 +90,9 @@ const onTopup = async () => {
 };
 
 onMounted(() => {
-  selectedCurrency.value = selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || selectedProvider.validCurrencies[0];
-  refreshTransferEstimate(props.getQuoteOnCrypto);
+  selectedCurrency.value =
+    props.selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || props.selectedProvider.validCurrencies[0];
+  refreshTransferEstimate(props.selectedProvider.getQuoteOnCrypto);
 });
 </script>
 
@@ -122,31 +102,31 @@ onMounted(() => {
       <div class="py-6 px-4 space-y-6 sm:p-6">
         <div>
           <p class="mt-1 text-sm text-app-text-600 dark:text-app-text-dark-500 whitespace-pre-wrap">
-            <span class="capitalize">{{ selectedProvider.name }}</span> {{ t(selectedProvider.description) }}.
+            <span class="capitalize">{{ props.selectedProvider.name }}</span> {{ t(props.selectedProvider.description) }}.
           </p>
         </div>
 
         <div class="grid grid-cols-3">
           <div class="col-span-3 sm:col-span-1">
-            <SelectField v-model="selectedCryptocurrency" label="You buy" :items="selectedProvider.validCryptocurrencies" />
+            <SelectField v-model="selectedCryptocurrency" label="You buy" :items="props.selectedProvider.validCryptocurrencies" />
           </div>
         </div>
         <div class="grid grid-cols-3 gap-4">
           <div class="col-span-3 sm:col-span-2">
             <TextField v-model="amount" :errors="$v.amount.$errors" type="number" label="You pay" />
             <p class="text-left text-xs mt-2 text-app-text-600 dark:text-app-text-dark-500">
-              {{ `${t("walletTopUp.includesTransactionCost")} ${selectedProvider.fee}` }}<br />
+              {{ `${t("walletTopUp.includesTransactionCost")} ${props.selectedProvider.fee}` }}<br />
               <!-- {{ `${t("walletTopUp.minTransactionAmount")} 10 ${selectedCurrency.value}` }} -->
             </p>
           </div>
           <div class="col-span-3 sm:col-span-1 md:pt-6">
-            <SelectField v-model="selectedCurrency" :items="selectedProvider.validCurrencies" />
+            <SelectField v-model="selectedCurrency" :items="props.selectedProvider.validCurrencies" />
           </div>
         </div>
         <div v-if="!(isLoadingQuote || sendingTopup || errorMsg.length)" class="flex flex-col items-end mb-5">
           <div class="text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTopUp.receive") }}</div>
           <div class="text-2xl font-bold text-app-text-600 dark:text-app-text-dark-500">
-            <span id="resCryptoAmt">{{ receivingCryptoAmount }}</span> {{ selectedCryptocurrency.value }}
+            <span id="resCryptoAmt">{{ significantDigits(receivingCryptoAmount, false, 4) }}</span> {{ selectedCryptocurrency.value }}
           </div>
           <div class="text-xs font-light text-app-text-500 dark:text-app-text-dark-500">
             {{ `${t("walletTopUp.rate")}: 1 ${selectedCryptocurrency.value} = ${cryptoCurrencyRate.toFixed(4)} ${selectedCurrency.value}` }}

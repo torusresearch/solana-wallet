@@ -94,6 +94,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "Discover" */ "@/pages/wallet/Discover.vue"),
           meta: { title: "Discover", tab: "discover" },
         },
+        {
+          name: "pay",
+          path: "pay",
+          component: () => import("@/pages/wallet/Pay.vue"),
+          meta: { title: "Solana Pay", tab: "pay" },
+        },
       ],
     },
     // AUTH STATE INDEPENDENT ROUTES
@@ -220,7 +226,7 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   if (!hasInstanceId(toRoute) && hasInstanceId(fromRoute)) {
     return next({
       name: toRoute.name as RouteRecordName,
-      query: fromRoute.query,
+      query: { ...toRoute.query, instanceId: fromRoute.query.instanceId },
       hash: toRoute.hash,
       params: toRoute.params,
     });

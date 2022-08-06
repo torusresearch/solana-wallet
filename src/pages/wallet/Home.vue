@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { QrcodeIcon, RefreshIcon } from "@heroicons/vue/solid";
-import { addressSlicer } from "@toruslabs/base-controllers";
+import { RefreshIcon } from "@heroicons/vue/solid";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
 import { throttle } from "lodash-es";
 import { computed, defineAsyncComponent, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import SolanaLogoLight from "@/assets/solana-logo-light.svg";
-import WalletIcon from "@/assets/wallet.svg";
 import { Button } from "@/components/common";
+import AddressAndScan from "@/components/home/AddressAndScan.vue";
 import ImportToken from "@/components/home/ImportToken.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
-import { copyText } from "@/utils/helpers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const asyncWalletBalance = defineAsyncComponent({
@@ -93,27 +90,14 @@ const lastUpdateString = computed(() => {
             {{ t(NAVIGATION_LIST["home"].title) }}
           </h1>
           <div class="flex items-center space-x-2">
-            <div
-              v-ga="HomePageInteractions.COPY_PUB"
-              class="bg-white border dark:border-0 dark:bg-app-gray-700 flex space-x-2 py-1 px-2 rounded-full cursor-pointer items-center"
-              @click="copyText(ControllerModule.torus.selectedAddress)"
-              @keydown="copyText(ControllerModule.torus.selectedAddress)"
-            >
-              <img alt="solana logo" class="w-3 h-3" :src="SolanaLogoLight" />
-              <img alt="wallet icon" class="w-3 h-3" :src="WalletIcon" />
-              <span class="text-app-text-500 text-xs font-bold">{{ addressSlicer(ControllerModule.torus.selectedAddress) }}</span>
-            </div>
-            <div
-              class="rounded-full border dark:border-0 w-6 h-6 flex items-center bg-white dark:bg-app-gray-700 text-app-text-500 justify-center cursor-pointer"
-            >
-              <QrcodeIcon class="w-4 h-4" />
-            </div>
+            <AddressAndScan class="hidden lg:flex" :selected-address="ControllerModule.selectedAddress" />
           </div>
         </div>
       </header>
       <asyncWalletBalance :show-buttons="true" class="w-full" />
     </div>
-    <div class="mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
+    <AddressAndScan class="flex lg:hidden mt-3" :selected-address="ControllerModule.selectedAddress" />
+    <div class="mt-4 lg:mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
       <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">Tokens</h2>
       <asyncTokensAssetsBalance />
       <div

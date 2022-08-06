@@ -25,6 +25,7 @@ export enum HomePageInteractions {
   REFRESH = "home page - refresh tokens",
   SPL_TOKENS = "home page - spl token",
   IMPORT_TOKENS = "home page - import tokens",
+  SOLANA_PAY = "home page - solana pay",
 }
 
 export enum TransferPageInteractions {
