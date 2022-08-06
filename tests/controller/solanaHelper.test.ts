@@ -1,4 +1,5 @@
-import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import assert from "assert";
 
@@ -98,13 +99,33 @@ describe("solana helper util", () => {
       mockGetConnection()
     );
     assert.deepEqual(result.feePayer, sKeyPair[0].publicKey);
+    const associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(mockNFTs[0].mintAddress), sKeyPair[1].publicKey, false);
+
+    const associatedTokenResult = await solanaHelper.generateSPLTransaction(
+      associatedTokenAccount.toBase58(),
+      1,
+      mockNFTs[0],
+      sKeyPair[0].publicKey.toBase58(),
+      mockGetConnection()
+    );
+    assert.deepEqual(result.instructions[0].keys[2].pubkey.toBase58(), sKeyPair[1].publicKey.toBase58());
+
+    assert.deepEqual(associatedTokenResult.instructions[0].keys[2].pubkey.toBase58(), associatedTokenAccount.toBase58());
+    // changes in instruction between associated token account and normal sol account
+    assert.notDeepEqual(JSON.stringify(associatedTokenResult), JSON.stringify(result));
   });
   it("decodeAllInstruction", async () => {
-    const message = [
-      "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c020000002c4a970200000000",
-      "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c0200000057cf140500000000",
-    ];
-    const result = await solanaHelper.decodeAllInstruction(message, true);
-    assert.deepEqual(result.length, 2);
+    const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
+    const txs = [1, 2].map(() => tx.add(transferInstruction()));
+    const msgs = txs.map((item) => item.serialize({ requireAllSignatures: false }).toString("hex"));
+
+    // const message = [
+    //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c020000002c4a970200000000",
+    //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c0200000057cf140500000000",
+    // ];
+    const result = await solanaHelper.decodeAllInstruction(msgs, false);
+    // console.log(result);
+    // console.log({ result: JSON.stringify(result) });
+    assert.deepEqual(result.length, 4);
   });
 });

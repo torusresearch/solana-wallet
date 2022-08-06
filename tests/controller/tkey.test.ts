@@ -23,7 +23,7 @@ describe("tkey utils", () => {
   const storageLayer = new TorusStorageLayer({ hostUrl: "https://solana-openlogin-state.tor.us" });
   const ecc_privateKey = eccrypto.generatePrivate();
   //   const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
-  beforeEach(() => {
+  beforeEach(async () => {
     nockRequest();
   });
   afterEach(() => {
@@ -48,8 +48,8 @@ describe("tkey utils", () => {
   });
   it("setMetadata", async () => {
     const result = await storageLayer.setMetadata({
-      privKey: new BN(ecc_privateKey),
       input: openloginFaker[0],
+      privKey: new BN(ecc_privateKey),
     });
     assert.deepEqual(result, { message: "", success: true });
   });

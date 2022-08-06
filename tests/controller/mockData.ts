@@ -3,6 +3,9 @@ import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import base58 from "bs58";
 import { ec as EC } from "elliptic";
 
+import { getPubKeyECC } from "@/utils/tkey/base";
+import * as tkey from "@/utils/tkey/utils";
+
 export const OffChainMetaplexUri = "https://metaplex.data";
 
 const ec = new EC("secp256k1");
@@ -77,6 +80,17 @@ export const openloginFaker = [
     accounts: [],
   },
 ];
+const pubKey = getPubKeyECC(secp256[0].getPrivate());
+const msg = Buffer.from(JSON.stringify(openloginFaker[0]), "utf-8");
+export const openLoginGetResponse = async () => {
+  const encryptMsg = await tkey.encrypt(pubKey, msg);
+  return {
+    ciphertext: Buffer.from(encryptMsg.ciphertext, "hex"),
+    ephemPublicKey: Buffer.from(encryptMsg.ephemPublicKey, "hex"),
+    iv: Buffer.from(encryptMsg.iv, "hex"),
+    mac: Buffer.from(encryptMsg.mac, "hex"),
+  };
+};
 
 // verify: {
 //   public_address: sKeyPair[0].publicKey.toBase58(),
@@ -149,51 +163,6 @@ export const mockData = {
             mint_address: "",
           },
         ],
-        displayActivities: {
-          EKRG4kVcmKmrzFmq4bpbRqbiQGiXFoYUryLyrVx4JKYSgzuCS3N7fnNMenuVnSV1Ent2rqnJtPWH5c98GBeiGjp: {
-            action: "walletActivity.unknown",
-            status: "submitted",
-            id: 1847,
-            from: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
-            to: "unknown-unknown-unknown-unknown-",
-            rawDate: "2022-05-26T19:59:39.000Z",
-            updatedAt: 1653595179000,
-            blockExplorerUrl:
-              "https://explorer.solana.com/tx/EKRG4kVcmKmrzFmq4bpbRqbiQGiXFoYUryLyrVx4JKYSgzuCS3N7fnNMenuVnSV1Ent2rqnJtPWH5c98GBeiGjp/?cluster=mainnet",
-            network: "mainnet",
-            chainId: "0x1",
-            signature: "EKRG4kVcmKmrzFmq4bpbRqbiQGiXFoYUryLyrVx4JKYSgzuCS3N7fnNMenuVnSV1Ent2rqnJtPWH5c98GBeiGjp",
-            fee: null,
-            type: "unknown",
-            decimal: 9,
-            logoURI: "",
-            mintAddress: "",
-          },
-          "3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D": {
-            slot: "140530275",
-            status: "finalized",
-            updatedAt: 1657162954000,
-            signature: "3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D",
-            txReceipt: "3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D",
-            blockExplorerUrl:
-              "https://explorer.solana.com/tx/3iQgERPHrcn3rqZK9LUtUf9eM3ancT3tFZHP5ZSNS6G1T1YN4b7NhNPN2u4m721QHEWRGoT15FLybfTFgz2p1Q3D/?cluster=mainnet",
-            chainId: "0x1",
-            network: "mainnet",
-            rawDate: "2022-07-07T03:02:34.000Z",
-            action: "walletActivity.send",
-            type: "transferChecked",
-            decimal: 0,
-            from: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
-            to: "CdkkYiLZs5iet9VDEcevuM4T8WhCUuL7Vy7dPUmL9WQg",
-            cryptoAmount: "1",
-            cryptoCurrency: "-",
-            fee: 5000,
-            send: true,
-            totalAmountString: "1.0000",
-            logoURI: "",
-            mintAddress: "ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
-          },
-        },
         contacts: [
           {
             id: 46,
