@@ -15,7 +15,7 @@ export interface TopUpProvider {
   paymentMethod: string;
   fee: string;
   limit: string;
-  logo?: (darkMode: boolean) => string;
+  logo: (darkMode: boolean) => string;
   validCryptocurrencies: { value: string; label: string; symbol: string }[];
   validCurrencies: { value: string; label: string }[];
 
@@ -26,7 +26,7 @@ export interface TopUpProvider {
     redirectFlow?: boolean,
     redirectURL?: string
   ) => Promise<URL>;
-  getLogoUrl?: (darkMode?: boolean) => string;
+  getLogoUrl: (darkMode?: boolean) => string;
 
   getQuoteOnFiat: (requestObject: RequestObject) => Promise<QuoteResponse>;
   getQuoteOnAmount: (requestObject: RequestObject) => Promise<QuoteResponse>;
