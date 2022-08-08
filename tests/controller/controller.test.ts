@@ -55,6 +55,7 @@ describe("TorusController", () => {
     // Stubing Openlogin
     sandbox.stub(config, "baseUrl").get(() => "http://localhost:8080/");
     sandbox.stub(config, "baseRoute").get(() => "http://localhost:8080/");
+    sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
       log.error("sinon stub working");
       return mockData.openLoginHandler;
@@ -65,7 +66,6 @@ describe("TorusController", () => {
       return popupResult;
     });
     // add sinon method stubs & spies on Controllers and TorusController
-    sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
     // spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
     spyTokenInfo = sandbox.spy(TokenInfoController.prototype, "updateMetadata");
