@@ -3,6 +3,7 @@ import type { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
+  ACTIVITY_ACTION_TOPUP,
   addressSlicer,
   BasePopupChannelData,
   BillboardEvent,
@@ -36,6 +37,8 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
+import { topupPlugin } from "@/plugins/Topup";
+import { TOPUP } from "@/plugins/Topup/interface";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
@@ -118,6 +121,15 @@ class ControllerModule extends VuexModule {
         return {
           ...item,
           cryptoCurrency: addressSlicer(item.mintAddress),
+        };
+      }
+      // Top up
+      if (item.action === ACTIVITY_ACTION_TOPUP) {
+        let provider = item.from?.toLowerCase() || TOPUP.MOONPAY;
+        if (provider === "ramp") provider = TOPUP.RAMPNETWORK;
+        return {
+          ...item,
+          logoURI: topupPlugin[provider].getLogoUrl(this.isDarkMode),
         };
       }
       return item;
