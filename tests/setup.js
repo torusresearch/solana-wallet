@@ -6,21 +6,19 @@ require("jsdom-global")("", {
   url: "https://solana.tor.us",
 });
 
-const tsConfigPath = path.resolve(".", "tsconfig.json");
+require.extensions[".svg"]= (m, fileName)=> {
+  console.log(fileName)
+  return fileName
+}
 
+const tsConfigPath = path.resolve(".", "tsconfig.json");
 require("ts-node").register({
   project: tsConfigPath,
-  require: ["tsconfig-paths/register"],
+  require: [ "tsconfig-paths/register"],
   transpileOnly: true,
   compilerOptions: { module: "commonjs" },
 });
 
-const register = require("@babel/register").default;
-
-register({
-  extensions: [".ts", ".js"],
-  rootMode: "upward",
-});
 
 global.fetch = fetch;
 global.Headers = fetch.Headers;
