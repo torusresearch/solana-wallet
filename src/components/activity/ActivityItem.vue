@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_UNSUCCESSFUL } from "@toruslabs/base-controllers";
+import { ACTIVITY_ACTION_TOPUP, ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_UNSUCCESSFUL } from "@toruslabs/base-controllers";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import dateFormat from "dateformat";
 import { computed } from "vue";
@@ -14,9 +14,6 @@ const props = defineProps<{
   activity: SolanaTransactionActivity;
 }>();
 
-// const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
-// const showDetails = ref(false);
-
 const { t } = useI18n();
 
 const openExplorerLink = (link: string) => {
@@ -25,10 +22,11 @@ const openExplorerLink = (link: string) => {
 };
 const toggleDetails = (link: string) => {
   // showDetails.value = !showDetails.value;
-  openExplorerLink(link);
+  if (link) openExplorerLink(link);
 };
 const getTxStatusColor = (status: string): string => {
-  if (status === ACTIVITY_STATUS_SUCCESSFUL) return "#9BE8C7";
+  // if (status === ACTIVITY_STATUS_SUCCESSFUL) return "#9BE8C7";
+  if (["finalized", "confirmed"].includes(status)) return "#9BE8C7";
   if (status === ACTIVITY_STATUS_UNSUCCESSFUL || status === ACTIVITY_STATUS_CANCELLED) return "#FEA29F";
   return "#E0E0E0";
 };
@@ -95,6 +93,10 @@ const amountIsVisible = computed(() => {
             <div v-if="activity.cryptoCurrency === 'SOL'" class="text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
               {{ activity.send ? activity.to : activity.from }}
             </div>
+          </div>
+
+          <div v-if="activity.action === ACTIVITY_ACTION_TOPUP" class="text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
+            Topup {{ activity.cryptoAmount }} {{ activity.cryptoCurrency }} from {{ activity.from }}
           </div>
           <div
             v-if="
