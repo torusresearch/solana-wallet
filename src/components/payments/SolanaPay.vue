@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createTransaction, ParsedURL, parseURL } from "@solana/pay";
+import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
@@ -25,7 +25,7 @@ const props = withDefaults(
 );
 const invalidLink = ref("");
 const transaction = ref<Transaction>();
-const requestParams = ref<ParsedURL>();
+const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
 const emits = defineEmits(["onApproved", "onCloseModal"]);
@@ -82,17 +82,16 @@ onMounted(async () => {
       invalidLink.value = "Invalid Link";
     } else if (isUrl(requestLink)) {
       // request link is an url. fetch transaction from url
-      const targetLink = requestLink.slice("solana:".length);
-      const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress, ControllerModule.connection);
+      const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
 
       log.info(result);
       transaction.value = result.transaction;
       linkParams.value = {
         icon: result.icon,
         label: result.label,
-        origin: targetLink,
+        origin: result.link.origin,
         decodedInst: result.decodedInst,
-        message: result.message,
+        message: result.message || "",
       };
     } else {
       // check for publickey format, redirect to transfer page
@@ -108,7 +107,8 @@ onMounted(async () => {
       } catch (e) {}
 
       // parse solanapay format
-      const result = parseURL(requestLink);
+      const result = parseURL(requestLink) as TransferRequestURL;
+
       const { recipient, splToken, reference, memo, amount, message } = result;
 
       // redirect to transfer page if amount is not available
@@ -128,7 +128,9 @@ onMounted(async () => {
       }
 
       // create transaction based on the solanapay format
-      const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
+      const tx = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
+        recipient,
+        amount,
         splToken,
         reference,
         memo,
