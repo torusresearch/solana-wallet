@@ -3,13 +3,17 @@
 import { Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import QrScanner from "qr-scanner";
-import { onMounted, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
+import MessageModal from "@/components/common/MessageModal.vue";
 import FullDivLoader from "@/components/FullDivLoader.vue";
 import SolanaPay from "@/components/payments/SolanaPay.vue";
 import controllerModule from "@/modules/controllers";
+import { STATUS, STATUS_TYPE } from "@/utils/enums";
 
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const requestLink = ref("");
@@ -18,6 +22,33 @@ const errMessage = ref("");
 const loading = ref(true);
 
 let scanner: QrScanner;
+const messageModalState = reactive({
+  showMessage: false,
+  messageTitle: "",
+  messageDescription: "",
+  messageStatus: STATUS.INFO as STATUS_TYPE,
+});
+
+const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
+  const { messageDescription, messageTitle, messageStatus } = params;
+  messageModalState.messageDescription = messageDescription || "";
+  messageModalState.messageTitle = messageTitle;
+  messageModalState.messageStatus = messageStatus;
+  messageModalState.showMessage = true;
+};
+
+const onMessageModalClosed = () => {
+  messageModalState.showMessage = false;
+  messageModalState.messageDescription = "";
+  messageModalState.messageTitle = "";
+  // messageModalState.messageStatus = STATUS.INFO;
+  if (messageModalState.messageStatus === STATUS.ERROR) {
+    router.push("/wallet/home");
+  } else {
+    router.push("/wallet/activity");
+  }
+};
+
 watch(
   route,
   () => {
@@ -74,23 +105,40 @@ const onApproved = async (tx: Transaction) => {
   try {
     await controllerModule.torus.transfer(tx);
     scanner.destroy();
+    showMessageModal({
+      messageTitle: t("walletTransfer.transferSuccessTitle"),
+      messageStatus: STATUS.INFO,
+    });
     // redirect to transaction page
-    router.push("/wallet/activity");
+    // router.push("/wallet/activity");
   } catch (e) {
     log.error(e);
     // show error message
-    requestLink.value = "";
+    // requestLink.value = "";
+    showMessageModal({
+      messageTitle: `${t("walletTransfer.submitFailed")}: ${(e as Error)?.message || t("walletSettings.somethingWrong")}`,
+      messageStatus: STATUS.ERROR,
+    });
   }
-  loading.value = false;
+  // loading.value = false;
 };
 
 const onReject = () => {
   log.info("reject");
-  rescan();
+  scanner.destroy();
+  router.push("/wallet/home");
+  // rescan();
 };
 </script>
 <template>
   <div class="qrwrapper">
+    <MessageModal
+      :is-open="messageModalState.showMessage"
+      :title="messageModalState.messageTitle"
+      :description="messageModalState.messageDescription"
+      :status="messageModalState.messageStatus"
+      @on-close="onMessageModalClosed"
+    />
     <FullDivLoader v-if="loading" class="absolute" />
     <button v-else-if="errMessage.length" @click="rescan">{{ errMessage }}</button>
     <SolanaPay
@@ -115,7 +163,7 @@ const onReject = () => {
 }
 .qrwrapper {
   position: absolute;
-  height: 100vh;
+  height: 100%;
   width: 100%;
   top: 0;
   left: 0;

@@ -39,7 +39,6 @@ const onCancel = () => {
 };
 const onConfirm = () => {
   emits("onApproved", transaction.value);
-  closeModal();
 };
 const isUrl = (UrlString: string) => {
   try {
