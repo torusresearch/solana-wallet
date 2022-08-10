@@ -99,7 +99,7 @@ watch(publicAddress, () => {
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <div class="relative inline-block w-fit sm:w-96 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md shadow">
+            <div class="relative inline-block w-fit sm:w-128 align-middle transition-all bg-white dark:bg-app-gray-700 rounded-md shadow">
               <DialogTitle as="div" class="rounded-md flex justify-center py-8 relative" tabindex="0">
                 <img
                   class="block h-4 w-auto"
@@ -120,7 +120,7 @@ watch(publicAddress, () => {
                   </Button>
                 </div>
                 <img :src="qrsrc" alt="qrcode" class="p-4 m-8 bg-white" />
-                <Button class="w-fit mb-7" @click="downloadQr"> Download Qrcode</Button>
+                <Button class="w-fit mb-7" @click="downloadQr"> Download QR Code</Button>
               </div>
             </div>
           </TransitionChild>
