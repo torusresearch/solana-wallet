@@ -1321,6 +1321,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return allTransactions;
   }
 
+  /**
+   * DISCLAIMER: This is a session management component which allows faster reloads and easier access when
+   * the user opens the wallet site. The implementation is optional and can be removed.
+   *
+   * @param saveState
+   */
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
     const ecc_privateKey = eccrypto.generatePrivate();
