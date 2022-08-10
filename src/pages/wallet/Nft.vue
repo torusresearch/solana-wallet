@@ -6,8 +6,8 @@ import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
-import PaperAirplaneDark from "@/assets/airplane-white.svg";
 import FallbackNft from "@/assets/fallback-nft.svg";
+import PaperAirplane from "@/assets/paper-airplane.svg";
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
@@ -83,6 +83,7 @@ const transferNFT = () => {
 };
 
 const openModal = async () => {
+  showDropDown.value = false;
   isOpen.value = true;
   trackUserClick(TransferPageInteractions.INITIATE);
 };
@@ -227,12 +228,12 @@ const confirmTransfer = async () => {
               {{ nftMetaData.offChainMetaData?.description || "" }}
             </p>
             <div
-              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 bg-white dark:bg-app-gray-800 mt-8 cursor-pointer send-nft"
+              class="w-full rounded-full py-2 flex justify-center items-center bg-app-primary-500 md:bg-white dark:bg-white mt-8 cursor-pointer send-nft"
               @click="transferNFT"
               @keydown="transferNFT"
             >
-              <img alt="paper airplane" :src="PaperAirplaneDark" class="mr-1 invert md:invert-0 dark:invert-0" />
-              <span class="text-app-text-dark-white dark:text-app-text-dark-white text-sm">Send</span>
+              <img alt="paper airplane" :src="PaperAirplane" class="mr-1 invert md:invert-0 dark:invert-0" />
+              <span class="text-app-text-dark-400 md:text-black dark:text-black text-sm">Send</span>
             </div>
             <div
               class="rounded-full py-2 px-3 w-fit flex justify-center items-center bg-app-gray-800 bg-opacity-80 md:bg-opacity-20 md:bg-white dark:bg-white dark:bg-opacity-20 mt-3 cursor-pointer"

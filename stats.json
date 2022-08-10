@@ -1,0 +1,107 @@
+{
+  "hash": "c0eaecdce5efdb546a6d",
+  "version": "5.70.0",
+  "time": 77,
+  "builtAt": 1660105225905,
+  "publicPath": "auto",
+  "outputPath": "/Users/gururamu/Documents/projects/solana-wallet/dist",
+  "assetsByChunkName": { "main": ["main.js"] },
+  "assets": [
+    {
+      "type": "asset",
+      "name": "main.js",
+      "size": 0,
+      "emitted": false,
+      "comparedForEmit": false,
+      "cached": true,
+      "info": { "javascriptModule": false, "minimized": true },
+      "chunkNames": ["main"],
+      "chunkIdHints": [],
+      "auxiliaryChunkNames": [],
+      "auxiliaryChunkIdHints": [],
+      "related": {},
+      "chunks": [179],
+      "auxiliaryChunks": [],
+      "isOverSizeLimit": false
+    }
+  ],
+  "chunks": [
+    {
+      "rendered": true,
+      "initial": true,
+      "entry": true,
+      "recorded": false,
+      "size": 0,
+      "sizes": {},
+      "names": ["main"],
+      "idHints": [],
+      "runtime": ["main"],
+      "files": ["main.js"],
+      "auxiliaryFiles": [],
+      "hash": "f0ce92164a074f0d95f5",
+      "childrenByOrder": {},
+      "id": 179,
+      "siblings": [],
+      "parents": [],
+      "children": [],
+      "modules": [],
+      "origins": [
+        {
+          "module": "",
+          "moduleIdentifier": "",
+          "moduleName": "",
+          "loc": "main",
+          "request": "./src"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "entrypoints": {
+    "main": {
+      "name": "main",
+      "chunks": [179],
+      "assets": [{ "name": "main.js" }],
+      "filteredAssets": 0,
+      "assetsSize": null,
+      "auxiliaryAssets": [],
+      "filteredAuxiliaryAssets": 0,
+      "auxiliaryAssetsSize": 0,
+      "children": {},
+      "childAssets": {},
+      "isOverSizeLimit": false
+    }
+  },
+  "namedChunkGroups": {
+    "main": {
+      "name": "main",
+      "chunks": [179],
+      "assets": [{ "name": "main.js" }],
+      "filteredAssets": 0,
+      "assetsSize": null,
+      "auxiliaryAssets": [],
+      "filteredAuxiliaryAssets": 0,
+      "auxiliaryAssetsSize": 0,
+      "children": {},
+      "childAssets": {},
+      "isOverSizeLimit": false
+    }
+  },
+  "errors": [
+    {
+      "loc": "main",
+      "message": "Module not found: Error: Can't resolve './src' in '/Users/gururamu/Documents/projects/solana-wallet'",
+      "details": "resolve './src' in '/Users/gururamu/Documents/projects/solana-wallet'\n  using description file: /Users/gururamu/Documents/projects/solana-wallet/package.json (relative path: .)\n    Field 'browser' doesn't contain a valid alias configuration\n    using description file: /Users/gururamu/Documents/projects/solana-wallet/package.json (relative path: ./src)\n      no extension\n        Field 'browser' doesn't contain a valid alias configuration\n        /Users/gururamu/Documents/projects/solana-wallet/src is not a file\n      .js\n        Field 'browser' doesn't contain a valid alias configuration\n        /Users/gururamu/Documents/projects/solana-wallet/src.js doesn't exist\n      .json\n        Field 'browser' doesn't contain a valid alias configuration\n        /Users/gururamu/Documents/projects/solana-wallet/src.json doesn't exist\n      .wasm\n        Field 'browser' doesn't contain a valid alias configuration\n        /Users/gururamu/Documents/projects/solana-wallet/src.wasm doesn't exist\n      as directory\n        existing directory /Users/gururamu/Documents/projects/solana-wallet/src\n          using description file: /Users/gururamu/Documents/projects/solana-wallet/package.json (relative path: ./src)\n            using path: /Users/gururamu/Documents/projects/solana-wallet/src/index\n              using description file: /Users/gururamu/Documents/projects/solana-wallet/package.json (relative path: ./src/index)\n                no extension\n                  Field 'browser' doesn't contain a valid alias configuration\n                  /Users/gururamu/Documents/projects/solana-wallet/src/index doesn't exist\n                .js\n                  Field 'browser' doesn't contain a valid alias configuration\n                  /Users/gururamu/Documents/projects/solana-wallet/src/index.js doesn't exist\n                .json\n                  Field 'browser' doesn't contain a valid alias configuration\n                  /Users/gururamu/Documents/projects/solana-wallet/src/index.json doesn't exist\n                .wasm\n                  Field 'browser' doesn't contain a valid alias configuration\n                  /Users/gururamu/Documents/projects/solana-wallet/src/index.wasm doesn't exist",
+      "stack": "ModuleNotFoundError: Module not found: Error: Can't resolve './src' in '/Users/gururamu/Documents/projects/solana-wallet'\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/Compilation.js:2015:28\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:798:13\n    at eval (eval at create (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:10:1)\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:270:22\n    at eval (eval at create (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:9:1)\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:434:22\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:116:11\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:670:25\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:855:8\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/NormalModuleFactory.js:975:5"
+    }
+  ],
+  "errorsCount": 1,
+  "warnings": [
+    {
+      "message": "configuration\nThe 'mode' option has not been set, webpack will fallback to 'production' for this value.\nSet 'mode' option to 'development' or 'production' to enable defaults for each environment.\nYou can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/",
+      "stack": "NoModeWarning: configuration\nThe 'mode' option has not been set, webpack will fallback to 'production' for this value.\nSet 'mode' option to 'development' or 'production' to enable defaults for each environment.\nYou can also set it to 'none' to disable any default behavior. Learn more: https://webpack.js.org/configuration/mode/\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/WarnNoModeSetPlugin.js:20:30\n    at Hook.eval [as call] (eval at create (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/node_modules/tapable/lib/HookCodeFactory.js:19:10), <anonymous>:21:1)\n    at Hook.CALL_DELEGATE [as _call] (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/node_modules/tapable/lib/Hook.js:14:14)\n    at Compiler.newCompilation (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/Compiler.js:1108:30)\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/Compiler.js:1153:29\n    at Hook.eval [as callAsync] (eval at create (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/node_modules/tapable/lib/HookCodeFactory.js:33:10), <anonymous>:6:1)\n    at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/node_modules/tapable/lib/Hook.js:18:14)\n    at Compiler.compile (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/Compiler.js:1148:28)\n    at /Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/Compiler.js:524:12\n    at Compiler.readRecords (/Users/gururamu/Documents/projects/solana-wallet/node_modules/webpack/lib/Compiler.js:973:5)"
+    }
+  ],
+  "warningsCount": 1,
+  "children": []
+}
