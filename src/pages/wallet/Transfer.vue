@@ -433,6 +433,7 @@ watch(
   transferTo,
   debounce(() => {
     if (/\.sol$/g.test(transferTo.value)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
+    else transferType.value = { ...ALLOWED_VERIFIERS[0] };
     snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
     transferToInternal.value = transferTo.value;
   }, 500)
