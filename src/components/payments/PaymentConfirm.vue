@@ -77,15 +77,14 @@ const totalCryptoCostString = computed(() => {
 });
 
 const totalFiatCostString = computed(() => {
-  if (props.pricePerToken) {
-    let total = props.cryptoAmount * props.pricePerToken;
-    if (!props.isGasless) total += props.cryptoTxFee * props.pricePerSol;
-    return `${significantDigits(total, false, 2)} ${props.currency}`;
+  if (props.token === "SOL") {
+    const totalCost = props.cryptoTxFee + props.cryptoAmount;
+    const total = significantDigits(totalCost * props.pricePerSol, false, 2);
+    return `${total.toString(10)} ${props.currency}`;
   }
-
-  const totalCost = new BigNumber(props.cryptoTxFee).plus(props.cryptoAmount);
-  const totalFee = significantDigits(totalCost.multipliedBy(props.pricePerSol), false, 2);
-  return `${totalFee.toString(10)} ${props.currency}`;
+  let total = props.cryptoAmount * props.pricePerToken;
+  if (!props.isGasless) total += props.cryptoTxFee * props.pricePerSol;
+  return `${significantDigits(total, false, 2)} ${props.currency}`;
 });
 
 const explorerUrl = computed(() => {

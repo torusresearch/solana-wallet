@@ -28,6 +28,7 @@ const transaction = ref<Transaction>();
 const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
+const pricePerToken = ref(0);
 const emits = defineEmits(["onApproved", "onCloseModal"]);
 const closeModal = () => {
   requestParams.value = undefined;
@@ -114,6 +115,11 @@ onMounted(async () => {
       // redirect to transfer page if amount is not available
       if (amount === undefined) {
         // redirect to transfer page
+        if (splToken) {
+          const tokenOwned = ControllerModule.torusState.TokensTrackerState.tokens;
+          if (!tokenOwned || !tokenOwned[ControllerModule.selectedAddress].find((v) => v.mintAddress === splToken.toBase58()))
+            throw new Error("sender not found");
+        }
         router.push({
           name: "walletTransfer",
           query: {
@@ -144,6 +150,8 @@ onMounted(async () => {
         else {
           symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
         }
+        pricePerToken.value =
+          ControllerModule.torusState.CurrencyControllerState.tokenPriceMap[splToken.toBase58()][ControllerModule.currentCurrency] || 0;
       }
 
       // set blockhash and feepayer
@@ -196,7 +204,7 @@ onMounted(async () => {
     :has-estimation-error="hasEstimationError"
     :price-per-sol="ControllerModule.conversionRate"
     :currency="ControllerModule.currentCurrency"
-    :price-per-token="0"
+    :price-per-token="pricePerToken"
     @transfer-confirm="onConfirm"
     @transfer-cancel="onCancel"
     @on-close-modal="onCancel"
