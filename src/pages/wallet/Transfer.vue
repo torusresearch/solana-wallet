@@ -504,6 +504,9 @@ async function onSelectTransferType() {
                 </div>
               </TextField>
             </div>
+            <div v-if="spayMessage" class="w-full">
+              <TextField :label="t('walletPay.message')" :disabled="true" :model-value="spayMessage"> </TextField>
+            </div>
             <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
               {{ t("dappTransfer.transfer") }}
             </Button>
