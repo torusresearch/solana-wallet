@@ -1,3 +1,4 @@
+import { parseURL, TransactionRequestURL } from "@solana/pay";
 import {
   Account,
   AccountLayout,
@@ -390,14 +391,15 @@ export const validateUrlTransactionSignature = (transaction: Transaction, select
 
 export const parseSolanaPayRequestLink = async (request: string, account: string, connection: Connection) => {
   log.info(request);
+  const { label, message, link } = parseURL(request) as TransactionRequestURL;
   // get link
   // return {"label":"<label>","icon":"<icon>"}
   // update label and icon on tx display
-  const getResult = await get<{ label: string; icon: string }>(request);
+  const getResult = await get<{ label: string; icon: string }>(link.toString());
   // post link
   // body {"account":"<account>"}
   // return {"transaction":"<transaction>"} (base64)
-  const postResult = await post<{ transaction: string; message?: string }>(request, { account });
+  const postResult = await post<{ transaction: string; message?: string }>(link.toString(), { account });
 
   const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
   const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
@@ -413,5 +415,5 @@ export const parseSolanaPayRequestLink = async (request: string, account: string
     validateUrlTransactionSignature(transaction, account);
   }
 
-  return { ...getResult, transaction, decodedInst, message: postResult.message || "" };
+  return { transaction, decodedInst, message: message || postResult.message, label: label || getResult.label, icon: getResult.icon, link };
 };

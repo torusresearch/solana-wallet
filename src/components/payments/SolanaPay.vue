@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createTransaction, ParsedURL, parseURL } from "@solana/pay";
+import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
@@ -25,9 +25,10 @@ const props = withDefaults(
 );
 const invalidLink = ref("");
 const transaction = ref<Transaction>();
-const requestParams = ref<ParsedURL>();
+const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
+const pricePerToken = ref(0);
 const emits = defineEmits(["onApproved", "onCloseModal"]);
 const closeModal = () => {
   requestParams.value = undefined;
@@ -82,17 +83,16 @@ onMounted(async () => {
       invalidLink.value = "Invalid Link";
     } else if (isUrl(requestLink)) {
       // request link is an url. fetch transaction from url
-      const targetLink = requestLink.slice("solana:".length);
-      const result = await parseSolanaPayRequestLink(targetLink, ControllerModule.selectedAddress, ControllerModule.connection);
+      const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
 
       log.info(result);
       transaction.value = result.transaction;
       linkParams.value = {
         icon: result.icon,
         label: result.label,
-        origin: targetLink,
+        origin: result.link.origin,
         decodedInst: result.decodedInst,
-        message: result.message,
+        message: result.message || "",
       };
     } else {
       // check for publickey format, redirect to transfer page
@@ -108,12 +108,18 @@ onMounted(async () => {
       } catch (e) {}
 
       // parse solanapay format
-      const result = parseURL(requestLink);
+      const result = parseURL(requestLink) as TransferRequestURL;
+
       const { recipient, splToken, reference, memo, amount, message } = result;
 
       // redirect to transfer page if amount is not available
       if (amount === undefined) {
         // redirect to transfer page
+        if (splToken) {
+          const tokenOwned = ControllerModule.torusState.TokensTrackerState.tokens;
+          if (!tokenOwned || !tokenOwned[ControllerModule.selectedAddress].find((v) => v.mintAddress === splToken.toBase58()))
+            throw new Error("sender not found");
+        }
         router.push({
           name: "walletTransfer",
           query: {
@@ -128,7 +134,9 @@ onMounted(async () => {
       }
 
       // create transaction based on the solanapay format
-      const tx = await createTransaction(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), recipient, amount, {
+      const tx = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
+        recipient,
+        amount,
         splToken,
         reference,
         memo,
@@ -142,6 +150,8 @@ onMounted(async () => {
         else {
           symbol.value = `${splToken.toBase58().substring(0, 5)}...`;
         }
+        pricePerToken.value =
+          ControllerModule.torusState.CurrencyControllerState.tokenPriceMap[splToken.toBase58()][ControllerModule.currentCurrency] || 0;
       }
 
       // set blockhash and feepayer
@@ -194,7 +204,7 @@ onMounted(async () => {
     :has-estimation-error="hasEstimationError"
     :price-per-sol="ControllerModule.conversionRate"
     :currency="ControllerModule.currentCurrency"
-    :price-per-token="0"
+    :price-per-token="pricePerToken"
     @transfer-confirm="onConfirm"
     @transfer-cancel="onCancel"
     @on-close-modal="onCancel"
