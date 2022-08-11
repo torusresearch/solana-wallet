@@ -26,7 +26,7 @@ import { get, post } from "@toruslabs/http-helpers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
-import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, TWITTER } from "./enums";
+import { DISCORD, GITHUB, GOOGLE, REDDIT, SNS, SOL, TWITTER } from "./enums";
 import { DecodedDataType, decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
@@ -56,6 +56,11 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
 
   if (selectedTypeOfLogin === GITHUB) {
     return /^(?!.*(-{2}))(?!^-.*$)(?!^.*-$)[\w-]{1,39}$/.test(value);
+  }
+
+  if (selectedTypeOfLogin === SNS) {
+    log.info("sns", /sol$/.test(value));
+    return /sol$/.test(value);
   }
 
   return true;
