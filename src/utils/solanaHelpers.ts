@@ -26,7 +26,7 @@ import { get, post } from "@toruslabs/http-helpers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
-import { DISCORD, GITHUB, GOOGLE, REDDIT, SNS, SOL, TWITTER } from "./enums";
+import { SNS, SOL } from "./enums";
 import { DecodedDataType, decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
@@ -40,26 +40,26 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
     }
   }
 
-  if (selectedTypeOfLogin === GOOGLE) {
-    return /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\dA-Za-z-]+\.)+[A-Za-z]{2,}))$/.test(value);
-  }
-  if (selectedTypeOfLogin === REDDIT) {
-    return /^[\w-]+$/.test(value) && !/\s/.test(value) && value.length >= 3 && value.length <= 20;
-  }
-  if (selectedTypeOfLogin === DISCORD) {
-    return /^\d*$/.test(value) && value.length === 18;
-  }
+  // we don't suppport key lookups for oauth ids on solana
+  // if (selectedTypeOfLogin === GOOGLE) {
+  //   return /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\dA-Za-z-]+\.)+[A-Za-z]{2,}))$/.test(value);
+  // }
+  // if (selectedTypeOfLogin === REDDIT) {
+  //   return /^[\w-]+$/.test(value) && !/\s/.test(value) && value.length >= 3 && value.length <= 20;
+  // }
+  // if (selectedTypeOfLogin === DISCORD) {
+  //   return /^\d*$/.test(value) && value.length === 18;
+  // }
 
-  if (selectedTypeOfLogin === TWITTER) {
-    return /^@?(\w){1,15}$/.test(value);
-  }
+  // if (selectedTypeOfLogin === TWITTER) {
+  //   return /^@?(\w){1,15}$/.test(value);
+  // }
 
-  if (selectedTypeOfLogin === GITHUB) {
-    return /^(?!.*(-{2}))(?!^-.*$)(?!^.*-$)[\w-]{1,39}$/.test(value);
-  }
+  // if (selectedTypeOfLogin === GITHUB) {
+  //   return /^(?!.*(-{2}))(?!^-.*$)(?!^.*-$)[\w-]{1,39}$/.test(value);
+  // }
 
   if (selectedTypeOfLogin === SNS) {
-    log.info("sns", /sol$/.test(value));
     return /sol$/.test(value);
   }
 
