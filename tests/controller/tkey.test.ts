@@ -3,7 +3,6 @@ import assert from "assert";
 import BN from "bn.js";
 import { ec as EC } from "elliptic";
 import nock from "nock";
-import sinon from "sinon";
 
 import { getPubKeyECC, toPrivKeyECC } from "@/utils/tkey/base";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
@@ -15,7 +14,6 @@ import nockRequest from "./nockRequest";
 const ec = new EC("secp256k1");
 
 describe("tkey utils", () => {
-  const sandbox = sinon.createSandbox();
   const keyPair = ec.genKeyPair({ entropy: "ad1238470128347018934701983470183478sfa" });
   const pubKey = getPubKeyECC(keyPair.getPrivate());
   const privKey = toPrivKeyECC(keyPair.getPrivate());
@@ -46,18 +44,15 @@ describe("tkey utils", () => {
     const result = await tkey.decrypt(privKey, encryptMsg);
     assert.deepEqual(result, decryptDetails);
   });
-  it("setMetadata", async () => {
+  it("setMetadata and getMetadata", async () => {
     const result = await storageLayer.setMetadata({
       input: openloginFaker[0],
       privKey: new BN(ecc_privateKey),
     });
     assert.deepEqual(result, { message: "", success: true });
-  });
-  it("getMetadata", async () => {
-    sandbox.stub(tkey, "decrypt").callsFake(async () => {
-      return Buffer.from(JSON.stringify(openloginFaker[0]));
+    const getMetadataResult: any = await storageLayer.getMetadata({
+      privKey: new BN(openloginFaker[0].privKey, "hex"),
     });
-    const result: any = await storageLayer.getMetadata({ privKey: new BN(ecc_privateKey, "hex") });
-    assert.equal(result.privKey, openloginFaker[0].privKey);
+    assert.equal(getMetadataResult.privKey, openloginFaker[0].privKey);
   });
 });

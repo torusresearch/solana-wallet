@@ -85,10 +85,10 @@ const msg = Buffer.from(JSON.stringify(openloginFaker[0]), "utf-8");
 export const openLoginGetResponse = async () => {
   const encryptMsg = await tkey.encrypt(pubKey, msg);
   return {
-    ciphertext: Buffer.from(encryptMsg.ciphertext, "hex"),
-    ephemPublicKey: Buffer.from(encryptMsg.ephemPublicKey, "hex"),
-    iv: Buffer.from(encryptMsg.iv, "hex"),
-    mac: Buffer.from(encryptMsg.mac, "hex"),
+    ciphertext: encryptMsg.ciphertext,
+    ephemPublicKey: encryptMsg.ephemPublicKey,
+    iv: encryptMsg.iv,
+    mac: encryptMsg.mac,
   };
 };
 

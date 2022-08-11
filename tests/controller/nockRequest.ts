@@ -4,16 +4,7 @@ import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 
-import {
-  mockBillBoardEvent,
-  mockDapps,
-  mockData,
-  mockTokens,
-  OffChainMetaplexUri,
-  openloginFaker,
-  openLoginGetResponse,
-  testNetTokenWWW,
-} from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, mockTokens, OffChainMetaplexUri, openLoginGetResponse, testNetTokenWWW } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -189,6 +180,6 @@ export default () => {
     .post("/get")
     .reply(200, async () => {
       const result = await openLoginGetResponse();
-      return { message: btoa(JSON.stringify({ ...openloginFaker[0], ...result })), success: true };
+      return { message: btoa(JSON.stringify(result)), success: true };
     });
 };
