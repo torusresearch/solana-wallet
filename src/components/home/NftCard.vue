@@ -38,9 +38,11 @@ function cardClicked() {
             @error="setFallbackImg($event.target, FallbackNft)"
           />
           <div v-else class="absolute top-0 left-0 overflow-hidden flex flex-col items-center">
-            <img class="h-12 mt-8 mb-3" :src="CautionIcon" alt="Warning" style="height: 48px" />
+            <img class="h-12 mt-8 mb-3" :src="CautionIcon" alt="Warning" />
             <p class="text-white text-xl font-semibold my-2">Suspicious NFT</p>
-            <p class="text-gray-500 leading-7 text-lg text-center my-2">NFTs claiming to give you any kind of free gifts are most likely scams</p>
+            <p class="text-gray-500 leading-7 text-lg hidden text-center my-2 md:block">
+              NFTs claiming to give you any kind of free gifts are most likely scams
+            </p>
             <div
               class="w-full rounded-full py-2 flex justify-center items-center text-red-500 font-medium text-lg mt-4 cursor-pointer send-nft"
               @click="showSuspiciousNFT = !showSuspiciousNFT"
