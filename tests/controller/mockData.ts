@@ -3,8 +3,7 @@ import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import base58 from "bs58";
 import { ec as EC } from "elliptic";
 
-import { getPubKeyECC } from "@/utils/tkey/base";
-import * as tkey from "@/utils/tkey/utils";
+import { TorusStorageLayerAPIParams } from "@/utils/tkey/baseTypes/commonTypes";
 
 export const OffChainMetaplexUri = "https://metaplex.data";
 
@@ -80,23 +79,9 @@ export const openloginFaker = [
     accounts: [],
   },
 ];
-const pubKey = getPubKeyECC(secp256[0].getPrivate());
-const msg = Buffer.from(JSON.stringify(openloginFaker[0]), "utf-8");
-export const openLoginGetResponse = async () => {
-  const encryptMsg = await tkey.encrypt(pubKey, msg);
-  return {
-    ciphertext: encryptMsg.ciphertext,
-    ephemPublicKey: encryptMsg.ephemPublicKey,
-    iv: encryptMsg.iv,
-    mac: encryptMsg.mac,
-  };
-};
 
-// verify: {
-//   public_address: sKeyPair[0].publicKey.toBase58(),
-//   signed_message:
-//     "e39fefbc4dc11899e26de146d194267c75ec160ec53a2b62fbc70cba0d2d62591facf1e15f67549b106af485c5cb450289829d78a6c637fd97a0f75f25b7920e",
-// },
+export const MockStorageLayer: { [pkey: string]: TorusStorageLayerAPIParams } = {};
+
 export const postTransaction = [
   {
     success: true,

@@ -3,8 +3,9 @@ import log from "loglevel";
 import nock from "nock";
 
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
+import { TorusStorageLayerAPIParams } from "@/utils/tkey/baseTypes/commonTypes";
 
-import { mockBillBoardEvent, mockDapps, mockData, mockTokens, OffChainMetaplexUri, openLoginGetResponse, testNetTokenWWW } from "./mockData";
+import { mockBillBoardEvent, mockDapps, mockData, MockStorageLayer, mockTokens, OffChainMetaplexUri, testNetTokenWWW } from "./mockData";
 
 export default () => {
   nock.cleanAll();
@@ -160,6 +161,7 @@ export default () => {
       throw new Error(`Unimplemented mock devnet rpc method ${body.method}`);
     });
 
+  // Open login
   nock("https://solana-openlogin-state.tor.us")
     .persist()
     .defaultReplyHeaders({
@@ -167,7 +169,10 @@ export default () => {
       "access-control-allow-credentials": "true",
     })
     .post("/set")
-    .reply(200, () => {
+    .reply(200, (_uri, body) => {
+      const data = body as TorusStorageLayerAPIParams;
+      const pointer = `${data.pub_key_X}:${data.pub_key_Y}`;
+      MockStorageLayer[pointer] = data;
       return { message: "", success: true };
     });
 
@@ -178,8 +183,10 @@ export default () => {
       "access-control-allow-credentials": "true",
     })
     .post("/get")
-    .reply(200, async () => {
-      const result = await openLoginGetResponse();
-      return { message: btoa(JSON.stringify(result)), success: true };
+    .reply(200, async (_uri, body) => {
+      const data = body as TorusStorageLayerAPIParams;
+      const pointer = `${data.pub_key_X}:${data.pub_key_Y}`;
+      const result = MockStorageLayer[pointer];
+      return { message: (result.set_data as { data: string; timestamp: string }).data, success: true };
     });
 };

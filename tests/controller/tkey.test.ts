@@ -51,7 +51,7 @@ describe("tkey utils", () => {
     });
     assert.deepEqual(result, { message: "", success: true });
     const getMetadataResult: any = await storageLayer.getMetadata({
-      privKey: new BN(openloginFaker[0].privKey, "hex"),
+      privKey: new BN(ecc_privateKey),
     });
     assert.equal(getMetadataResult.privKey, openloginFaker[0].privKey);
   });
