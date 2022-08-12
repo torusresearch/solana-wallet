@@ -33,8 +33,9 @@ const getTxStatusColor = (status: string): string => {
   return "#E0E0E0";
 };
 
+const allNFTInstuctions = ["transfer", "transferChecked", "burn", "burnChecked"];
 const amountIsVisible = computed(() => {
-  return ["transfer", "transferChecked", "burn", "burnChecked"].includes(props.activity.type);
+  return allNFTInstuctions.includes(props.activity.type);
 });
 </script>
 <template>
@@ -70,7 +71,7 @@ const amountIsVisible = computed(() => {
             {{ t("walletActivity.unknown") }}
           </div>
           <!-- Transfer Instruction -->
-          <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
+          <div v-if="['transfer', 'transferChecked'].includes(activity.type)">
             <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
               {{ activity.send ? t("walletActivity.sent") : t("walletActivity.received") }} {{ " " }} {{ Number(activity.totalAmountString) }}
               {{ activity.cryptoCurrency }}
@@ -96,12 +97,7 @@ const amountIsVisible = computed(() => {
               {{ activity.send ? activity.to : activity.from }}
             </div>
           </div>
-          <div
-            v-if="
-              !(activity.type === 'transfer' || activity.type === 'transferChecked' || activity.type === 'burn' || activity.type === 'burnChecked')
-            "
-            class="text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all"
-          >
+          <div v-if="!allNFTInstuctions.includes(activity.type)" class="text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">
             {{ activity.signature }}
           </div>
         </div>
