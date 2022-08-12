@@ -1361,11 +1361,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
-      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const sessionKey = window.sessionStorage?.getItem(`${EPHERMAL_KEY}`);
       const value = sessionKey || localKey;
 
       // Saving to SessionStorage - user refresh with restored key
-      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
+      if (!sessionKey && value) window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
