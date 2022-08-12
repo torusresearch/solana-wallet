@@ -33,8 +33,9 @@ const getTxStatusColor = (status: string): string => {
   return "#E0E0E0";
 };
 
+const allNFTInstuctions = ["transfer", "transferChecked", "burn", "burnChecked"];
 const amountIsVisible = computed(() => {
-  return props.activity.type === "transfer" || props.activity.type === "transferChecked";
+  return allNFTInstuctions.includes(props.activity.type);
 });
 </script>
 <template>
@@ -69,7 +70,8 @@ const amountIsVisible = computed(() => {
           <div v-if="activity.type === 'unknown'" class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
             {{ t("walletActivity.unknown") }}
           </div>
-          <div v-if="activity.type === 'transfer' || activity.type === 'transferChecked'">
+          <!-- Transfer Instruction -->
+          <div v-if="['transfer', 'transferChecked'].includes(activity.type)">
             <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
               {{ activity.send ? t("walletActivity.sent") : t("walletActivity.received") }} {{ " " }} {{ Number(activity.totalAmountString) }}
               {{ activity.cryptoCurrency }}
@@ -82,10 +84,20 @@ const amountIsVisible = computed(() => {
               {{ activity.send ? activity.to : activity.from }}
             </div>
           </div>
-          <div
-            v-if="!(activity.type === 'transfer' || activity.type === 'transferChecked')"
-            class="text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all"
-          >
+          <!-- Burn Instruction -->
+          <div v-if="['burn', 'burnChecked'].includes(activity.type)">
+            <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600">
+              Burnt {{ Number(activity.totalAmountString) }} {{ activity.cryptoCurrency }}
+
+              <span v-if="activity.cryptoCurrency === 'SOL'" class="text-xxs text-app-text-400 dark:text-app-text-dark-600"
+                >{{ activity.send ? t("walletActivity.to") : t("walletActivity.from") }} {{ " " }}</span
+              >
+            </div>
+            <div v-if="activity.cryptoCurrency === 'SOL'" class="text-xs text-app-text-400 dark:text-app-text-dark-600 break-words">
+              {{ activity.send ? activity.to : activity.from }}
+            </div>
+          </div>
+          <div v-if="!allNFTInstuctions.includes(activity.type)" class="text-xxs text-app-text-400 dark:text-app-text-dark-600 break-all">
             {{ activity.signature }}
           </div>
         </div>
@@ -98,6 +110,8 @@ const amountIsVisible = computed(() => {
     >
       <div>
         <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-500">
+          <!-- if Burnt show minus sign -->
+          {{ ["burn", "burnChecked"].includes(activity.type) ? "-" : "" }}
           {{ Number(activity.totalAmountString) }}
         </div>
         <div class="text-xxs text-app-text-400 dark:text-app-text-dark-600">

@@ -4,7 +4,8 @@ import { TrashIcon } from "@toruslabs/vue-icons/basic";
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
-import { computed, reactive, ref } from "vue";
+import { debounce } from "lodash-es";
+import { computed, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button, SelectField, TextField } from "@/components/common";
@@ -114,6 +115,16 @@ const onSave = () => {
 const onDelete = (contactId: number) => {
   emits("deleteContact", contactId);
 };
+
+watch(
+  () => newContactState.address,
+  debounce((newAddress, preAddress) => {
+    if (newAddress !== preAddress) {
+      if (/\.sol$/g.test(newAddress)) newContactState.transferType = { ...ALLOWED_VERIFIERS[1] };
+      else newContactState.transferType = { ...ALLOWED_VERIFIERS[0] };
+    }
+  }, 400)
+);
 </script>
 <template>
   <div class="py-4">

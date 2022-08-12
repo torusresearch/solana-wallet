@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { createTransfer } from "@solana/pay";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
+import { BigNumber } from "bignumber.js";
 import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
@@ -68,6 +70,9 @@ const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!s
 
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
 
+const memo = ref("");
+const reference = ref<string[] | undefined>();
+const spayMessage = ref("");
 onMounted(() => {
   const { query } = route;
   // Show mint if passed
@@ -77,6 +82,22 @@ onMounted(() => {
 
     showAmountField.value = !!selectedToken.value.isFungible;
     sendAmount.value = 1;
+  }
+
+  if (query.receiverPubKey) {
+    resolvedAddress.value = query.receiverPubKey as string;
+    transferTo.value = query.receiverPubKey as string;
+    // eslint-disable-next-line prefer-destructuring
+    transferType.value = ALLOWED_VERIFIERS[0];
+  }
+  if (query.message) {
+    spayMessage.value = query.message as string;
+  }
+  if (query.memo) {
+    memo.value = query.memo as string;
+  }
+  if (query.reference) {
+    reference.value = query.reference as string[];
   }
 });
 
@@ -222,7 +243,15 @@ function convertFiatToCrypto(fiatValue = 1) {
 }
 
 const generateTransaction = async (amount: number): Promise<Transaction> => {
-  if (selectedToken?.value?.mintAddress) {
+  if (reference.value || memo.value.length > 0) {
+    transaction.value = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
+      recipient: new PublicKey(resolvedAddress.value),
+      reference: reference.value?.map((item) => new PublicKey(item)),
+      memo: memo.value,
+      splToken: selectedToken.value.mintAddress ? new PublicKey(selectedToken.value?.mintAddress) : undefined,
+      amount: new BigNumber(amount),
+    });
+  } else if (selectedToken?.value?.mintAddress) {
     // SPL TRANSFER
     transaction.value = await generateSPLTransaction(
       resolvedAddress.value,
@@ -295,13 +324,21 @@ const openModal = async () => {
   // This can't be guarantee
 
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
-  transaction.value = await generateTransaction(amount);
-  estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
-  const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
-  blockhash.value = blockHash;
-  lastValidBlockHeight.value = height;
-  transactionFee.value = fee / LAMPORTS_PER_SOL;
-  transferDisabled.value = false;
+  try {
+    transaction.value = await generateTransaction(amount);
+    estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
+    const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
+    blockhash.value = blockHash;
+    lastValidBlockHeight.value = height;
+    transactionFee.value = fee / LAMPORTS_PER_SOL;
+    transferDisabled.value = false;
+  } catch (e) {
+    // Error occur
+    log.error(e);
+    closeModal();
+    const err = e as Error;
+    showMessageModal({ messageTitle: err.name, messageDescription: err.message, messageStatus: STATUS.ERROR });
+  }
 };
 
 const confirmTransfer = async () => {
@@ -396,6 +433,7 @@ watch(
   transferTo,
   debounce(() => {
     if (/\.sol$/g.test(transferTo.value)) transferType.value = { ...ALLOWED_VERIFIERS[1] };
+    else transferType.value = { ...ALLOWED_VERIFIERS[0] };
     snsAddressPromise = addressPromise(transferType.value.value, transferTo.value);
     transferToInternal.value = transferTo.value;
   }, 500)
@@ -466,6 +504,9 @@ async function onSelectTransferType() {
                   </div>
                 </div>
               </TextField>
+            </div>
+            <div v-if="spayMessage" class="w-full">
+              <TextField :label="t('walletPay.message')" :disabled="true" :model-value="spayMessage"> </TextField>
             </div>
             <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
               {{ t("dappTransfer.transfer") }}

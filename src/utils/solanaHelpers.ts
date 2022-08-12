@@ -1,7 +1,10 @@
+import { parseURL, TransactionRequestURL } from "@solana/pay";
 import {
   Account,
   AccountLayout,
   createAssociatedTokenAccountInstruction,
+  createBurnCheckedInstruction,
+  createCloseAccountInstruction,
   createTransferCheckedInstruction,
   getAssociatedTokenAddress,
   MINT_SIZE,
@@ -20,10 +23,11 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
+import { get, post } from "@toruslabs/http-helpers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
-import { DISCORD, GITHUB, GOOGLE, REDDIT, SOL, TWITTER } from "./enums";
+import { SNS, SOL } from "./enums";
 import { DecodedDataType, decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
@@ -37,22 +41,27 @@ export function ruleVerifierId(selectedTypeOfLogin: string, value: string): bool
     }
   }
 
-  if (selectedTypeOfLogin === GOOGLE) {
-    return /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\dA-Za-z-]+\.)+[A-Za-z]{2,}))$/.test(value);
-  }
-  if (selectedTypeOfLogin === REDDIT) {
-    return /^[\w-]+$/.test(value) && !/\s/.test(value) && value.length >= 3 && value.length <= 20;
-  }
-  if (selectedTypeOfLogin === DISCORD) {
-    return /^\d*$/.test(value) && value.length === 18;
-  }
+  // we don't suppport key lookups for oauth ids on solana
+  // if (selectedTypeOfLogin === GOOGLE) {
+  //   return /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\dA-Za-z-]+\.)+[A-Za-z]{2,}))$/.test(value);
+  // }
+  // if (selectedTypeOfLogin === REDDIT) {
+  //   return /^[\w-]+$/.test(value) && !/\s/.test(value) && value.length >= 3 && value.length <= 20;
+  // }
+  // if (selectedTypeOfLogin === DISCORD) {
+  //   return /^\d*$/.test(value) && value.length === 18;
+  // }
 
-  if (selectedTypeOfLogin === TWITTER) {
-    return /^@?(\w){1,15}$/.test(value);
-  }
+  // if (selectedTypeOfLogin === TWITTER) {
+  //   return /^@?(\w){1,15}$/.test(value);
+  // }
 
-  if (selectedTypeOfLogin === GITHUB) {
-    return /^(?!.*(-{2}))(?!^-.*$)(?!^.*-$)[\w-]{1,39}$/.test(value);
+  // if (selectedTypeOfLogin === GITHUB) {
+  //   return /^(?!.*(-{2}))(?!^-.*$)(?!^.*-$)[\w-]{1,39}$/.test(value);
+  // }
+
+  if (selectedTypeOfLogin === SNS) {
+    return /sol$/.test(value);
   }
 
   return true;
@@ -112,7 +121,7 @@ export async function generateSPLTransaction(
   const receiverAccountInfo = await connection.getAccountInfo(associatedTokenAccount);
 
   if (receiverAccountInfo?.owner?.toString() !== TOKEN_PROGRAM_ID.toString()) {
-    const newAccount = await createAssociatedTokenAccountInstruction(
+    const newAccount = createAssociatedTokenAccountInstruction(
       new PublicKey(sender),
       associatedTokenAccount,
       receiverAccount,
@@ -134,6 +143,33 @@ export async function generateSPLTransaction(
   transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
   transaction.feePayer = new PublicKey(sender);
   return transaction;
+}
+
+export async function burnAndCloseAccount(selectedAddress: string, associatedAddress: string, mint: string, connection: Connection) {
+  const tx = new Transaction();
+
+  // signer pub key
+  const signer = new PublicKey(selectedAddress);
+  const associatedAddressPublicKey = new PublicKey(associatedAddress);
+  const mintPublickey = new PublicKey(mint);
+
+  // determine the balance and decimals of the token to burn
+  const getBalance = await connection.getTokenAccountBalance(associatedAddressPublicKey);
+  const { decimals, uiAmount } = getBalance.value;
+
+  // create the burn instruction
+  const burnInstruction = createBurnCheckedInstruction(associatedAddressPublicKey, mintPublickey, signer, (uiAmount || 0) * 10 ** decimals, decimals);
+  const closeAccountInstruction = createCloseAccountInstruction(associatedAddressPublicKey, signer, signer);
+
+  // recent block hash
+  const block = await connection.getLatestBlockhash("max");
+  tx.recentBlockhash = block.blockhash;
+  tx.feePayer = new PublicKey(selectedAddress);
+
+  // add the instructions to the transaction
+  tx.add(burnInstruction, closeAccountInstruction);
+
+  return tx;
 }
 
 // Calculte balance changes after transaction simulation
@@ -346,3 +382,43 @@ export function parsingTransferAmount(tx: Transaction, txFee: number, isGasless:
 
   return finalTxData;
 }
+
+// SolanaPay
+export const validateUrlTransactionSignature = (transaction: Transaction, selectedAddress: string) => {
+  let signRequired = false;
+  transaction.signatures.forEach((sig) => {
+    if (sig.signature === null && sig.publicKey.toBase58() !== selectedAddress) throw new Error("Merchant Signature Verifcation Failed");
+    signRequired = signRequired || sig.publicKey.toBase58() === selectedAddress;
+  });
+  if (!signRequired) throw new Error("Wallet Signature Not Required");
+  transaction.serialize({ requireAllSignatures: false });
+};
+
+export const parseSolanaPayRequestLink = async (request: string, account: string, connection: Connection) => {
+  log.info(request);
+  const { label, message, link } = parseURL(request) as TransactionRequestURL;
+  // get link
+  // return {"label":"<label>","icon":"<icon>"}
+  // update label and icon on tx display
+  const getResult = await get<{ label: string; icon: string }>(link.toString());
+  // post link
+  // body {"account":"<account>"}
+  // return {"transaction":"<transaction>"} (base64)
+  const postResult = await post<{ transaction: string; message?: string }>(link.toString(), { account });
+
+  const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
+  const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
+  // assign transaction object
+
+  if (transaction.signatures.length === 0) {
+    log.info("empty signature");
+    transaction.feePayer = new PublicKey(account);
+    const block = await connection.getLatestBlockhash();
+    transaction.lastValidBlockHeight = block.lastValidBlockHeight;
+    transaction.recentBlockhash = block.blockhash;
+  } else {
+    validateUrlTransactionSignature(transaction, account);
+  }
+
+  return { transaction, decodedInst, message: message || postResult.message, label: label || getResult.label, icon: getResult.icon, link };
+};
