@@ -214,7 +214,7 @@ export function getCrisp() {
 }
 export function isCrispClosed() {
   const crisp = getCrisp();
-  if (crisp) crisp.is("chat:closed");
+  if (crisp && crisp.is) return crisp.is("chat:closed");
   return false;
 }
 export function hideCrispButton() {
