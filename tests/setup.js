@@ -8,6 +8,7 @@ require("jsdom-global")("", {
 
 global.localStorage = window.localStorage;
 global.sessionStorage = window.sessionStorage;
+global.open = window.open;
 window.Date = Date;
 
 require.extensions[".svg"]= (m, fileName)=> {

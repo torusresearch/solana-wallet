@@ -42,7 +42,6 @@ export default () => {
     .query(true)
     .reply(200, (_uri, _body) => {
       // log.error(uri);
-      // log.error(body);
       return JSON.stringify(mockData.coingekco["usd-coin"]);
     });
 
@@ -52,7 +51,7 @@ export default () => {
     .delay(100)
     .query(true)
     .reply(200, (_uri) => {
-      log.info(_uri);
+      log.error(_uri);
       return JSON.stringify(mockData.backend.user);
     });
 
@@ -65,6 +64,10 @@ export default () => {
   nockBackend.post("/user").reply(200, (_uri, _requestbody) => JSON.stringify(mockData.backend.user));
 
   nockBackend.post("/contact").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
+
+  nockBackend.post("/customtoken/fetchToken").reply(200, (_uri, _requestbody) => {
+    return { response: mockTokens.tokens, success: true };
+  });
 
   nockBackend
     .delete("/contact/46")

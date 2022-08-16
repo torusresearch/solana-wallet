@@ -2,13 +2,21 @@ import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import assert from "assert";
+import nock from "nock";
 
 import * as solanaHelper from "@/utils/solanaHelpers";
 
 import { mockGetConnection } from "./mockConnection";
 import { mockClubbedNFTs, mockNFTs, sKeyPair } from "./mockData";
+import nockRequest from "./nockRequest";
 
 describe("solana helper util", () => {
+  beforeEach(async () => {
+    nockRequest();
+  });
+  afterEach(() => {
+    nock.cleanAll();
+  });
   const transferInstruction = () => {
     return SystemProgram.transfer({
       fromPubkey: sKeyPair[0].publicKey,

@@ -82,6 +82,7 @@ describe("Controller Module", () => {
     sandbox.stub(PopupWithBcHandler.prototype, "handle").callsFake(async (data) => {
       return data;
     });
+    sandbox.stub(PopupWithBcHandler.prototype, "open").callsFake(noopAsync);
 
     // mock popup handler
     popupStub = sandbox.stub(PopupWithBcHandler.prototype, "handleWithHandshake").callsFake(async (_payload: unknown) => {
@@ -266,6 +267,12 @@ describe("Controller Module", () => {
     //   apiKey: "adsf",
     // };
     // const dappOrigin = "localhost";
+    beforeEach(async () => {
+      nockRequest();
+    });
+    afterEach(() => {
+      nock.cleanAll();
+    });
     it("login via embed", async () => {
       const accountInfo = await accountInfoPromise;
       assert.equal(Object.keys(controllerModule.torusState.AccountTrackerState.accounts).length, 0);
@@ -336,7 +343,11 @@ describe("Controller Module", () => {
       });
     };
     beforeEach(async () => {
+      nockRequest();
       await controllerModule.triggerLogin({ loginProvider: "google" });
+    });
+    afterEach(() => {
+      nock.cleanAll();
     });
     it("SOL Transfer", async () => {
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
@@ -387,8 +398,11 @@ describe("Controller Module", () => {
       sandbox.stub(helper, "isMain").get(() => false);
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
       sandbox.stub(TorusController.prototype, "conversionRate").get(() => 1);
+      nockRequest();
     });
-
+    afterEach(() => {
+      nock.cleanAll();
+    });
     // add contact on null account test if condition
     it("add contact", async () => {
       const addContactSpy = sandbox.spy(PreferencesController.prototype, "addContact");
@@ -532,6 +546,10 @@ describe("Controller Module", () => {
       sandbox.stub(helper, "isMain").get(() => false);
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
       sandbox.stub(TorusController.prototype, "conversionRate").get(() => 1);
+      nockRequest();
+    });
+    afterEach(() => {
+      nock.cleanAll();
     });
 
     // Solana Api
@@ -802,13 +820,7 @@ describe("Controller Module", () => {
 
     it("saveToOpenloginBackend", async () => {
       const setMetaDataSpy = sandbox.spy(TorusStorageLayer.prototype, "setMetadata");
-      const { publicKey, secretKey } = sKeyPair[1];
-      sandbox.stub(eccrypto, "generatePrivate").callsFake(() => {
-        return Buffer.from(secretKey);
-      });
-      sandbox.stub(eccrypto, "getPublic").callsFake(() => {
-        return Buffer.from(publicKey.toString());
-      });
+      const { publicKey, secretKey } = sKeyPair[0];
       const ecc_privateKey = eccrypto.generatePrivate();
       const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
 
@@ -821,7 +833,8 @@ describe("Controller Module", () => {
       await controllerModule.torus.saveToOpenloginBackend({
         privateKey: secretKey.toString(),
         publicKey: publicKey.toString(),
-        accounts: openloginFaker[1].accounts,
+        accounts: openloginFaker[0].accounts,
+        userInfo: openloginFaker[0].userInfo,
       });
       assert(setMetaDataSpy.calledOnce);
     });
@@ -892,6 +905,7 @@ describe("Controller Module", () => {
     beforeEach(async () => {
       // controllerModule.torus = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
       // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
+      nockRequest();
       sandbox.stub(helper, "isMain").get(() => false);
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
       sandbox.stub(TorusController.prototype, "conversionRate").get(() => 1);
@@ -948,9 +962,13 @@ describe("Controller Module", () => {
     beforeEach(async () => {
       // controllerModule.torus = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
       // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
+      nockRequest();
       sandbox.stub(helper, "isMain").get(() => false);
       await controllerModule.torus.triggerLogin({ loginProvider: "google" });
       sandbox.stub(TorusController.prototype, "conversionRate").get(() => 1);
+    });
+    afterEach(() => {
+      nock.cleanAll();
     });
     it("approve sign transaction", async () => {
       popupResult = { approve: true };
