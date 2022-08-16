@@ -611,14 +611,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       // serialize transaction
-      let serializedTransaction = signedTransaction.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
-      const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-      if (gaslessHost) {
-        serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
-      }
+      const serializedTransaction = signedTransaction.transactionMeta.transaction.serialize().toString("hex");
 
       // submit onchain
-      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+      const options = req?.params?.options;
+      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"), options);
 
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
