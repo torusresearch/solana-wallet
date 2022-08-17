@@ -2,6 +2,7 @@
 import { createTransfer } from "@solana/pay";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { ContactPayload } from "@toruslabs/base-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import { BigNumber } from "bignumber.js";
@@ -31,6 +32,8 @@ const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
 let snsAddressPromise: Promise<string | null>;
 const transferToInternal = ref("");
 const transferTo = ref("");
+const contactName = ref("");
+const checked = ref(false);
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transaction = ref<Transaction>();
@@ -316,6 +319,15 @@ const openModal = async () => {
         return;
       }
     }
+    // add contact if any
+    if (checked.value && contactName.value.length) {
+      const contactPayload: ContactPayload = {
+        display_name: contactName.value,
+        contact_verifier: transferType.value.value === "sol" ? "solana" : transferType.value.value,
+        contact_verifier_id: transferTo.value,
+      };
+      await ControllerModule.addContact(contactPayload);
+    }
 
     isOpen.value = true;
     trackUserClick(TransferPageInteractions.INITIATE);
@@ -463,7 +475,9 @@ async function onSelectTransferType() {
             <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
             <div class="w-full flex flex-row space-x-2">
               <ComboBox
-                v-model="transferTo"
+                v-model:transferTo="transferTo"
+                v-model:contactName="contactName"
+                v-model:checked="checked"
                 :label="t('walletActivity.sendTo')"
                 :errors="isOpen ? undefined : $v.transferTo.$errors"
                 :items="contacts"
@@ -474,7 +488,7 @@ async function onSelectTransferType() {
               </div>
             </div>
 
-            <div v-if="showAmountField" class="w-full">
+            <div v-if="showAmountField" :class="[checked ? 'w-full pt-12' : 'w-full']">
               <TextField
                 v-model="sendAmount"
                 :label="t('dappTransfer.amount')"
