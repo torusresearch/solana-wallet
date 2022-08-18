@@ -75,6 +75,7 @@ async function endLogin() {
     }
 
     const openLoginInstance = await OpenLoginFactory.getInstance();
+
     const openLoginState = openLoginInstance.state;
     const { privKey, tKey, oAuthPrivateKey } = openLoginState;
 
@@ -83,6 +84,7 @@ async function endLogin() {
     }
 
     userInfo = await openLoginInstance.getUserInfo();
+
     const openLoginStore = openLoginState.store.getStore();
     if (!openLoginStore.appState) {
       throw new Error("Login unsuccessful");
