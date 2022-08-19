@@ -96,7 +96,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getRandomWindowId, getRelaySigned, getUserLanguage, idleTimeTracker, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instructionDecoder";
 import { burnAndCloseAccount } from "@/utils/solanaHelpers";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
@@ -378,8 +378,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.CurrencyControllerState,
     });
     this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
-    this.currencyController.scheduleConversionInterval();
-    this.currencyController.updateConversionRate();
+    if (this.preferencesController?.state?.selectedAddress) {
+      this.currencyController.scheduleConversionInterval();
+      this.currencyController.updateConversionRate();
+    }
 
     // key mgmt
     this.keyringController = new KeyringController({
@@ -427,13 +429,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.networkController._blockTrackerProxy.on("latest", (block) => {
-      if (this.preferencesController.state.selectedAddress) {
+      if (!idleTimeTracker.idleCheck() && this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.accountTracker.refresh();
         this.tokensTracker.updateSolanaTokens();
         this.preferencesController.updateDisplayActivities();
+        this.emit("newBlock", block);
       }
-      this.emit("newBlock", block);
     });
 
     // ensure accountTracker updates balances after network change
@@ -462,11 +464,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.currencyController.on("store", (state2) => {
-      this.update({ CurrencyControllerState: state2 });
+      if (!idleTimeTracker.idleCheck()) {
+        this.update({ CurrencyControllerState: state2 });
+      }
     });
 
     this.networkController.on("store", (state2) => {
-      this.update({ NetworkControllerState: state2 });
+      if (!idleTimeTracker.idleCheck()) {
+        this.update({ NetworkControllerState: state2 });
+      }
     });
 
     this.accountTracker.on("store", (state2) => {
@@ -474,8 +480,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.tokenInfoController.on("store", (state2) => {
-      this.update({ TokenInfoState: state2 });
-      this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
+      if (!idleTimeTracker.idleCheck()) {
+        this.update({ TokenInfoState: state2 });
+        this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
+      }
     });
 
     this.keyringController.on("store", (state2) => {
@@ -483,28 +491,32 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.tokensTracker.on("store", async (state2) => {
-      this.update({ TokensTrackerState: state2 });
-      this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
-      // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
+      if (!idleTimeTracker.idleCheck()) {
+        this.update({ TokensTrackerState: state2 });
+        this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
+        this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+        // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
+      }
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
-      this.update({ TransactionControllerState: state2 });
-      Object.keys(state2.transactions).forEach((txId) => {
-        if (state2.transactions[txId].status === TransactionStatus.submitted) {
-          // Check if token transfer
-          const tokenTransfer = constructTokenData(
-            this.currencyController.state.tokenPriceMap,
-            this.tokenInfoController.state,
-            state2.transactions[txId].rawTransaction,
-            this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
-          );
-          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
-            log.error(err, "error while patching a new tx");
-          });
-        }
-      });
+      if (!idleTimeTracker.idleCheck()) {
+        this.update({ TransactionControllerState: state2 });
+        Object.keys(state2.transactions).forEach((txId) => {
+          if (state2.transactions[txId].status === TransactionStatus.submitted) {
+            // Check if token transfer
+            const tokenTransfer = constructTokenData(
+              this.currencyController.state.tokenPriceMap,
+              this.tokenInfoController.state,
+              state2.transactions[txId].rawTransaction,
+              this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
+            );
+            this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
+              log.error(err, "error while patching a new tx");
+            });
+          }
+        });
+      }
     });
 
     this.embedController.on("store", (state2) => {

@@ -1,6 +1,7 @@
 import { concatSig } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { post } from "@toruslabs/http-helpers";
+import { SolanaToken } from "@toruslabs/solana-controllers";
 import bowser from "bowser";
 import copyToClipboard from "copy-to-clipboard";
 import { ecsign, keccak, privateToAddress, toBuffer } from "ethereumjs-util";
@@ -9,7 +10,7 @@ import log from "loglevel";
 import config from "@/config";
 import { addToast } from "@/modules/app";
 
-import { LOCALE_EN, LOGIN_CONFIG, STORAGE_TYPE } from "./enums";
+import { LOCALE_EN, LOGIN_CONFIG, SORT_SPL_TOKEN, STORAGE_TYPE } from "./enums";
 
 export function getStorage(key: STORAGE_TYPE): Storage | undefined {
   if (config.isStorageAvailable[key]) return window[key];
@@ -143,6 +144,38 @@ export const debounceAsyncValidator = <T>(validator: (value: T, callback: () => 
   };
 };
 
+// 900 -> 15 mins
+export const idleTimeTracker = ((idleTimeThreshold) => {
+  let isIdle = false;
+  let idleTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  function resetTimer() {
+    if (idleTimeout) {
+      // reset timer in case of event emitted
+      clearTimeout(idleTimeout);
+    }
+    isIdle = false;
+    idleTimeout = setTimeout(() => {
+      // set idle to true when threshold is passed without any events getting emitted
+      isIdle = true;
+    }, idleTimeThreshold * 1000);
+  }
+
+  // window events for idle check
+  window.addEventListener("load", resetTimer);
+  // documents events for idle check
+  const events = ["keydown", "mousemove", "keypress", "scroll", "touchstart"];
+  events.forEach((name) => {
+    document.addEventListener(name, resetTimer, true);
+  });
+  function idleCheck() {
+    return isIdle;
+  }
+  return {
+    idleCheck,
+  };
+})(900);
+
 export const getCustomDeviceInfo = (browser: any): any => {
   if ((navigator as any)?.brave) {
     return {
@@ -258,4 +291,17 @@ export function getImgProxyUrl(originalUrl?: string) {
   }
 
   return `${proxyUrl}/plain/${originalUrl}`;
+}
+
+export function sortSolanaTokens(solanaTokens: SolanaToken[], sortType: SORT_SPL_TOKEN) {
+  switch (sortType) {
+    case SORT_SPL_TOKEN.USD:
+      return solanaTokens.sort((a, b) => {
+        return (b?.balance?.uiAmount || 0) * (b?.price?.usd || 0) - (a?.balance?.uiAmount || 0) * (a?.price?.usd || 0);
+      });
+    default:
+      return solanaTokens.sort((a, b) => {
+        return (b?.balance?.uiAmount || 0) * (b?.price?.usd || 0) - (a?.balance?.uiAmount || 0) * (a?.price?.usd || 0);
+      });
+  }
 }

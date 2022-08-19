@@ -343,3 +343,8 @@ export const REDIRECT_FLOW_CONFIG: {
     requiresLogin: true,
   },
 };
+
+export enum SORT_SPL_TOKEN {
+  USD = "usd",
+  NUMBEROFTOKEN = "noOfTokens",
+}

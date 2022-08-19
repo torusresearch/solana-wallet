@@ -3,6 +3,8 @@ import { computed } from "vue";
 
 import solicon from "@/assets/solana-logo-light.svg";
 import ControllerModule from "@/modules/controllers";
+import { SORT_SPL_TOKEN } from "@/utils/enums";
+import { sortSolanaTokens } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
 const SOLANA_TOKEN: Partial<SolAndSplToken> = {
@@ -24,11 +26,12 @@ export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
         uiAmountString: ControllerModule.solBalance.toFixed(4),
       },
     },
-    ...(
+    ...sortSolanaTokens(
       ControllerModule.fungibleTokens?.map((st) => {
         return { ...st, name: st.data?.name || "", iconURL: st.data?.logoURI ? `${st.data?.logoURI}` : "", symbol: st.data?.symbol };
-      }) || []
-    ).sort((t1, t2) => Number(Number(t2.price?.usd) - Number(t1.price?.usd))),
+      }) || [],
+      SORT_SPL_TOKEN.USD
+    ),
   ];
 });
 
