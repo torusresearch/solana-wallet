@@ -12,7 +12,8 @@ Solana Wallet end-user web application.
 
 | Script       | Description                                             |
 | ------------ | ------------------------------------------------------- |
-| `npm run server` | Start dev server                                        |
+| `npm install`   | Install dependencies in your project directory          |
+| `npm run serve` | Start dev server locally                                |      |
 | `npm run build` | Build for production                                    |
 | `npm run lint`  | Check for code issues (automatically run on pre-commit) |
 
@@ -20,5 +21,5 @@ Solana Wallet end-user web application.
 Change the "@toruslabs/solana-controllers" dependency in the packages.json to local path to solana controller
 Change the "@toruslabs/base-controllers" resolution in the packages.json to local path to base controller
 
-yarn
-yarn serve
+npm install
+npm run serve
