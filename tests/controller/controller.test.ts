@@ -55,6 +55,7 @@ describe("TorusController", () => {
     // Stubing Openlogin
     sandbox.stub(config, "baseUrl").get(() => "http://localhost:8080/");
     sandbox.stub(config, "baseRoute").get(() => "http://localhost:8080/");
+    sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
       log.error("sinon stub working");
       return mockData.openLoginHandler;
@@ -65,7 +66,6 @@ describe("TorusController", () => {
       return popupResult;
     });
     // add sinon method stubs & spies on Controllers and TorusController
-    sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
     spyAccountTracker = sandbox.spy(AccountTrackerController.prototype, "refresh");
     // spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
     spyTokenInfo = sandbox.spy(TokenInfoController.prototype, "updateMetadata");
@@ -81,6 +81,69 @@ describe("TorusController", () => {
     nock.cleanAll();
     sandbox.restore();
     clock.restore();
+  });
+
+  // Wallet Api
+  // Provider API tests
+  describe("#Embedded Wallet API", () => {
+    //  "logout" is covered in login logout flow
+
+    it("returns first address when dapp calls getAccounts", async () => {
+      // inject postasync
+      const result = await torusController.provider.sendAsync({
+        method: "getAccounts",
+        params: [],
+      });
+
+      await torusController.triggerLogin({ loginProvider: "google" });
+      assert.deepStrictEqual(result, []);
+
+      const resultAfterLogin = await torusController.provider.sendAsync({
+        method: "getAccounts",
+        params: [],
+      });
+      log.info({ resultAfterLogin }, { sKeyPair: sKeyPair[0].publicKey.toBase58() });
+      assert.deepStrictEqual(resultAfterLogin, [sKeyPair[0].publicKey.toBase58()]);
+    });
+
+    // provider changed
+    it("changed provider", async () => {
+      await waitNetwork();
+
+      // allow change network before login
+      // await torusController.triggerLogin({ loginProvider: "google" });
+      // verify initial state
+      assert.notEqual(torusController.state.NetworkControllerState.network, SUPPORTED_NETWORKS.testnet.displayName);
+
+      popupResult = { approve: true };
+      const result = await torusController.communicationProvider.sendAsync({
+        method: "set_provider",
+        params: SUPPORTED_NETWORKS.testnet,
+      });
+
+      // validate state
+
+      const wnPromise = waitNetwork();
+      await result;
+      await wnPromise;
+      assert(popupStub.calledOnce);
+
+      // validate state
+      assert.equal(torusController.state.NetworkControllerState.network, SUPPORTED_NETWORKS.testnet.displayName);
+      assert.rejects(
+        async () => {
+          popupResult = { approve: false };
+          await torusController.communicationProvider.sendAsync({
+            method: "set_provider",
+            params: SUPPORTED_NETWORKS.testnet,
+          });
+        },
+        (_err) => {
+          assert(true);
+          return true;
+        }
+      );
+    });
   });
 
   // on update
@@ -145,69 +208,6 @@ describe("TorusController", () => {
       // log.error(torusController.state.TokenInfoState);
       // log.error(torusController.state.TokensTrackerState);
       // log.error(torusController.state.AccountTrackerState);
-    });
-  });
-
-  // Wallet Api
-  // Provider API tests
-  describe("#Embedded Wallet API", () => {
-    //  "logout" is covered in login logout flow
-
-    it("returns first address when dapp calls getAccounts", async () => {
-      // inject postasync
-      const result = await torusController.provider.sendAsync({
-        method: "getAccounts",
-        params: [],
-      });
-
-      await torusController.triggerLogin({ loginProvider: "google" });
-      assert.deepStrictEqual(result, []);
-
-      const resultAfterLogin = await torusController.provider.sendAsync({
-        method: "getAccounts",
-        params: [],
-      });
-      log.info({ resultAfterLogin }, { sKeyPair: sKeyPair[0].publicKey.toBase58() });
-      assert.deepStrictEqual(resultAfterLogin, [sKeyPair[0].publicKey.toBase58()]);
-    });
-
-    // provider changed
-    it("changed provider", async () => {
-      await waitNetwork();
-
-      // allow change network before login
-      // await torusController.triggerLogin({ loginProvider: "google" });
-      // verify initial state
-      assert.notEqual(torusController.state.NetworkControllerState.network, SUPPORTED_NETWORKS.testnet.displayName);
-
-      popupResult = { approve: true };
-      const result = await torusController.communicationProvider.sendAsync({
-        method: "set_provider",
-        params: SUPPORTED_NETWORKS.testnet,
-      });
-
-      // validate state
-
-      const wnPromise = waitNetwork();
-      await result;
-      await wnPromise;
-      assert(popupStub.calledOnce);
-
-      // validate state
-      assert.equal(torusController.state.NetworkControllerState.network, SUPPORTED_NETWORKS.testnet.displayName);
-      assert.rejects(
-        async () => {
-          popupResult = { approve: false };
-          await torusController.communicationProvider.sendAsync({
-            method: "set_provider",
-            params: SUPPORTED_NETWORKS.testnet,
-          });
-        },
-        (_err) => {
-          assert(true);
-          return true;
-        }
-      );
     });
   });
 

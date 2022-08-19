@@ -12,8 +12,8 @@
     "prepare": "husky install",
     "test": "npx playwright test --config=playwright.config.ts --workers=1",
     "test:browserstack": "npx playwright test --config=playwright-browserstack.config.ts --workers=1",
-    "test:controller": "mocha  ./tests/controller/**.ts",
-    "test:report": "nyc --reporter=text --reporter=html npm run test:controller",
+    "test:controller": "npx mocha ./tests/controller/**.ts",
+    "test:report": "rm -rf .nyc_output && rm -rf coverage && npx nyc --reporter=text --reporter=html npm run test:controller",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
     "locale": "node ./src/scripts/importLocales.js",
     "serve:prod": "vue-cli-service serve --mode production"
@@ -81,6 +81,7 @@
     "@commitlint/cli": "^16.2.4",
     "@commitlint/config-conventional": "^16.2.4",
     "@commitlint/is-ignored": "^16.2.4",
+    "@istanbuljs/nyc-config-babel": "^3.0.0",
     "@metaplex-foundation/mpl-token-metadata": "^1.1.0",
     "@playwright/test": "^1.22.2",
     "@sentry/cli": "^2.1.0",
