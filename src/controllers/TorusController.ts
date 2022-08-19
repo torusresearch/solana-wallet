@@ -1228,9 +1228,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     waitSaving?: boolean;
   }): Promise<OpenLoginPopupResponse> {
     try {
+      const extraLoginOptions: Record<string, string> = {
+        dappOrigin: this.origin,
+      };
+      if (login_hint) extraLoginOptions.login_hint = login_hint;
+
       const handler = new OpenLoginHandler({
         loginProvider,
-        extraLoginOptions: login_hint ? { login_hint } : {},
+        extraLoginOptions,
       });
       const result = await handler.handleLoginWindow({
         communicationEngine: this.communicationEngine,
