@@ -239,26 +239,32 @@ export const LOCALE_ES_LABEL = "Spanish (Español)";
 export const LOCALES = [
   {
     name: LOCALE_EN_LABEL,
+    label: LOCALE_EN_LABEL,
     value: LOCALE_EN,
   },
   {
     name: LOCALE_DE_LABEL,
+    label: LOCALE_DE_LABEL,
     value: LOCALE_DE,
   },
   {
     name: LOCALE_JA_LABEL,
+    label: LOCALE_JA_LABEL,
     value: LOCALE_JA,
   },
   {
     name: LOCALE_KO_LABEL,
+    label: LOCALE_KO_LABEL,
     value: LOCALE_KO,
   },
   {
     name: LOCALE_ZH_LABEL,
+    label: LOCALE_ZH_LABEL,
     value: LOCALE_ZH,
   },
   {
     name: LOCALE_ES_LABEL,
+    label: LOCALE_ES_LABEL,
     value: LOCALE_ES,
   },
 ];

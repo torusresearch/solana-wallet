@@ -11,8 +11,6 @@ import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 import { getWhiteLabelLocale, getWhiteLabelLogoDark, getWhiteLabelLogoLight, isWhiteLabelSet } from "@/utils/whitelabel";
 
-import LanguageSelector from "./nav/LanguageSelector.vue";
-
 requireLoggedIn();
 
 setLocale(i18n, isWhiteLabelSet() ? getWhiteLabelLocale() : ControllerModule.torus.locale || i18n.global.locale);
@@ -69,9 +67,7 @@ const logout = async () => {
           </div>
         </div>
         <div class="hidden md:flex items-center flex-1 ml-auto justify-end">
-          <LanguageSelector class="mr-2" /><AccountMenu :user="user"
-            ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
-          /></AccountMenu>
+          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
         </div>
         <div class="ml-6 flex md:hidden items-center">
           <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
