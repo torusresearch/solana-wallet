@@ -12,9 +12,9 @@ Solana Wallet end-user web application.
 
 | Script       | Description                                             |
 | ------------ | ------------------------------------------------------- |
-| `yarn serve` | Start dev server                                        |
-| `yarn build` | Build for production                                    |
-| `yarn lint`  | Check for code issues (automatically run on pre-commit) |
+| `npm run server` | Start dev server                                        |
+| `npm run build` | Build for production                                    |
+| `npm run lint`  | Check for code issues (automatically run on pre-commit) |
 
 # Use local Controller Workaround
 Change the "@toruslabs/solana-controllers" dependency in the packages.json to local path to solana controller
