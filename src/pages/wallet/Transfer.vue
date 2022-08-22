@@ -24,6 +24,8 @@ import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
+import CheckBox from "../../components/common/CheckBox.vue";
+
 const { t } = useI18n();
 
 const snsError = ref("Account Does Not Exist");
@@ -210,6 +212,20 @@ const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
+
+// proceed to validatation only if checkbox is click
+const lengthCheck = (min: number, max: number, contactValue: string): boolean => {
+  return !checked.value || (contactValue.length >= min && contactValue.length <= max);
+};
+
+const isAlnum = (contactValue: string): boolean => {
+  return !checked.value || /^[a-zA-Z0-9]+$/.test(contactValue);
+};
+
+const isRequiredandCheckbox = (contactValue: string): boolean => {
+  return !checked.value || !!contactValue;
+};
+
 const rules = computed(() => {
   return {
     transferTo: {
@@ -228,10 +244,16 @@ const rules = computed(() => {
       ),
       nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
+    contactName: {
+      required: helpers.withMessage("Required", isRequiredandCheckbox),
+      checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
+      lengthCheck: helpers.withMessage("Name should be less than 255 characters", (contactValue: string) => lengthCheck(0, 255, contactValue)),
+    },
   };
 });
 
-const $v = useVuelidate(rules, { transferTo: transferToInternal, sendAmount });
+const $v = useVuelidate(rules, { transferTo: transferToInternal, sendAmount, contactName });
+
 /**
  * converts the fiatValue from selected fiat currency to selected crypto currency
  * @param fiatValue - amount of fiat
@@ -403,6 +425,15 @@ async function setTokenAmount(type = "max") {
   }
 }
 
+function isNewContact() {
+  if ($v.value.transferTo.$invalid) return false;
+  const filteredItems = contacts.value.filter((item) => {
+    return item.value.toLowerCase() === transferTo.value.toLowerCase();
+  });
+  if (filteredItems.length > 0) return false;
+  return true;
+}
+
 /**
  * usage : change the sendAmount between crypto and its equivalent fiat
  * @param selectFiat - is the selected option is crypto , or fiat currency?
@@ -475,9 +506,7 @@ async function onSelectTransferType() {
             <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
             <div class="w-full flex flex-row space-x-2">
               <ComboBox
-                v-model:transferTo="transferTo"
-                v-model:contactName="contactName"
-                v-model:checked="checked"
+                v-model="transferTo"
                 :label="t('walletActivity.sendTo')"
                 :errors="isOpen ? undefined : $v.transferTo.$errors"
                 :items="contacts"
@@ -487,8 +516,14 @@ async function onSelectTransferType() {
                 <SelectField v-model="transferType" :items="transferTypes" @update:model-value="onSelectTransferType" />
               </div>
             </div>
+            <div v-if="isNewContact()" class="w-full">
+              <CheckBox class="mb-4" label="Save Contact" :checked="checked" @change="checked = !checked" />
+              <div v-if="checked">
+                <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="t('walletSettings.enterContact')" />
+              </div>
+            </div>
 
-            <div v-if="showAmountField" :class="[checked ? 'w-full pt-12' : 'w-full']">
+            <div v-if="showAmountField" class="w-full">
               <TextField
                 v-model="sendAmount"
                 :label="t('dappTransfer.amount')"

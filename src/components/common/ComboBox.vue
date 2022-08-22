@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import TextField from "@toruslabs/vue-components/common/TextField.vue";
-import useVuelidate, { ErrorObject } from "@vuelidate/core";
-import { helpers } from "@vuelidate/validators";
+import { ErrorObject } from "@vuelidate/core";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
-
-import CheckBox from "./CheckBox.vue";
 
 type ItemType = { text: string; value: string };
 
@@ -13,59 +9,22 @@ const props = withDefaults(
   defineProps<{
     label?: string;
     items: ItemType[];
-    transferTo?: string;
-    contactName?: string;
-    checked?: boolean;
+    modelValue?: string;
     errors?: Array<ErrorObject>;
   }>(),
   {
     label: "",
-    transferTo: "",
-    contactName: "",
-    checked: false,
+    modelValue: "",
     errors: () => [],
   }
 );
 
-const emits = defineEmits(["update:transferTo", "update:contactName", "update:checked"]);
+const emits = defineEmits(["update:modelValue"]);
 
 const value = computed({
-  get: () => props.transferTo,
-  set: (value2) => emits("update:transferTo", value2),
+  get: () => props.modelValue,
+  set: (value2) => emits("update:modelValue", value2),
 });
-
-const contactName = computed({
-  get: () => props.contactName,
-  set: (value2) => emits("update:contactName", value2),
-});
-
-const checked = computed({
-  get: () => props.checked,
-  set: (value2) => emits("update:checked", value2),
-});
-
-// proceed to validatation only if checkbox is click
-const lengthCheck = (min: number, max: number, contactValue: string): boolean => {
-  return !checked.value || (contactValue.length >= min && contactValue.length <= max);
-};
-
-const isAlnum = (contactValue: string): boolean => {
-  return !checked.value || /^[a-zA-Z0-9]+$/.test(contactValue);
-};
-
-const isRequiredandCheckbox = (contactValue: string): boolean => {
-  return !checked.value || !!contactValue;
-};
-
-const rules = {
-  contactName: {
-    required: helpers.withMessage("Required", isRequiredandCheckbox),
-    checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
-    lengthCheck: helpers.withMessage("Name should be less than 255 characters", (contactValue: string) => lengthCheck(0, 255, contactValue)),
-  },
-};
-
-const $v = useVuelidate(rules, { contactName });
 
 const isListOpen = ref(false);
 const filteredItems = computed(() => {
@@ -115,13 +74,6 @@ const onBlur = () => {
           {{ filteredItem.text }}
         </li>
       </ul>
-    </div>
-    <!-- if no errors and no filtered items ie. no saved contact, show checkbox to save contact-->
-    <div v-if="filteredItems.length === 0 && !isListOpen">
-      <CheckBox class="mt-4" label="Save Contact" :checked="checked" @change="checked = !checked" />
-      <div v-if="checked" class="absolute w-[93%] mt-2">
-        <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="t('walletSettings.enterContact')" />
-      </div>
     </div>
   </div>
 </template>
