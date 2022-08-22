@@ -1,11 +1,11 @@
-import { Ref } from "vue";
 import { event } from "vue-gtag";
 
 export function trackUserClick(payload: string) {
   event("user_clicks", { clicked_on: payload });
 }
 export const googleAnalyticsDirective = {
-  created(el: HTMLElement, binding: Ref<string>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  created(el: any, binding: any) {
     el.addEventListener("click", () => {
       trackUserClick(binding.value);
     });
