@@ -81,7 +81,7 @@ const logout = async () => {
 
     <div class="flex-1 overflow-y-auto w-full py-2">
       <header v-if="props.showHeader">
-        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lt-md:flex-col lt-md:items-start">
+        <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-wrap">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
             {{ t(tabs[tab]?.title) || "" }}
           </h1>
