@@ -14,14 +14,17 @@ onErrorCaptured(() => {
 async function startLogin() {
   try {
     const { query } = useRoute();
-    const { loginProvider, state, ...rest } = query;
+    const { loginProvider, state, dappOrigin, ...rest } = query;
+
+    sessionStorage.setItem("dappOrigin", dappOrigin as string);
+
     if (!loginProvider) throw new Error("Invalid Login Provider");
     const openLoginInstance = await OpenLoginFactory.getInstance();
     await openLoginInstance.login({
       loginProvider: loginProvider as string,
       appState: state as string,
       extraLoginOptions: rest,
-      relogin: true,
+      // relogin: true,
     });
   } catch (error) {
     log.error(error);
