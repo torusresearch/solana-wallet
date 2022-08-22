@@ -20,14 +20,14 @@ const token = computed(() => {
 
 const conversionRate = ref<number>();
 const setConversionRate = async () => {
-  if (props?.selectedToken?.symbol !== "SOL" && !props?.selectedToken?.mintAddress) {
+  if (props?.selectedToken?.symbol !== "SOL") {
     if (currency.value === "SOL") conversionRate.value = ControllerModule.torus.conversionRate;
     else conversionRate.value = props.selectedToken?.price?.[currency.value.toLowerCase()] || 0;
   } else conversionRate.value = ControllerModule.torus.conversionRate;
 };
 
 const formattedBalance = computed(() => {
-  if (token.value === "SOL" && !props?.selectedToken?.mintAddress) return significantDigits(ControllerModule.solBalance, false, 4);
+  if (token.value === "SOL") return significantDigits(ControllerModule.solBalance, false, 4);
   return significantDigits(props.selectedToken?.balance?.uiAmount || 0, false, 4);
 });
 watch(

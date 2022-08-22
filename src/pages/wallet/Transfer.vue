@@ -204,7 +204,7 @@ function convertCryptoToFiat(cryptoValue = 1) {
 }
 
 const getTokenBalance = () => {
-  if (selectedToken.value.symbol?.toUpperCase() === "SOL" && !selectedToken.value?.mintAddress) return Number(ControllerModule.solBalance);
+  if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
 const rules = computed(() => {
@@ -372,7 +372,7 @@ async function setTokenAmount(type = "max") {
   switch (type) {
     case "max":
       isSendAllActive.value = true;
-      if (selectedToken.value.symbol?.toUpperCase() === "SOL" && !selectedToken.value?.mintAddress) {
+      if (selectedToken.value.symbol?.toUpperCase() === "SOL") {
         // deduct the network fees
         const fee = 5000;
         amount = getTokenBalance() - fee / LAMPORTS_PER_SOL;
