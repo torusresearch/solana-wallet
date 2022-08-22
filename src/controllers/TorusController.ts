@@ -546,9 +546,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
       if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
-    } catch (err: any) {
+    } catch (err) {
       log.error(err);
-      throw new Error("Unable to import token", err);
+      throw new Error("Unable to import token", err as Error);
     }
   }
 
@@ -606,7 +606,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       await signedTransaction.result;
     } catch (e) {
-      throw ethErrors.provider.userRejectedRequest((e as any).message);
+      throw ethErrors.provider.userRejectedRequest((e as Error).message);
     }
 
     try {
@@ -1321,7 +1321,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
    * DISCLAIMER: This is a session management component which allows faster reloads and easier access when
    * the user opens the wallet site. The implementation is optional and can be removed.
    *
-   * @param saveState
+   * @param saveState - save state to openloginStateServer
    */
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
@@ -1525,7 +1525,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       await ret_signed.result;
     } catch (e) {
-      throw ethErrors.provider.userRejectedRequest((e as any).message);
+      throw ethErrors.provider.userRejectedRequest((e as Error).message);
     }
 
     let signed_tx = ret_signed.transactionMeta.txReceipt as string;

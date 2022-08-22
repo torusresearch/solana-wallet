@@ -101,7 +101,7 @@ const approveTxn = async (): Promise<void> => {
         resolveRoute
       );
     } else if (method === "sign_all_transactions") {
-      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as any);
+      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as { params: { message: string[] }; method: string });
       redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
     } else throw new Error();
   } catch (e) {

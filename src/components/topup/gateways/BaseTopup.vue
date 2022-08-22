@@ -54,7 +54,7 @@ async function refreshTransferEstimate(quote: (requestObject: RequestObject) => 
   } catch (e) {
     // TODO : show error
     log.info(e);
-    errorMsg.value = (e as any).message;
+    errorMsg.value = (e as Error).message;
     isLoadingQuote.value = false;
   }
 }
