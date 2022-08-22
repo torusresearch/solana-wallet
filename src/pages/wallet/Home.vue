@@ -1,34 +1,36 @@
 <script setup lang="ts">
 import { RefreshIcon } from "@heroicons/vue/solid";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
+// import { Loader } from "@toruslabs/vue-components/common";
 import { throttle } from "lodash-es";
-import { computed, defineAsyncComponent, ref } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
 import AddressAndScan from "@/components/home/AddressAndScan.vue";
 import ImportToken from "@/components/home/ImportToken.vue";
+import TokensAssetsBalance from "@/components/TokensAssetsBalance.vue";
+import WalletBalance from "@/components/WalletBalance.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
-const asyncWalletBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "WalletBalance" */ "@/components/WalletBalance.vue"),
-  delay: 500,
-  suspensible: false,
-});
+// const asyncWalletBalance = defineAsyncComponent({
+//   loadingComponent: () => Loader,
+//   loader: () => import("@/components/WalletBalance.vue"),
+//   suspensible: false,
+// });
 
 const isImportTokenOpen = ref(false);
 const tokenList = computed(() => ControllerModule.torus.existingTokenAddress);
 const connection = computed(() => ControllerModule.torus.connection);
 const importDisabled = ref(true);
 
-const asyncTokensAssetsBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokensAssetsBalance" */ "@/components/TokensAssetsBalance.vue"),
-  delay: 500,
-  suspensible: false,
-});
+// const asyncTokensAssetsBalance = defineAsyncComponent({
+//   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokensAssetsBalance" */ "@/components/TokensAssetsBalance.vue"),
+//   suspensible: false,
+// });
 
 const { t } = useI18n();
 
@@ -94,12 +96,12 @@ const lastUpdateString = computed(() => {
           </div>
         </div>
       </header>
-      <asyncWalletBalance :show-buttons="true" class="w-full" />
+      <WalletBalance :show-buttons="true" class="w-full" />
     </div>
     <AddressAndScan class="flex lg:hidden mt-3" :selected-address="ControllerModule.selectedAddress" />
     <div class="mt-4 lg:mt-8 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
       <h2 class="-mb-2 text-base font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">Tokens</h2>
-      <asyncTokensAssetsBalance />
+      <TokensAssetsBalance />
       <div
         class="shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
       >

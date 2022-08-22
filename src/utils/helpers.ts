@@ -293,15 +293,21 @@ export function getImgProxyUrl(originalUrl?: string) {
   return `${proxyUrl}/plain/${originalUrl}`;
 }
 
-export function sortSolanaTokens(solanaTokens: SolanaToken[], sortType: SORT_SPL_TOKEN) {
+export function sortSolanaTokens(solanaTokens: SolanaToken[], sortType: SORT_SPL_TOKEN, currency = "usd") {
   switch (sortType) {
     case SORT_SPL_TOKEN.USD:
       return solanaTokens.sort((a, b) => {
-        return (b?.balance?.uiAmount || 0) * (b?.price?.usd || 0) - (a?.balance?.uiAmount || 0) * (a?.price?.usd || 0);
+        return (
+          (b?.balance?.uiAmount || 0) * (b?.price?.[currency.toLowerCase()] || 0) -
+          (a?.balance?.uiAmount || 0) * (a?.price?.[currency.toLowerCase()] || 0)
+        );
       });
     default:
       return solanaTokens.sort((a, b) => {
-        return (b?.balance?.uiAmount || 0) * (b?.price?.usd || 0) - (a?.balance?.uiAmount || 0) * (a?.price?.usd || 0);
+        return (
+          (b?.balance?.uiAmount || 0) * (b?.price?.[currency.toLowerCase()] || 0) -
+          (a?.balance?.uiAmount || 0) * (a?.price?.[currency.toLowerCase()] || 0)
+        );
       });
   }
 }
