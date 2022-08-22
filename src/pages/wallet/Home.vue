@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { RefreshIcon } from "@heroicons/vue/solid";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
-// import { Loader } from "@toruslabs/vue-components/common";
 import { throttle } from "lodash-es";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -16,21 +15,10 @@ import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
-// const asyncWalletBalance = defineAsyncComponent({
-//   loadingComponent: () => Loader,
-//   loader: () => import("@/components/WalletBalance.vue"),
-//   suspensible: false,
-// });
-
 const isImportTokenOpen = ref(false);
 const tokenList = computed(() => ControllerModule.torus.existingTokenAddress);
 const connection = computed(() => ControllerModule.torus.connection);
 const importDisabled = ref(true);
-
-// const asyncTokensAssetsBalance = defineAsyncComponent({
-//   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokensAssetsBalance" */ "@/components/TokensAssetsBalance.vue"),
-//   suspensible: false,
-// });
 
 const { t } = useI18n();
 
