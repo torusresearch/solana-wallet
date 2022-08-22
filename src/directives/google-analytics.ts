@@ -58,6 +58,7 @@ export enum ActivityPageInteractions {
   FILTER_TRANSACTION_TIME = "activities page - selected activity time filter :",
 }
 export enum SettingsPageInteractions {
+  LANGAUGE = "settings page - selected language :",
   NETWORK = "settings page - selected network :",
   DISPLAY = "settings page - selected display theme :",
   ACCOUNT_DETAILS = "settings page - account details :",
