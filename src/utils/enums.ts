@@ -345,6 +345,6 @@ export const REDIRECT_FLOW_CONFIG: {
 };
 
 export enum SORT_SPL_TOKEN {
-  USD = "usd",
-  NUMBEROFTOKEN = "noOfTokens",
+  TOKEN_CURRENCY_VALUE = "token_currency_value",
+  TOKEN_AMOUNT = "noOfTokens",
 }

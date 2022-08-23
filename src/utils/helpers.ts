@@ -295,7 +295,7 @@ export function getImgProxyUrl(originalUrl?: string) {
 
 export function sortSolanaTokens(solanaTokens: SolanaToken[], sortType: SORT_SPL_TOKEN, currency = "usd") {
   switch (sortType) {
-    case SORT_SPL_TOKEN.USD:
+    case SORT_SPL_TOKEN.TOKEN_CURRENCY_VALUE:
       return solanaTokens.sort((a, b) => {
         return (
           (b?.balance?.uiAmount || 0) * (b?.price?.[currency.toLowerCase()] || 0) -
@@ -304,10 +304,7 @@ export function sortSolanaTokens(solanaTokens: SolanaToken[], sortType: SORT_SPL
       });
     default:
       return solanaTokens.sort((a, b) => {
-        return (
-          (b?.balance?.uiAmount || 0) * (b?.price?.[currency.toLowerCase()] || 0) -
-          (a?.balance?.uiAmount || 0) * (a?.price?.[currency.toLowerCase()] || 0)
-        );
+        return (b?.balance?.uiAmount || 0) - (a?.balance?.uiAmount || 0);
       });
   }
 }

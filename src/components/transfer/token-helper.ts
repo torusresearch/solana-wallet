@@ -30,7 +30,7 @@ export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
       ControllerModule.fungibleTokens?.map((st) => {
         return { ...st, name: st.data?.name || "", iconURL: st.data?.logoURI ? `${st.data?.logoURI}` : "", symbol: st.data?.symbol };
       }) || [],
-      SORT_SPL_TOKEN.USD,
+      SORT_SPL_TOKEN.TOKEN_CURRENCY_VALUE,
       ControllerModule.torusState.CurrencyControllerState.currentCurrency
     ),
   ];
