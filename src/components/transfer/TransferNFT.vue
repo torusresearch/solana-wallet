@@ -4,7 +4,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
-import BigNumber from "bignumber.js";
+// import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -49,10 +49,10 @@ const props = withDefaults(
 
 const { t } = useI18n();
 
-const currency = computed(() => ControllerModule.torus.currentCurrency);
-const pricePerToken = computed<number>((): number => {
-  return ControllerModule.torus.conversionRate;
-});
+// const currency = computed(() => ControllerModule.torus.currentCurrency);
+// const pricePerToken = computed<number>((): number => {
+//   return ControllerModule.torus.conversionRate;
+// });
 const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
 const closeModal = () => {
@@ -68,9 +68,9 @@ const onConfirm = () => {
   closeModal();
 };
 // Transaction fee
-const fiatTxFeeString = computed(() => {
-  return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
-});
+// const fiatTxFeeString = computed(() => {
+//   return `${new BigNumber(props.cryptoTxFee).multipliedBy(pricePerToken.value).toFixed(5).toString()} ${currency.value}`;
+// });
 
 const explorerUrl = computed(() => {
   return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
@@ -98,7 +98,7 @@ const refDiv = ref(null);
             <div
               class="relative inline-block w-full max-w-sm my-8 overflow-hidden text-left align-middle transition-all bg-white dark:bg-app-gray-700 shadow-xl rounded-md px-4"
             >
-              <DialogTitle as="div" class="shadow dark:shadow-dark text-center py-6 w-full">
+              <DialogTitle as="div" class="hidden tall:block shadow dark:shadow-dark text-center py-6 w-full">
                 <p class="font-header text-lg font-bold text-app-text-600 dark:text-app-text-dark-500">
                   {{ t("walletTransfer.confirmTransaction") }}
                 </p>
@@ -140,13 +140,13 @@ const refDiv = ref(null);
                 />
               </div>
 
-              <div class="flex flex-row items- justify-start w-full mt-8">
+              <!-- <div class="flex flex-row items- justify-start w-full mt-8">
                 <p class="flex flex-auto text-sm font-bold text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.totalCost") }}</p>
                 <div class="flex flex-col items-start justify-start">
                   <p class="text-sm font-bold text-app-text-600 dark:text-app-text-dark-white">{{ props.cryptoTxFee }} SOL</p>
                   <p class="text-xxs text-app-text-600 dark:text-app-text-dark-600 w-full text-right">~{{ fiatTxFeeString }}</p>
                 </div>
-              </div>
+              </div> -->
               <div class="flex flex-row items-center my-6 mx-3">
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
                   {{ t("walletTransfer.cancel") }}

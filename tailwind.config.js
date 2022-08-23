@@ -73,6 +73,7 @@ module.exports = {
         "gt-xs": { min: "440px" }, // mobile
         "lt-sm": { max: "640px" }, // less than sm
         "lt-md": { max: "768px" }, // less than md
+        'tall': { 'raw': '(min-height: 700px)' },
       },
       backgroundImage: {
         "gradient-conic": "conic-gradient(transparent, var(--tw-gradient-to))",
