@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { Loader } from "@toruslabs/vue-components/common";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
@@ -8,7 +9,7 @@ import { PopupLogin, PopupWidget } from "@/components/frame";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
-import { setWhiteLabel } from "@/utils/whitelabel";
+import { isWhiteLabelDark, setWhiteLabel } from "@/utils/whitelabel";
 
 import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
@@ -30,12 +31,14 @@ const initParams = {
 } as EmbedInitParams;
 
 const showUI = ref(false);
+const isLoading = ref(false);
 
 const hashParams = new URLSearchParams(window.location.hash.slice(1));
 const specifiedOrigin = hashParams.get("origin");
 
 function startLogin() {
   try {
+    isLoading.value = true;
     const handleMessage = (ev: MessageEvent) => {
       const { origin, data } = ev;
       if (origin === specifiedOrigin) {
@@ -64,7 +67,9 @@ function startLogin() {
       }
     };
     window.addEventListener("message", handleMessage);
+    isLoading.value = false;
   } catch (error) {
+    isLoading.value = false;
     log.error(error);
   }
 }
@@ -92,6 +97,7 @@ watch(isIFrameFullScreen, () => {
 
 onMounted(async () => {
   if (!isMain) {
+    isLoading.value = true;
     await promise;
     log.info("initializing controllers with origin", dappOrigin);
     ControllerModule.init({
@@ -120,21 +126,26 @@ onMounted(async () => {
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
     hideCrispButton();
+    isLoading.value = true;
   }
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
   try {
+    isLoading.value = true;
     ControllerModule.torus.hideOAuthModal();
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: userEmail,
     });
+    isLoading.value = false;
   } catch (error) {
+    isLoading.value = false;
     log.error(error);
   }
 };
 const cancelLogin = (): void => {
   log.info("cancelLogin");
+  isLoading.value = false;
   ControllerModule.torus.emit("LOGIN_RESPONSE", "User cancelled login");
 };
 const loginFromWidget = () => {
@@ -164,5 +175,8 @@ const closePanel = () => {
       @close-panel="closePanel"
       @show-wallet="ControllerModule.openWalletPopup"
     />
+    <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
+      <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" background-color="#040405" />
+    </div>
   </div>
 </template>
