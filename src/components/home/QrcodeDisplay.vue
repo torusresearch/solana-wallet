@@ -3,6 +3,7 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { XIcon } from "@heroicons/vue/solid";
 import QRCode, { Options } from "@solana/qr-code-styling";
 import Button from "@toruslabs/vue-components/common/Button.vue";
+import Loader from "@toruslabs/vue-components/common/Loader.vue";
 import { CopyIcon } from "@toruslabs/vue-icons/basic";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
@@ -11,7 +12,7 @@ import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import SolanaLogo from "@/assets/solana-mascot.svg";
 import { copyText } from "@/utils/helpers";
-import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
+import { getWhiteLabelLogoDark, getWhiteLabelLogoLight, isWhiteLabelDark } from "@/utils/whitelabel";
 
 const props = withDefaults(
   defineProps<{
@@ -34,6 +35,7 @@ const closeModal = () => {
 
 const refDiv = ref(null);
 const qrsrc = ref("");
+const isImageLoading = ref(false);
 
 const copyPrivKey = () => {
   copyText(props.publicAddress || "");
@@ -61,12 +63,14 @@ const qr = new QRCode({
 });
 
 onMounted(async () => {
+  isImageLoading.value = true;
   const blobimg = await qr.getRawData();
   if (blobimg) qrsrc.value = URL.createObjectURL(blobimg);
   else {
     log.error("invalid qr generation");
     // popup error message:
   }
+  isImageLoading.value = false;
 });
 
 const downloadQr = () => {
@@ -119,7 +123,11 @@ watch(publicAddress, () => {
                     <!-- {{ t("walletSettings.clickCopy") }} -->
                   </Button>
                 </div>
-                <img :src="qrsrc" alt="qrcode" class="p-4 m-8 bg-white" />
+                <img v-if="!isImageLoading" :src="qrsrc" alt="qrcode" class="p-4 m-8 bg-white" />
+                <div v-else>
+                  <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" />
+                </div>
+
                 <Button class="w-fit mb-7" @click="downloadQr"> Download QR Code</Button>
               </div>
             </div>
