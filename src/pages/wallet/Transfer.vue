@@ -517,7 +517,7 @@ async function onSelectTransferType() {
               </div>
             </div>
             <div v-if="isNewContact()" class="w-full">
-              <CheckBox class="mb-4" label="Save Contact" :checked="checked" @change="checked = !checked" />
+              <CheckBox class="mb-4" label="Save Contact" :checked="checked" label-position="right" @change="checked = !checked" />
               <div v-if="checked">
                 <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="t('walletSettings.enterContact')" />
               </div>
