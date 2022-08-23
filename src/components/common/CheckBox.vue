@@ -24,7 +24,7 @@ withDefaults(
           :v-model="checked"
           type="checkbox"
           class="form-check-input appearance-none h-4 w-4 border border-gray-300 focus:outline-app-primary-500 rounded-sm bg-white checked:bg-app-primary-500 checked:border-app-primary-500 checked:outline-app-primary-500 checked:text-app-primary-500 cursor-pointer"
-          :class="[labelPosition === 'right' ? 'ml-1' : 'mr-1']"
+          :class="[labelPosition === 'right' ? 'ml-3' : 'mr-3']"
           value=""
         />
         {{ labelPosition === "left" ? label : "" }}
