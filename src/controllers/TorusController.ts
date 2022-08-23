@@ -378,8 +378,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.CurrencyControllerState,
     });
     this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
-    this.currencyController.scheduleConversionInterval();
-    this.currencyController.updateConversionRate();
+    if (this.preferencesController?.state?.selectedAddress) {
+      this.currencyController.scheduleConversionInterval();
+      this.currencyController.updateConversionRate();
+    }
 
     // key mgmt
     this.keyringController = new KeyringController({
