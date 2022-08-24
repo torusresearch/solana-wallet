@@ -36,7 +36,7 @@ onMounted(async () => {
   }
 });
 const openCollection = (collectionName: string) => {
-  window.open(`https://solanart.io/collections/${collectionName?.toLowerCase()}`, "_blank");
+  window.open(`https://magiceden.io/marketplace/${collectionName}`, "_blank");
 };
 const navigateNFT = (mintAddress: string) => {
   router.push(`/wallet/nfts/${mintAddress}`);
@@ -67,15 +67,15 @@ function getNftFetchMessage(state: FETCH_STATE): string {
             alt="NFT collection"
             :src="collection?.image || FallbackNft"
             class="h-32 w-32 rounded-full overflow-hidden border-2 border-white cursor-pointer object-cover"
-            @click="openCollection(collection.name)"
-            @keydown="openCollection(collection.name)"
+            @click="openCollection(collection.collectionSymbol)"
+            @keydown="openCollection(collection.collectionSymbol)"
             @error="setFallbackImg($event.target, FallbackNft)"
           />
           <span
             v-ga="NftsPageInteractions.OPEN_COLLECTION + collection.image"
             class="mt-4 text-app-text-500 dark:text-app-text-dark-400 cursor-pointer truncate"
-            @click="openCollection(collection.name)"
-            @keydown="openCollection(collection.name)"
+            @click="openCollection(collection.collectionSymbol)"
+            @keydown="openCollection(collection.collectionSymbol)"
             >{{ collection.name }}</span
           >
         </div>
