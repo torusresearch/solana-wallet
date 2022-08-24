@@ -121,3 +121,18 @@ export interface WhiteLabelParams {
    */
   customTranslations?: LocaleLinks<any>;
 }
+
+export interface NFTCollection {
+  collectionSymbol: string;
+  name: string;
+  image: string;
+  ownerCount: number;
+  tokenCount: number;
+  totalVol: number;
+  vol: number;
+  volDelta: number;
+  txns: number;
+  fp?: number;
+  rank: number;
+  updatedAt?: number;
+}
