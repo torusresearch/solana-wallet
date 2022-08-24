@@ -12,7 +12,6 @@ import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
 import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
-import LanguageSelector from "@/components/nav/LanguageSelector.vue";
 import { NftsPageInteractions, trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { STATUS, STATUS_TYPE } from "@/utils/enums";
@@ -158,9 +157,7 @@ const confirmTransfer = async () => {
           </div>
         </div>
         <div v-if="selectedAddress && user.verifierId" class="hidden md:flex items-center flex-1 ml-auto justify-end">
-          <LanguageSelector class="mr-2" /><AccountMenu :user="user"
-            ><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout"
-          /></AccountMenu>
+          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
         </div>
         <div v-if="selectedAddress && user.verifierId" class="ml-6 flex md:hidden items-center">
           <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
@@ -195,7 +192,7 @@ const confirmTransfer = async () => {
               @click="openModal"
               @keydown="openModal"
             >
-              <span class="text-md">Burn & Close</span>
+              <span class="text-md">Burn NFT</span>
             </div>
           </div>
           <img

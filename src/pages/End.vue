@@ -33,11 +33,11 @@ const selectAccount = (index: number) => {
   selectedAccountIndex.value = index;
 };
 
-const continueToApp = async () => {
+const continueToApp = async (selectedIndex: number) => {
   loading.value = true;
   try {
     // move selected key to the first position of keys
-    const id = selectedAccountIndex.value;
+    const id = selectedIndex;
     if (id > -1) {
       const selectedAccount = accounts[id];
       accounts.splice(id, 1);
@@ -75,6 +75,7 @@ async function endLogin() {
     }
 
     const openLoginInstance = await OpenLoginFactory.getInstance();
+
     const openLoginState = openLoginInstance.state;
     const { privKey, tKey, oAuthPrivateKey } = openLoginState;
 
@@ -83,6 +84,7 @@ async function endLogin() {
     }
 
     userInfo = await openLoginInstance.getUserInfo();
+
     const openLoginStore = openLoginState.store.getStore();
     if (!openLoginStore.appState) {
       throw new Error("Login unsuccessful");
@@ -106,7 +108,10 @@ async function endLogin() {
 
     // derive app scoped keys from tkey
     const userDapps: Record<string, string> = {};
-    // const keys: { privKey: string; name: string; address: string }[] = [];
+
+    let matchedDappHost = -1;
+    const dappOrigin = sessionStorage.getItem("dappOrigin");
+    const dappHost = new URL(dappOrigin || "");
 
     if (tKey && oAuthPrivateKey) {
       try {
@@ -123,7 +128,7 @@ async function endLogin() {
         log.info(response, "User projects from developer dashboard");
         const userProjects = response.user_projects ?? [];
         userProjects.sort((a, b) => (a.last_login < b.last_login ? 1 : -1));
-        userProjects.forEach((project) => {
+        userProjects.forEach((project, idx) => {
           const subKey = subkey(tKey, Buffer.from(project.project_id, "base64"));
           const paddedSubKey = subKey.padStart(64, "0");
           const { sk } = getED25519Key(paddedSubKey);
@@ -136,14 +141,20 @@ async function endLogin() {
             name: `${project.name} (${project.hostname})`,
             address: keyPair.publicKey.toBase58(),
           });
+
+          if (dappHost.host === project.hostname) matchedDappHost = idx + 1;
         });
       } catch (error2: unknown) {
         log.error("Failed to derive app-scoped keys", error2);
       }
     }
 
+    if (matchedDappHost >= 0) {
+      continueToApp(matchedDappHost);
+    }
+
     if (accounts.length <= 1) {
-      continueToApp();
+      continueToApp(0);
       return;
     }
 
@@ -187,7 +198,14 @@ endLogin();
           </button>
         </div>
       </div>
-      <Button id="less-details-link" large color="white" text class="px-8 mt-8 w-full white--text gmt-wallet-transfer" @click="continueToApp">
+      <Button
+        id="less-details-link"
+        large
+        color="white"
+        text
+        class="px-8 mt-8 w-full white--text gmt-wallet-transfer"
+        @click="() => continueToApp(selectedAccountIndex)"
+      >
         {{ t("login.continueToApp") }}
       </Button>
     </div>

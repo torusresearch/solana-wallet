@@ -3,6 +3,8 @@ import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import base58 from "bs58";
 import { ec as EC } from "elliptic";
 
+import { TorusStorageLayerAPIParams } from "@/utils/tkey/baseTypes/commonTypes";
+
 export const OffChainMetaplexUri = "https://metaplex.data";
 
 const ec = new EC("secp256k1");
@@ -78,11 +80,8 @@ export const openloginFaker = [
   },
 ];
 
-// verify: {
-//   public_address: sKeyPair[0].publicKey.toBase58(),
-//   signed_message:
-//     "e39fefbc4dc11899e26de146d194267c75ec160ec53a2b62fbc70cba0d2d62591facf1e15f67549b106af485c5cb450289829d78a6c637fd97a0f75f25b7920e",
-// },
+export const MockStorageLayer: { [pkey: string]: TorusStorageLayerAPIParams } = {};
+
 export const postTransaction = [
   {
     success: true,
@@ -149,7 +148,6 @@ export const mockData = {
             mint_address: "",
           },
         ],
-
         contacts: [
           {
             id: 46,
@@ -185,3 +183,184 @@ export const mockData = {
   },
   openLoginHandler: openloginFaker[0],
 };
+export const testNetTokenWWW = {
+  chainId: null,
+  address: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
+  symbol: "WWW",
+  name: "WWW",
+  decimals: 9,
+  network: "Solana Testnet",
+  publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+  logoURI: "",
+};
+const testNetTokenS = {
+  chainId: null,
+  address: "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK",
+  symbol: "SSS",
+  name: "s",
+  decimals: 9,
+  network: "Solana Testnet",
+  publicAddress: "B4KFwF132WveLVTdvt9iprzxPHcFux2t6tgNMbR2Vmr8",
+  logoURI: "",
+};
+export const mockTokens = {
+  tokens: {
+    "7dpVde1yJCzpz2bKNiXWh7sBJk7PFvv576HnyFCrgNyW": {
+      E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz: testNetTokenWWW,
+      "5RA64XFTwfAaZLqNvJoFsNMcCQRdEd4kzGTd9c276VjK": testNetTokenS,
+    },
+    FKUPMMJM89UEuq2zGiTYHp69oD13s8ioqjYTuys2MgKP: [],
+  },
+};
+
+export const mockBillBoardEvent = {
+  eventName: "w3auth",
+  imageUrl: "https://www.web3auth.io/images/web3auth-logo.svg",
+  imageDarkUrl: "https://www.web3auth.io/images/web3auth-logo-Dark.svg",
+  description: "w3auth",
+  callToActionLinkTwo: "https://www.web3auth.io/",
+  callToActionLink: "https://www.web3auth.io/",
+  callToActionText: "click here",
+  locale: "en",
+};
+export const mockDapps = [
+  {
+    category: "Marketplace",
+    logo: [
+      {
+        id: "att6434quBCmlsg0b",
+        url: "https://dl.airtable.com/.attachments/549760d07f4d6c5bf0f296fbb5c94e7d/c5ece7df/favicon5.ico?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=c9ac2f560807d3d8",
+        filename: "favicon (5).ico",
+        size: 12014,
+        type: "image/vnd.microsoft.icon",
+      },
+    ],
+    network: "mainnet",
+    title: "Hyperspace",
+    desc: "NFT Market place",
+    url: "https://hyperspace.xyz/",
+    torus_domain: ["solana", "solana-testing", "solana-develop"],
+  },
+  {
+    category: "DeFi",
+    logo: [
+      {
+        id: "attWIP3czFbo3bFeq",
+        width: 50,
+        height: 50,
+        url: "https://dl.airtable.com/.attachments/3a3fa6010ad8f986af5848a02876a201/919f8590/PSigc4ie_400x400.jpg?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=21414b284bf3bae5",
+        filename: "PSigc4ie_400x400.jpg",
+        size: 1007,
+        type: "image/jpeg",
+        thumbnails: {
+          small: {
+            url: "https://dl.airtable.com/.attachmentThumbnails/ef8312a7b53ba857ba1448972361ed87/57b75fe0?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=24963ffa441e2d5e",
+            width: 36,
+            height: 36,
+          },
+          large: {
+            url: "https://dl.airtable.com/.attachmentThumbnails/931d9f09d58e184fd2a263f8939d5800/5e779491?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=5f93e0447fb51326",
+            width: 50,
+            height: 50,
+          },
+          full: {
+            url: "https://dl.airtable.com/.attachmentThumbnails/ab4ec2f65b68b4d2a4cae4f507fc3e62/86438149?ts=1658426084&userId=usru62oc2KDUhq9ds&cs=e05d60576814b071",
+            width: 3000,
+            height: 3000,
+          },
+        },
+      },
+    ],
+    network: "mainnet",
+    title: "Raydium",
+    desc: "An avenue for the evolution of DeFi",
+    url: "https://raydium.io/swap",
+    torus_domain: ["solana", "solana-testing", "solana-develop"],
+  },
+];
+
+export const mockNFTs = [
+  {
+    mintAddress: "fueL3hBZjLLLJHiFH9cqZoozTG3XQZ53diwFPwbzNim",
+    tokenAddress: "2cZp4t78c7XT95ti6dU2AgHVZFwzJgb9itdZzd9fqyNB",
+    balance: { amount: "1", decimals: 0, uiAmount: 1, uiAmountString: "1" },
+    isFungible: false,
+    metaplexData: {
+      name: "Fuel",
+      uri: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+      symbol: "Fuel",
+      offChainMetaData: {
+        symbol: "Fuel",
+        name: "Fuel",
+        description: "Basic hydrogen fuel cell replenishment. Low energy density, can be improved with further refinement.",
+        image: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+        collection: { name: "Fuel", family: "M1NTq6mJnYhyhRe1ZRum1v54AqHmvo4mYYGk7tcFcHn" },
+      },
+    },
+    name: "Fuel",
+    iconURL: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+    symbol: "Fuel",
+  },
+  {
+    mintAddress: "ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
+    tokenAddress: "FaTaNB1xxoj4TPA62twPr4mZ6i8yuEQE6nEypsKAiS4B",
+    balance: { amount: "2", decimals: 0, uiAmount: 2, uiAmountString: "2" },
+    isFungible: false,
+    metaplexData: {
+      name: "Ammunition",
+      symbol: "AMMO",
+      uri: "https://galaxy.staratlas.com/nfts/ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000",
+      sellerFeeBasisPoints: 0,
+      creators: null,
+      offChainMetaData: {
+        _id: "61b3f1a341ea72257bf56a22",
+        description:
+          "The most basic form of space-grade ballistic ammunition. Compatible with kinetic type slotted weaponry. Weak against energy shielding, effective against hull plating.",
+        image: "https://storage.googleapis.com/nft-assets/items/AMMO.png",
+        symbol: "AMMO",
+        name: "Ammunition",
+        collection: { name: "Ammunition", family: "Star Atlas" },
+        slots: { crewSlots: null, componentSlots: null, moduleSlots: null },
+        media: { qrInstagram: "", qrFacebook: "", sketchfab: "", audio: "", thumbnailUrl: "", gallery: null },
+        tradeSettings: { msrp: { value: 0, currencySymbol: "USDC" } },
+        deactivated: false,
+        markets: [
+          {
+            _id: "61bad156d3d4980038939be2",
+            id: "8qtV9oq8VcrUHZdEeCJ2bUM3uLwjrfJ9U9FGrCSvu34z",
+            quotePair: "ATLAS",
+            serumProgramId: "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+          },
+        ],
+        primarySales: [],
+        airdrops: [],
+        createdAt: "2021-04-20T18:17:07.517Z",
+        updatedAt: "2022-02-01T05:22:05.426Z",
+        mint: "ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
+      },
+    },
+    name: "Ammunition",
+    iconURL: "https://storage.googleapis.com/nft-assets/items/AMMO.png",
+    symbol: "AMMO",
+  },
+];
+
+export const mockClubbedNFTs = [
+  {
+    title: "Fuel",
+    count: 1,
+    description: "Basic hydrogen fuel cell replenishment. Low energy density, can be improved with further refinement.",
+    img: "https://storage.googleapis.com/nft-assets/items/FUEL.png",
+    mints: ["fueL3hBZjLLLJHiFH9cqZoozTG3XQZ53diwFPwbzNim"],
+    collectionName: "M1NTq6mJnYhyhRe1ZRum1v54AqHmvo4mYYGk7tcFcHn",
+  },
+  {
+    title: "Ammunition",
+    count: 1,
+    description:
+      "The most basic form of space-grade ballistic ammunition. Compatible with kinetic type slotted weaponry. Weak against energy shielding, effective against hull plating.",
+    img: "https://storage.googleapis.com/nft-assets/items/AMMO.png",
+    mints: ["ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK"],
+    collectionName: "Star Atlas",
+  },
+];

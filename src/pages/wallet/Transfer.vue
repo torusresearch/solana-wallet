@@ -2,6 +2,7 @@
 import { createTransfer } from "@solana/pay";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { ContactPayload } from "@toruslabs/base-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
 import { BigNumber } from "bignumber.js";
@@ -23,6 +24,8 @@ import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
+import CheckBox from "../../components/common/CheckBox.vue";
+
 const { t } = useI18n();
 
 const snsError = ref("Account Does Not Exist");
@@ -31,6 +34,8 @@ const transferType = ref<TransferType>(ALLOWED_VERIFIERS[0]);
 let snsAddressPromise: Promise<string | null>;
 const transferToInternal = ref("");
 const transferTo = ref("");
+const contactName = ref("");
+const checked = ref(false);
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
 const transaction = ref<Transaction>();
@@ -207,6 +212,20 @@ const getTokenBalance = () => {
   if (selectedToken.value.symbol?.toUpperCase() === "SOL") return Number(ControllerModule.solBalance);
   return selectedToken.value.balance?.uiAmount || 0;
 };
+
+// proceed to validatation only if checkbox is click
+const lengthCheck = (min: number, max: number, contactValue: string): boolean => {
+  return !checked.value || (contactValue.length >= min && contactValue.length <= max);
+};
+
+const isAlnum = (contactValue: string): boolean => {
+  return !checked.value || /^[a-zA-Z0-9]+$/.test(contactValue);
+};
+
+const isRequiredandCheckbox = (contactValue: string): boolean => {
+  return !checked.value || !!contactValue;
+};
+
 const rules = computed(() => {
   return {
     transferTo: {
@@ -225,10 +244,16 @@ const rules = computed(() => {
       ),
       nft: helpers.withMessage(t("walletTransfer.NFT"), nftVerifier),
     },
+    contactName: {
+      required: helpers.withMessage("Required", isRequiredandCheckbox),
+      checkIsAlnum: helpers.withMessage("Name should be alphanumeric", isAlnum),
+      lengthCheck: helpers.withMessage("Name should be less than 255 characters", (contactValue: string) => lengthCheck(0, 255, contactValue)),
+    },
   };
 });
 
-const $v = useVuelidate(rules, { transferTo: transferToInternal, sendAmount });
+const $v = useVuelidate(rules, { transferTo: transferToInternal, sendAmount, contactName });
+
 /**
  * converts the fiatValue from selected fiat currency to selected crypto currency
  * @param fiatValue - amount of fiat
@@ -316,6 +341,15 @@ const openModal = async () => {
         return;
       }
     }
+    // add contact if any
+    if (checked.value && contactName.value.length) {
+      const contactPayload: ContactPayload = {
+        display_name: contactName.value,
+        contact_verifier: transferType.value.value === "sol" ? "solana" : transferType.value.value,
+        contact_verifier_id: transferTo.value,
+      };
+      await ControllerModule.addContact(contactPayload);
+    }
 
     isOpen.value = true;
     trackUserClick(TransferPageInteractions.INITIATE);
@@ -389,6 +423,15 @@ async function setTokenAmount(type = "max") {
     default:
       break;
   }
+}
+
+function isNewContact() {
+  if ($v.value.transferTo.$invalid) return false;
+  const filteredItems = contacts.value.filter((item) => {
+    return item.value.toLowerCase() === transferTo.value.toLowerCase();
+  });
+  if (filteredItems.length > 0) return false;
+  return true;
 }
 
 /**
@@ -471,6 +514,12 @@ async function onSelectTransferType() {
               />
               <div class="w-1/3 flex-auto mt-6">
                 <SelectField v-model="transferType" :items="transferTypes" @update:model-value="onSelectTransferType" />
+              </div>
+            </div>
+            <div v-if="isNewContact()" class="w-full">
+              <CheckBox class="mb-4" label="Save Contact" :checked="checked" label-position="right" @change="checked = !checked" />
+              <div v-if="checked">
+                <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="t('walletSettings.enterContact')" />
               </div>
             </div>
 

@@ -94,7 +94,7 @@ const refDiv = ref(null);
                   class="flex items-center justify-center bg-red-500 text-white text-base size-medium flex-auto mx-2 w-1/2 rounded-md"
                   @click="onConfirm"
                 >
-                  Burn & Close
+                  Burn NFT
                 </button>
               </div>
             </div>

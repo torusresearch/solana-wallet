@@ -7,7 +7,6 @@ import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
-import SolanaLogoLight from "@/assets/solana-logo-light.svg";
 import WalletIcon from "@/assets/wallet.svg";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
@@ -46,7 +45,7 @@ const closeQr = () => {
       @click="copyText(selectedAddress)"
       @keydown="copyText(selectedAddress)"
     >
-      <img alt="solana logo" class="w-3 h-3" :src="SolanaLogoLight" />
+      <!-- <img alt="solana logo" class="w-3 h-3" :src="SolanaLogoLight" /> -->
       <img alt="wallet icon" class="w-3 h-3" :src="WalletIcon" />
       <span class="text-app-text-500 text-xs font-bold">{{ addressSlicer(selectedAddress) }}</span>
     </div>

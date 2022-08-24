@@ -1,6 +1,6 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
 import { Mint, MintLayout, RawMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AccountInfo, Commitment, Connection, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
+import { AccountInfo, Commitment, Connection, Message, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
 import base58 from "bs58";
 import crypto from "crypto";
 import log from "loglevel";
@@ -27,6 +27,20 @@ export const mockMintInfo: Record<string, Mint> = {
     supply: BigInt(1000000000),
     isInitialized: true,
   },
+};
+
+export const mockSimulateTransaction = {
+  err: null,
+  logs: null,
+  accounts: [
+    {
+      data: ["", "base64"],
+      executable: false,
+      lamports: 595644320,
+      owner: "11111111111111111111111111111111",
+      rentEpoch: 342,
+    },
+  ],
 };
 
 const generateAccountInfo = async () => {
@@ -159,7 +173,7 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
             state: "initialized",
             tokenAmount: {
               amount: "0",
-              decimals: 0,
+              decimals: 1,
               uiAmount: 0,
               uiAmountString: "0",
             },
@@ -182,6 +196,36 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
         parsed: {
           info: {
             isNative: false,
+            mint: "E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz",
+            // owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
+            owner: sKeyPair[0].publicKey.toBase58(),
+            state: "initialized",
+            tokenAmount: {
+              amount: "0",
+              decimals: 1,
+              uiAmount: 0,
+              uiAmountString: "0",
+            },
+            decimals: 1,
+          },
+          type: "account",
+        },
+        program: "spl-token",
+        space: 165,
+      },
+      executable: false,
+      lamports: 2039280,
+      owner: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+      rentEpoch: 274,
+    },
+    pubkey: new PublicKey("E4nC2ThDznHgwdFEPyze8p9U28ueRuomx8o3MTgNM7yz"),
+  },
+  {
+    account: {
+      data: {
+        parsed: {
+          info: {
+            isNative: false,
             mint: "CpMah17kQEL2wqyMKt3mZBdTnZbkbfx4nqmQMFDP5vwp",
             owner: "x1QTdVMcfnTJPEWjKLDRn52527Qi2itcLXU2qpgaUVL",
             // owner: sKeyPair[0].publicKey.toBase58(),
@@ -192,6 +236,7 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
               uiAmount: 0.699,
               uiAmountString: "0.699",
             },
+            decimals: 6,
           },
           type: "account",
         },
@@ -321,6 +366,30 @@ export const mockConnection: Partial<Connection> = {
     return {
       context: { slot: slotCounter },
       value: tokenOwned,
+    };
+  },
+
+  getFeeForMessage: async (_message: Message) => {
+    return {
+      context: { slot: slotCounter },
+      value: 1,
+    };
+  },
+
+  simulateTransaction: async (_transactionOrMessage: Transaction | Message) => {
+    return {
+      context: { slot: slotCounter },
+      value: mockSimulateTransaction,
+    };
+  },
+
+  getParsedAccountInfo: async (accountAddress: PublicKey) => {
+    const tokenOwned = parsedTokenAccountInfo.find((item) => {
+      return item.pubkey === accountAddress;
+    });
+    return {
+      context: { slot: slotCounter },
+      value: tokenOwned?.account || parsedTokenAccountInfo[1].account,
     };
   },
 };

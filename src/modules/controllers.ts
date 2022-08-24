@@ -212,7 +212,8 @@ class ControllerModule extends VuexModule {
       return this.userTokens
         .reduce((acc: SolanaToken[], current: SolanaToken) => {
           const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
-          if (current.balance?.decimals !== 0 && data) {
+          if (data?.address === "So11111111111111111111111111111111111111112") (data as any).symbol = "WSOL";
+          if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
             return [
               ...acc,
               {

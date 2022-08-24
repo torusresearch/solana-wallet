@@ -378,8 +378,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.CurrencyControllerState,
     });
     this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
-    this.currencyController.scheduleConversionInterval();
-    this.currencyController.updateConversionRate();
+    if (this.preferencesController?.state?.selectedAddress) {
+      this.currencyController.scheduleConversionInterval();
+      this.currencyController.updateConversionRate();
+    }
 
     // key mgmt
     this.keyringController = new KeyringController({
@@ -546,9 +548,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
       if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
-    } catch (err: any) {
-      log.error(JSON.stringify(await err.json()));
-      throw new Error("Unable to import token");
+    } catch (err) {
+      log.error(err);
+      throw new Error("Unable to import token", err as Error);
     }
   }
 
@@ -606,19 +608,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       await signedTransaction.result;
     } catch (e) {
-      throw ethErrors.provider.userRejectedRequest((e as any).message);
+      throw ethErrors.provider.userRejectedRequest((e as Error).message);
     }
 
     try {
       // serialize transaction
-      let serializedTransaction = signedTransaction.transactionMeta.transaction.serialize({ requireAllSignatures: false }).toString("hex");
-      const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-      if (gaslessHost) {
-        serializedTransaction = await getRelaySigned(gaslessHost, serializedTransaction, tx.recentBlockhash || "");
-      }
+      const serializedTransaction = signedTransaction.transactionMeta.transaction.serialize().toString("hex");
 
       // submit onchain
-      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"));
+      const options = req?.params?.options;
+      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"), options);
 
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
@@ -1180,9 +1179,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const windowId = req.params?.windowId;
     const params = req.params?.params || {};
     const provider = TOPUP.MOONPAY;
-    // const provider = req.params?.provider || TOPUP.MOONPAY;
-    // if (!topupPlugin[provider]) throw ethErrors.provider.custom({ code: -32000, message: "Invalid topup provider" });
-    return this.handleTopup(provider, params, windowId);
+    return this.handleTopup(provider, params as PaymentParams, windowId);
   }
 
   async handleTopup(provider: string, params: PaymentParams, windowId?: string, redirectFlow?: boolean, redirectURL?: string): Promise<boolean> {
@@ -1196,6 +1193,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     log.info(params);
     try {
       const finalUrl = await topupPlugin[provider].orderUrl(state, params, instanceId, redirectFlow, redirectURL);
+
       if (!redirectFlow) {
         const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
         const topUpPopUpWindow = new PopupWithBcHandler({
@@ -1232,9 +1230,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
     waitSaving?: boolean;
   }): Promise<OpenLoginPopupResponse> {
     try {
+      const extraLoginOptions: Record<string, string> = {
+        dappOrigin: this.origin,
+      };
+      if (login_hint) extraLoginOptions.login_hint = login_hint;
+
       const handler = new OpenLoginHandler({
         loginProvider,
-        extraLoginOptions: login_hint ? { login_hint } : {},
+        extraLoginOptions,
       });
       const result = await handler.handleLoginWindow({
         communicationEngine: this.communicationEngine,
@@ -1325,7 +1328,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
    * DISCLAIMER: This is a session management component which allows faster reloads and easier access when
    * the user opens the wallet site. The implementation is optional and can be removed.
    *
-   * @param saveState
+   * @param saveState - save state to openloginStateServer
    */
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
@@ -1529,7 +1532,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       await ret_signed.result;
     } catch (e) {
-      throw ethErrors.provider.userRejectedRequest((e as any).message);
+      throw ethErrors.provider.userRejectedRequest((e as Error).message);
     }
 
     let signed_tx = ret_signed.transactionMeta.txReceipt as string;
