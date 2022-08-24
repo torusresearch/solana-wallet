@@ -26,7 +26,6 @@ vue
   })
   .mount("#app");
 const whiteLabelDetails = {
-  defaultLanguage: "ja", // default english
   logoDark: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R/logo.png", // default solana logo
   logoLight: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R/logo.png", // default solana logo
   name: "fork solana", // wallet name
