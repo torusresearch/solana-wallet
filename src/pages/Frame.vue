@@ -175,8 +175,10 @@ const closePanel = () => {
       @close-panel="closePanel"
       @show-wallet="ControllerModule.openWalletPopup"
     />
-    <div v-if="!isLoggedIn && isLoading" class="flex justify-center items-center bg-white dark:bg-app-gray-800">
-      <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" background-color="#040405" />
+    <div v-if="!isLoggedIn && isLoading">
+      <Loader
+        :logo="isWhiteLabelDark() ? 'https://solana.tor.us/img/solana-dark.dca433ed.svg' : 'https://solana.tor.us/img/solana-light.fc4a10ec.svg'"
+      />
     </div>
   </div>
 </template>
