@@ -2,16 +2,13 @@
 import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
 import PaperAirplane from "@/assets/paper-airplane.svg";
-import SolanaLogoURL from "@/assets/solana-dark.svg";
-import SolanaLightLogoURL from "@/assets/solana-light.svg";
 import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
-import { AccountMenu, AccountMenuList, AccountMenuMobile } from "@/components/nav";
 import { NftsPageInteractions, trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { STATUS, STATUS_TYPE } from "@/utils/enums";
@@ -39,10 +36,6 @@ const messageModalState = reactive({
 
 const showDropDown = ref(false);
 
-const logout = async () => {
-  await ControllerModule.logout();
-};
-
 const nftMetaData = ref<NFTInfo | undefined>(undefined);
 const nfts = computed(() => ControllerModule.nonFungibleTokens);
 const mint = ref<string>("");
@@ -61,6 +54,12 @@ onMounted(async () => {
     edition.value = (metaData?.offChainMetaData as any).edition;
   }
   isLoading.value = false;
+});
+
+watch(selectedAddress, (newAdd: string, oldAdd: string) => {
+  if (newAdd !== oldAdd) {
+    router.push("/wallet/nfts");
+  }
 });
 
 const goBack = () => {
@@ -131,39 +130,6 @@ const confirmTransfer = async () => {
 
 <template>
   <div class="height-full flex flex-col bg-white dark:bg-app-gray-800">
-    <nav class="bg-white dark:bg-app-gray-800 border-b border-gray-200 dark:border-transparent sticky top-0 z-30">
-      <div class="flex h-16 px-4">
-        <div class="flex-1 flex items-center mr-auto">
-          <router-link to="/wallet/home">
-            <img class="block h-4 w-auto" :src="ControllerModule.isDarkMode ? SolanaLightLogoURL : SolanaLogoURL" alt="Solana Logo" />
-          </router-link>
-        </div>
-        <div v-if="selectedAddress && user.verifierId" class="flex flex-3">
-          <div class="hidden md:-my-px md:mx-auto md:flex md:space-x-0">
-            <router-link
-              v-for="(value, key) in tabs"
-              :key="key"
-              :to="`/wallet/${value.route}`"
-              :class="[
-                key === 'nfts'
-                  ? 'border-app-primary-500 text-app-primary-500'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 dark:hover:border-white hover:text-gray-700 dark:hover:text-white',
-                'inline-flex items-center px-4 pt-1 border-b-2 text-sm font-medium',
-                value.navHidden && 'hidden',
-              ]"
-              aria-current="page"
-              >{{ t(value.name) }}</router-link
-            >
-          </div>
-        </div>
-        <div v-if="selectedAddress && user.verifierId" class="hidden md:flex items-center flex-1 ml-auto justify-end">
-          <AccountMenu :user="user"><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenu>
-        </div>
-        <div v-if="selectedAddress && user.verifierId" class="ml-6 flex md:hidden items-center">
-          <AccountMenuMobile><AccountMenuList :user="user" :selected-address="selectedAddress" @on-logout="logout" /></AccountMenuMobile>
-        </div>
-      </div>
-    </nav>
     <main v-if="nftMetaData" class="flex-1 relative">
       <div class="h-[380px] w-full absolute top-0 left-0 flex justify-center items-center overflow-hidden">
         <img

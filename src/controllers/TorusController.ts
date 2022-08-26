@@ -1364,11 +1364,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
-      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const sessionKey = window.sessionStorage?.getItem(`${EPHERMAL_KEY}`);
       const value = sessionKey || localKey;
 
       // Saving to SessionStorage - user refresh with restored key
-      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
+      if (!sessionKey && value) window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -1420,8 +1420,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           this.update({ UserDapp: userDapp });
 
           // find previous selected account
-          const address = this.selectedAddress || decryptedState.publicKey;
-          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === address);
+          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
           const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
           await this.setSelectedAccount(selectedAddress, true);

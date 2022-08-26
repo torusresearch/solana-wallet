@@ -2,7 +2,7 @@
 import { get } from "@toruslabs/http-helpers";
 import { SolanaToken } from "@toruslabs/solana-controllers";
 import log from "loglevel";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
@@ -18,10 +18,12 @@ type FETCH_STATE = "idle" | "loading" | "loaded" | "error";
 
 const router = useRouter();
 const nfts = computed<SolanaToken[]>(() => ControllerModule.nonFungibleTokens);
+const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
 const exploreNFTS = ref<NFTCollection[]>([]);
 const exploreNFTSFetchState = ref<FETCH_STATE>("idle");
-onMounted(async () => {
-  if (nfts.value.length === 0) {
+
+async function fetchPopularNfts() {
+  if (nfts.value.length === 0 && exploreNFTS.value.length === 0) {
     try {
       exploreNFTSFetchState.value = "loading";
       const collections: NFTCollection[] = await get(`${config.api}/tokeninfo/popularNFTs`);
@@ -34,13 +36,23 @@ onMounted(async () => {
       exploreNFTS.value = [];
     }
   }
+}
+
+onMounted(async () => {
+  await fetchPopularNfts();
 });
+
 const openCollection = (collectionName: string) => {
   window.open(`https://magiceden.io/marketplace/${collectionName}`, "_blank");
 };
 const navigateNFT = (mintAddress: string) => {
   router.push(`/wallet/nfts/${mintAddress}`);
 };
+
+watch([nfts, selectedAddress], async () => {
+  await fetchPopularNfts();
+});
+
 function getNftFetchMessage(state: FETCH_STATE): string {
   switch (state) {
     case "error":
