@@ -1420,7 +1420,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
           this.update({ UserDapp: userDapp });
 
           // find previous selected account
-          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
+          const address = this.selectedAddress || decryptedState.publicKey;
+          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === address);
           const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
           await this.setSelectedAccount(selectedAddress, true);

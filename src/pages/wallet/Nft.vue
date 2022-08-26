@@ -56,8 +56,8 @@ onMounted(async () => {
   isLoading.value = false;
 });
 
-watch(selectedAddress, (newAdd: string, oldAdd: string) => {
-  if (newAdd !== oldAdd) {
+watch(selectedAddress, (newAddress: string, oldAddress: string) => {
+  if (newAddress !== oldAddress) {
     router.push("/wallet/nfts");
   }
 });
