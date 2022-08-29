@@ -30,7 +30,7 @@ const initParams = {
 } as EmbedInitParams;
 
 const showUI = ref(false);
-const isLogin = ref(false);
+const isPopupLoginInProgress = ref(false);
 
 const hashParams = new URLSearchParams(window.location.hash.slice(1));
 const specifiedOrigin = hashParams.get("origin");
@@ -72,7 +72,7 @@ function startLogin() {
 startLogin();
 
 const isLoggedIn = computed(() => ControllerModule.hasSelectedPrivateKey);
-const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
+const isEmbedLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
 const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
@@ -125,15 +125,15 @@ onMounted(async () => {
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
   try {
-    isLogin.value = true;
+    isPopupLoginInProgress.value = true;
     ControllerModule.torus.hideOAuthModal();
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: userEmail,
     });
-    isLogin.value = false;
+    isPopupLoginInProgress.value = false;
   } catch (error) {
-    isLogin.value = false;
+    isPopupLoginInProgress.value = false;
     log.error(error);
   }
 };
@@ -152,10 +152,10 @@ const closePanel = () => {
 <template>
   <div class="min-h-screen flex justify-center items-center">
     <PopupLogin
-      :is-open="oauthModalVisibility || !isLoggedIn || isLoginInProgress"
+      :is-open="oauthModalVisibility || !isLoggedIn || isEmbedLoginInProgress"
       :other-wallets="initParams.extraParams?.otherWallets"
-      :is-login="isLogin"
-      :is-login-in-progress="isLoginInProgress"
+      :is-popup-login-in-progress="isPopupLoginInProgress"
+      :is-embed-login-in-progress="isEmbedLoginInProgress"
       @on-close="cancelLogin"
       @on-login="onLogin"
     />
@@ -164,7 +164,7 @@ const closePanel = () => {
       :is-iframe-full-screen="isIFrameFullScreen"
       :is-logged-in="isLoggedIn"
       :button-position="initParams.buttonPosition"
-      :is-login-in-progress="isLoginInProgress"
+      :is-login-in-progress="isEmbedLoginInProgress"
       @show-login-modal="loginFromWidget"
       @toggle-panel="ControllerModule.toggleIframeFullScreen"
       @close-panel="closePanel"

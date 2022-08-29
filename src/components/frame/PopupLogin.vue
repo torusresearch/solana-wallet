@@ -18,14 +18,14 @@ import BoxLoader from "../common/BoxLoader.vue";
 withDefaults(
   defineProps<{
     isOpen?: boolean;
-    isLoginInProgress?: boolean;
-    isLogin?: boolean;
+    isEmbedLoginInProgress?: boolean;
+    isPopupLoginInProgress?: boolean;
     otherWallets?: string;
   }>(),
   {
     isOpen: false,
-    isLoginInProgress: false,
-    isLogin: false,
+    isEmbedLoginInProgress: false,
+    isPopupLoginInProgress: false,
     otherWallets: "false",
   }
 );
@@ -116,7 +116,7 @@ const refDiv = ref(null);
                   t("login.differentWallet")
                 }}</span>
               </div>
-              <template v-if="isLogin || isLoginInProgress">
+              <template v-if="isPopupLoginInProgress || isEmbedLoginInProgress">
                 <div class="fixed inset-0 z-30 overflow-y-auto px-4 flex justify-center items-center">
                   <BoxLoader />
                 </div>
