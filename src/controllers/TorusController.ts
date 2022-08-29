@@ -1584,6 +1584,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
+    this.embedController.update({ loginInProgress: true });
     // Try to restore from backend (restore privatekey)
     await this.restoreFromBackend();
     return new Promise((resolve, reject) => {
@@ -1598,7 +1599,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
           // To login with the requested provider
           // On Embed, we have a window waiting... we need to tell it to login
           this.embedController.update({
-            loginInProgress: true,
             oauthModalVisibility: false,
           });
           this.triggerLogin({
@@ -1607,7 +1607,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
           });
           this.once("LOGIN_RESPONSE", (error: string, address: string) => {
             this.embedController.update({
-              loginInProgress: false,
               oauthModalVisibility: false,
             });
             if (error) reject(new Error(error));
@@ -1620,18 +1619,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else {
         // We show the modal to login
         this.embedController.update({
-          loginInProgress: true,
           oauthModalVisibility: true,
         });
         this.once("LOGIN_RESPONSE", (error: string, address: string) => {
           this.embedController.update({
-            loginInProgress: false,
             oauthModalVisibility: false,
           });
           if (error) reject(new Error(error));
           else resolve([address]);
         });
       }
+      this.embedController.update({ loginInProgress: false });
     });
   }
 

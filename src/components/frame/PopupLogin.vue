@@ -13,14 +13,19 @@ import { LOGIN_CONFIG } from "@/utils/enums";
 import { getWhiteLabelLogo, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import ControllerModule from "../../modules/controllers";
+import BoxLoader from "../common/BoxLoader.vue";
 
 withDefaults(
   defineProps<{
     isOpen?: boolean;
+    isLoginInProgress?: boolean;
+    isLogin?: boolean;
     otherWallets?: string;
   }>(),
   {
     isOpen: false,
+    isLoginInProgress: false,
+    isLogin: false,
     otherWallets: "false",
   }
 );
@@ -43,6 +48,7 @@ const activeButton = ref<string>(LOGIN_PROVIDER.GOOGLE);
 const setActiveButton = (provider: string) => {
   activeButton.value = provider;
 };
+
 const refDiv = ref(null);
 </script>
 <template>
@@ -110,6 +116,11 @@ const refDiv = ref(null);
                   t("login.differentWallet")
                 }}</span>
               </div>
+              <template v-if="isLogin || isLoginInProgress">
+                <div class="fixed inset-0 z-30 overflow-y-auto px-4 flex justify-center items-center">
+                  <BoxLoader />
+                </div>
+              </template>
             </div>
           </TransitionChild>
         </div>
