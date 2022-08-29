@@ -16,7 +16,7 @@ function cardClicked() {
 </script>
 
 <template>
-  <div class="w-full overflow-hidden nft-item">
+  <div class="p-2 w-full overflow-hidden nft-item">
     <div
       class="w-full cursor-pointer bg-white dark:bg-app-gray-700 rounded-lg shadow-md dark:shadow-dark overflow-hidden"
       @click="cardClicked"
