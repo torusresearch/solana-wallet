@@ -24,6 +24,7 @@ async function startLogin() {
       loginProvider: loginProvider as string,
       appState: state as string,
       extraLoginOptions: rest,
+      sessionTime: 3 * 86400,
       // relogin: true,
     });
   } catch (error) {
