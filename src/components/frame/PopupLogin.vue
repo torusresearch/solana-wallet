@@ -67,61 +67,70 @@ const refDiv = ref(null);
             leave-to="opacity-0 scale-95"
           >
             <div class="login-container bg-white dark:bg-app-gray-900">
-              <div class="flex w-full justify-items-start items-center">
-                <div v-if="isWhiteLabelSet()" class="w-1/5 px-4 mt-8">
-                  <img class="dapp-logo" :src="getWhiteLabelLogo(ControllerModule.isDarkMode)" alt="Dapp-logo" />
+              <template v-if="!isPopupLoginInProgress && !isEmbedLoginInProgress">
+                <div class="flex w-full justify-items-start items-center">
+                  <div v-if="isWhiteLabelSet()" class="w-1/5 px-4 mt-8">
+                    <img class="dapp-logo" :src="getWhiteLabelLogo(ControllerModule.isDarkMode)" alt="Dapp-logo" />
+                  </div>
+                  <div
+                    :class="
+                      getWhiteLabelLogo(ControllerModule.isDarkMode)
+                        ? `flex flex-col items-start w-4/5`
+                        : `py-0 px-4 relative focus-within:outline-none bg-transparent w-full text-center`
+                    "
+                  >
+                    <DialogTitle as="div" class="focus-within:outline-none bg-transparent w-full" tabindex="0">
+                      <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ t("login.setupWallet") }}</h1>
+                      <div
+                        class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
+                        @click="closeModal"
+                        @keydown="closeModal"
+                      >
+                        <XIcon class="w-5 h-5 text-app-gray-800 dark:text-white text-opacity-70 hover:text-opacity-100" />
+                      </div>
+                    </DialogTitle>
+                    <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1 pr-5">{{ t("login.poweredBy") }}</p>
+                  </div>
+                </div>
+                <div class="mt-8 w-full px-4">
+                  <LoginButtons
+                    :is-embed="true"
+                    :active-button="activeButton"
+                    :login-buttons="loginButtonsArray"
+                    @on-login="onLogin"
+                    @on-hover="setActiveButton"
+                  />
+                </div>
+                <div class="w-full mt-6 mb-12 text-center">
+                  <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
+                  <img
+                    :src="ControllerModule.isDarkMode ? TorusLogoLightURL : TorusLogoURL"
+                    alt="Torus Logo"
+                    class="h-4 w-auto opacity-70 inline-block"
+                  />
                 </div>
                 <div
-                  :class="
-                    getWhiteLabelLogo(ControllerModule.isDarkMode)
-                      ? `flex flex-col items-start w-4/5`
-                      : `py-0 px-4 relative focus-within:outline-none bg-transparent w-full text-center`
-                  "
+                  v-if="otherWallets === 'true'"
+                  class="mt-auto pt-4 pb-6 px-2 w-full border-t-2 border-solid border-white border-opacity-10 text-center"
                 >
-                  <DialogTitle as="div" class="focus-within:outline-none bg-transparent w-full" tabindex="0">
-                    <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ t("login.setupWallet") }}</h1>
-                    <div
-                      class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
-                      @click="closeModal"
-                      @keydown="closeModal"
-                    >
-                      <XIcon class="w-5 h-5 text-app-gray-800 dark:text-white text-opacity-70 hover:text-opacity-100" />
-                    </div>
-                  </DialogTitle>
-                  <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1 pr-5">{{ t("login.poweredBy") }}</p>
+                  <span class="cursor-pointer text-base dark:text-white text-app-text-600 font-normal hover:text-opacity-80" tabindex="0">{{
+                    t("login.differentWallet")
+                  }}</span>
                 </div>
-              </div>
-              <div class="mt-8 w-full px-4">
-                <LoginButtons
-                  :is-embed="true"
-                  :active-button="activeButton"
-                  :login-buttons="loginButtonsArray"
-                  @on-login="onLogin"
-                  @on-hover="setActiveButton"
-                />
-              </div>
-              <div class="w-full mt-6 mb-12 text-center">
-                <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
-                <img
-                  :src="ControllerModule.isDarkMode ? TorusLogoLightURL : TorusLogoURL"
-                  alt="Torus Logo"
-                  class="h-4 w-auto opacity-70 inline-block"
-                />
-              </div>
-              <div
-                v-if="otherWallets === 'true'"
-                class="mt-auto pt-4 pb-6 px-2 w-full border-t-2 border-solid border-white border-opacity-10 text-center"
-              >
-                <span class="cursor-pointer text-base dark:text-white text-app-text-600 font-normal hover:text-opacity-80" tabindex="0">{{
-                  t("login.differentWallet")
-                }}</span>
-              </div>
-              <div
-                v-if="isPopupLoginInProgress || isEmbedLoginInProgress"
-                class="fixed inset-0 z-30 overflow-y-auto px-4 flex justify-center items-center"
-              >
-                <BoxLoader />
-              </div>
+              </template>
+              <tempalte v-else>
+                <div class="flex flex-col justify-center items-center p-10">
+                  <BoxLoader />
+                </div>
+                <div class="w-full mt-6 mb-12 text-center">
+                  <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
+                  <img
+                    :src="ControllerModule.isDarkMode ? TorusLogoLightURL : TorusLogoURL"
+                    alt="Torus Logo"
+                    class="h-4 w-auto opacity-70 inline-block"
+                  />
+                </div>
+              </tempalte>
             </div>
           </TransitionChild>
         </div>
