@@ -87,7 +87,7 @@ const logout = async () => {
         </div>
       </header>
       <main>
-        <div class="mx-4 sm:mx-auto sm:px-6 lg:px-8 max-w-7xl">
+        <div :class="props.showHeader ? 'mx-4 sm:mx-auto sm:px-6 lg:px-8 max-w-7xl' : ''">
           <slot />
         </div>
       </main>
