@@ -116,11 +116,12 @@ const refDiv = ref(null);
                   t("login.differentWallet")
                 }}</span>
               </div>
-              <template v-if="isPopupLoginInProgress || isEmbedLoginInProgress">
-                <div class="fixed inset-0 z-30 overflow-y-auto px-4 flex justify-center items-center">
-                  <BoxLoader />
-                </div>
-              </template>
+              <div
+                v-if="isPopupLoginInProgress || isEmbedLoginInProgress"
+                class="fixed inset-0 z-30 overflow-y-auto px-4 flex justify-center items-center"
+              >
+                <BoxLoader />
+              </div>
             </div>
           </TransitionChild>
         </div>
