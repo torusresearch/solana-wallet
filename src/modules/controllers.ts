@@ -93,7 +93,7 @@ class ControllerModule extends VuexModule {
   }
 
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
-    const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
+    const txns = Object.values(this.torusState.ActivitiesControllerState.address[this.selectedAddress]?.activities);
     return txns.map((item) => {
       if (item.mintAddress) {
         if (item.decimal === 0) {

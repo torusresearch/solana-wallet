@@ -83,6 +83,7 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { topupPlugin } from "@/plugins/Topup";
+import { formatNewTxToActivity } from "@/utils/activitiesHelper";
 import { retrieveNftOwner } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
@@ -103,6 +104,7 @@ import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
+import ActivitiesController from "./ActivitiesController";
 
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
@@ -132,6 +134,7 @@ export const DEFAULT_CONFIG = {
     supportedCurrencies: config.supportedCurrencies,
     api: config.api,
   },
+  ActivitiesControllerConfig: {},
 };
 export const DEFAULT_STATE = {
   AccountTrackerState: { accounts: {} },
@@ -183,6 +186,11 @@ export const DEFAULT_STATE = {
   RelayMap: {},
   RelayKeyHostMap: {},
   UserDapp: new Map(),
+  ActivitiesControllerState: {
+    address: {},
+    state: "",
+    loading: false,
+  },
 };
 
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
@@ -209,6 +217,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private embedController!: BaseEmbedController<BaseConfig, BaseEmbedControllerState>;
 
   private tokensTracker!: TokensTrackerController;
+
+  private activitiesController!: ActivitiesController;
 
   private engine?: JRPCEngine;
 
@@ -424,6 +434,18 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getConnection: this.networkController.getConnection.bind(this),
     });
 
+    this.activitiesController = new ActivitiesController({
+      state: this.state.ActivitiesControllerState,
+      config: this.config.ActivitiesControllerConfig,
+      getConnection: this.networkController.getConnection.bind(this),
+      getSelectedAddress: () => this.preferencesController.state.selectedAddress,
+      getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
+      getWalletOrders: this.preferencesController.getWalletOrders.bind(this.preferencesController),
+      getTopUpOrders: this.preferencesController.getTopUpOrders.bind(this.preferencesController),
+      patchPastTx: this.preferencesController.patchPastTx.bind(this.preferencesController),
+      postPastTx: this.preferencesController.postPastTx.bind(this.preferencesController),
+    });
+
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
       this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
     });
@@ -433,7 +455,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.accountTracker.refresh();
         this.tokensTracker.updateSolanaTokens();
-        this.preferencesController.updateDisplayActivities();
+        // this.preferencesController.updateDisplayActivities();
+        this.activitiesController.refreshActivities();
       }
       this.emit("newBlock", block);
     });
@@ -442,7 +465,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.networkController.on("networkDidChange", async () => {
       if (this.selectedAddress) {
         try {
-          this.preferencesController.initializeDisplayActivity();
+          // this.preferencesController.initializeDisplayActivity();
+          this.activitiesController.fullRefresh();
         } catch (e) {
           log.error(e, this.selectedAddress);
         }
@@ -488,7 +512,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ TokensTrackerState: state2 });
       this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
       this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
-      // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
     this.txController.on("store", (state2: TransactionState<Transaction>) => {
@@ -502,9 +525,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
             state2.transactions[txId].rawTransaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
-          this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
-            log.error(err, "error while patching a new tx");
-          });
+
+          const conversionRate = tokenTransfer ? tokenTransfer.conversionRate[this.currencyController.getCurrentCurrency()] : this.conversionRate;
+          const currencyData = {
+            selectedCurrency: this.currentCurrency,
+            conversionRate,
+          };
+          const { blockExplorerUrl } = this.networkController.state.providerConfig;
+          const formattedTx = formatNewTxToActivity(state2.transactions[txId], currencyData, this.selectedAddress, blockExplorerUrl, tokenTransfer);
+
+          this.activitiesController.patchNewTx(formattedTx, this.selectedAddress);
         }
       });
     });
@@ -513,6 +543,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       this.update({ EmbedControllerState: state2 });
     });
 
+    this.activitiesController.on("store", (state2) => {
+      this.update({ ActivitiesControllerState: state2 });
+    });
     this.updateRelayMap();
   }
 
@@ -706,10 +739,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
         await this.preferencesController.backendFallback(address, userInfo);
       }
     }
+
+    this.activitiesController.updateBackendTransaction(address);
+    this.activitiesController.updateTopUpTransaction(address);
     return address;
   }
 
   async setSelectedAccount(address: string, sync = false) {
+    log.info("setSelectedAccount", address);
     this.preferencesController.setSelectedAddress(address);
     if (sync) await this.preferencesController.sync(address);
 
@@ -719,7 +756,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.accountTracker.refresh();
 
     this.tokensTracker.updateSolanaTokens();
-    this.preferencesController.initializeDisplayActivity();
+    this.activitiesController.fullRefresh();
   }
 
   async setCurrentCurrency(currency: string): Promise<void> {

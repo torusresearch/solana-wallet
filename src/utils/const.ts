@@ -1,6 +1,7 @@
+import { ProviderConfig } from "@toruslabs/base-controllers";
 import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 
-export const WALLET_SUPPORTED_NETWORKS = {
+export const WALLET_SUPPORTED_NETWORKS: { [key: string]: ProviderConfig } = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,

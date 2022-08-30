@@ -24,6 +24,8 @@ import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Net
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
 import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 
+import { ActivitiesControllerConfig, ActivitiesControllerState } from "@/controllers/ActivitiesController";
+
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";
 export type STORAGE_TYPE = typeof LOCAL_STORAGE_KEY | typeof SESSION_STORAGE_KEY;
@@ -68,6 +70,7 @@ export interface TorusControllerState extends BaseState {
   RelayMap: { [relay: string]: string };
   RelayKeyHostMap: { [Pubkey: string]: string };
   UserDapp: Map<string, string>;
+  ActivitiesControllerState: ActivitiesControllerState;
 }
 
 export interface TorusControllerConfig extends BaseConfig {
@@ -80,6 +83,7 @@ export interface TorusControllerConfig extends BaseConfig {
   TokensTrackerConfig: TokensTrackerConfig;
   TokensInfoConfig: TokensInfoConfig;
   RelayHost: { [relay: string]: string };
+  ActivitiesControllerConfig: ActivitiesControllerConfig;
 }
 
 export const CONTROLLER_MODULE_KEY = "controllerModule";
