@@ -179,6 +179,7 @@ export const DEFAULT_STATE = {
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
     unknownNFTs: [],
+    isNFTLoading: false,
   },
   RelayMap: {},
   RelayKeyHostMap: {},
