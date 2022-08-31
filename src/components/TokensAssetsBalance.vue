@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 import SplCard from "@/components/home/SplCard.vue";
 import { tokens } from "@/components/transfer/token-helper";
 import { HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
+import ControllerModule from "@/modules/controllers";
 
+const isSplTokenLoading = computed(() => ControllerModule.isSplTokenLoading);
 const router = useRouter();
 
 function transferToken(mint?: string) {
@@ -21,6 +24,11 @@ function transferToken(mint?: string) {
         <div v-for="token in tokens" :key="token?.tokenAddress?.toString()" class="w-full">
           <SplCard :spl-token="token" @spl-clicked="transferToken(token.mintAddress)"></SplCard>
         </div>
+        <template v-if="isSplTokenLoading">
+          <div class="flex flex-col space-y-4 w-full">
+            <SplCard :spl-token-loading="true"></SplCard>
+          </div>
+        </template>
       </div>
     </div>
   </div>

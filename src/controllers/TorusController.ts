@@ -143,6 +143,7 @@ export const DEFAULT_STATE = {
     nativeCurrency: "sol",
     ticker: "sol",
     tokenPriceMap: {},
+    isCurrencyRateUpdate: false,
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -179,6 +180,8 @@ export const DEFAULT_STATE = {
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
     unknownNFTs: [],
+    isNFTLoading: false,
+    isSplTokenLoading: false,
   },
   RelayMap: {},
   RelayKeyHostMap: {},

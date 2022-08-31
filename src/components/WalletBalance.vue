@@ -9,6 +9,8 @@ import ControllerModule from "@/modules/controllers";
 import { isTopupHidden } from "@/utils/whitelabel";
 
 const { t } = useI18n();
+const isCurrencyRateUpdate = computed(() => ControllerModule.isCurrencyRateUpdate);
+const isSplTokenLoading = computed(() => ControllerModule.isSplTokenLoading);
 
 defineProps<{
   showButtons?: boolean;
@@ -38,7 +40,7 @@ const updateCurrency = (newCurrency: string) => {
       </div>
       <NetworkDisplay />
     </div>
-    <div class="flex w-full justify-between items-center">
+    <div v-if="!isSplTokenLoading && !isCurrencyRateUpdate" class="flex w-full justify-between items-center">
       <div class="amount-container">
         <span class="mr-2 font-bold text-5xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />
@@ -48,6 +50,13 @@ const updateCurrency = (newCurrency: string) => {
         <span id="conversionRate">{{ conversionRate }}</span>
         {{ currency }}
       </div>
+    </div>
+    <div v-else class="flex w-full justify-between items-center">
+      <div class="amount-container">
+        <span class="skeleton-animation skeleton-p mr-2 font-bold text-5xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500"></span>
+        <span class="skeleton-animation w-10 mr-1 font-bold text-2xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500"></span>
+      </div>
+      <span class="skeleton-animation skeleton-p mr-1 font-bold text-2xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500"></span>
     </div>
     <template v-if="showButtons" #footer>
       <div class="flex w-full justify-between items-center">
@@ -77,5 +86,11 @@ const updateCurrency = (newCurrency: string) => {
   display: flex;
   flex-direction: row;
   align-items: baseline;
+}
+.skeleton-p {
+  width: 100px;
+  height: 1.2rem;
+  margin: 0.5rem 0;
+  border-radius: 0.25rem;
 }
 </style>

@@ -143,6 +143,18 @@ class ControllerModule extends VuexModule {
     return this.torus.lastTokenRefreshDate;
   }
 
+  get isNFTloading(): boolean {
+    return this.torusState.TokenInfoState.isNFTLoading || false;
+  }
+
+  get isSplTokenLoading(): boolean {
+    return this.torusState.TokenInfoState.isSplTokenLoading || false;
+  }
+
+  get isCurrencyRateUpdate(): boolean {
+    return this.torusState.CurrencyControllerState.isCurrencyRateUpdate || false;
+  }
+
   get totalBalance(): string {
     let balance = new BigNumber(0);
     const selectedCurrency = this.torusState.CurrencyControllerState.currentCurrency;
