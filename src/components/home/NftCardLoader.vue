@@ -30,38 +30,46 @@
   padding-top: 100%;
   border-radius: 0.75rem;
 
-  animation: skeleton-loading 1s linear infinite alternate;
+  animation: skeleton-loading 1s ease-in-out forwards infinite alternate;
 }
 .profile-info span {
   height: 16px;
   display: block;
-  animation: skeleton-loading 1s linear infinite alternate;
+  animation: skeleton-loading 1s ease-in-out forwards infinite alternate;
 }
 .profile-info h3 {
-  animation: skeleton-loading 1s linear infinite alternate;
+  animation: skeleton-loading 1s ease-in-out forwards infinite alternate;
 }
 .profile-info p {
   width: 80%;
   height: 0.7rem;
   margin-bottom: 0.5rem;
   border-radius: 0.25rem;
-  animation: skeleton-loading 1s linear infinite alternate;
+  animation: skeleton-loading 1s ease-in-out forwards infinite alternate;
 }
 @-webkit-keyframes skeleton-loading {
   0% {
-    background-color: #c2cfd6;
+    background-color: hsl(200, 12%, 50%);
+    transform: translateY(6px) scale(0.98);
+    opacity: 0.2;
   }
   100% {
     background-color: #f0f3f5;
+    transform: translateY(0px) scale(1);
+    opacity: 1;
   }
 }
 
 @keyframes skeleton-loading {
   0% {
-    background-color: #c2cfd6;
+    background-color: hsl(200, 12%, 50%);
+    transform: translateY(6px) scale(0.98);
+    opacity: 0.2;
   }
   100% {
     background-color: #f0f3f5;
+    transform: translateY(0px) scale(1);
+    opacity: 1;
   }
 }
 </style>
