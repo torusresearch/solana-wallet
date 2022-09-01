@@ -89,6 +89,12 @@ const router = createRouter({
           meta: { title: "NFTs", tab: "nfts" },
         },
         {
+          name: "walletNFT",
+          path: "nfts/:mint_address",
+          component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFT" */ "@/pages/wallet/Nft.vue"),
+          meta: { title: "", tab: "nfts", tabHeader: "false" },
+        },
+        {
           name: "walletDiscover",
           path: "discover",
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "Discover" */ "@/pages/wallet/Discover.vue"),
@@ -101,13 +107,6 @@ const router = createRouter({
           meta: { title: "Solana Pay", tab: "pay" },
         },
       ],
-    },
-    // AUTH STATE INDEPENDENT ROUTES
-    {
-      name: "walletNFT",
-      path: "/wallet/nfts/:mint_address",
-      component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "NFT" */ "@/pages/wallet/Nft.vue"),
-      meta: { title: "NFT Details", tab: "nfts" },
     },
     {
       name: "logout",
