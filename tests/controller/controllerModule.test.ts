@@ -46,8 +46,6 @@ describe("Controller Module", () => {
   let popupResult = { approve: true };
   let popupStub: sinon.SinonStub;
 
-  let spyPrefIntializeDisp: sinon.SinonSpy;
-
   // init once only
 
   controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
@@ -91,7 +89,6 @@ describe("Controller Module", () => {
     log.info({ popupStub });
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
-    spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
     // addToStub = sandbox.spy(app.value.toastMessages, "addToast");
 
     // init
@@ -316,8 +313,6 @@ describe("Controller Module", () => {
       await controllerModule.triggerLogin({ loginProvider: "google" });
 
       assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 1);
-      assert(spyPrefIntializeDisp.calledOnce);
-      log.info(sKeyPair[3]);
       // await controllerModule.torus.loginWithPrivateKey(base58.encode(sKeyPair[3].secretKey));
 
       // validate state
@@ -556,10 +551,7 @@ describe("Controller Module", () => {
     it("embed sendTransaction flow", async () => {
       const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
       const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false }).toString("hex");
-      assert.equal(
-        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length,
-        0
-      );
+      assert.equal(Object.keys(controllerModule.selectedNetworkTransactions).length, 0);
       // validate state before
       const result = await controllerModule.torus.provider.sendAsync({
         method: "send_transaction",
@@ -569,10 +561,7 @@ describe("Controller Module", () => {
       });
 
       // validate state after
-      assert.equal(
-        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length,
-        1
-      );
+      assert.equal(Object.keys(controllerModule.selectedNetworkTransactions).length, 1);
 
       // log.error(result);
       tx.sign(sKeyPair[0]);

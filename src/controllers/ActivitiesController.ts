@@ -165,6 +165,8 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
         ...this.state.address,
         [this.getSelectedAddress()]: {
           ...this.state.address[this.getSelectedAddress()],
+          topupTransaction: [],
+          backendTransactions: [],
           activities: {},
         },
       },
@@ -250,7 +252,7 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
           ...this.state.address,
           [selectedAddress]: {
             ...this.state.address[selectedAddress],
-            activities,
+            ...activities,
           },
         },
       });
