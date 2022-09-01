@@ -10,7 +10,8 @@ import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
 import { LOGIN_CONFIG } from "@/utils/enums";
-import { getWhiteLabelLogo, isWhiteLabelSet } from "@/utils/whitelabel";
+import { getTailwindColor } from "@/utils/tailwindHelper";
+import { getWhiteLabelLogo, isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import ControllerModule from "../../modules/controllers";
 import BoxLoader from "../common/BoxLoader.vue";
@@ -118,9 +119,9 @@ const refDiv = ref(null);
                   }}</span>
                 </div>
               </template>
-              <tempalte v-else>
+              <template v-else>
                 <div class="flex flex-col justify-center items-center p-10">
-                  <BoxLoader />
+                  <BoxLoader :background-color="isWhiteLabelDark() ? getTailwindColor('gray', 0) : getTailwindColor('gray', 900)" />
                 </div>
                 <div class="w-full mt-6 mb-12 text-center">
                   <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
@@ -130,7 +131,7 @@ const refDiv = ref(null);
                     class="h-4 w-auto opacity-70 inline-block"
                   />
                 </div>
-              </tempalte>
+              </template>
             </div>
           </TransitionChild>
         </div>
