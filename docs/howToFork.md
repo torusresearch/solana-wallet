@@ -14,4 +14,6 @@ Mandatory changes required:
 
 - 4. Generate your own sentry and google analytics credentials and use them in .env files.
 
-- 5. Api calls to https://solana-api.tor.us is restricted and contact our team for help.
+- 5. Api calls to https://solana-api.tor.us is restricted / prohibited and contact our team for help.
+
+- 6. Generate a different sentry dsn for your fork and never use the one available in the current env.
