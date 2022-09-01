@@ -31,7 +31,7 @@ Account Balance section shows the cumulative account balance of user in the wall
 
 <img src="screenshots/qrCode-stuff.png" width="700" height="auto" />
 
-Clicking the QR code icon on the home page will trigger a popup with a QR code embedded with the wallet address,there is also an option to download
+Clicking the QR code icon on the home page will trigger a popup with a QR code embedded with the wallet address. There is also an option to download
 the QR code or one click copy the public address. User can share the QR Code or public address with anyone to receive SOL tokens or NFT's on this wallet.
 (Anyone with the public address can see your wallet balance and previous transactions).
 
@@ -45,7 +45,7 @@ the QR code or one click copy the public address. User can share the QR Code or 
 <img src="screenshots/wallet-home-qrScanner.png" width="700" height="auto" />
 
 
-Scan & Pay button on top lets the user harness [Solana Pay](https://solanapay.com/), which is an decentralized and performant payment network for immediate transactions in USDC or Solana-based stablecoins. Solana Pay is energy efficient and fast and its the first open direct merchant-to-consumer payment rail.
+Scan & Pay button on top lets the user harness [Solana Pay](https://solanapay.com/), which is an decentralized and performant payment network for immediate transactions in SOL or SPL tokens like USDC.
 
 Scan & Pay opens the device camera to scan merchants QR Code.
 
@@ -60,10 +60,10 @@ Interested to know more about Solana Pay? [How Solana Pay works](https://solana.
 <img src="screenshots/exchanges.png" width="700" height="auto" />
 
 Solana wallet allow users to purchase SOL tokens directly from the wallet.
-- Clicking on the topup button takes user to a page to select the service provider to buy tokens from.
+- Clicking on the topup button takes user to a page to select the topup service provider to buy tokens from.
 - Currently users can purchase and topup SOL tokens from [Moonpay](https://www.moonpay.com/) only.
 - User can select the topup value in user's preferred fiat currency and the wallet will redirect user to moonpay website to complete the payment.
-- On completing the payment user will receive equivalent SOL tokens (after moonpay commisions) in user's wallet.
+- On completing the payment user will receive the equivalent tokens in the wallet.
 ---------------------------------------------------------------------------------------------------
 
 
@@ -77,12 +77,12 @@ Solana wallet allow users to purchase SOL tokens directly from the wallet.
 <img src="screenshots/confirm-transfer.png" width="700" height="auto" />
 
 
-Transfer Button on the wallet redirects user to a transfer page to send SOL tokens or NFT tokens to other Solana addresses.
+Transfer Button on the wallet redirects user to a transfer page to send SOL/SPL/NFT tokens to other wallets.
 - Make sure a valid Solana address/SOL Domain is provided (eg: transferring SOL to ETH or BTC address will result in permanent loss of tokens)
 - There is a dropdown menu to select the token.
-- For sending SOL tokens user can set the transfer amount in SOL tokens or in user's preferred currency of choice.
+- For sending SOL tokens, user can set the transfer amount in SOL tokens or in user's preferred currency of choice.
 - User can select the topup value in his/her preferred fiat currency and the wallet will redirect user to moonpay website to complete the payment.
-- Confirm Transaction popup will show the glimpse of the sending and receiving addresses and shows the maximum transaction fee possible for the transfer.
+- Confirm Transaction popup will show the details of the transaction. If the state changes are parsable, users can check the net account balance change as well.
 
 ---------------------------------------------------------------------------------------------------
 
