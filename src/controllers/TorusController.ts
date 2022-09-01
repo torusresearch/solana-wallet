@@ -59,6 +59,7 @@ import {
   ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
+  LoadingState,
   NetworkController,
   PreferencesController,
   SendTransactionParams,
@@ -143,7 +144,7 @@ export const DEFAULT_STATE = {
     nativeCurrency: "sol",
     ticker: "sol",
     tokenPriceMap: {},
-    isCurrencyRateUpdate: false,
+    currencyLoadState: LoadingState.FULL_RELOAD,
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -180,8 +181,8 @@ export const DEFAULT_STATE = {
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
     unknownNFTs: [],
-    isNFTLoading: false,
-    isSplTokenLoading: false,
+    metaplexState: LoadingState.FULL_RELOAD,
+    tokenInfoState: LoadingState.FULL_RELOAD,
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -479,6 +480,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.tokenInfoController.on("store", (state2) => {
+      const newTokens = Object.keys(state2.tokenInfoMap).filter((address) => !Object.keys(this.state.TokenInfoState.tokenInfoMap).includes(address));
+      if (newTokens.length > 1)
+        this.currencyController.update({
+          currencyLoadState: LoadingState.FETCHING,
+        });
       this.update({ TokenInfoState: state2 });
       this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
     });
@@ -542,6 +548,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       RelayKeyHostMap: relayKeyHost,
     });
   };
+
+  setTokenLoadingState() {
+    this.tokenInfoController.update({
+      metaplexState: LoadingState.FETCHING,
+      tokenInfoState: LoadingState.FETCHING,
+    });
+  }
 
   async importCustomToken(token: CustomTokenInfo) {
     try {
@@ -713,6 +726,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setSelectedAccount(address: string, sync = false) {
+    if (this.state.PreferencesControllerState.selectedAddress !== address) this.setTokenLoadingState();
     this.preferencesController.setSelectedAddress(address);
     if (sync) await this.preferencesController.sync(address);
 
@@ -735,6 +749,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   setNetwork(providerConfig: ProviderConfig): void {
+    this.setTokenLoadingState();
     this.networkController.setProviderConfig(providerConfig);
   }
 

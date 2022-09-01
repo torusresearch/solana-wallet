@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LoadingState } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -40,7 +41,10 @@ const updateCurrency = (newCurrency: string) => {
       </div>
       <NetworkDisplay />
     </div>
-    <div v-if="!isSplTokenLoading && !isCurrencyRateUpdate" class="flex w-full justify-between items-center">
+    <div
+      v-if="isSplTokenLoading !== LoadingState.FETCHING && isCurrencyRateUpdate !== LoadingState.FETCHING"
+      class="flex w-full justify-between items-center"
+    >
       <div class="amount-container">
         <span class="mr-2 font-bold text-5xl lt-md:text-3xl text-app-text-500 dark:text-app-text-dark-500">{{ formattedBalance }}</span>
         <CurrencySelector :currency="currency" :token="token" @on-change="updateCurrency" />

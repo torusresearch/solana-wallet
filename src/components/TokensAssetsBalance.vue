@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LoadingState } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
@@ -24,7 +25,7 @@ function transferToken(mint?: string) {
         <div v-for="token in tokens" :key="token?.tokenAddress?.toString()" class="w-full">
           <SplCard :spl-token="token" @spl-clicked="transferToken(token.mintAddress)"></SplCard>
         </div>
-        <template v-if="isSplTokenLoading">
+        <template v-if="isSplTokenLoading === LoadingState.FETCHING">
           <div class="flex flex-col space-y-4 w-full">
             <SplCard :spl-token-loading="true"></SplCard>
           </div>

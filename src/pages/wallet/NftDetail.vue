@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { get } from "@toruslabs/http-helpers";
-import { SolanaToken } from "@toruslabs/solana-controllers";
+import { LoadingState, SolanaToken } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -20,7 +20,7 @@ type FETCH_STATE = "idle" | "loading" | "loaded" | "error";
 
 const router = useRouter();
 const nfts = computed<SolanaToken[]>(() => ControllerModule.nonFungibleTokens);
-const isNFTloading = computed<boolean>(() => ControllerModule.isNFTloading);
+const isNFTloading = computed<LoadingState>(() => ControllerModule.isNFTloading);
 const selectedAddress = computed<string>(() => ControllerModule.selectedAddress);
 const exploreNFTS = ref<NFTCollection[]>([]);
 const exploreNFTSFetchState = ref<FETCH_STATE>("idle");
@@ -72,7 +72,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
 <template>
   <div class="flex flex-col w-full py-2">
     <span class="text-app-text-500 nft-title">You have {{ nfts.length }} NFTs</span>
-    <template v-if="isNFTloading">
+    <template v-if="isNFTloading === LoadingState.FETCHING">
       <NftCardLoader />
     </template>
     <template v-else>
