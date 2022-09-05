@@ -187,7 +187,7 @@ export const DEFAULT_STATE = {
   RelayKeyHostMap: {},
   UserDapp: new Map(),
   ActivitiesControllerState: {
-    address: {},
+    accounts: {},
     state: "",
     loading: false,
   },
@@ -740,8 +740,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       }
     }
 
-    this.activitiesController.updateBackendTransaction(address);
-    this.activitiesController.updateTopUpTransaction(address);
+    await this.activitiesController.updateBackendTransaction(address);
+    await this.activitiesController.updateTopUpTransaction(address);
     return address;
   }
 

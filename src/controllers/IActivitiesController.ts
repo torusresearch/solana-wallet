@@ -1,4 +1,4 @@
-import { TransactionStatus } from "@toruslabs/base-controllers";
+import { BaseConfig, BaseState, TransactionStatus } from "@toruslabs/base-controllers";
 
 export interface SolanaTransactionActivity {
   id?: number;
@@ -87,3 +87,18 @@ export interface TopupOrderTransaction {
   totalAmount: string;
   totalAmountString: string;
 }
+
+export interface ActivitiesControllerState extends BaseState {
+  accounts: {
+    [selectedAddress: string]: {
+      topupTransaction: TopupOrderTransaction[];
+      backendTransactions: FetchedTransaction[];
+      activities: {
+        [key: string]: SolanaTransactionActivity;
+      };
+    };
+  };
+  state: string;
+  loading: boolean;
+}
+export type ActivitiesControllerConfig = BaseConfig;

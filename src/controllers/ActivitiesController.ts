@@ -1,26 +1,12 @@
 import { PublicKey } from "@solana/web3.js";
-import { BaseConfig, BaseController, BaseState, TransactionStatus } from "@toruslabs/base-controllers";
+import { BaseConfig, BaseController, TransactionStatus } from "@toruslabs/base-controllers";
 import { NetworkController, PreferencesController, TransactionPayload } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 import { formatBackendTxToActivity, formatTopUpTxToActivity, formatTransactionToActivity, formatTxToBackend } from "@/utils/activitiesHelper";
+import { CHAINID } from "@/utils/enums";
 
-import { FetchedTransaction, SolanaTransactionActivity, TopupOrderTransaction } from "./IActivitiesController";
-
-export interface ActivitiesControllerState extends BaseState {
-  address: {
-    [selectedAddress: string]: {
-      topupTransaction: TopupOrderTransaction[];
-      backendTransactions: FetchedTransaction[];
-      activities: {
-        [key: string]: SolanaTransactionActivity;
-      };
-    };
-  };
-  state: string;
-  loading: boolean;
-}
-export type ActivitiesControllerConfig = BaseConfig;
+import { ActivitiesControllerState, FetchedTransaction, SolanaTransactionActivity, TopupOrderTransaction } from "./IActivitiesController";
 
 export default class ActivitiesController extends BaseController<BaseConfig, ActivitiesControllerState> {
   getProviderConfig: NetworkController["getProviderConfig"];
@@ -83,8 +69,9 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
   topupActivities(): SolanaTransactionActivity[] {
     const tempMap: SolanaTransactionActivity[] = [];
     const selectedAddress = this.getSelectedAddress();
-    if (!this.state.address[selectedAddress].topupTransaction) return tempMap;
-    this.state.address[selectedAddress].topupTransaction.forEach((item) => {
+    if (this.getProviderConfig().chainId !== CHAINID.MAINNET) return [];
+    if (!this.state.accounts[selectedAddress].topupTransaction) return tempMap;
+    this.state.accounts[selectedAddress].topupTransaction.forEach((item) => {
       if (item?.solana?.signature) {
         const temp = formatTopUpTxToActivity(item);
         if (temp) tempMap.push(temp);
@@ -96,9 +83,9 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
   backendActivities(): SolanaTransactionActivity[] {
     const tempMap: SolanaTransactionActivity[] = [];
     const selectedAddress = this.getSelectedAddress();
-    if (!this.state.address[selectedAddress].backendTransactions) return tempMap;
+    if (!this.state.accounts[selectedAddress].backendTransactions) return tempMap;
 
-    this.state.address[selectedAddress].backendTransactions.forEach((tx) => {
+    this.state.accounts[selectedAddress].backendTransactions.forEach((tx) => {
       if (tx.network === this.getProviderConfig().chainId) {
         const temp = formatBackendTxToActivity(tx, selectedAddress);
         if (temp) tempMap.push(temp);
@@ -108,27 +95,38 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
   }
 
   async updateTopUpTransaction(address: string) {
-    const response = await this.getTopUpOrders<TopupOrderTransaction>(address);
-
+    let response;
+    try {
+      response = await this.getTopUpOrders<TopupOrderTransaction>(address);
+    } catch (e) {
+      log.error(e);
+    }
+    const account = this.state.accounts[address];
     this.update({
-      address: {
-        ...this.state.address,
+      accounts: {
+        ...this.state.accounts,
         [address]: {
-          ...this.state.address[address],
-          topupTransaction: response,
+          ...account,
+          topupTransaction: response || [],
         },
       },
     });
   }
 
   async updateBackendTransaction(address: string) {
-    const response = await this.getWalletOrders<FetchedTransaction>(address);
+    let response;
+    try {
+      response = await this.getWalletOrders<FetchedTransaction>(address);
+    } catch (e) {
+      log.error(e);
+    }
+    const account = this.state.accounts[address];
     this.update({
-      address: {
-        ...this.state.address,
+      accounts: {
+        ...this.state.accounts,
         [address]: {
-          ...this.state.address[address],
-          backendTransactions: response,
+          ...account,
+          backendTransactions: response || [],
         },
       },
     });
@@ -140,7 +138,9 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
     const connection = this.getConnection();
     let signatureInfo = await connection.getSignaturesForAddress(new PublicKey(selectedAddress), { limit: 40 });
 
-    signatureInfo = signatureInfo.filter((s) => this.state.address[selectedAddress].activities[s.signature]?.status !== TransactionStatus.finalized);
+    signatureInfo = signatureInfo.filter(
+      (item) => this.state.accounts[selectedAddress].activities[item.signature]?.status !== TransactionStatus.finalized
+    );
     if (!signatureInfo.length) {
       // this.updateState({ newTransaction: [] }, address);
       return [];
@@ -159,14 +159,13 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
   }
 
   async fullRefresh() {
+    const selectedAddress = this.getSelectedAddress();
     this.update({
       loading: true,
-      address: {
-        ...this.state.address,
-        [this.getSelectedAddress()]: {
-          ...this.state.address[this.getSelectedAddress()],
-          topupTransaction: [],
-          backendTransactions: [],
+      accounts: {
+        ...this.state.accounts,
+        [selectedAddress]: {
+          ...this.state.accounts[selectedAddress],
           activities: {},
         },
       },
@@ -185,7 +184,7 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
 
     log.info("refreshing");
     const selectedAddress = this.getSelectedAddress();
-    const activities = initialActivities || this.state.address[selectedAddress].activities;
+    const activities = initialActivities || this.state.accounts[selectedAddress].activities;
 
     const newActvities: SolanaTransactionActivity[] = await this.onChainActivities();
 
@@ -204,11 +203,11 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
     });
 
     this.update({
-      address: {
-        ...this.state.address,
+      accounts: {
+        ...this.state.accounts,
 
         [selectedAddress]: {
-          ...(this.state.address[selectedAddress] || {}),
+          ...this.state.accounts[selectedAddress],
           activities,
         },
       },
@@ -219,15 +218,15 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
   updateIncomingTransaction(status: TransactionStatus, id: number): void {
     const selectedAddress = this.getSelectedAddress();
     this.patchPastTx({ id: id.toString(), status, updated_at: new Date().toISOString() }, selectedAddress);
-    const { backendTransactions } = this.state.address[selectedAddress];
+    const { backendTransactions } = this.state.accounts[selectedAddress];
     const idx = backendTransactions.findIndex((item) => item.id === id);
     backendTransactions[idx].status = status;
 
     this.update({
-      address: {
-        ...this.state.address,
+      accounts: {
+        ...this.state.accounts,
         [selectedAddress]: {
-          ...this.state.address[selectedAddress],
+          ...this.state.accounts[selectedAddress],
           backendTransactions,
         },
       },
@@ -237,7 +236,7 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
   // When a new Transaction is submitted, append to incoming Transaction and post to backend
   async patchNewTx(formattedTx: SolanaTransactionActivity, address: string): Promise<void> {
     const selectedAddress = this.getSelectedAddress();
-    const { backendTransactions, activities } = this.state.address[selectedAddress];
+    const { backendTransactions, activities } = this.state.accounts[selectedAddress];
 
     const duplicateIndex = backendTransactions.findIndex((x) => x.signature === formattedTx.signature);
     if (duplicateIndex === -1 && formattedTx.status === TransactionStatus.submitted) {
@@ -248,10 +247,10 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
       // incomingBackendTransactions = [...incomingBackendTransactions, formattedTx];
 
       this.update({
-        address: {
-          ...this.state.address,
+        accounts: {
+          ...this.state.accounts,
           [selectedAddress]: {
-            ...this.state.address[selectedAddress],
+            ...this.state.accounts[selectedAddress],
             ...activities,
           },
         },
@@ -267,10 +266,10 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
         activities[formattedTx.signature].id = response[0] || -1;
         backendTransactions[idx].id = response[0] || -1;
         this.update({
-          address: {
+          accounts: {
             // ...this.state.address,
             [selectedAddress]: {
-              ...this.state.address[selectedAddress],
+              ...this.state.accounts[selectedAddress],
               activities,
             },
           },
