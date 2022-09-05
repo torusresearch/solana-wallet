@@ -42,7 +42,7 @@ const updateCurrency = (newCurrency: string) => {
       <NetworkDisplay />
     </div>
     <div
-      v-if="isSplTokenLoading !== LoadingState.FETCHING && isCurrencyRateUpdate !== LoadingState.FETCHING"
+      v-if="isSplTokenLoading !== LoadingState.FULL_RELOAD && isCurrencyRateUpdate !== LoadingState.FULL_RELOAD"
       class="flex w-full justify-between items-center"
     >
       <div class="amount-container">

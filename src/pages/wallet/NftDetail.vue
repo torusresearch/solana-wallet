@@ -72,7 +72,7 @@ function getNftFetchMessage(state: FETCH_STATE): string {
 <template>
   <div class="flex flex-col w-full py-2">
     <span class="text-app-text-500 nft-title">You have {{ nfts.length }} NFTs</span>
-    <template v-if="isNFTloading === LoadingState.FETCHING">
+    <template v-if="isNFTloading === LoadingState.FULL_RELOAD">
       <NftCardLoader />
     </template>
     <template v-else>

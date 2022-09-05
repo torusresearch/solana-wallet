@@ -144,15 +144,15 @@ class ControllerModule extends VuexModule {
   }
 
   get isNFTloading(): LoadingState {
-    return this.torusState.TokenInfoState.metaplexState || LoadingState.FETCHING;
+    return this.torusState.TokenInfoState.metaplexLoadingState || LoadingState.LOADED;
   }
 
   get isSplTokenLoading(): LoadingState {
-    return this.torusState.TokenInfoState.tokenInfoState || LoadingState.FETCHING;
+    return this.torusState.TokenInfoState.tokenInfoLoadingState || LoadingState.LOADED;
   }
 
   get isCurrencyRateUpdate(): LoadingState {
-    return this.torusState.CurrencyControllerState.currencyLoadState || LoadingState.FETCHING;
+    return this.torusState.CurrencyControllerState.loadState || LoadingState.LOADED;
   }
 
   get totalBalance(): string {

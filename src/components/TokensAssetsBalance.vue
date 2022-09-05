@@ -22,12 +22,14 @@ function transferToken(mint?: string) {
   <div class="flex flex-col">
     <div class="tab-info w-full overflow-x-hidden">
       <div class="flex flex-col space-y-4">
-        <div v-for="token in tokens" :key="token?.tokenAddress?.toString()" class="w-full">
-          <SplCard :spl-token="token" @spl-clicked="transferToken(token.mintAddress)"></SplCard>
-        </div>
-        <template v-if="isSplTokenLoading === LoadingState.FETCHING">
+        <template v-if="isSplTokenLoading === LoadingState.FULL_RELOAD">
           <div class="flex flex-col space-y-4 w-full">
             <SplCard :spl-token-loading="true"></SplCard>
+          </div>
+        </template>
+        <template v-else>
+          <div v-for="token in tokens" :key="token?.tokenAddress?.toString()" class="w-full">
+            <SplCard :spl-token="token" @spl-clicked="transferToken(token.mintAddress)"></SplCard>
           </div>
         </template>
       </div>
