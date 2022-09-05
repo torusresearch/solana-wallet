@@ -45,7 +45,7 @@ the QR code or one click copy the public address. User can share the QR Code or 
 <img src="screenshots/wallet-home-qrScanner.png" width="700" height="auto" />
 
 
-Scan & Pay button on top lets the user harness [Solana Pay](https://solanapay.com/), which is an decentralized and performant payment network for immediate transactions in SOL or SPL tokens like USDC.
+Scan & Pay button on top lets the user harness [Solana Pay](https://solanapay.com/), which is a decentralized and performant payment network for immediate transactions in SOL or SPL tokens like USDC.
 
 Scan & Pay opens the device camera to scan merchants QR Code.
 
