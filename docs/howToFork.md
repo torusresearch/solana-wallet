@@ -14,4 +14,4 @@ Mandatory changes required:
 
 - 4. API calls to https://solana-api.tor.us are restricted. Please contact our team for help.
 
-- 5. Generate a different sentry dsn for your fork. If use the one available in the current env, all the errors logs will be lost.
+- 5. Generate a different sentry dsn for your fork. All your error logs will be lost if dsn value in the current env file is reused.
