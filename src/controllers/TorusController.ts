@@ -304,7 +304,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get embedLoginInProgress(): boolean {
-    return this.embedController?.state.loginInProgress || false;
+    return this.embedController?.state.loginInProgress;
   }
 
   get embedOauthModalVisibility(): boolean {
@@ -1356,7 +1356,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
   }
 
-  async restoreFromBackend(): Promise<boolean> {
+  async restoreFromBackend(isEmbedLogin = false): Promise<boolean> {
+    if (isEmbedLogin)
+      this.embedController.update({
+        loginInProgress: true,
+      });
     // has selected keypair (logged in)
     if (this.hasSelectedPrivateKey) {
       return true;
@@ -1431,9 +1435,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
         }
       }
       log.warn("Invalid or no key in local storage");
+      if (isEmbedLogin)
+        this.embedController.update({
+          loginInProgress: false,
+        });
       return false;
     } catch (error) {
       log.warn(error, "Error restoring state!");
+      if (isEmbedLogin)
+        this.embedController.update({
+          loginInProgress: false,
+        });
       return false;
     }
   }
@@ -1586,7 +1598,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     this.embedController.update({ loginInProgress: true });
     // Try to restore from backend (restore privatekey)
-    await this.restoreFromBackend();
+    await this.restoreFromBackend(true);
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;
@@ -1599,6 +1611,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           // To login with the requested provider
           // On Embed, we have a window waiting... we need to tell it to login
           this.embedController.update({
+            loginInProgress: true,
             oauthModalVisibility: false,
           });
           this.triggerLogin({
@@ -1607,6 +1620,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           });
           this.once("LOGIN_RESPONSE", (error: string, address: string) => {
             this.embedController.update({
+              loginInProgress: false,
               oauthModalVisibility: false,
             });
             if (error) reject(new Error(error));
@@ -1624,12 +1638,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
         this.once("LOGIN_RESPONSE", (error: string, address: string) => {
           this.embedController.update({
             oauthModalVisibility: false,
+            loginInProgress: false,
           });
           if (error) reject(new Error(error));
           else resolve([address]);
         });
       }
-      this.embedController.update({ loginInProgress: false });
     });
   }
 

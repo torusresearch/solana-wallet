@@ -4,7 +4,7 @@ import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
-import { PopupLogin, PopupWidget } from "@/components/frame";
+import { PopupLoader, PopupLogin, PopupWidget } from "@/components/frame";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
@@ -151,14 +151,19 @@ const closePanel = () => {
 
 <template>
   <div class="min-h-screen flex justify-center items-center">
-    <PopupLogin
-      :is-open="oauthModalVisibility || !isLoggedIn || isEmbedLoginInProgress"
-      :other-wallets="initParams.extraParams?.otherWallets"
-      :is-popup-login-in-progress="isPopupLoginInProgress"
-      :is-embed-login-in-progress="isEmbedLoginInProgress"
-      @on-close="cancelLogin"
-      @on-login="onLogin"
-    />
+    <template v-if="!isPopupLoginInProgress && !isEmbedLoginInProgress">
+      <PopupLogin
+        :is-open="oauthModalVisibility || !isLoggedIn || isEmbedLoginInProgress"
+        :other-wallets="initParams.extraParams?.otherWallets"
+        :is-popup-login-in-progress="isPopupLoginInProgress"
+        :is-embed-login-in-progress="isEmbedLoginInProgress"
+        @on-close="cancelLogin"
+        @on-login="onLogin"
+      />
+    </template>
+    <template v-else>
+      <PopupLoader />
+    </template>
     <PopupWidget
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"
