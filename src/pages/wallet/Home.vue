@@ -72,7 +72,7 @@ const lastUpdateString = computed(() => {
 </script>
 
 <template>
-  <div class="py-2 flex flex-col items-center">
+  <div class="py-4 sm:mx-auto sm:px-6 lg:px-8 max-w-7xl mx-4 flex flex-col items-center">
     <div class="mt-4 flex flex-col space-y-4 w-full sm:w-10/12 md:w-3/5 lg:w-1/2">
       <header>
         <div class="flex items-center max-w-7xl justify-between">

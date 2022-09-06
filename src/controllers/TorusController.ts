@@ -59,6 +59,7 @@ import {
   ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
+  LoadingState,
   NetworkController,
   PreferencesController,
   SendTransactionParams,
@@ -143,6 +144,7 @@ export const DEFAULT_STATE = {
     nativeCurrency: "sol",
     ticker: "sol",
     tokenPriceMap: {},
+    loadState: LoadingState.FULL_RELOAD,
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -179,6 +181,8 @@ export const DEFAULT_STATE = {
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
     unknownNFTs: [],
+    metaplexLoadingState: LoadingState.FULL_RELOAD,
+    tokenInfoLoadingState: LoadingState.FULL_RELOAD,
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -540,6 +544,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
+  setTokenLoadingState() {
+    this.tokenInfoController.setTokenLoadingState();
+  }
+
   async importCustomToken(token: CustomTokenInfo) {
     try {
       token.publicAddress = this.selectedAddress;
@@ -710,6 +718,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setSelectedAccount(address: string, sync = false) {
+    if (this.state.PreferencesControllerState.selectedAddress !== address) this.setTokenLoadingState();
     this.preferencesController.setSelectedAddress(address);
     if (sync) await this.preferencesController.sync(address);
 
@@ -732,6 +741,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   setNetwork(providerConfig: ProviderConfig): void {
+    this.setTokenLoadingState();
     this.networkController.setProviderConfig(providerConfig);
   }
 
@@ -1368,11 +1378,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
-      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const sessionKey = window.sessionStorage?.getItem(`${EPHERMAL_KEY}`);
       const value = sessionKey || localKey;
 
       // Saving to SessionStorage - user refresh with restored key
-      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
+      if (!sessionKey && value) window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -1424,7 +1434,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
           this.update({ UserDapp: userDapp });
 
           // find previous selected account
-          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
+          const address = this.selectedAddress || decryptedState.publicKey;
+          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === address);
           const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
           await this.setSelectedAccount(selectedAddress, true);

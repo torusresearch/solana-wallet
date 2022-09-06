@@ -75,7 +75,7 @@ const logout = async () => {
       </div>
     </nav>
 
-    <div class="flex-1 overflow-y-auto w-full py-2">
+    <div class="flex-1 overflow-y-auto w-full" :class="props.showHeader ? 'py-2' : ''">
       <header v-if="props.showHeader">
         <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-wrap">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
@@ -87,7 +87,7 @@ const logout = async () => {
         </div>
       </header>
       <main>
-        <div class="mx-4 sm:mx-auto sm:px-6 lg:px-8 max-w-7xl">
+        <div :class="props.showHeader ? 'mx-4 sm:mx-auto sm:px-6 lg:px-8 max-w-7xl' : ''">
           <slot />
         </div>
       </main>
