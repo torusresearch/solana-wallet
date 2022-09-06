@@ -17,14 +17,10 @@ import ControllerModule from "../../modules/controllers";
 withDefaults(
   defineProps<{
     isOpen?: boolean;
-    isEmbedLoginInProgress?: boolean;
-    isPopupLoginInProgress?: boolean;
     otherWallets?: string;
   }>(),
   {
     isOpen: false,
-    isEmbedLoginInProgress: false,
-    isPopupLoginInProgress: false,
     otherWallets: "false",
   }
 );
@@ -47,7 +43,6 @@ const activeButton = ref<string>(LOGIN_PROVIDER.GOOGLE);
 const setActiveButton = (provider: string) => {
   activeButton.value = provider;
 };
-
 const refDiv = ref(null);
 </script>
 <template>

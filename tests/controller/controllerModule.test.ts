@@ -206,7 +206,7 @@ describe("Controller Module", () => {
     });
 
     it("hideOAuthModal", async () => {
-      await controllerModule.torus.hideOAuthModal();
+      await controllerModule.torus.embededOAuthLoginInProgress();
       const { oauthModalVisibility } = controllerModule.torus.state.EmbedControllerState;
       assert.equal(controllerModule.torus.embedOauthModalVisibility, false);
       assert.deepEqual(oauthModalVisibility, false);

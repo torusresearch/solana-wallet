@@ -30,7 +30,6 @@ const initParams = {
 } as EmbedInitParams;
 
 const showUI = ref(false);
-const isPopupLoginInProgress = ref(false);
 
 const hashParams = new URLSearchParams(window.location.hash.slice(1));
 const specifiedOrigin = hashParams.get("origin");
@@ -125,15 +124,12 @@ onMounted(async () => {
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
   try {
-    isPopupLoginInProgress.value = true;
-    ControllerModule.torus.hideOAuthModal();
+    ControllerModule.torus.embededOAuthLoginInProgress();
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: userEmail,
     });
-    isPopupLoginInProgress.value = false;
   } catch (error) {
-    isPopupLoginInProgress.value = false;
     log.error(error);
   }
 };
@@ -151,20 +147,11 @@ const closePanel = () => {
 
 <template>
   <div class="min-h-screen flex justify-center items-center">
-    <template v-if="!isPopupLoginInProgress && !isEmbedLoginInProgress">
-      <PopupLogin
-        :is-open="oauthModalVisibility || !isLoggedIn || isEmbedLoginInProgress"
-        :other-wallets="initParams.extraParams?.otherWallets"
-        :is-popup-login-in-progress="isPopupLoginInProgress"
-        :is-embed-login-in-progress="isEmbedLoginInProgress"
-        @on-close="cancelLogin"
-        @on-login="onLogin"
-      />
-    </template>
-    <template v-else>
-      <PopupLoader />
-    </template>
+    <PopupLoader v-if="isEmbedLoginInProgress" />
+    <PopupLogin :is-open="oauthModalVisibility" :other-wallets="initParams.extraParams?.otherWallets" @on-close="cancelLogin" @on-login="onLogin" />
+    <!-- remove the isEmbedLoginInProgress in v-if, if want to show loading button on the bottom left -->
     <PopupWidget
+      v-if="!oauthModalVisibility && !isEmbedLoginInProgress"
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"
       :is-logged-in="isLoggedIn"

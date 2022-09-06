@@ -31,7 +31,7 @@ const refDiv = ref(null);
             leave-to="opacity-0 scale-95"
           >
             <div class="login-container bg-white dark:bg-app-gray-900">
-              <div class="flex flex-col justify-center items-center p-10">
+              <div class="flex flex-col justify-center items-center p-10 flex-grow">
                 <BoxLoader :background-color="isWhiteLabelDark() ? getTailwindColor('gray', 0) : getTailwindColor('gray', 900)" />
               </div>
               <div class="w-full mt-6 mb-12 text-center">
@@ -65,6 +65,7 @@ const refDiv = ref(null);
         rounded-lg
         relative
         z-20;
+  min-height: 500px;
   height: auto;
   font-family: "DM Sans", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 500;
