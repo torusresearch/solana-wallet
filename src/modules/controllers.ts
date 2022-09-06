@@ -25,7 +25,7 @@ import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { randomId } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
@@ -141,6 +141,18 @@ class ControllerModule extends VuexModule {
 
   get lastTokenRefreshDate(): Date {
     return this.torus.lastTokenRefreshDate;
+  }
+
+  get isNFTloading(): LoadingState {
+    return this.torusState.TokenInfoState.metaplexLoadingState || LoadingState.LOADED;
+  }
+
+  get isSplTokenLoading(): LoadingState {
+    return this.torusState.TokenInfoState.tokenInfoLoadingState || LoadingState.LOADED;
+  }
+
+  get isCurrencyRateUpdate(): LoadingState {
+    return this.torusState.CurrencyControllerState.loadState || LoadingState.LOADED;
   }
 
   get totalBalance(): string {
@@ -548,7 +560,6 @@ class ControllerModule extends VuexModule {
   setNetwork(chainId: string): void {
     const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
-
     this.torus.setNetwork(providerConfig);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
