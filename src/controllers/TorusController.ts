@@ -1636,12 +1636,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
       } else {
         // We show the modal to login
         this.embedController.update({
+          loginInProgress: true,
           oauthModalVisibility: true,
         });
         this.once("LOGIN_RESPONSE", (error: string, address: string) => {
           this.embedController.update({
-            oauthModalVisibility: false,
             loginInProgress: false,
+            oauthModalVisibility: false,
           });
           if (error) reject(new Error(error));
           else resolve([address]);
