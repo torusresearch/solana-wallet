@@ -117,20 +117,55 @@ const filteredTransaction = computed(() => {
 </script>
 
 <template>
-  <div v-if="!filteredTransaction.length" class="pt-16 text-center">
-    <span class="text-lg text-app-text-500 dark:text-app-text-dark-600">{{ t("walletActivity.noTransaction") }}</span>
-  </div>
-  <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
-    <ActivityItem :activity="tx" />
-  </div>
-  <Teleport to="#rightPanel">
-    <div class="flex ml-auto w-fit">
-      <span class="w-44">
-        <SelectField v-model="actionType" :items="actionTypes" />
-      </span>
-      <span class="w-40">
-        <SelectField v-model="period" :items="periods" />
-      </span>
+  <template v-if="ControllerModule.isActivityLoading">
+    <div
+      v-if="ControllerModule.isActivityLoading"
+      class="mt-7 w-full bg-white dark:bg-app-gray-700 border border-app-gray-400 dark:border-transparent shadow dark:shadow-dark rounded-md p-4 grid grid-cols-12 gap-2 cursor-pointer"
+    >
+      <div class="col-span-8 order-3 pl-9 flex items-center justify-start sm:order-1 sm:col-span-2 sm:border-r sm:pl-0 xl:col-span-1">
+        <div class="skeleton-div skeleton-animation text-xs text-app-text-400 dark:text-app-text-dark-600 lt-md:ml-3">
+          <br />
+        </div>
+      </div>
+      <div class="col-span-8 order-1 pl-0 sm:order-2 sm:pl-6 sm:col-span-6 xl:col-span-7">
+        <div class="flex items-center">
+          <div class="logo-container">
+            <img class="block h-7 w-auto skeleton-animation rounded-xl" alt="" />
+          </div>
+          <div class="text-left ml-4 break-words overflow-hidden skeleton-div skeleton-animation">
+            <div class="text-xs font-medium text-app-text-600 dark:text-app-text-dark-600"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-2 text-right order-4 flex items-center justify-end sm:col-span-2">
+        <div class="skeleton-div skeleton-animation rounded-xl inline-block bg-green-300 text-xs text-center py-1 px-5"></div>
+      </div>
     </div>
-  </Teleport>
+  </template>
+  <template v-else>
+    <div v-if="!filteredTransaction.length" class="pt-16 text-center">
+      <span class="text-lg text-app-text-500 dark:text-app-text-dark-600">{{ t("walletActivity.noTransaction") }}</span>
+    </div>
+    <div v-for="tx in filteredTransaction" :key="tx.signature" class="pt-7 transaction-activity">
+      <ActivityItem :activity="tx" />
+    </div>
+    <Teleport to="#rightPanel">
+      <div class="flex ml-auto w-fit">
+        <span class="w-44">
+          <SelectField v-model="actionType" :items="actionTypes" />
+        </span>
+        <span class="w-40">
+          <SelectField v-model="period" :items="periods" />
+        </span>
+      </div>
+    </Teleport>
+  </template>
 </template>
+<style scoped>
+.skeleton-div {
+  width: 85px;
+  height: 1.2rem;
+  margin: 0.5rem 0.5rem;
+  border-radius: 0.25rem;
+}
+</style>

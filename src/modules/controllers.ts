@@ -95,6 +95,10 @@ class ControllerModule extends VuexModule {
     return this.selectedAccountPreferences.crashReport || false;
   }
 
+  get isActivityLoading(): boolean {
+    return this.torusState.ActivitiesControllerState.loading;
+  }
+
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
     const txns = Object.values(this.torusState.ActivitiesControllerState.accounts[this.selectedAddress]?.activities);
     return txns.map((item) => {
