@@ -84,7 +84,7 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { topupPlugin } from "@/plugins/Topup";
-import { retrieveNftOwner } from "@/utils/bonfida";
+import { bonfidaResolve } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -585,16 +585,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return { inputDomainKey, hashedInputName };
   }
 
-  async getSNSAccount(
-    type: string,
-    address: string
-  ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
-    const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
+  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null | PublicKey> {
+    // const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns": {
-        const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
-        const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
-        return { registry, nftOwner };
+        // const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
+        // const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
+        // return { registry, nftOwner };
+        const owner = await bonfidaResolve(this.connection, address);
+        return owner;
       }
       case "twitter":
         return getTwitterRegistry(this.connection, address);

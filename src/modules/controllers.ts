@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import type { NameRegistryState } from "@solana/spl-name-service";
+import { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -329,10 +329,11 @@ class ControllerModule extends VuexModule {
       default:
         filtered_address = "";
     }
-    let data;
     try {
-      data = (await this.torus.getSNSAccount(type, filtered_address)) as { registry: NameRegistryState; nftOwner: PublicKey | undefined };
-      return data?.nftOwner?.toBase58() || data?.registry.owner.toBase58() || null;
+      const data = await this.torus.getSNSAccount(type, filtered_address);
+      if (data instanceof PublicKey) return data.toBase58();
+      if (data instanceof NameRegistryState) return data.owner.toBase58();
+      return null;
     } catch (e) {
       return null;
     }

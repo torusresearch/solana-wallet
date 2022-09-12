@@ -19,6 +19,7 @@
     "serve:prod": "vue-cli-service serve --mode production"
   },
   "dependencies": {
+    "@bonfida/spl-name-service": "^0.1.50",
     "@gtm-support/vue-gtm": "^1.5.0",
     "@headlessui/vue": "^1.6.7",
     "@heroicons/vue": "^1.0.6",
