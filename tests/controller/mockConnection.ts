@@ -1,6 +1,6 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
 import { Mint, MintLayout, RawMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AccountInfo, Commitment, Connection, Message, ParsedAccountData, PublicKey, Transaction } from "@solana/web3.js";
+import { AccountInfo, Commitment, Connection, Message, ParsedAccountData, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 import base58 from "bs58";
 import crypto from "crypto";
 import log from "loglevel";
@@ -376,7 +376,7 @@ export const mockConnection: Partial<Connection> = {
     };
   },
 
-  simulateTransaction: async (_transactionOrMessage: Transaction | Message) => {
+  simulateTransaction: async (_transactionOrMessage: Transaction | VersionedTransaction | Message) => {
     return {
       context: { slot: slotCounter },
       value: mockSimulateTransaction,
