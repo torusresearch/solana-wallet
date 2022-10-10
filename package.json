@@ -30,7 +30,7 @@
     "@solana/qr-code-styling": "^1.6.0-rc.1",
     "@solana/spl-name-service": "^0.1.4",
     "@solana/spl-token": "0.2.0",
-    "@solana/web3.js": "^1.42.0",
+    "@solana/web3.js": "^1.63.1",
     "@toruslabs/base-controllers": "2.2.6",
     "@toruslabs/broadcast-channel": "^5.0.2",
     "@toruslabs/eccrypto": "^1.1.8",
