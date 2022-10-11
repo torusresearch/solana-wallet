@@ -171,7 +171,8 @@ describe("TorusController", () => {
       assert(spyAccountTracker.calledThrice);
     });
 
-    it("onPollingBlock trigger updates", async () => {
+    // todo
+    it.skip("onPollingBlock trigger updates", async () => {
       await waitNetwork();
       await torusController.triggerLogin({ loginProvider: "google" });
 
