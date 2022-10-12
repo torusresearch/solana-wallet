@@ -1,5 +1,4 @@
-import { NameRegistryState } from "@solana/spl-name-service";
-import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { BaseEmbedController, KeyPair, PAYMENT_PROVIDER_TYPE, PopupHandler, PopupWithBcHandler } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
 import OpenLogin from "@toruslabs/openlogin";
@@ -360,22 +359,20 @@ describe("Controller Module", () => {
     afterEach(() => {
       nock.cleanAll();
     });
-    it.skip("SOL Transfer", async () => {
+    it("SOL Transfer", async () => {
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
       assert.equal(controllerModule.selectedNetworkTransactions.length, 0);
       // const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
       // tx.add(transferInstruction());
       const { transactionV0 } = createTransactionV();
-      // const results = await controllerModule.torus.transfer(transactionV0);
-      transactionV0.sign([sKeyPair[0]]);
-
+      const results = await controllerModule.torus.transfer(transactionV0);
       // verify
-      // assert.equal(results, base58.encode(transactionV0.signatures || [1]));
+      assert.equal(results, transactionV0.signatures);
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 1);
       assert.equal(controllerModule.selectedNetworkTransactions.length, 1);
       // check state
     });
-    it.skip("SPL Transfer", async () => {
+    it("SPL Transfer", async () => {
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
       assert.equal(controllerModule.selectedNetworkTransactions.length, 0);
       const selectedToken: SolAndSplToken = {
@@ -578,7 +575,7 @@ describe("Controller Module", () => {
     });
 
     // Solana Api
-    it.skip("embed sendTransaction flow", async () => {
+    it("embed sendTransaction flow", async () => {
       const decodeInstructions = [transferInstruction()];
 
       [1, 2].forEach(() => decodeInstructions.push(transferInstruction()));
@@ -594,13 +591,13 @@ describe("Controller Module", () => {
         0
       );
       // validate state before
-      // const result = (await controllerModule.torus.provider.sendAsync({
-      //   method: "send_transaction",
-      //   params: {
-      //     message: messageV0.serialize(),
-      //     messageOnly: true,
-      //   },
-      // })) as string;
+      const result = (await controllerModule.torus.provider.sendAsync({
+        method: "send_transaction",
+        params: {
+          message: transactionV0.serialize(),
+          messageOnly: true,
+        },
+      })) as string;
 
       // validate state after
       assert.equal(
@@ -612,6 +609,7 @@ describe("Controller Module", () => {
       transactionV0.sign([sKeyPair[0]]);
       // assert.equal(result, base58.encode(transactionV0.signatures || [1]));
       assert(popupStub.calledOnce);
+      assert.equal(result, transactionV0.signatures);
 
       // Reject Transaction
       popupResult = { approve: false };
@@ -639,15 +637,15 @@ describe("Controller Module", () => {
       // const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false });
       const { transactionV0 } = createTransactionV();
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
-      // const result = await controllerModule.torus.provider.sendAsync({
-      //   method: "sign_transaction",
-      //   params: {
-      //     message: transactionV0.message.serialize(),
-      //   },
-      // });
+      const result = await controllerModule.torus.provider.sendAsync({
+        method: "sign_transaction",
+        params: {
+          message: transactionV0.message.serialize(),
+        },
+      });
 
       transactionV0.sign([sKeyPair[0]]);
-      // assert.equal(result, transactionV0.serialize());
+      assert.deepEqual(result, transactionV0.serialize());
       // will not patch activities
       // validate controller
       assert(popupStub.calledOnce);
@@ -681,15 +679,16 @@ describe("Controller Module", () => {
       const txs = [1, 2, 3, 4].map(() => createTransactionV().transactionV0);
       const msg = txs.map((item) => item.message.serialize());
 
-      // const result = await controllerModule.torus.provider.sendAsync({
-      //   method: "sign_all_transactions",
-      //   params: {
-      //     message: msg,
-      //   },
-      // });
+      const result = await controllerModule.torus.provider.sendAsync({
+        method: "sign_all_transactions",
+        params: {
+          message: msg,
+        },
+      });
 
       // validate state
       assert(popupStub.calledOnce);
+      log.info(result);
       // assert.deepStrictEqual(
       //   result,
       //   txs.map((item) => {
@@ -752,12 +751,11 @@ describe("Controller Module", () => {
       );
     });
 
-    it.skip("gasless transaction (dapp as feepayer) flow", async () => {
+    it("gasless transaction (dapp as feepayer) flow", async () => {
       // no internal relayer for now, using dapp relayer's fee payer
       const tx = createTransactionV().transactionV0;
-      const msg = tx.message.serialize();
-      // tx.sign([sKeyPair[0]]);
-
+      const msg = tx.serialize();
+      tx.sign([sKeyPair[0]]);
       // validate state before
       popupResult = { approve: true };
       const result = await controllerModule.torus.provider.sendAsync({
@@ -770,7 +768,7 @@ describe("Controller Module", () => {
       assert(popupStub.called);
 
       log.info(result);
-      // assert.equal(result, base58.encode(tx.signature || [1]));
+      assert.equal(result, tx.signatures);
 
       // Reject Transaction
       popupResult = { approve: false };
@@ -792,7 +790,7 @@ describe("Controller Module", () => {
       );
     });
 
-    it.skip("send multiInstruction flow", async () => {
+    it("send multiInstruction flow", async () => {
       const decodeInstructions = [transferInstruction()];
 
       [1, 2].forEach(() => decodeInstructions.push(transferInstruction()));
@@ -806,16 +804,16 @@ describe("Controller Module", () => {
 
       // validate state before
       popupResult = { approve: true };
-      // const result = await controllerModule.torus.provider.sendAsync({
-      //   method: "send_transaction",
-      //   params: {
-      //     message: transactionV0.message.serialize(),
-      //   },
-      // });
       transactionV0.sign([sKeyPair[0]]);
+      const result = await controllerModule.torus.provider.sendAsync({
+        method: "send_transaction",
+        params: {
+          message: transactionV0.serialize(),
+        },
+      });
       // validate state after
       assert(popupStub.called);
-      // assert.equal(result, base58.encode(transactionV0.signature || [1]));
+      assert.equal(result, transactionV0.signatures);
 
       // Reject Transaction
       popupResult = { approve: false };
@@ -875,21 +873,21 @@ describe("Controller Module", () => {
     });
 
     // unable to mock bonfida resolve which called request to chain
-    it.skip("getSNSAccount null type", async () => {
-      // default
-      const result = await controllerModule.torus.getSNSAccount("torus", sKeyPair[0].publicKey.toBase58());
-      assert.equal(result, null);
-      // twitter
-      const nameRegistry: NameRegistryState = {
-        parentName: new PublicKey(sKeyPair[0].publicKey),
-        owner: new PublicKey(sKeyPair[1].publicKey),
-        class: new PublicKey(sKeyPair[1].publicKey),
-        data: sKeyPair[1].publicKey.toBuffer(),
-      };
-      sandbox.stub(NameRegistryState, "retrieve").callsFake(async () => nameRegistry);
-      const twitterResult = await controllerModule.torus.getSNSAccount("sns", sKeyPair[0].publicKey.toBase58());
-      assert.deepEqual(nameRegistry, (twitterResult as any).registry);
-    });
+    // it("getSNSAccount null type", async () => {
+    //   // default
+    //   const result = await controllerModule.torus.getSNSAccount("torus", sKeyPair[0].publicKey.toBase58());
+    //   assert.equal(result, null);
+    //   // twitter
+    //   const nameRegistry: NameRegistryState = {
+    //     parentName: new PublicKey(sKeyPair[0].publicKey),
+    //     owner: new PublicKey(sKeyPair[1].publicKey),
+    //     class: new PublicKey(sKeyPair[1].publicKey),
+    //     data: sKeyPair[1].publicKey.toBuffer(),
+    //   };
+    //   sandbox.stub(NameRegistryState, "retrieve").callsFake(async () => nameRegistry);
+    //   const twitterResult = await controllerModule.torus.getSNSAccount("sns", sKeyPair[0].publicKey.toBase58());
+    //   assert.deepEqual(nameRegistry, (twitterResult as any).registry);
+    // });
 
     it("triggerLogin selectedNetworkTransactions", async () => {
       const updateSolanaTokensSpy = sandbox.spy(TokensTrackerController.prototype, "updateSolanaTokens");
@@ -976,7 +974,6 @@ describe("Controller Module", () => {
         (_err) => {
           assert(setProviderConfigSpy.notCalled);
           assert.equal(_err, "user denied provider change request");
-          // console.log({ err: err });
           return true;
         },
         "user denied provider change request"

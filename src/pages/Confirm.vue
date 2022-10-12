@@ -59,8 +59,7 @@ onMounted(async () => {
       const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
       tx.value = new VersionedTransaction(msgObj);
     } else {
-      const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
-      tx.value = new VersionedTransaction(msgObj);
+      tx.value = VersionedTransaction.deserialize(txData.message as unknown as Uint8Array);
     }
 
     estimateChanges(tx.value, connection, txData.selectedAddress);

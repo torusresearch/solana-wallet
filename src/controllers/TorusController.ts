@@ -1568,19 +1568,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     let tx: VersionedTransaction;
     if (req.params?.messageOnly) {
-      const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
+      const msgObj = VersionedMessage.deserialize(message as Uint8Array);
       tx = new VersionedTransaction(msgObj);
     } else {
-      let msgObj: VersionedMessage;
-      try {
-        msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-      } catch (err) {
-        msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-      }
-      tx = new VersionedTransaction(msgObj);
+      tx = VersionedTransaction.deserialize(message as Uint8Array);
     }
-
-    return this.transfer(tx as unknown as VersionedTransaction, req);
+    return this.transfer(tx, req);
   }
 
   private getNetworkProviderState(req: JRPCRequest<unknown>, res: JRPCResponse<unknown>, _: unknown, end: () => void) {
