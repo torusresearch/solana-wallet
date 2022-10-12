@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Message, Transaction } from "@solana/web3.js";
+import { VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import { decompile } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -21,7 +22,7 @@ const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estima
 
 const finalTxData = ref<FinalTxData>();
 
-const tx = ref<Transaction>();
+const tx = ref<VersionedTransaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
@@ -60,21 +61,25 @@ onMounted(async () => {
     }
 
     if (txData.messageOnly) {
-      tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
+      const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+      tx.value = new VersionedTransaction(msgObj);
     } else {
-      tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+      const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+      tx.value = new VersionedTransaction(msgObj);
     }
 
     estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
-    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : (await calculateTxFee(tx.value.compileMessage(), ControllerModule.connection)).fee;
+    // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
+    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection, ControllerModule.selectedAddress)).fee;
+
+    const instructions = decompile(tx.value.message);
 
     try {
-      decodedInst.value = tx.value.instructions.map((inst) => {
+      decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
+      finalTxData.value = parsingTransferAmount(tx.value, txFee, false, instructions);
     } catch (e) {
       log.error(e);
     }
@@ -87,21 +92,16 @@ onMounted(async () => {
 
 const approveTxn = async (): Promise<void> => {
   loading.value = true;
-  let res: string | string[] | Transaction | undefined;
+  let res: string | string[] | VersionedTransaction | undefined;
   try {
     if (method === "send_transaction" && tx.value) {
       res = await ControllerModule.torus.transfer(tx.value, params);
       redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_transaction" && tx.value) {
       res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
-      redirectToResult(
-        jsonrpc,
-        { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
-        req_id,
-        resolveRoute
-      );
+      redirectToResult(jsonrpc, { data: { signature: res.serialize() }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_all_transactions") {
-      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as { params: { message: string[] }; method: string });
+      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as { params: { message: Uint8Array[] }; method: string });
       redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
     } else throw new Error();
   } catch (e) {

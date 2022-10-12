@@ -21,9 +21,14 @@ import {
   SystemInstruction,
   SystemProgram,
   Transaction,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedMessage,
+  VersionedTransaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { get, post } from "@toruslabs/http-helpers";
+import { decompile } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
@@ -94,26 +99,22 @@ export function getClubbedNfts(nfts: Partial<SolAndSplToken>[]): ClubbedNfts[] {
   return Object.values(finalData);
 }
 
-// fee Estimation
-// Generate Solana Transaction
-export async function generateSPLTransaction(
-  receiver: string,
-  amount: number,
+export async function createSPLTransactionInstruction(
+  connection: Connection,
+  receiver: PublicKey,
+  sender: PublicKey,
   selectedToken: Partial<SolAndSplToken>,
-  sender: string,
-  connection: Connection
-): Promise<Transaction> {
-  const transaction = new Transaction();
+  amount: number
+) {
   const tokenMintAddress = selectedToken.mintAddress as string;
   const decimals = selectedToken.balance?.decimals || 0;
   const mintAccount = new PublicKey(tokenMintAddress);
   const signer = new PublicKey(sender); // add gasless transactions
   const sourceTokenAccount = await getAssociatedTokenAddress(mintAccount, signer, false);
-  const receiverAccount = new PublicKey(receiver);
-
-  let associatedTokenAccount = receiverAccount;
+  let associatedTokenAccount = receiver;
+  const instructions: TransactionInstruction[] = [];
   try {
-    associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiverAccount, false);
+    associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), receiver, false);
   } catch (e) {
     log.warn("error getting associatedTokenAccount, account passed is possibly a token account");
   }
@@ -124,11 +125,12 @@ export async function generateSPLTransaction(
     const newAccount = createAssociatedTokenAccountInstruction(
       new PublicKey(sender),
       associatedTokenAccount,
-      receiverAccount,
+      receiver,
       new PublicKey(tokenMintAddress)
     );
-    transaction.add(newAccount);
+    instructions.push(newAccount);
   }
+
   const transferInstructions = createTransferCheckedInstruction(
     sourceTokenAccount,
     mintAccount,
@@ -138,16 +140,40 @@ export async function generateSPLTransaction(
     decimals,
     []
   );
-  transaction.add(transferInstructions);
+  instructions.push(transferInstructions);
+  return instructions;
+}
 
-  transaction.recentBlockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
-  transaction.feePayer = new PublicKey(sender);
-  return transaction;
+// fee Estimation
+// Generate Solana Transaction
+export async function generateSPLTransaction(
+  receiver: string,
+  amount: number,
+  selectedToken: Partial<SolAndSplToken>,
+  sender: string,
+  connection: Connection
+): Promise<VersionedTransaction> {
+  const instructions: TransactionInstruction[] = await createSPLTransactionInstruction(
+    connection,
+    new PublicKey(receiver),
+    new PublicKey(sender),
+    selectedToken,
+    amount
+  );
+
+  const { blockhash } = await connection.getLatestBlockhash("finalized");
+  const messageV0 = new TransactionMessage({
+    payerKey: new PublicKey(sender),
+    recentBlockhash: blockhash,
+    instructions,
+  }).compileToV0Message();
+
+  const versionedTransaction = new VersionedTransaction(messageV0);
+
+  return versionedTransaction;
 }
 
 export async function burnAndCloseAccount(selectedAddress: string, associatedAddress: string, mint: string, connection: Connection) {
-  const tx = new Transaction();
-
   // signer pub key
   const signer = new PublicKey(selectedAddress);
   const associatedAddressPublicKey = new PublicKey(associatedAddress);
@@ -163,13 +189,18 @@ export async function burnAndCloseAccount(selectedAddress: string, associatedAdd
 
   // recent block hash
   const block = await connection.getLatestBlockhash("max");
-  tx.recentBlockhash = block.blockhash;
-  tx.feePayer = new PublicKey(selectedAddress);
+  const instructions = [burnInstruction, closeAccountInstruction];
+
+  const messageV0 = new TransactionMessage({
+    payerKey: new PublicKey(selectedAddress),
+    instructions,
+    recentBlockhash: block.blockhash,
+  }).compileToV0Message();
 
   // add the instructions to the transaction
-  tx.add(burnInstruction, closeAccountInstruction);
+  const transactionV0 = new VersionedTransaction(messageV0);
 
-  return tx;
+  return transactionV0;
 }
 
 // Calculte balance changes after transaction simulation
@@ -287,10 +318,11 @@ export async function calculateChanges(
 }
 
 // Simulate transaction's balance changes
-export async function getEstimateBalanceChange(connection: Connection, tx: Transaction, signer: string): Promise<AccountEstimation[]> {
+export async function getEstimateBalanceChange(connection: Connection, tx: VersionedTransaction, signer: string): Promise<AccountEstimation[]> {
   try {
+    const instructions = decompile(tx.message);
     // get writeable accounts from all instruction
-    const accounts = tx.instructions.reduce((prev, current) => {
+    const accounts = instructions.reduce((prev, current) => {
       // log.info(current.keys)
       current.keys.forEach((item) => {
         if (item.isWritable || item.isSigner) {
@@ -300,12 +332,12 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Trans
       return prev;
     }, new Map<string, PublicKey>());
 
-    log.info(tx instanceof Transaction);
     // add selected Account incase signer is just fee payer (instruction will not track fee payer)
     accounts.set(signer, new PublicKey(signer));
 
     // Simulate Transaction with Accounts
-    const result = await connection.simulateTransaction(tx.compileMessage(), undefined, Array.from(accounts.values()));
+    const addresses = Array.from(accounts.keys());
+    const result = await connection.simulateTransaction(tx, { accounts: { addresses, encoding: "base64" } });
 
     if (result.value.err) {
       throw new Error(result.value.err.toString());
@@ -319,35 +351,53 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Trans
   }
 }
 
-export async function calculateTxFee(message: Message, connection: Connection): Promise<{ blockHash: string; fee: number; height: number }> {
+export async function calculateTxFee(
+  message: VersionedMessage,
+  connection: Connection,
+  selectedAddress: string
+): Promise<{ blockHash: string; height: number; fee: number }> {
   const latestBlockHash = await connection.getLatestBlockhash("finalized");
   const blockHash = latestBlockHash.blockhash;
+  const instructions = decompile(message);
+  const legacyMessage = Message.compile({
+    instructions,
+    recentBlockhash: message.recentBlockhash,
+    payerKey: new PublicKey(selectedAddress),
+  });
+  const fee = await connection.getFeeForMessage(legacyMessage);
   const height = latestBlockHash.lastValidBlockHeight;
-  const fee = await connection.getFeeForMessage(message);
-  return { blockHash, fee: fee.value, height };
+  return { blockHash, height, fee: fee.value || 0 };
 }
 
 export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
   const decoded: DecodedDataType[] = [];
   (messages as string[]).forEach((msg) => {
-    let tx2: Transaction;
+    let tx2: VersionedTransaction;
     if (messageOnly) {
-      tx2 = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
+      const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
+      tx2 = new VersionedTransaction(msgObj);
     } else {
-      tx2 = Transaction.from(Buffer.from(msg, "hex"));
+      const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
+      tx2 = new VersionedTransaction(msgObj);
     }
-    tx2.instructions.forEach((inst) => {
+    const instructions = decompile(tx2.message);
+    instructions.forEach((inst) => {
       decoded.push(decodeInstruction(inst));
     });
   });
   return decoded;
 }
 
-export function parsingTransferAmount(tx: Transaction, txFee: number, isGasless: boolean): FinalTxData | undefined {
-  if (tx.instructions.length > 1) return undefined;
-  if (!tx.instructions[0].programId.equals(SystemProgram.programId)) return undefined;
-  if (SystemInstruction.decodeInstructionType(tx.instructions[0]) !== "Transfer") return undefined;
-  const decoded = tx.instructions.map((inst) => {
+export function parsingTransferAmount(
+  tx: VersionedTransaction,
+  txFee: number,
+  isGasless: boolean,
+  instructions: TransactionInstruction[]
+): FinalTxData | undefined {
+  if (instructions.length > 1) return undefined;
+  if (!instructions[0].programId.equals(SystemProgram.programId)) return undefined;
+  if (SystemInstruction.decodeInstructionType(instructions[0]) !== "Transfer") return undefined;
+  const decoded = instructions.map((inst) => {
     const decoded_inst = SystemInstruction.decodeTransfer(inst);
     return decoded_inst;
   });

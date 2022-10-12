@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
+import { clusterApiUrl, Connection, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
+import { decompile } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -20,7 +21,7 @@ const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams
 
 const finalTxData = ref<FinalTxData>();
 
-const tx = ref<Transaction>();
+const tx = ref<VersionedTransaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
@@ -39,7 +40,6 @@ onMounted(async () => {
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     origin.value = txData.origin as string;
     network.value = txData.network || "";
-
     const connection = new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"));
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
@@ -56,23 +56,30 @@ onMounted(async () => {
     }
 
     if (txData.messageOnly) {
-      tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
+      const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+      tx.value = new VersionedTransaction(msgObj);
     } else {
-      tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+      const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+      tx.value = new VersionedTransaction(msgObj);
     }
 
     estimateChanges(tx.value, connection, txData.selectedAddress);
-    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless
-      ? 0
-      : (await calculateTxFee(tx.value.compileMessage(), new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")))).fee;
+    // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
+    const txFee = (
+      await calculateTxFee(
+        tx.value.message,
+        new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")),
+        ControllerModule.selectedAddress
+      )
+    )?.fee;
 
+    const instructions = decompile(tx.value.message);
     try {
-      decodedInst.value = tx.value.instructions.map((inst) => {
+      decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
+      finalTxData.value = parsingTransferAmount(tx.value, txFee, false, instructions);
       loading.value = false;
     } catch (e) {
       log.error(e);

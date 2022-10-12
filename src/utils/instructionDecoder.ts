@@ -17,9 +17,17 @@ import {
   TOKEN_PROGRAM_ID,
   TokenInstruction,
 } from "@solana/spl-token";
-import { PublicKey, StakeInstruction, StakeProgram, SystemInstruction, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
+import {
+  PublicKey,
+  StakeInstruction,
+  StakeProgram,
+  SystemInstruction,
+  SystemProgram,
+  TransactionInstruction,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
+import { decompile, SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 // Custom address
@@ -326,14 +334,14 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
 export const constructTokenData = (
   tokenPriceMap: { [mintAddress: string]: { [currency: string]: number } },
   infoState: TokenInfoController["state"],
-  rawTransaction?: string,
+  vTransaction?: VersionedTransaction,
   tokenMap: SolanaToken[] = []
 ): TokenTransactionData | undefined => {
   try {
-    if (!tokenMap || !rawTransaction) return undefined;
+    if (!tokenMap || !vTransaction) return undefined;
 
     // reconstruct Transaction as transaction object function is not accessible
-    const { instructions } = Transaction.from(Buffer.from(rawTransaction || "", "hex"));
+    const instructions = decompile(vTransaction.message);
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
     let interestedTransactionInstructionidx = -1;

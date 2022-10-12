@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
-import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -24,7 +24,7 @@ const props = withDefaults(
   {}
 );
 const invalidLink = ref("");
-const transaction = ref<Transaction>();
+const transaction = ref<VersionedTransaction>();
 const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");

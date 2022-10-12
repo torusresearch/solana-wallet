@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { createTransfer } from "@solana/pay";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { CreateTransferError, Memo, Recipient, References, SPLToken } from "@solana/pay";
+import { getAssociatedTokenAddress, getMint, Mint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  ParsedAccountData,
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { ContactPayload } from "@toruslabs/base-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
-import { BigNumber } from "bignumber.js";
+// import { BigNumber } from "bignumber.js";
 import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
@@ -23,7 +32,7 @@ import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
-import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
+import { calculateTxFee, createSPLTransactionInstruction, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
 import CheckBox from "../../components/common/CheckBox.vue";
 
@@ -39,7 +48,7 @@ const contactName = ref("");
 const checked = ref(false);
 const resolvedAddress = ref<string>("");
 const sendAmount = ref(0);
-const transaction = ref<Transaction>();
+const transaction = ref<VersionedTransaction>();
 const transactionFee = ref(0);
 const blockhash = ref("");
 const lastValidBlockHeight = ref(0);
@@ -265,14 +274,82 @@ function convertFiatToCrypto(fiatValue = 1) {
   return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
 }
 
-const generateTransaction = async (amount: number): Promise<Transaction> => {
+const createSolTransactionInstruction = (amount: number) => {
+  return [
+    SystemProgram.transfer({
+      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
+      toPubkey: new PublicKey(resolvedAddress.value),
+      lamports: amount * LAMPORTS_PER_SOL,
+    }),
+  ];
+};
+
+interface CreateTransferFields {
+  recipient: Recipient;
+  amount: number;
+  splToken?: SPLToken;
+  reference?: References;
+  memo?: Memo;
+}
+
+async function createTransfer(
+  connection: Connection,
+  sender: PublicKey,
+  { recipient, amount, splToken, memo: memoPay }: CreateTransferFields
+): Promise<VersionedTransaction> {
+  // Check that the sender and recipient accounts exist
+  const senderInfo = await connection.getAccountInfo(sender);
+  if (!senderInfo) throw new CreateTransferError("sender not found");
+
+  const recipientInfo = await connection.getAccountInfo(recipient);
+  if (!recipientInfo) throw new CreateTransferError("recipient not found");
+
+  const mint = splToken ? await getMint(connection, splToken) : ({} as Mint);
+
+  // A native SOL or SPL token transfer instruction
+  const instructions = splToken
+    ? await createSPLTransactionInstruction(
+        connection,
+        recipient,
+        sender,
+        {
+          mintAddress: mint.address.toBase58(),
+          balance: { decimals: mint.decimals, amount: mint.decimals.toString(), uiAmount: mint.decimals, uiAmountString: mint.decimals.toString() },
+        },
+        amount
+      )
+    : createSolTransactionInstruction(amount);
+
+  if (memoPay != null) {
+    instructions.push(
+      new TransactionInstruction({
+        programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+        keys: [],
+        data: Buffer.from(memoPay, "utf8"),
+      })
+    );
+  }
+  const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
+
+  const messageV0 = new TransactionMessage({
+    payerKey: new PublicKey(ControllerModule.selectedAddress),
+    instructions,
+    recentBlockhash: latestBlockhash.blockhash,
+  }).compileToV0Message();
+
+  const transactionV0 = new VersionedTransaction(messageV0);
+
+  return transactionV0;
+}
+
+const generateTransaction = async (amount: number): Promise<VersionedTransaction> => {
   if (reference.value || memo.value.length > 0) {
     transaction.value = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
       recipient: new PublicKey(resolvedAddress.value),
       reference: reference.value?.map((item) => new PublicKey(item)),
       memo: memo.value,
       splToken: selectedToken.value.mintAddress ? new PublicKey(selectedToken.value?.mintAddress) : undefined,
-      amount: new BigNumber(amount),
+      amount,
     });
   } else if (selectedToken?.value?.mintAddress) {
     // SPL TRANSFER
@@ -285,17 +362,17 @@ const generateTransaction = async (amount: number): Promise<Transaction> => {
     );
   } else {
     // SOL TRANSFER
-    const instuctions = SystemProgram.transfer({
-      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-      toPubkey: new PublicKey(resolvedAddress.value),
-      lamports: amount * LAMPORTS_PER_SOL,
-    });
+    const instructions = createSolTransactionInstruction(amount);
     const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
-    transaction.value = new Transaction({
-      blockhash: latestBlockhash.blockhash,
-      lastValidBlockHeight: lastValidBlockHeight.value,
-      feePayer: new PublicKey(ControllerModule.selectedAddress),
-    }).add(instuctions);
+    // create v0 compatible message
+    const messageV0 = new TransactionMessage({
+      payerKey: new PublicKey(ControllerModule.selectedAddress),
+      instructions,
+      recentBlockhash: latestBlockhash.blockhash,
+    }).compileToV0Message();
+    const transactionV0 = new VersionedTransaction(messageV0);
+
+    transaction.value = transactionV0;
   }
   return transaction.value;
 };
@@ -359,7 +436,7 @@ const openModal = async () => {
   try {
     transaction.value = await generateTransaction(amount);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
-    const { blockHash, fee, height } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
+    const { blockHash, height, fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection, ControllerModule.selectedAddress);
     blockhash.value = blockHash;
     lastValidBlockHeight.value = height;
     transactionFee.value = fee / LAMPORTS_PER_SOL;

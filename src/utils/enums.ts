@@ -1,4 +1,4 @@
-import { Transaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 import {
   AccountTrackerConfig,
   AccountTrackerState,
@@ -61,7 +61,7 @@ export interface TorusControllerState extends BaseState {
   PreferencesControllerState: SolanaPreferencesState;
   AccountTrackerState: AccountTrackerState;
   KeyringControllerState: KeyringControllerState;
-  TransactionControllerState: TransactionState<Transaction>;
+  TransactionControllerState: TransactionState<VersionedTransaction>;
   EmbedControllerState: BaseEmbedControllerState;
   TokensTrackerState: TokensTrackerState;
   TokenInfoState: TokenInfoState;
