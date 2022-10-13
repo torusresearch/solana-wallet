@@ -44,6 +44,7 @@ module.exports = {
             },
           },
           gray: {
+            0: "#FFFFFF",
             200: "#F9F9FB",
             300: "#F5F5F5",
             400: "#B7B8BD",

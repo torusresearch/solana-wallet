@@ -19,6 +19,7 @@
     "serve:prod": "vue-cli-service serve --mode production"
   },
   "dependencies": {
+    "@bonfida/spl-name-service": "^0.1.50",
     "@gtm-support/vue-gtm": "^1.5.0",
     "@headlessui/vue": "^1.6.7",
     "@heroicons/vue": "^1.0.6",
@@ -30,8 +31,8 @@
     "@solana/qr-code-styling": "^1.6.0-rc.1",
     "@solana/spl-name-service": "^0.1.4",
     "@solana/spl-token": "0.2.0",
-    "@solana/web3.js": "^1.42.0",
-    "@toruslabs/base-controllers": "^2.2.6",
+    "@solana/web3.js": "^1.63.1",
+    "@toruslabs/base-controllers": "2.2.6",
     "@toruslabs/broadcast-channel": "^5.0.2",
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^3.0.0",
@@ -41,7 +42,7 @@
     "@toruslabs/openlogin-jrpc": "^2.5.0",
     "@toruslabs/openlogin-subkey": "^2.1.0",
     "@toruslabs/openlogin-utils": "^2.1.0",
-    "@toruslabs/solana-controllers": "^2.2.6",
+    "@toruslabs/solana-controllers": "^2.3.2",
     "@toruslabs/tweetnacl-js": "^1.0.3",
     "@toruslabs/vue-components": "^2.0.1",
     "@toruslabs/vue-icons": "^2.0.0",

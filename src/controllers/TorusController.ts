@@ -59,6 +59,7 @@ import {
   ExtendedAddressPreferences,
   IProviderHandlers,
   KeyringController,
+  LoadingState,
   NetworkController,
   PreferencesController,
   SendTransactionParams,
@@ -83,7 +84,7 @@ import stringify from "safe-stable-stringify";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { topupPlugin } from "@/plugins/Topup";
-import { retrieveNftOwner } from "@/utils/bonfida";
+import { bonfidaResolve } from "@/utils/bonfida";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
@@ -143,6 +144,7 @@ export const DEFAULT_STATE = {
     nativeCurrency: "sol",
     ticker: "sol",
     tokenPriceMap: {},
+    loadState: LoadingState.FULL_RELOAD,
   },
   NetworkControllerState: {
     chainId: "loading",
@@ -179,6 +181,8 @@ export const DEFAULT_STATE = {
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
     unknownNFTs: [],
+    metaplexLoadingState: LoadingState.FULL_RELOAD,
+    tokenInfoLoadingState: LoadingState.FULL_RELOAD,
   },
   RelayMap: {},
   RelayKeyHostMap: {},
@@ -304,7 +308,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   get embedLoginInProgress(): boolean {
-    return this.embedController?.state.loginInProgress || false;
+    return this.embedController?.state.loginInProgress;
   }
 
   get embedOauthModalVisibility(): boolean {
@@ -540,6 +544,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   };
 
+  setTokenLoadingState() {
+    this.tokenInfoController.setTokenLoadingState();
+  }
+
   async importCustomToken(token: CustomTokenInfo) {
     try {
       token.publicAddress = this.selectedAddress;
@@ -577,16 +585,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return { inputDomainKey, hashedInputName };
   }
 
-  async getSNSAccount(
-    type: string,
-    address: string
-  ): Promise<NameRegistryState | null | { registry: NameRegistryState; nftOwner: PublicKey | undefined }> {
-    const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
+  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null | PublicKey> {
+    // const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns": {
-        const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
-        const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
-        return { registry, nftOwner };
+        // const registry = await NameRegistryState.retrieve(this.connection, inputDomainKey);
+        // const nftOwner = await retrieveNftOwner(this.connection, inputDomainKey);
+        // return { registry, nftOwner };
+        const owner = await bonfidaResolve(this.connection, address);
+        return owner;
       }
       case "twitter":
         return getTwitterRegistry(this.connection, address);
@@ -710,6 +717,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async setSelectedAccount(address: string, sync = false) {
+    if (this.state.PreferencesControllerState.selectedAddress !== address) this.setTokenLoadingState();
     this.preferencesController.setSelectedAddress(address);
     if (sync) await this.preferencesController.sync(address);
 
@@ -732,6 +740,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   setNetwork(providerConfig: ProviderConfig): void {
+    this.setTokenLoadingState();
     this.networkController.setProviderConfig(providerConfig);
   }
 
@@ -901,8 +910,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
   }
 
-  public hideOAuthModal(): void {
-    this.embedController.update({ oauthModalVisibility: false });
+  public embededOAuthLoginInProgress(): void {
+    this.embedController.update({
+      loginInProgress: true,
+      oauthModalVisibility: false,
+    });
   }
 
   /**
@@ -1364,11 +1376,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
-      const sessionKey = window.sessionStorage.getItem(`${EPHERMAL_KEY}`);
+      const sessionKey = window.sessionStorage?.getItem(`${EPHERMAL_KEY}`);
       const value = sessionKey || localKey;
 
       // Saving to SessionStorage - user refresh with restored key
-      if (!sessionKey && value) window.sessionStorage.setItem(`${EPHERMAL_KEY}`, value);
+      if (!sessionKey && value) window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, value);
 
       const keyState: KeyState =
         typeof value === "string"
@@ -1420,7 +1432,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
           this.update({ UserDapp: userDapp });
 
           // find previous selected account
-          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === decryptedState.publicKey);
+          const address = this.selectedAddress || decryptedState.publicKey;
+          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === address);
           const selectedAddress = await accountPromise[selectedIndex];
           // This call sync and refresh blockchain state
           await this.setSelectedAccount(selectedAddress, true);
@@ -1585,7 +1598,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     // Try to restore from backend (restore privatekey)
+    this.embedController.update({ loginInProgress: true });
     await this.restoreFromBackend();
+    this.embedController.update({ loginInProgress: false });
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
       const currentLoginProvider = this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin;

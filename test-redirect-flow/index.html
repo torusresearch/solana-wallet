@@ -1,348 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Redirect Flow</title>
     <script src="https://unpkg.com/@solana/web3.js@1.36.0/lib/index.iife.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.1.8/lib/index.iife.js"
-        integrity="sha256-EKTEm0ROqj/PnDso+ZKsU7O4/35Cx49TtR2Br2NVSw8=" crossorigin="anonymous"></script>
-</head>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@solana/spl-token@0.1.8/lib/index.iife.js"
+      integrity="sha256-EKTEm0ROqj/PnDso+ZKsU7O4/35Cx49TtR2Br2NVSw8="
+      crossorigin="anonymous"
+    ></script>
+  </head>
 
-<script>
+  <script>
     // window.Buffer = Buffer;
-    const usdcMintAddress = ["EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"]
+    const usdcMintAddress = [
+      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+    ];
     const usdcDecimals = 6;
 
-    const nftMintAddress = ["4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"]
+    const nftMintAddress = ["4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"];
     let target_network = {
-        blockExplorerUrl: "https://explorer.solana.com",
-        chainId: "0x3",
-        displayName: "Solana Devnet",
-        logo: "solana.svg",
-        rpcTarget: solanaWeb3.clusterApiUrl("devnet"),
-        ticker: "SOL",
-        tickerName: "Solana Token"
+      blockExplorerUrl: "https://explorer.solana.com",
+      chainId: "0x3",
+      displayName: "Solana Devnet",
+      logo: "solana.svg",
+      rpcTarget: solanaWeb3.clusterApiUrl("devnet"),
+      ticker: "SOL",
+      tickerName: "Solana Token",
     };
-    let selectedAddress = localStorage.getItem("selectedAddress") ;
-    let conn = localStorage.getItem("rpcTarget") ? new solanaWeb3.Connection( localStorage.getItem("rpcTarget")) : undefined;
+    let selectedAddress = localStorage.getItem("selectedAddress");
+    let conn = localStorage.getItem("rpcTarget")
+      ? new solanaWeb3.Connection(localStorage.getItem("rpcTarget"))
+      : undefined;
 
+    const generateTransaction = async (targetAddress, instruction) => {
+      if (!conn) throw Error("no connection");
+      // const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
+      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(
+        "finalized"
+      );
 
+      const TransactionInstruction = solanaWeb3.SystemProgram.transfer({
+        fromPubkey: new solanaWeb3.PublicKey(selectedAddress),
+        toPubkey: new solanaWeb3.PublicKey(targetAddress),
+        lamports: Math.floor(0.001 * Math.random() * 1000000000),
+      });
 
-    const generateTransaction = async (targetAddress, instruction ) => {
-        if (!conn) throw Error("no connection")
-        // const blockhash = (await conn.getRecentBlockhash("finalized")).blockhash;
-        const {blockhash , lastValidBlockHeight} = (await conn.getLatestBlockhash("finalized"));
+      let transaction = new solanaWeb3.Transaction({
+        recentBlockhash: blockhash,
+        blockhash: blockhash,
+        lastValidBlockHeight,
+        feePayer: new solanaWeb3.PublicKey(selectedAddress),
+      });
+      if (instruction) transaction.add(...instruction);
+      else transaction.add(TransactionInstruction);
 
-        const TransactionInstruction = solanaWeb3.SystemProgram.transfer({
-            fromPubkey: new solanaWeb3.PublicKey(
-                selectedAddress
-            ),
-            toPubkey: new solanaWeb3.PublicKey(
-                targetAddress
-            ),
-            lamports: ( Math.floor (0.001 * Math.random() * 1000000000) ),
-        });
-
-        let transaction = new solanaWeb3.Transaction({
-            recentBlockhash: blockhash,
-            blockhash: blockhash,
-            lastValidBlockHeight,
-            feePayer: new solanaWeb3.PublicKey(
-                selectedAddress
-            ),
-        })
-        if (instruction) transaction.add(...instruction)
-        else transaction.add(TransactionInstruction)
-
-        return transaction.serialize({requireAllSignatures: false, verifySignatures: false}).toString("hex");
+      return transaction
+        .serialize({ requireAllSignatures: false, verifySignatures: false })
+        .toString("hex");
     };
 
-    const getSplInstructions = async ( connection, signerAddress,  receiver, amount, mintAddress, decimals) => {
-        const instruction  = []
-        const tokenMintAddress = mintAddress;
-        const mintAccount = new solanaWeb3.PublicKey(tokenMintAddress);
-        const signer = new solanaWeb3.PublicKey(signerAddress); // add gasless transactions
-        const sourceTokenAccount = await splToken.Token.getAssociatedTokenAddress(splToken.ASSOCIATED_TOKEN_PROGRAM_ID, splToken.TOKEN_PROGRAM_ID, mintAccount, signer);
-        const receiverAccount = new solanaWeb3.PublicKey(receiver);
+    const getSplInstructions = async (
+      connection,
+      signerAddress,
+      receiver,
+      amount,
+      mintAddress,
+      decimals
+    ) => {
+      const instruction = [];
+      const tokenMintAddress = mintAddress;
+      const mintAccount = new solanaWeb3.PublicKey(tokenMintAddress);
+      const signer = new solanaWeb3.PublicKey(signerAddress); // add gasless transactions
+      const sourceTokenAccount = await splToken.Token.getAssociatedTokenAddress(
+        splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+        splToken.TOKEN_PROGRAM_ID,
+        mintAccount,
+        signer
+      );
+      const receiverAccount = new solanaWeb3.PublicKey(receiver);
 
-        let associatedTokenAccount = receiverAccount;
-        try {
-            associatedTokenAccount = await splToken.Token.getAssociatedTokenAddress(
-                splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
-                splToken.TOKEN_PROGRAM_ID,
-                new solanaWeb3.PublicKey(tokenMintAddress),
-                receiverAccount
-            );
-        } catch (e) {
-            console.log(e)
-            console.log("error getting associatedTokenAccount, account passed is possibly a token account");
-        }
-
-        const [receiverAccountInfo, mintAccountInfo ] = await connection.getMultipleAccountsInfo([associatedTokenAccount, mintAccount]);
-
-        if (receiverAccountInfo?.owner?.toString() !== splToken.TOKEN_PROGRAM_ID.toString()) {
-            const newAccount = await splToken.Token.createAssociatedTokenAccountInstruction(
-                splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
-                splToken.TOKEN_PROGRAM_ID,
-                new solanaWeb3.PublicKey(tokenMintAddress),
-                associatedTokenAccount,
-                receiverAccount,
-                signer
-            );
-            instruction.push(newAccount);
-        }
-        const transferInstructions = splToken.Token.createTransferCheckedInstruction(
-            splToken.TOKEN_PROGRAM_ID,
-            sourceTokenAccount,
-            mintAccount,
-            associatedTokenAccount,
-            signer,
-            [],
-            amount,
-            decimals || 0
+      let associatedTokenAccount = receiverAccount;
+      try {
+        associatedTokenAccount = await splToken.Token.getAssociatedTokenAddress(
+          splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+          splToken.TOKEN_PROGRAM_ID,
+          new solanaWeb3.PublicKey(tokenMintAddress),
+          receiverAccount
         );
-        instruction.push(transferInstructions);
-        return instruction;
-    }
+      } catch (e) {
+        console.log(e);
+        console.log(
+          "error getting associatedTokenAccount, account passed is possibly a token account"
+        );
+      }
+
+      const [receiverAccountInfo, mintAccountInfo] =
+        await connection.getMultipleAccountsInfo([
+          associatedTokenAccount,
+          mintAccount,
+        ]);
+
+      if (
+        receiverAccountInfo?.owner?.toString() !==
+        splToken.TOKEN_PROGRAM_ID.toString()
+      ) {
+        const newAccount =
+          await splToken.Token.createAssociatedTokenAccountInstruction(
+            splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+            splToken.TOKEN_PROGRAM_ID,
+            new solanaWeb3.PublicKey(tokenMintAddress),
+            associatedTokenAccount,
+            receiverAccount,
+            signer
+          );
+        instruction.push(newAccount);
+      }
+      const transferInstructions =
+        splToken.Token.createTransferCheckedInstruction(
+          splToken.TOKEN_PROGRAM_ID,
+          sourceTokenAccount,
+          mintAccount,
+          associatedTokenAccount,
+          signer,
+          [],
+          amount,
+          decimals || 0
+        );
+      instruction.push(transferInstructions);
+      return instruction;
+    };
 
     async function openurl(method) {
-        const baseurl = "http://localhost:8080/redirectflow";
-        let url = baseurl;
-        let requestObj = {
-            jsonrpc: "2.0",
-            method,
-            id:1,
-        };
-        switch (method) {
-            case "set_provider":
-                requestObj.params=target_network;
-                break;
-            case "topup":
-                requestObj
-                    .params={
-                        params: {
-                            selectedAddress
-                        },
-                        provider: "moonpay"
-                    };
-                break;
-            case "send_transaction":
-                console.log("send TX spl")
-                const inst = await getSplInstructions(conn, selectedAddress, selectedAddress, 1, usdcMintAddress[1], usdcDecimals)
-                requestObj.params={
-                        message: await generateTransaction( selectedAddress, inst ),
-                    };
-                break;
-            case "send_spl_transaction":
-                requestObj.params={
-                        // message: await generateSPLTransaction( selectedAddress ),
-                    };
-                break;
-            case "sign_transaction":
-                requestObj.params={
-                        message: await generateTransaction( selectedAddress ),
-                    };
-                break;
-            case "sign_all_transactions":
-                requestObj.params={
-                        message: [await generateTransaction(selectedAddress), await generateTransaction(selectedAddress), await generateTransaction(selectedAddress)],
-                };
-                break;
-            case "sign_message":
-                requestObj.params={
-                        message: (new TextEncoder()).encode("Example Message"),
-                    };
-                break;
-            case "spl_transfer":
-                requestObj.params={
-                        mint_add: usdcMintAddress.at(-1),
-                        receiver_add: selectedAddress,
-                        amount: 0.1,
-                    };
-                break;
-            case "nft_transfer":
-                requestObj.params={
-                        mint_add: "BAYYCCY31SRrexQKwGqDRonVzMiB2Y2HagNZQv6cNWk7",
-                        receiver_add: selectedAddress,
-                    };
-                break;
-            default:
-        }
-        let encodedRequestObj = btoa(JSON.stringify(requestObj));
-        const resolvePath = encodeURIComponent(window.location.origin + window.location.pathname);
-        console.log("XX", requestObj);
-        url = `${url}?resolveRoute=${resolvePath}#redirectflowdata=${encodedRequestObj}`;
-        Object.assign(document.createElement("a"), {
-            // target: "_blank",
-            href: url,
-        }).click();
+      const baseurl = "http://localhost:8080/redirectflow";
+      let url = baseurl;
+      let requestObj = {
+        jsonrpc: "2.0",
+        method,
+        id: 1,
+      };
+      switch (method) {
+        case "set_provider":
+          requestObj.params = target_network;
+          break;
+        case "topup":
+          requestObj.params = {
+            params: {
+              selectedAddress,
+            },
+            provider: "moonpay",
+          };
+          break;
+        case "send_transaction":
+          console.log("send TX spl");
+          const inst = await getSplInstructions(
+            conn,
+            selectedAddress,
+            selectedAddress,
+            1,
+            usdcMintAddress[1],
+            usdcDecimals
+          );
+          requestObj.params = {
+            message: await generateTransaction(selectedAddress, inst),
+          };
+          break;
+        case "send_spl_transaction":
+          requestObj.params = {
+            // message: await generateSPLTransaction( selectedAddress ),
+          };
+          break;
+        case "sign_transaction":
+          requestObj.params = {
+            message: await generateTransaction(selectedAddress),
+          };
+          break;
+        case "sign_all_transactions":
+          requestObj.params = {
+            message: [
+              await generateTransaction(selectedAddress),
+              await generateTransaction(selectedAddress),
+              await generateTransaction(selectedAddress),
+            ],
+          };
+          break;
+        case "sign_message":
+          requestObj.params = {
+            message: new TextEncoder().encode("Example Message"),
+          };
+          break;
+        case "spl_transfer":
+          requestObj.params = {
+            mint_add: usdcMintAddress.at(-1),
+            receiver_add: selectedAddress,
+            amount: 0.1,
+          };
+          break;
+        case "nft_transfer":
+          requestObj.params = {
+            mint_add: "BAYYCCY31SRrexQKwGqDRonVzMiB2Y2HagNZQv6cNWk7",
+            receiver_add: selectedAddress,
+          };
+          break;
+        default:
+      }
+      let encodedRequestObj = btoa(JSON.stringify(requestObj));
+      const resolvePath = encodeURIComponent(
+        window.location.origin + window.location.pathname
+      );
+      console.log("XX", requestObj);
+      url = `${url}?resolveRoute=${resolvePath}#redirectflowdata=${encodedRequestObj}`;
+      Object.assign(document.createElement("a"), {
+        // target: "_blank",
+        href: url,
+      }).click();
     }
     function abd() {
-        console.log("HELLO");
+      console.log("HELLO");
     }
 
+    const processResult = (result) => {
+      const parsedResult = JSON.parse(result).result;
+      const method = parsedResult.method;
+      const success = parsedResult.success;
+      switch (method) {
+        case "login":
+          if (success) selectedAddress = parsedResult.data.selectedAddress;
+          else selectedAddress = "";
+          localStorage.setItem("selectedAddress", selectedAddress);
+          break;
+        case "set_provider":
+          console.log(target_network);
+          conn = new solanaWeb3.Connection(target_network.rpcTarget);
+          localStorage.setItem("rpcTarget", target_network.rpcTarget);
+          // change mint address?
+          //
+          break;
+        case "topup":
+          break;
+        case "send_transaction":
+          break;
+        case "send_spl_transaction":
+          break;
+        case "sign_transaction":
+          break;
+        case "sign_all_transactions":
+          break;
+        case "sign_message":
+          break;
+        case "spl_transfer":
+          break;
+        case "nft_transfer":
+          break;
+      }
+    };
+    window.addEventListener("load", () => {
+      const method = new URLSearchParams(window.location.search).get("method");
+      let result = new URLSearchParams(window.location.hash.slice(1)).get(
+        "result"
+      );
+      result = result && atob(result);
+      console.log(JSON.parse(result));
+      processResult(result);
+      const displayConsole = document.querySelector("#console");
+      if (result) displayConsole.textContent = result;
+    });
+    window.addEventListener("close", () => {
+      localStorage.clear();
+    });
+  </script>
 
-
-        const processResult = (result) =>{
-            const parsedResult = JSON.parse(result).result
-            const method = parsedResult.method
-            const success = parsedResult.success;
-            switch (method) {
-
-            case "login" :
-                if ( success ) selectedAddress = parsedResult.data.selectedAddress;
-                else selectedAddress = ""
-                localStorage.setItem("selectedAddress", selectedAddress)
-                break;
-            case "set_provider":
-                console.log(target_network)
-                conn = new solanaWeb3.Connection(target_network.rpcTarget);
-                localStorage.setItem("rpcTarget", target_network.rpcTarget);
-                // change mint address?
-                //
-                break
-            case "topup":
-                break;
-            case "send_transaction":
-                break;
-            case "send_spl_transaction":
-                break;
-            case "sign_transaction":
-                break;
-            case "sign_all_transactions":
-                break;
-            case "sign_message":
-                break;
-            case "spl_transfer":
-                break;
-            case "nft_transfer":
-                break;
-            }
-        }
-        window.addEventListener("load", () => {
-            const method = new URLSearchParams(window.location.search).get(
-                "method"
-            );
-            let result = new URLSearchParams(window.location.hash.slice(1)).get(
-                "result"
-            );
-            result = result && atob(result);
-            console.log( JSON.parse(result))
-            processResult(result);
-            const displayConsole = document.querySelector("#console");
-            if (result) displayConsole.textContent = result;
-        });
-        window.addEventListener("close", ()=>{
-            localStorage.clear();
-        })
-</script>
-
-<style>
+  <style>
     * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     .flexwrapper {
-        flex: 1;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        padding-bottom: 1rem;
-        border: 2px solid black;
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      padding-bottom: 1rem;
+      border: 2px solid black;
     }
 
     .flexwrapper * {
-        margin: 0.5rem;
+      margin: 0.5rem;
     }
 
     h1 {
-        width: 100%;
-        text-align: center;
+      width: 100%;
+      text-align: center;
     }
 
     .controlsContainer {
-        min-height: 50vh;
-        display: flex;
-        padding: 1rem;
+      min-height: 50vh;
+      display: flex;
+      padding: 1rem;
     }
 
     .container {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-        justify-content: space-between;
-        padding: 2rem 2rem 4rem 2rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: space-between;
+      padding: 2rem 2rem 4rem 2rem;
     }
 
     #console {
-        border: 2px solid black;
-        min-height: 80px;
-        max-height: 240px;
-        width: 80%;
-        overflow-y: scroll;
+      border: 2px solid black;
+      min-height: 80px;
+      max-height: 240px;
+      width: 80%;
+      overflow-y: scroll;
     }
-</style>
+  </style>
 
-<body>
+  <body>
     <div class="container">
-        <div class="controlsContainer">
-            <div class="flexwrapper">
-                <h1>Auth Routes</h1>
-                <button onclick="openurl('login')">Login</button>
-                <button onclick="openurl('logout')">Logout</button>
-            </div>
-            <div class="flexwrapper">
-                <h1>Informational Routes</h1>
-                <button onclick="openurl('user_info')">Get user info</button>
-                <button onclick="openurl('set_provider')">Change Provider</button>
-                <button onclick="openurl('get_provider_state')">
-                    Get Provider State
-                </button>
-                <button onclick="openurl('wallet_get_provider_state')">
-                    Get Wallet Provider State
-                </button>
-                <button onclick="openurl('topup')">Top Up</button>
-                <button onclick="openurl('get_accounts')">Get Accounts</button>
-                <button onclick="openurl('solana_request_accounts')">
-                    Solana Request Accounts
-                </button>
-            </div>
-            <div class="flexwrapper">
-                <h1>Wallet Routes</h1>
-                <button onclick="openurl('send_transaction')">
-                    Send Transaction
-                </button>
-                <button onclick="openurl('spl_transfer')">
-                    Send SPL Transaction
-                </button>
-                <button onclick="openurl('get_gasless_public_key and send_transaction')" disabled>
-                    Send Gasless Transaction
-                </button>
-                <button onclick="openurl('sign_transaction')">
-                    Sign Transaction
-                </button>
-                <button onclick="openurl('sign_all_transactions')">
-                    Sign All Transactions
-                </button>
-                <button onclick="openurl('sign_message')">Sign Message</button>
-                <!-- <button onclick="openurl('nft_list')">Get NFTs</button> -->
-                <button onclick="openurl('nft_transfer')">Transfer NFT</button>
-                <button onclick="openurl('404')">404</button>
-                <button onclick="openurl('')">Empty method</button>
-
-            </div>
+      <div class="controlsContainer">
+        <div class="flexwrapper">
+          <h1>Auth Routes</h1>
+          <button onclick="openurl('login')">Login</button>
+          <button onclick="openurl('logout')">Logout</button>
         </div>
-        <div id="console" contenteditable="true"></div>
+        <div class="flexwrapper">
+          <h1>Informational Routes</h1>
+          <button onclick="openurl('user_info')">Get user info</button>
+          <button onclick="openurl('set_provider')">Change Provider</button>
+          <button onclick="openurl('get_provider_state')">
+            Get Provider State
+          </button>
+          <button onclick="openurl('wallet_get_provider_state')">
+            Get Wallet Provider State
+          </button>
+          <button onclick="openurl('topup')">Top Up</button>
+          <button onclick="openurl('get_accounts')">Get Accounts</button>
+          <button onclick="openurl('solana_request_accounts')">
+            Solana Request Accounts
+          </button>
+        </div>
+        <div class="flexwrapper">
+          <h1>Wallet Routes</h1>
+          <button onclick="openurl('send_transaction')">
+            Send Transaction
+          </button>
+          <button onclick="openurl('spl_transfer')">
+            Send SPL Transaction
+          </button>
+          <button
+            onclick="openurl('get_gasless_public_key and send_transaction')"
+            disabled
+          >
+            Send Gasless Transaction
+          </button>
+          <button onclick="openurl('sign_transaction')">
+            Sign Transaction
+          </button>
+          <button onclick="openurl('sign_all_transactions')">
+            Sign All Transactions
+          </button>
+          <button onclick="openurl('sign_message')">Sign Message</button>
+          <!-- <button onclick="openurl('nft_list')">Get NFTs</button> -->
+          <button onclick="openurl('nft_transfer')">Transfer NFT</button>
+          <button onclick="openurl('404')">404</button>
+          <button onclick="openurl('')">Empty method</button>
+        </div>
+      </div>
+      <div id="console" contenteditable="true"></div>
     </div>
-
-</body>
-
+  </body>
 </html>

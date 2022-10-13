@@ -14,9 +14,10 @@ import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
+import TokenBalance from "@/components/TokenBalance.vue";
 import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-helper";
-import TransferNFT from "@/components/transfer/TransferNFT.vue";
+import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
@@ -59,17 +60,14 @@ const showAmountField = ref(true);
 const router = useRouter();
 const route = useRoute();
 
-const AsyncTokenBalance = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TokenBalance" */ "@/components/TokenBalance.vue"),
-});
 const AsyncTransferConfirm = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferConfirm" */ "@/components/transfer/TransferConfirm.vue"),
 });
-const AsyncTransferTokenSelect = defineAsyncComponent({
-  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TransferTokenSelect" */ "@/components/transfer/TransferTokenSelect.vue"),
-});
 const AsyncMessageModal = defineAsyncComponent({
   loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/common/MessageModal.vue"),
+});
+const AsyncTransferNFTModal = defineAsyncComponent({
+  loader: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "MessageModal" */ "@/components/transfer/TransferNFT.vue"),
 });
 const hasGeckoPrice = computed(() => selectedToken.value.symbol === "SOL" || !!selectedToken.value.price?.usd);
 
@@ -503,7 +501,7 @@ async function onSelectTransferType() {
       <Card class="w-full lt-md:mt-4">
         <form action="#" method="POST" class="w-full">
           <div class="flex flex-col justify-around items-start space-y-9">
-            <AsyncTransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
+            <TransferTokenSelect :selected-token="selectedToken" class="w-full" @update:selected-token="updateSelectedToken($event)" />
             <div class="w-full flex flex-row space-x-2">
               <ComboBox
                 v-model="transferTo"
@@ -563,7 +561,7 @@ async function onSelectTransferType() {
           </div>
         </form>
       </Card>
-      <AsyncTokenBalance class="w-full" :selected-token="selectedToken" />
+      <TokenBalance class="w-full" :selected-token="selectedToken" />
     </div>
     <AsyncMessageModal
       :is-open="messageModalState.showMessage"
@@ -590,7 +588,7 @@ async function onSelectTransferType() {
       @transfer-cancel="closeModal"
       @on-close-modal="closeModal"
     />
-    <TransferNFT
+    <AsyncTransferNFTModal
       :sender-pub-key="ControllerModule.selectedAddress"
       :receiver-pub-key="resolvedAddress"
       :crypto-amount="sendAmount"

@@ -22,11 +22,12 @@ const conversionRate = computed(() => {
 });
 
 const props = defineProps<{
-  splToken: Partial<SolAndSplToken>;
+  splToken?: Partial<SolAndSplToken>;
+  splTokenLoading?: boolean;
 }>();
 
 const emits = defineEmits(["splClicked"]);
-const hasGeckoPrice = computed(() => props.splToken.symbol === "SOL" || !!props.splToken?.price?.usd);
+const hasGeckoPrice = computed(() => props.splToken?.symbol === "SOL" || !!props.splToken?.price?.usd);
 
 function splClicked() {
   emits("splClicked");
@@ -72,6 +73,31 @@ function splClicked() {
       </p>
     </div>
   </div>
+  <div
+    v-if="splTokenLoading"
+    class="shadow dark:shadow_box cursor-pointer border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
+  >
+    <div class="dark:shadow_down flex flex-row justify-between items-center flex-auto px-4 border-b border-app-gray-300 dark:border-b-0">
+      <span class="flex flex-row justify-start items-center">
+        <img
+          :class="splTokenLoading ? 'skeleton-animation skeleton-img' : ''"
+          class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3"
+          alt="" />
+        <p
+          class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate"
+          :class="splTokenLoading ? 'skeleton-animation skeleton-p' : ''"
+        ></p
+      ></span>
+      <p
+        class="font-medium text-xs leading-3 text-right text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20"
+        :class="splTokenLoading ? 'skeleton-animation skeleton-p' : ''"
+      ></p>
+    </div>
+    <div class="flex flex-row justify-between items-center font-normal text-gray-500 text-xs flex-auto px-4">
+      <p v-if="!hasGeckoPrice" :class="splTokenLoading ? 'skeleton-animation skeleton-p' : ''"></p>
+      <p :class="splTokenLoading ? 'skeleton-animation skeleton-p' : ''"></p>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -80,5 +106,16 @@ function splClicked() {
 }
 .dark .dark\:shadow_box {
   box-shadow: 0px 14px 28px 0px rgba(92, 108, 127, 0.06);
+}
+.skeleton-p {
+  width: 100px;
+  height: 0.7rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+.skeleton-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 0.75rem;
 }
 </style>

@@ -4,7 +4,7 @@ import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
-import { PopupLogin, PopupWidget } from "@/components/frame";
+import { PopupLoader, PopupLogin, PopupWidget } from "@/components/frame";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
@@ -71,7 +71,7 @@ function startLogin() {
 startLogin();
 
 const isLoggedIn = computed(() => ControllerModule.hasSelectedPrivateKey);
-const isLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
+const isEmbedLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
 const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
@@ -124,7 +124,7 @@ onMounted(async () => {
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
   try {
-    ControllerModule.torus.hideOAuthModal();
+    ControllerModule.torus.embededOAuthLoginInProgress();
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: userEmail,
@@ -146,19 +146,17 @@ const closePanel = () => {
 </script>
 
 <template>
-  <div v-if="showUI" class="min-h-screen flex justify-center items-center">
-    <PopupLogin
-      :is-open="oauthModalVisibility && !isLoggedIn"
-      :other-wallets="initParams.extraParams?.otherWallets"
-      @on-close="cancelLogin"
-      @on-login="onLogin"
-    />
+  <div class="min-h-screen flex justify-center items-center">
+    <PopupLoader v-if="isEmbedLoginInProgress" />
+    <PopupLogin :is-open="oauthModalVisibility" :other-wallets="initParams.extraParams?.otherWallets" @on-close="cancelLogin" @on-login="onLogin" />
+    <!-- remove the isEmbedLoginInProgress in v-if, if want to show loading button on the bottom left -->
     <PopupWidget
+      v-if="!oauthModalVisibility && !isEmbedLoginInProgress"
       :last-transaction="lastTransaction"
       :is-iframe-full-screen="isIFrameFullScreen"
       :is-logged-in="isLoggedIn"
       :button-position="initParams.buttonPosition"
-      :is-login-in-progress="isLoginInProgress"
+      :is-login-in-progress="isEmbedLoginInProgress"
       @show-login-modal="loginFromWidget"
       @toggle-panel="ControllerModule.toggleIframeFullScreen"
       @close-panel="closePanel"

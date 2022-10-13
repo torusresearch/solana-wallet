@@ -127,7 +127,7 @@ const configDetails: TopUpProvider = {
   rules: {
     amount: {
       required: helpers.withMessage("Required", required),
-      minValue: helpers.withMessage("Minimum transaction amount is 10.", minValue(10)),
+      minValue: helpers.withMessage("Minimum transaction amount is 30.", minValue(30)),
       maxValue: helpers.withMessage("Maximum transaction amount is 200.", maxValue(20000)),
     },
   },
