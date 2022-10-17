@@ -3,7 +3,13 @@ import { expect, Page } from "@playwright/test";
 
 import { login } from "../../auth-helper";
 import { changeFiatCurrency, switchCryptoCurrency } from "../../topup.utils";
-import { changeLanguage, ensureTextualElementExists, getInnerText, switchTab, wait } from "../../utils";
+import {
+  // changeLanguage,
+  ensureTextualElementExists,
+  getInnerText,
+  switchTab,
+  wait,
+} from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Topup page", async () => {
@@ -82,29 +88,29 @@ test.describe("Topup page", async () => {
     await changeFiatCurrency(page, "USD");
   });
 
-  test("Language change should work", async () => {
-    await switchTab(page, "topup");
+  // test("Language change should work", async () => {
+  //   await switchTab(page, "topup");
 
-    await changeLanguage(page, "german");
-    await wait(500);
-    await ensureTextualElementExists(page, "Wählen Sie einen Anbieter");
+  //   await changeLanguage(page, "german");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Wählen Sie einen Anbieter");
 
-    await changeLanguage(page, "japanese");
-    await wait(500);
-    await ensureTextualElementExists(page, "プロバイダーを選択");
+  //   await changeLanguage(page, "japanese");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "プロバイダーを選択");
 
-    await changeLanguage(page, "korean");
-    await wait(500);
-    await ensureTextualElementExists(page, "공급자를 선택하십시오");
+  //   await changeLanguage(page, "korean");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "공급자를 선택하십시오");
 
-    await changeLanguage(page, "mandarin");
-    await wait(500);
-    await ensureTextualElementExists(page, "选择供应商");
+  //   await changeLanguage(page, "mandarin");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "选择供应商");
 
-    await changeLanguage(page, "spanish");
-    await wait(500);
-    await ensureTextualElementExists(page, "Selecciona un Proveedor");
+  //   await changeLanguage(page, "spanish");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Selecciona un Proveedor");
 
-    await changeLanguage(page, "english");
-  });
+  //   await changeLanguage(page, "english");
+  // });
 });

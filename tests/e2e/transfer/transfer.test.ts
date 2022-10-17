@@ -2,7 +2,14 @@ import { expect, Page } from "@playwright/test";
 
 import { IMPORT_ACC_SECRET_KEY, login, PUB_ADDRESS } from "../../auth-helper";
 import { ensureFirstActivityIsRecentTransaction } from "../../transfer.utils";
-import { changeLanguage, ensureTextualElementExists, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import {
+  // changeLanguage,
+  ensureTextualElementExists,
+  importAccount,
+  switchNetwork,
+  switchTab,
+  wait,
+} from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Transfer page", async () => {
@@ -151,32 +158,32 @@ test.describe("Transfer page", async () => {
     await page2.close();
   });
 
-  test("Language change should work", async () => {
-    // see navigation works correctly
-    await switchTab(page, "transfer");
+  // test("Language change should work", async () => {
+  //   // see navigation works correctly
+  //   await switchTab(page, "transfer");
 
-    await changeLanguage(page, "german");
-    await wait(500);
-    await ensureTextualElementExists(page, "Übertragungsdetails");
+  //   await changeLanguage(page, "german");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Übertragungsdetails");
 
-    await changeLanguage(page, "japanese");
-    await wait(500);
-    await ensureTextualElementExists(page, "送信内容の詳細");
+  //   await changeLanguage(page, "japanese");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "送信内容の詳細");
 
-    await changeLanguage(page, "korean");
-    await wait(500);
-    await ensureTextualElementExists(page, "전송 세부 사항");
+  //   await changeLanguage(page, "korean");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "전송 세부 사항");
 
-    await changeLanguage(page, "mandarin");
-    await wait(500);
-    await ensureTextualElementExists(page, "转账明细");
+  //   await changeLanguage(page, "mandarin");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "转账明细");
 
-    await changeLanguage(page, "spanish");
-    await wait(500);
-    await ensureTextualElementExists(page, "Detalles de Transferencia");
+  //   await changeLanguage(page, "spanish");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Detalles de Transferencia");
 
-    await changeLanguage(page, "english");
-  });
+  //   await changeLanguage(page, "english");
+  // });
 });
 
 /** *****************IMPORT ACCOUNT TESTS********************** */

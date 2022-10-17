@@ -9,7 +9,7 @@ import { memoize } from "lodash-es";
 import type { OpenLoginBackendState } from "@/utils/enums";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
 
-import { changeLanguage, getBackendDomain, getDomain, getStateDomain, wait } from "./utils";
+import { getBackendDomain, getDomain, getStateDomain, wait } from "./utils";
 
 const ec = new EC("secp256k1");
 export const EPHEMERAL_KEYPAIR = ec.genKeyPair({ entropy: "ad1238470128347018934701983470183478sfa" });
@@ -108,8 +108,8 @@ export async function login(context: BrowserContext, browserName: "chromium" | "
   await context.addInitScript({ content: stateFunction });
   const page = await context.newPage();
   await page.goto(getDomain());
-  await changeLanguage(page, "english");
+  // await changeLanguage(page, "english");
   await wait(500);
-  await page.locator("text=Account Balance").waitFor();
+  // await page.locator("text=Account Balance").waitFor();
   return page;
 }

@@ -10,7 +10,15 @@ import {
   ensureCopiedToastDisplayed,
   selectCurrency,
 } from "../../home.utils";
-import { changeLanguage, ensureTextualElementExists, getInnerText, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import {
+  // changeLanguage,
+  ensureTextualElementExists,
+  getInnerText,
+  importAccount,
+  switchNetwork,
+  switchTab,
+  wait,
+} from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Home Page", async () => {
@@ -86,33 +94,33 @@ test.describe("Home Page", async () => {
     await clickTokenIfAvailable(page);
   });
 
-  test("Language change should work", async () => {
-    // see navigation works correctly
-    await switchTab(page, "home");
+  // test("Language change should work", async () => {
+  //   // see navigation works correctly
+  //   await switchTab(page, "home");
 
-    await changeLanguage(page, "german");
-    await wait(500);
-    await ensureTextualElementExists(page, "Kontostand");
+  //   await changeLanguage(page, "german");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Kontostand");
 
-    await changeLanguage(page, "japanese");
-    await wait(500);
-    await ensureTextualElementExists(page, "残高");
+  //   await changeLanguage(page, "japanese");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "残高");
 
-    await changeLanguage(page, "korean");
-    await wait(500);
-    await ensureTextualElementExists(page, "계정 잔액");
+  //   await changeLanguage(page, "korean");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "계정 잔액");
 
-    await changeLanguage(page, "mandarin");
-    await wait(500);
-    await ensureTextualElementExists(page, "账户余额");
+  //   await changeLanguage(page, "mandarin");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "账户余额");
 
-    await changeLanguage(page, "spanish");
-    await wait(500);
-    await ensureTextualElementExists(page, "Balance de Cuenta");
+  //   await changeLanguage(page, "spanish");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Balance de Cuenta");
 
-    await changeLanguage(page, "english");
-    await wait(500);
-  });
+  //   await changeLanguage(page, "english");
+  //   await wait(500);
+  // });
 
   test("clicking on public key icon copies public key to clipboard", async () => {
     // see navigation works correctly
