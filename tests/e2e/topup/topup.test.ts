@@ -7,7 +7,7 @@ import {
   // changeLanguage,
   ensureTextualElementExists,
   getInnerText,
-  switchTab,
+  // switchTab,
   wait,
 } from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
@@ -16,6 +16,8 @@ test.describe("Topup page", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
+    await wait(3000);
+    await page.screenshot({ path: "screenshots/screenshot-1.png", fullPage: true });
   });
   test.afterAll(() => {
     page.close();
@@ -26,14 +28,18 @@ test.describe("Topup page", async () => {
 
   test("Topup Page Should render", async () => {
     // // see navigation works correctly
-    await switchTab(page, "topup");
+    global.console.log(page.url());
+    await page.click("button:has-text('Top up')");
+    await wait(1000);
+    // await page.screenshot({ path: "screenshots/screenshot-2.png", fullPage: true });
     // ENSURE UI IS INTACT
     await ensureTextualElementExists(page, "Select a Provider");
   });
 
   test("Changing amount changes received value", async () => {
     // // see navigation works correctly
-    await switchTab(page, "topup");
+    await page.click("button:has-text('Top up')");
+    await wait(1000);
     // MoonPay SHOULD WORK AS EXPECTED
     // set amount to be transferred as 100 US Dollars, expect a positive value for expected SOL
     await page.click("img[alt=moonpay]");
@@ -51,7 +57,8 @@ test.describe("Topup page", async () => {
 
   test("Pop up page should show for top up", async () => {
     // // see navigation works correctly
-    await switchTab(page, "topup");
+    await page.click("button:has-text('Top up')");
+    await wait(1000);
     // MoonPay SHOULD WORK AS EXPECTED
     // set amount to be transferred as 100 US Dollars, expect a positive value for expected SOL
     await page.click("img[alt=moonpay]");
@@ -68,7 +75,8 @@ test.describe("Topup page", async () => {
 
   test("Changing of crypto/fiat currency changes the value you receive correctly", async () => {
     // see navigation works correctly
-    await switchTab(page, "topup");
+    await page.click("button:has-text('Top up')");
+    await wait(1000);
     // change crypto currency to SOL
     await switchCryptoCurrency(page, "SOL");
     const SOLYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));

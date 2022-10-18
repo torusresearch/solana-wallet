@@ -63,6 +63,8 @@ test.describe("Home Page", async () => {
   test("Currency Change should work correctly", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
+    await wait(1000);
+    // await page.screenshot({ path: "screenshots/screenshot-2.png", fullPage: true });
     // Switching to testnet as it has > 0 balance
     await switchNetwork(page, "testnet");
     expect(await getInnerText(page, "#selected_network")).toContain("Solana Testnet");

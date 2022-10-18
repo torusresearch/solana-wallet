@@ -7,7 +7,7 @@ import {
   ensureTextualElementExists,
   importAccount,
   switchNetwork,
-  switchTab,
+  // switchTab,
   wait,
 } from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
@@ -25,7 +25,8 @@ test.describe("Transfer page", async () => {
 
   test("Transfer Page Should render", async () => {
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     // ENSURE UI IS INTACT
     await ensureTextualElementExists(page, "Transfer Details");
@@ -33,7 +34,8 @@ test.describe("Transfer page", async () => {
 
   test("Checks before transaction should be correct", async () => {
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     // if address is not a valid sol address, should show error
     await page.fill("input[type='text']", "asdasdasdasdasdasd");
@@ -66,7 +68,8 @@ test.describe("Transfer page", async () => {
   test("Transaction should happen correctly", async () => {
     test.slow();
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     const transferAmount = (Math.random() / 100).toFixed(4);
 
@@ -110,7 +113,8 @@ test.describe("Transfer page", async () => {
   test("Transfer SPL token", async () => {
     test.slow();
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
@@ -138,7 +142,8 @@ test.describe("Transfer page", async () => {
   test("Transfer NFT", async () => {
     test.slow();
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
     await page.click("button >> text=Solana");
@@ -199,7 +204,8 @@ test("Transfer page using imported account", async () => {
   });
   test("Checks before transaction should be correct", async () => {
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     // if address is not a valid sol address, should show error
     await page.fill("input[type='text']", "asdasdasdasdasdasd");
@@ -221,7 +227,8 @@ test("Transfer page using imported account", async () => {
   test("Transaction should happen correctly", async () => {
     test.slow();
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     const transferAmount = (Math.random() / 100).toFixed(4);
 
@@ -270,7 +277,8 @@ test("Transfer page using imported account", async () => {
   test("Transfer SPL token", async () => {
     test.slow();
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
@@ -302,7 +310,8 @@ test("Transfer page using imported account", async () => {
   test("Transfer NFT", async () => {
     test.slow();
     // see navigation works correctly
-    await switchTab(page, "transfer");
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
 
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
