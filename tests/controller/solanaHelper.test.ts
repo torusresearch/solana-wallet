@@ -63,7 +63,7 @@ describe("solana helper util", () => {
   it("calculateTxFee", async () => {
     const { transactionV0 } = createTransactionV();
 
-    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection(), sKeyPair[0].publicKey.toBase58());
+    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection(), sKeyPair[0].publicKey.toBase58(), false);
     assert.deepEqual(result.fee, 1);
   });
   // it("getEstimateBalanceChange", async () => {

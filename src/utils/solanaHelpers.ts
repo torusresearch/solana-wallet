@@ -17,6 +17,7 @@ import {
   LAMPORTS_PER_SOL,
   Message,
   PublicKey,
+  RpcResponseAndContext,
   SimulatedTransactionResponse,
   SystemInstruction,
   SystemProgram,
@@ -28,7 +29,7 @@ import {
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { get, post } from "@toruslabs/http-helpers";
-import { decompile } from "@toruslabs/solana-controllers";
+import { decompile, isVersionedTransactionInstance, TransactionOrVersionedTransaction } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
@@ -318,9 +319,14 @@ export async function calculateChanges(
 }
 
 // Simulate transaction's balance changes
-export async function getEstimateBalanceChange(connection: Connection, tx: VersionedTransaction, signer: string): Promise<AccountEstimation[]> {
+export async function getEstimateBalanceChange(
+  connection: Connection,
+  tx: TransactionOrVersionedTransaction,
+  signer: string
+): Promise<AccountEstimation[]> {
   try {
-    const instructions = decompile(tx.message);
+    const isVersionedTransaction = isVersionedTransactionInstance(tx);
+    const instructions = isVersionedTransaction ? decompile((tx as VersionedTransaction).message) : (tx as Transaction).instructions;
     // get writeable accounts from all instruction
     const accounts = instructions.reduce((prev, current) => {
       // log.info(current.keys)
@@ -337,7 +343,9 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
 
     // Simulate Transaction with Accounts
     const addresses = Array.from(accounts.keys());
-    const result = await connection.simulateTransaction(tx, { accounts: { addresses, encoding: "base64" } });
+    const result = isVersionedTransaction
+      ? await connection.simulateTransaction(tx as VersionedTransaction, { accounts: { addresses, encoding: "base64" } })
+      : await connection.simulateTransaction((tx as Transaction).compileMessage() as Message, undefined, Array.from(accounts.values()));
 
     if (result.value.err) {
       throw new Error(result.value.err.toString());
@@ -352,44 +360,64 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
 }
 
 export async function calculateTxFee(
-  message: VersionedMessage,
+  message: Message | VersionedMessage,
   connection: Connection,
-  selectedAddress: string
+  selectedAddress: string,
+  isVersionedTransaction: boolean
 ): Promise<{ blockHash: string; height: number; fee: number }> {
   const latestBlockHash = await connection.getLatestBlockhash("finalized");
   const blockHash = latestBlockHash.blockhash;
-  const instructions = decompile(message);
-  const legacyMessage = Message.compile({
-    instructions,
-    recentBlockhash: message.recentBlockhash,
-    payerKey: new PublicKey(selectedAddress),
-  });
-  const fee = await connection.getFeeForMessage(legacyMessage);
   const height = latestBlockHash.lastValidBlockHeight;
+  let fee: RpcResponseAndContext<number>;
+  if (isVersionedTransaction) {
+    const instructions = decompile(message as unknown as VersionedMessage);
+    const legacyMessage = Message.compile({
+      instructions,
+      recentBlockhash: (message as unknown as VersionedMessage).recentBlockhash,
+      payerKey: new PublicKey(selectedAddress),
+    });
+    fee = await connection.getFeeForMessage(legacyMessage);
+  } else {
+    fee = await connection.getFeeForMessage(message as unknown as Message);
+  }
   return { blockHash, height, fee: fee.value || 0 };
 }
 
-export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
+export function decodeAllInstruction(messages: string[], messageOnly: boolean, isVersionedTransaction = false) {
   const decoded: DecodedDataType[] = [];
-  (messages as string[]).forEach((msg) => {
-    let tx2: VersionedTransaction;
-    if (messageOnly) {
-      const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
-      tx2 = new VersionedTransaction(msgObj);
-    } else {
-      const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
-      tx2 = new VersionedTransaction(msgObj);
-    }
-    const instructions = decompile(tx2.message);
-    instructions.forEach((inst) => {
-      decoded.push(decodeInstruction(inst));
+  if (isVersionedTransaction) {
+    (messages as string[]).forEach((msg) => {
+      let tx2: VersionedTransaction;
+      if (messageOnly) {
+        const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
+        tx2 = new VersionedTransaction(msgObj);
+      } else {
+        const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
+        tx2 = new VersionedTransaction(msgObj);
+      }
+      const instructions = decompile(tx2.message);
+      instructions.forEach((inst) => {
+        decoded.push(decodeInstruction(inst));
+      });
     });
-  });
+  } else {
+    (messages as string[]).forEach((msg) => {
+      let tx2: Transaction;
+      if (messageOnly) {
+        tx2 = Transaction.populate(Message.from(Buffer.from(msg, "hex")));
+      } else {
+        tx2 = Transaction.from(Buffer.from(msg, "hex"));
+      }
+      tx2.instructions.forEach((inst) => {
+        decoded.push(decodeInstruction(inst));
+      });
+    });
+  }
   return decoded;
 }
 
 export function parsingTransferAmount(
-  tx: VersionedTransaction,
+  tx: TransactionOrVersionedTransaction,
   txFee: number,
   isGasless: boolean,
   instructions: TransactionInstruction[]

@@ -45,7 +45,7 @@ watch(selectedSplToken, async () => {
       ControllerModule.connection
     );
 
-    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection, ControllerModule.selectedAddress);
+    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection, ControllerModule.selectedAddress, true);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }

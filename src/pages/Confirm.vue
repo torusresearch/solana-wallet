@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import { clusterApiUrl, Connection, Message, Transaction, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { decompile } from "@toruslabs/solana-controllers";
+import { decompile, TransactionOrVersionedTransaction } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -21,7 +21,7 @@ const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams
 
 const finalTxData = ref<FinalTxData>();
 
-const tx = ref<VersionedTransaction>();
+const tx = ref<TransactionOrVersionedTransaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
@@ -46,7 +46,7 @@ onMounted(async () => {
       if (txData.message.length === 1) {
         txData.message = (txData.message as string[]).at(0) || "";
       } else {
-        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, txData.isVersionedTransaction);
         decodedInst.value = decoded;
         estimationInProgress.value = false;
         hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -55,30 +55,41 @@ onMounted(async () => {
       }
     }
 
-    if (txData.messageOnly) {
-      const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
-      tx.value = new VersionedTransaction(msgObj);
-    } else {
-      tx.value = VersionedTransaction.deserialize(txData.message as unknown as Uint8Array);
+    if (txData.isVersionedTransaction) {
+      if (txData.messageOnly) {
+        const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+        tx.value = new VersionedTransaction(msgObj);
+      } else {
+        tx.value = VersionedTransaction.deserialize(txData.message as unknown as Uint8Array);
+      }
+    } else if (!txData.isVersionedTransaction) {
+      if (txData.messageOnly) {
+        tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
+      } else {
+        tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+      }
     }
 
-    estimateChanges(tx.value, connection, txData.selectedAddress);
+    estimateChanges(tx.value as TransactionOrVersionedTransaction, connection, txData.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = (
       await calculateTxFee(
-        tx.value.message,
+        txData.isVersionedTransaction ? (tx.value as VersionedTransaction).message : (tx.value as Transaction).compileMessage(),
         new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")),
-        ControllerModule.selectedAddress
+        ControllerModule.selectedAddress,
+        txData.isVersionedTransaction || false
       )
     )?.fee;
 
-    const instructions = decompile(tx.value.message);
+    const instructions = txData.isVersionedTransaction
+      ? decompile((tx.value as VersionedTransaction).message)
+      : (tx.value as unknown as Transaction).instructions;
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, false, instructions);
+      finalTxData.value = parsingTransferAmount(tx.value as TransactionOrVersionedTransaction, txFee, false, instructions);
       loading.value = false;
     } catch (e) {
       log.error(e);

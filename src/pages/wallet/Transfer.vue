@@ -436,7 +436,12 @@ const openModal = async () => {
   try {
     transaction.value = await generateTransaction(amount);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
-    const { blockHash, height, fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection, ControllerModule.selectedAddress);
+    const { blockHash, height, fee } = await calculateTxFee(
+      transaction.value.message,
+      ControllerModule.connection,
+      ControllerModule.selectedAddress,
+      true
+    );
     blockhash.value = blockHash;
     lastValidBlockHeight.value = height;
     transactionFee.value = fee / LAMPORTS_PER_SOL;

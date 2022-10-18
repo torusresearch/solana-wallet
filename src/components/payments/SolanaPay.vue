@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
-import { LAMPORTS_PER_SOL, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -24,7 +24,7 @@ const props = withDefaults(
   {}
 );
 const invalidLink = ref("");
-const transaction = ref<VersionedTransaction>();
+const transaction = ref<Transaction>();
 const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
@@ -61,7 +61,6 @@ watch(transaction, async () => {
     estimateTxFee.value = response.value / LAMPORTS_PER_SOL;
   }
 });
-
 onMounted(async () => {
   // set loading
   invalidLink.value = "";
@@ -84,7 +83,6 @@ onMounted(async () => {
     } else if (isUrl(requestLink)) {
       // request link is an url. fetch transaction from url
       const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
-
       log.info(result);
       transaction.value = result.transaction;
       linkParams.value = {
@@ -106,12 +104,9 @@ onMounted(async () => {
         });
         return;
       } catch (e) {}
-
       // parse solanapay format
       const result = parseURL(requestLink) as TransferRequestURL;
-
       const { recipient, splToken, reference, memo, amount, message } = result;
-
       // redirect to transfer page if amount is not available
       if (amount === undefined) {
         // redirect to transfer page
@@ -132,7 +127,6 @@ onMounted(async () => {
         });
         return;
       }
-
       // create transaction based on the solanapay format
       const tx = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
         recipient,
@@ -141,7 +135,6 @@ onMounted(async () => {
         reference,
         memo,
       });
-
       // get symbol if spl token
       if (splToken) {
         // const tokenInfo = await getTokenInfo(splToken.toBase58());
@@ -153,19 +146,16 @@ onMounted(async () => {
         pricePerToken.value =
           ControllerModule.torusState.CurrencyControllerState.tokenPriceMap[splToken.toBase58()][ControllerModule.currentCurrency] || 0;
       }
-
       // set blockhash and feepayer
       const block = await ControllerModule.connection.getLatestBlockhash();
       tx.recentBlockhash = block.blockhash;
       tx.lastValidBlockHeight = block.lastValidBlockHeight;
       tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
-
       // update ref state (ui)
       transaction.value = tx;
       requestParams.value = result;
       log.info(result);
     }
-
     // estimate changes if transaction available
     if (transaction.value) estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
   } catch (e) {
