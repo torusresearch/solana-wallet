@@ -97,6 +97,40 @@ export async function login(context: BrowserContext, browserName: "chromium" | "
             },
             selectedAddress: "",
           },
+          "CurrencyControllerState": {
+            "conversionDate": "1665992173.474",
+            "conversionRate": 0,
+            "currentCurrency": "usd",
+            "nativeCurrency": "sol",
+            "ticker": "sol",
+            "tokenPriceMap": {
+              "solana": {
+                "usd": 30.17,
+                "aud": 48.35,
+                "cad": 41.7,
+                "eur": 30.98,
+                "gbp": 26.8,
+                "hkd": 236.87,
+                "idr": 467704,
+                "inr": 2485.86,
+                "jpy": 4484.72,
+                "php": 1779.78,
+                "rub": 1876.1,
+                "sgd": 43.06,
+                "uah": 1113.3
+              }
+            },
+            "loadState": "loaded"
+          },
+          "TokenInfoState": {
+            "tokenInfoMap": {},
+            "metaplexMetaMap": {},
+            "unknownSPLTokenInfo": [],
+            "unknownNFTs": [],
+            "metaplexLoadingState": "loaded",
+            "tokenInfoLoadingState": "loaded",
+            "tokenPriceMap": {}
+          },
         },
       },
     })

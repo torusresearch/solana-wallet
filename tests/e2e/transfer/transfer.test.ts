@@ -135,7 +135,7 @@ test.describe("Transfer page", async () => {
   // TODO : FIX TEST, SEE WHY THE NFTs are not being fetched reliably
   // LEADS : lot of CORS errors in the playwright chrome, none on the local.
 
-  test.skip("Transfer NFT", async () => {
+  test("Transfer NFT", async () => {
     test.slow();
     // see navigation works correctly
     await switchTab(page, "transfer");
@@ -188,7 +188,7 @@ test.describe("Transfer page", async () => {
 
 /** *****************IMPORT ACCOUNT TESTS********************** */
 
-test.skip("Transfer page using imported account", async () => {
+test("Transfer page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);

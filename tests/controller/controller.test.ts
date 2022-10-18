@@ -172,7 +172,7 @@ describe("TorusController", () => {
     });
 
     // todo
-    it.skip("onPollingBlock trigger updates", async () => {
+    it("onPollingBlock trigger updates", async () => {
       await waitNetwork();
       await torusController.triggerLogin({ loginProvider: "google" });
 

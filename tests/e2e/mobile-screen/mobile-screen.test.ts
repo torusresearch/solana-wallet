@@ -11,6 +11,7 @@ test.describe("Mobile screens", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
+    await wait(3000);
     page.setViewportSize({ height: 667, width: 375 }); // iPhone SE
 
     await page.evaluate(() => {

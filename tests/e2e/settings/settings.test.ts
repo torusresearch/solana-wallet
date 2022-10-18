@@ -174,7 +174,7 @@ test.describe("Settings Page", async () => {
 
 /** ************************IMPORT ACCOUNT TESTS ****************************** */
 // Skipped because "Import Account" feature is no more supported
-test.skip("Settings Page using imported account", async () => {
+test("Settings Page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
