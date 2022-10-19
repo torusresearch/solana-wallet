@@ -1499,34 +1499,37 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async providerSignAllTransaction(req: Ihandler<SignAllTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
+
     const message = req.params?.message;
     if (!message?.length) throw new Error("Empty message from embed");
 
+    // if this approval fails, reject the entire tx
+    // this is different from `signTransaction` because controllers do not support multiple txs
     const approved = await this.handleTransactionPopup("", req);
-
-    // throw error on reject
     if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
+
     let allTransactions;
     if (req.params?.isVersionedTransaction) {
       // sign all transaction
-      allTransactions = (req.params?.message as Uint8Array[])?.map((msg) => {
+      allTransactions = req.params?.message?.map((msg) => {
         if (req.params?.messageOnly) {
           // fix for inconsistent account serialization
-          let signature: Uint8Array;
-          if (this.origin === "https://www.fractal.is") {
-            const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
-            const tx = new VersionedTransaction(msgObj);
-            const targetMessage = tx.serialize();
-            signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-          } else {
-            signature = this.keyringController.signMessage(msg, this.selectedAddress);
-          }
+          // let signature: Uint8Array;
+          // if (this.origin === "https://www.fractal.is") {
+          //   const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
+          //   const tx = new VersionedTransaction(msgObj);
+          //   const targetMessage = tx.serialize();
+          //   signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+          // } else {
+          const signature = this.keyringController.signMessage(Buffer.from(msg as string, "hex"), this.selectedAddress);
+          // }
           // const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
           return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
         }
 
-        const msgObj = VersionedMessage.deserialize(msg);
-        const tx = new VersionedTransaction(msgObj);
+        // const msgObj = VersionedMessage.deserialize(msg);
+        // const tx = new VersionedTransaction(msgObj);
+        const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
         const signedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
         const signedMessage = signedTx.serialize();
         return signedMessage;
@@ -1535,16 +1538,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
       allTransactions = (req.params?.message as string[])?.map((msg) => {
         if (req.params?.messageOnly) {
           // fix for inconsistent account serialization
-          let signature: Uint8Array;
-          if (this.origin === "https://www.fractal.is") {
-            const msgObj = Message.from(Buffer.from(msg, "hex"));
-            const tx = Transaction.populate(msgObj);
-            tx.serializeMessage();
-            const targetMessage = tx.serializeMessage();
-            signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-          } else {
-            signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
-          }
+          // let signature: Uint8Array;
+          // if (this.origin === "https://www.fractal.is") {
+          //   const msgObj = Message.from(Buffer.from(msg, "hex"));
+          //   const tx = Transaction.populate(msgObj);
+          //   tx.serializeMessage();
+          //   const targetMessage = tx.serializeMessage();
+          //   signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+          // } else {
+          const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+          // }
           // const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
           return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
         }
@@ -1569,29 +1572,29 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
-      if (this.origin === "https://www.fractal.is") {
-        if (req.params?.isVersionedTransaction) {
-          const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-          const tx = new VersionedTransaction(msgObj);
-          const targetMessage = tx.serialize();
-          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-        } else {
-          const msgObj = Message.from(Buffer.from(message as string, "hex"));
-          const tx = Transaction.populate(msgObj);
-          tx.serializeMessage();
-          const targetMessage = tx.serializeMessage();
-          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-        }
-      } else if (this.origin !== "https://www.fractal.is") {
-        if (req.params?.isVersionedTransaction) {
-          const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-          const tx = new VersionedTransaction(msgObj);
-          const targetMessage = tx.serialize();
-          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-        } else {
-          signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
-        }
-      }
+      // if (this.origin === "https://www.fractal.is") {
+      //   if (req.params?.isVersionedTransaction) {
+      //     const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
+      //     const tx = new VersionedTransaction(msgObj);
+      //     const targetMessage = tx.serialize();
+      //     signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+      //   } else {
+      //     const msgObj = Message.from(Buffer.from(message as string, "hex"));
+      //     const tx = Transaction.populate(msgObj);
+      //     tx.serializeMessage();
+      //     const targetMessage = tx.serializeMessage();
+      //     signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+      //   }
+      // } else if (req.params?.isVersionedTransaction) {
+      //   const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
+      //   const tx = new VersionedTransaction(msgObj);
+      //   const targetMessage = tx.serialize();
+      //   signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+      // } else {
+      //   signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
+      // }
+
+      signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
 
       return JSON.stringify({
         publicKey: this.selectedAddress,
@@ -1601,8 +1604,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     let tx: TransactionOrVersionedTransaction;
     if (req.params?.isVersionedTransaction) {
-      const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-      tx = new VersionedTransaction(msgObj);
+      tx = VersionedTransaction.deserialize(Buffer.from(message as string, "hex"));
     } else {
       tx = Transaction.from(Buffer.from(message as string, "hex"));
     }
@@ -1615,11 +1617,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     }
 
     const signed_tx = ret_signed.transactionMeta.txReceipt as string;
-    // const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-    // if (gaslessHost) {
-    //   signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
-    // }
-
     return signed_tx;
   }
 

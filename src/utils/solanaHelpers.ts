@@ -389,11 +389,10 @@ export function decodeAllInstruction(messages: string[], messageOnly: boolean, i
     (messages as string[]).forEach((msg) => {
       let tx2: VersionedTransaction;
       if (messageOnly) {
-        const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
-        tx2 = new VersionedTransaction(msgObj);
+        const msgObj = VersionedMessage.deserialize(Buffer.from(msg as string, "hex"));
+        tx2 = new VersionedTransaction(msgObj); // only for instuctions
       } else {
-        const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
-        tx2 = new VersionedTransaction(msgObj);
+        tx2 = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
       }
       const instructions = decompile(tx2.message);
       instructions.forEach((inst) => {
