@@ -10,8 +10,8 @@ const config: PlaywrightTestConfig = {
       use: {
         browserName: "chromium",
         channel: "chrome",
-        video: "retain-on-failure",
-        screenshot: "only-on-failure",
+        // video: "retain-on-failure",
+        // screenshot: "only-on-failure",
       },
     },
     {
@@ -19,8 +19,8 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["iPad Pro 11 landscape"],
         // trace: "retain-on-failure",
-        video: "retain-on-failure",
-        screenshot: "only-on-failure",
+        // video: "retain-on-failure",
+        // screenshot: "only-on-failure",
       },
     },
   ],

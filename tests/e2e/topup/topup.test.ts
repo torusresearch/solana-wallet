@@ -50,6 +50,7 @@ test.describe("Topup page", async () => {
 
     // set amount to be transferred as 200 US Dollars, expect a positive value for expected SOL
     await page.fill("input[type='number']", "200");
+    await wait(1000);
     const usdToSol200 = Number(await getInnerText(page, "#resCryptoAmt"));
     await wait(2000);
     expect(usdToSol200).toBeGreaterThan(usdToSol100);
@@ -78,14 +79,6 @@ test.describe("Topup page", async () => {
     await page.click("button:has-text('Top up')");
     await wait(1000);
     // change crypto currency to SOL
-    await switchCryptoCurrency(page, "SOL");
-    const SOLYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
-    // change crypto currency to USDC (SOL)
-    await switchCryptoCurrency(page, "USDC");
-    const USDCYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
-    // ensure USDCYouReceive value is greater than USDYouReceive
-    expect(USDCYouReceive !== SOLYouReceive).toBeTruthy();
-
     await switchCryptoCurrency(page, "SOL");
     // change fiat currency EUR
     const USDFiatYouReceive = Number(await getInnerText(page, "#resCryptoAmt"));
