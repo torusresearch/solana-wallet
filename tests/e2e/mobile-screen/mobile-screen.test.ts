@@ -11,6 +11,7 @@ test.describe("Mobile screens", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
+    await wait(2000);
     page.setViewportSize({ height: 667, width: 375 }); // iPhone SE
 
     await page.evaluate(() => {
@@ -27,6 +28,7 @@ test.describe("Mobile screens", async () => {
   test("Should have all the tabs", async () => {
     // eslint-disable-next-line no-restricted-syntax
     for (const key of tabs) {
+      await wait(200);
       expect(await page.locator(`#${key}_link`).count()).toBeGreaterThan(0);
     }
   });
