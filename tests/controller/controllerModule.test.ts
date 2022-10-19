@@ -561,8 +561,18 @@ describe("Controller Module", () => {
       return { instructions, transactionV0 };
     };
 
+    const toHexString = (input: any) => {
+      const byteArray = input[0];
+      const a = Array.prototype.map
+        .call(byteArray, (byte: any) => {
+          // eslint-disable-next-line no-bitwise
+          return `0${(byte & 0xff).toString(16)}`.slice(-2);
+        })
+        .join("");
+      return a;
+    };
+
     beforeEach(async () => {
-      createTransactionV();
       // controllerModule.torus = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
       // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
       sandbox.stub(helper, "isMain").get(() => false);
@@ -594,8 +604,9 @@ describe("Controller Module", () => {
       const result = (await controllerModule.torus.provider.sendAsync({
         method: "send_transaction",
         params: {
-          message: transactionV0.serialize(),
+          message: transactionV0.message.serialize(),
           messageOnly: true,
+          isVersionedTransaction: true,
         },
       })) as string;
 
@@ -619,6 +630,7 @@ describe("Controller Module", () => {
             method: "send_transaction",
             params: {
               message: transactionV0.message.serialize(),
+              isVersionedTransaction: true,
             },
           });
         },
@@ -633,14 +645,13 @@ describe("Controller Module", () => {
 
     it("embed signTransaction flow", async () => {
       popupResult = { approve: true };
-      // const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
-      // const msg = tx.add(transferInstruction()).serialize({ requireAllSignatures: false });
       const { transactionV0 } = createTransactionV();
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
       const result = await controllerModule.torus.provider.sendAsync({
         method: "sign_transaction",
         params: {
           message: transactionV0.message.serialize(),
+          isVersionedTransaction: true,
         },
       });
 
@@ -683,19 +694,23 @@ describe("Controller Module", () => {
         method: "sign_all_transactions",
         params: {
           message: msg,
+          messageOnly: true,
+          isVersionedTransaction: true,
         },
       });
 
       // validate state
       assert(popupStub.calledOnce);
-      log.info(result);
-      // assert.deepStrictEqual(
-      //   result,
-      //   txs.map((item) => {
-      //     item.sign([sKeyPair[0]]);
-      //     return item.signatures;
-      //   })
-      // );
+      const tx = txs.map((item) => {
+        item.sign([sKeyPair[0]]);
+        return {
+          publicKey: sKeyPair[0].publicKey.toBase58(),
+          signature: toHexString(item.signatures),
+        };
+      });
+      (result as string[]).forEach((res, index) => {
+        return assert.deepEqual(JSON.parse(res).signature, tx[index].signature);
+      });
       // validate txcontroller
 
       popupResult = { approve: false };
@@ -762,6 +777,7 @@ describe("Controller Module", () => {
         method: "send_transaction",
         params: {
           message: msg,
+          isVersionedTransaction: true,
         },
       });
       // validate state after
@@ -778,6 +794,7 @@ describe("Controller Module", () => {
             method: "send_transaction",
             params: {
               message: msg,
+              isVersionedTransaction: true,
             },
           });
         },
@@ -809,6 +826,7 @@ describe("Controller Module", () => {
         method: "send_transaction",
         params: {
           message: transactionV0.serialize(),
+          isVersionedTransaction: true,
         },
       });
       // validate state after
@@ -1068,7 +1086,6 @@ describe("Controller Module", () => {
   //     // await controllerModule.triggerLogin({ loginProvider: "google" });
   //     // const checkIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
   //     const dummyContact = {};
-  //     // eslint-disable-next-line no-debugger
   //     const result = await controllerModule.torus.addContact(dummyContact as any);
   //     // const newIdentities = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
   //     // checkIdentities.contacts.forEach((item, idx) => {

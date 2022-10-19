@@ -1506,7 +1506,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     // throw error on reject
     if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
-    let allTransactions: any;
+    let allTransactions;
     if (req.params?.isVersionedTransaction) {
       // sign all transaction
       allTransactions = (req.params?.message as Uint8Array[])?.map((msg) => {
@@ -1570,26 +1570,26 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
       if (this.origin === "https://www.fractal.is") {
-        if (!req.params?.isVersionedTransaction) {
+        if (req.params?.isVersionedTransaction) {
+          const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
+          const tx = new VersionedTransaction(msgObj);
+          const targetMessage = tx.serialize();
+          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+        } else {
           const msgObj = Message.from(Buffer.from(message as string, "hex"));
           const tx = Transaction.populate(msgObj);
           tx.serializeMessage();
           const targetMessage = tx.serializeMessage();
           signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-        } else {
-          const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-          const tx = new VersionedTransaction(msgObj);
-          const targetMessage = tx.serialize();
-          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
         }
       } else if (this.origin !== "https://www.fractal.is") {
-        if (!req.params?.isVersionedTransaction) {
-          signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
-        } else {
+        if (req.params?.isVersionedTransaction) {
           const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
           const tx = new VersionedTransaction(msgObj);
           const targetMessage = tx.serialize();
           signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
+        } else {
+          signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
         }
       }
 
@@ -1629,17 +1629,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (!message) throw new Error("empty error message");
 
     let tx: TransactionOrVersionedTransaction;
-    if (!req.params?.isVersionedTransaction) {
+    if (req.params?.isVersionedTransaction) {
       if (req.params?.messageOnly) {
-        tx = Transaction.populate(Message.from(Buffer.from(message as string, "hex")));
-        const block = await this.connection.getLatestBlockhash("max");
-        tx.recentBlockhash = block.blockhash;
-      } else tx = Transaction.from(Buffer.from(message as string, "hex"));
+        const msgObj = VersionedMessage.deserialize(message as Uint8Array);
+        tx = new VersionedTransaction(msgObj);
+      } else tx = VersionedTransaction.deserialize(message as Uint8Array);
     } else if (req.params?.messageOnly) {
-      const msgObj = VersionedMessage.deserialize(message as Uint8Array);
-      tx = new VersionedTransaction(msgObj);
+      tx = Transaction.populate(Message.from(Buffer.from(message as string, "hex")));
+      const block = await this.connection.getLatestBlockhash("max");
+      tx.recentBlockhash = block.blockhash;
     } else {
-      tx = VersionedTransaction.deserialize(message as Uint8Array);
+      tx = Transaction.from(Buffer.from(message as string, "hex"));
     }
     return this.transfer(tx, req);
   }
