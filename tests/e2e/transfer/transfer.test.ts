@@ -32,7 +32,7 @@ test.describe("Transfer page", async () => {
     await ensureTextualElementExists(page, "Transfer Details");
   });
 
-  test("Checks before transaction should be correct", async () => {
+  test.skip("Checks before transaction should be correct", async () => {
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
     await wait(1000);
@@ -65,7 +65,7 @@ test.describe("Transfer page", async () => {
     expect(await page.locator("button >> text=Transfer").isDisabled()).toBeTruthy();
   });
 
-  test("Transaction should happen correctly", async () => {
+  test.skip("Transaction should happen correctly", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
@@ -110,7 +110,7 @@ test.describe("Transfer page", async () => {
     await page2.close();
   });
 
-  test("Transfer SPL token", async () => {
+  test.skip("Transfer SPL token", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
@@ -139,7 +139,7 @@ test.describe("Transfer page", async () => {
   // TODO : FIX TEST, SEE WHY THE NFTs are not being fetched reliably
   // LEADS : lot of CORS errors in the playwright chrome, none on the local.
 
-  test("Transfer NFT", async () => {
+  test.skip("Transfer NFT", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
@@ -193,7 +193,7 @@ test.describe("Transfer page", async () => {
 
 /** *****************IMPORT ACCOUNT TESTS********************** */
 
-test("Transfer page using imported account", async () => {
+test.skip("Transfer page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
@@ -224,7 +224,7 @@ test("Transfer page using imported account", async () => {
     await page.click("button >> text=Cancel");
   });
 
-  test("Transaction should happen correctly", async () => {
+  test.skip("Transaction should happen correctly", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
@@ -274,7 +274,7 @@ test("Transfer page using imported account", async () => {
     await page2.close();
   });
 
-  test("Transfer SPL token", async () => {
+  test.skip("Transfer SPL token", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
@@ -307,7 +307,7 @@ test("Transfer page using imported account", async () => {
     await page2.close();
   });
 
-  test("Transfer NFT", async () => {
+  test.skip("Transfer NFT", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");

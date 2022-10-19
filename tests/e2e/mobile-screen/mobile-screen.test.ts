@@ -28,6 +28,7 @@ test.describe("Mobile screens", async () => {
   test("Should have all the tabs", async () => {
     // eslint-disable-next-line no-restricted-syntax
     for (const key of tabs) {
+      await wait(200);
       expect(await page.locator(`#${key}_link`).count()).toBeGreaterThan(0);
     }
   });

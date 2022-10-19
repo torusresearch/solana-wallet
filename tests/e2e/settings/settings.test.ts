@@ -174,7 +174,7 @@ test.describe("Settings Page", async () => {
 
 /** ************************IMPORT ACCOUNT TESTS ****************************** */
 // Skipped because "Import Account" feature is no more supported
-test("Settings Page using imported account", async () => {
+test.skip("Settings Page using imported account", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
@@ -183,7 +183,7 @@ test("Settings Page using imported account", async () => {
     await importAccount(page, IMPORT_ACC_SECRET_KEY);
   });
 
-  test("Settings Page Should render", async () => {
+  test.skip("Settings Page Should render", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
 
@@ -195,7 +195,7 @@ test("Settings Page using imported account", async () => {
     await ensureTextualElementExists(page, "Crash Reporting");
   });
 
-  test("Network Change should work", async () => {
+  test.skip("Network Change should work", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
 
@@ -210,7 +210,7 @@ test("Settings Page using imported account", async () => {
     await switchNetwork(page, "devnet");
   });
 
-  test("Theme Change should work", async () => {
+  test.skip("Theme Change should work", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
 
@@ -226,7 +226,7 @@ test("Settings Page using imported account", async () => {
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(1);
   });
 
-  test("Private key should be available", async () => {
+  test.skip("Private key should be available", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
 
@@ -237,7 +237,7 @@ test("Settings Page using imported account", async () => {
     await page.click("button >> text=Close");
   });
 
-  test("Contact should be added and then deleted", async () => {
+  test.skip("Contact should be added and then deleted", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
     // if contact already exists, delete it
@@ -255,7 +255,7 @@ test("Settings Page using imported account", async () => {
     expect(await isContactDeleted(page, PUB_ADDRESS)).toBeTruthy();
   });
 
-  test("Crash reporting should update", async () => {
+  test.skip("Crash reporting should update", async () => {
     // see navigation works correctly
     await switchTab(page, "settings");
 
@@ -265,7 +265,7 @@ test("Settings Page using imported account", async () => {
     await page.waitForSelector("text=Successfully updated crash reporting", { timeout: 10_000 });
   });
 
-  test("Search address book should work", async () => {
+  test.skip("Search address book should work", async () => {
     // see navigation works correctly
     await switchTab(page, "settings");
     const elemCount = await page.locator(`span >> text=${PUB_ADDRESS}`).count();
@@ -289,7 +289,7 @@ test("Settings Page using imported account", async () => {
     expect(await isContactDeleted(page, PUB_ADDRESS)).toBeTruthy();
   });
 
-  test("Address book filter should work", async () => {
+  test.skip("Address book filter should work", async () => {
     // see navigation works correctly
     await switchTab(page, "settings");
     const elemCount = await page.locator(`span >> text=${PUB_ADDRESS}`).count();
