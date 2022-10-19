@@ -17,7 +17,7 @@ test.describe("Topup page", async () => {
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
     await wait(3000);
-    await page.screenshot({ path: "screenshots/screenshot-1.png", fullPage: true });
+    // await page.screenshot({ path: "screenshots/screenshot-1.png", fullPage: true });
   });
   test.afterAll(() => {
     page.close();
