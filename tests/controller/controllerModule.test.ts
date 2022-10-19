@@ -650,13 +650,13 @@ describe("Controller Module", () => {
       const result = await controllerModule.torus.provider.sendAsync({
         method: "sign_transaction",
         params: {
-          message: transactionV0.message.serialize(),
+          message: Buffer.from(transactionV0.serialize()).toString("hex"),
           isVersionedTransaction: true,
         },
       });
 
       transactionV0.sign([sKeyPair[0]]);
-      assert.deepEqual(result, transactionV0.serialize());
+      assert.deepEqual(result, Buffer.from(transactionV0.serialize()).toString("hex"));
       // will not patch activities
       // validate controller
       assert(popupStub.calledOnce);

@@ -63,14 +63,14 @@ onMounted(async () => {
 
     if (txData.messageOnly) {
       if (txData.isVersionedTransaction) {
-        const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+        const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
         tx.value = new VersionedTransaction(msgObj);
       } else {
         tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
       }
     } else if (!txData.messageOnly) {
       if (txData.isVersionedTransaction) {
-        const msgObj = VersionedMessage.deserialize(txData.message as unknown as Uint8Array);
+        const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
         tx.value = new VersionedTransaction(msgObj);
       } else {
         tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));

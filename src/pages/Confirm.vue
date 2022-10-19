@@ -60,7 +60,7 @@ onMounted(async () => {
         const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
         tx.value = new VersionedTransaction(msgObj);
       } else {
-        tx.value = VersionedTransaction.deserialize(txData.message as unknown as Uint8Array);
+        tx.value = VersionedTransaction.deserialize(Buffer.from(txData.message as string, "hex"));
       }
     } else if (!txData.isVersionedTransaction) {
       if (txData.messageOnly) {

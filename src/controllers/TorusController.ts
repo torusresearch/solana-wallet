@@ -624,7 +624,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     try {
       // serialize transaction
       const serializedTransaction = isVersionedTransaction
-        ? signedTransaction.transactionMeta.transaction.serialize()
+        ? Buffer.from(signedTransaction.transactionMeta.transaction.serialize()).toString("hex")
         : signedTransaction.transactionMeta.transaction.serialize().toString("hex");
 
       // submit onchain
@@ -1338,16 +1338,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // req.params.
     let allTransactions;
     if (req?.isVersionedTransaction) {
-      allTransactions = req.params?.message?.map((msg: Uint8Array) => {
+      allTransactions = req.params?.message?.map((msg: string) => {
         // if(req.params.legacy)
-        const msgObj = VersionedMessage.deserialize(msg);
+        const msgObj = VersionedMessage.deserialize(Buffer.from(msg, "hex"));
         const tx = new VersionedTransaction(msgObj);
         const modifiedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
-        const signedMessage = modifiedTx.serialize();
+        const signedMessage = Buffer.from(modifiedTx.serialize()).toString("hex");
         return signedMessage;
       });
     } else {
-      allTransactions = (req.params?.message as unknown as string[])?.map((msg) => {
+      allTransactions = (req.params?.message as string[])?.map((msg) => {
         const tx = Transaction.from(Buffer.from(msg, "hex"));
         const modifiedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
         const signedMessage = modifiedTx.serialize({ requireAllSignatures: false }).toString("hex");
@@ -1531,7 +1531,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         // const tx = new VersionedTransaction(msgObj);
         const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
         const signedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
-        const signedMessage = signedTx.serialize();
+        const signedMessage = Buffer.from(signedTx.serialize()).toString("hex");
         return signedMessage;
       });
     } else {
@@ -1628,9 +1628,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     let tx: TransactionOrVersionedTransaction;
     if (req.params?.isVersionedTransaction) {
       if (req.params?.messageOnly) {
-        const msgObj = VersionedMessage.deserialize(message as Uint8Array);
+        const msgObj = VersionedMessage.deserialize(Buffer.from(message, "hex"));
         tx = new VersionedTransaction(msgObj);
-      } else tx = VersionedTransaction.deserialize(message as Uint8Array);
+      } else tx = VersionedTransaction.deserialize(Buffer.from(message, "hex"));
     } else if (req.params?.messageOnly) {
       tx = Transaction.populate(Message.from(Buffer.from(message as string, "hex")));
       const block = await this.connection.getLatestBlockhash("max");
