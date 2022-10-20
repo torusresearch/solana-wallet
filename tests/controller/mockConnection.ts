@@ -337,11 +337,6 @@ export const mockConnection: Partial<Connection> = {
     const tx = VersionedTransaction.deserialize(rawTranaction as Uint8Array);
     return tx.signatures.toString();
   },
-  sendTransaction: async (rawTranaction) => {
-    // log.error(rawTranaction)
-    // const tx = VersionedTransaction.si(rawTranaction as unknown as Uint8Array);
-    return rawTranaction.signatures.toString();
-  },
 
   getSignaturesForAddress: async () => {
     return [];

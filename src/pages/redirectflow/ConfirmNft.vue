@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { TransactionOrVersionedTransaction } from "@toruslabs/solana-controllers";
+import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import { computed, onMounted, ref, watch } from "vue";
 
 import FullDivLoader from "@/components/FullDivLoader.vue";
@@ -18,7 +17,7 @@ const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estima
 
 const loading = ref(true);
 const transactionFee = ref(0);
-const transaction = ref<TransactionOrVersionedTransaction>();
+const transaction = ref<VersionedTransaction>();
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, params.mint_add));
 
 onMounted(async () => {
@@ -42,7 +41,7 @@ watch(selectedNft, async () => {
       ControllerModule.connection
     );
 
-    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection, ControllerModule.selectedAddress, true);
+    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection, ControllerModule.selectedAddress);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }

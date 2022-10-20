@@ -1095,7 +1095,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       const popupPayload: TransactionChannelDataType = {
         type: req.method,
-        message: (req.params?.message as string[]) || "",
+        message: req.params?.message || "",
         messageOnly: req.params?.messageOnly || false,
         signer: this.selectedAddress,
         // txParams: JSON.parse(JSON.stringify(this.txController.getTransaction(txId))),
@@ -1327,11 +1327,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
   // Only called in redirect flow
   async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
     // sign all transaction
-    // req.params.
     const allTransactions = req.params?.message?.map((msg: string) => {
-      // if(req.params.legacy)
-      const msgObj = VersionedMessage.deserialize(Buffer.from(msg, "hex"));
-      const tx = new VersionedTransaction(msgObj);
+      const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
       const modifiedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
       const signedMessage = Buffer.from(modifiedTx.serialize()).toString("hex");
       return signedMessage;
@@ -1524,7 +1521,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const message = req.params?.message;
     if (!message) throw new Error("Empty message from embed");
 
-    let signature: Uint8Array = new Uint8Array();
+    let signature: Uint8Array;
     if (req.params?.messageOnly) {
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");

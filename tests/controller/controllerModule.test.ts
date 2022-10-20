@@ -362,8 +362,6 @@ describe("Controller Module", () => {
     it("SOL Transfer", async () => {
       assert.equal(Object.keys(controllerModule.torusState.TransactionControllerState.transactions).length, 0);
       assert.equal(controllerModule.selectedNetworkTransactions.length, 0);
-      // const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
-      // tx.add(transferInstruction());
       const { transactionV0 } = createTransactionV();
       const results = await controllerModule.torus.transfer(transactionV0);
       // verify
@@ -561,17 +559,6 @@ describe("Controller Module", () => {
       return { instructions, transactionV0 };
     };
 
-    const toHexString = (input: any) => {
-      const byteArray = input[0];
-      const a = Array.prototype.map
-        .call(byteArray, (byte: any) => {
-          // eslint-disable-next-line no-bitwise
-          return `0${(byte & 0xff).toString(16)}`.slice(-2);
-        })
-        .join("");
-      return a;
-    };
-
     beforeEach(async () => {
       // controllerModule.torus = new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) });
       // controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
@@ -701,7 +688,7 @@ describe("Controller Module", () => {
         item.sign([sKeyPair[0]]);
         return {
           publicKey: sKeyPair[0].publicKey.toBase58(),
-          signature: toHexString(item.signatures),
+          signature: Buffer.from(item.signatures[0] as unknown as Uint8Array).toString("hex"),
         };
       });
       (result as string[]).forEach((res, index) => {
@@ -1057,8 +1044,6 @@ describe("Controller Module", () => {
 
     it("UNSAFE_signTransaction", async () => {
       const signTransactionSpy = sandbox.spy(KeyringController.prototype, "signTransaction");
-      // const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
-      // tx.add(transferInstruction());
       const { transactionV0 } = createTransactionV();
 
       const result = await controllerModule.torus.UNSAFE_signTransaction(transactionV0);
