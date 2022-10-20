@@ -606,7 +606,6 @@ describe("Controller Module", () => {
         params: {
           message: transactionV0.message.serialize(),
           messageOnly: true,
-          isVersionedTransaction: true,
         },
       })) as string;
 
@@ -630,7 +629,6 @@ describe("Controller Module", () => {
             method: "send_transaction",
             params: {
               message: transactionV0.message.serialize(),
-              isVersionedTransaction: true,
             },
           });
         },
@@ -651,7 +649,6 @@ describe("Controller Module", () => {
         method: "sign_transaction",
         params: {
           message: Buffer.from(transactionV0.serialize()).toString("hex"),
-          isVersionedTransaction: true,
         },
       });
 
@@ -695,7 +692,6 @@ describe("Controller Module", () => {
         params: {
           message: msg,
           messageOnly: true,
-          isVersionedTransaction: true,
         },
       });
 
@@ -777,7 +773,6 @@ describe("Controller Module", () => {
         method: "send_transaction",
         params: {
           message: msg,
-          isVersionedTransaction: true,
         },
       });
       // validate state after
@@ -794,7 +789,6 @@ describe("Controller Module", () => {
             method: "send_transaction",
             params: {
               message: msg,
-              isVersionedTransaction: true,
             },
           });
         },
@@ -826,7 +820,6 @@ describe("Controller Module", () => {
         method: "send_transaction",
         params: {
           message: transactionV0.serialize(),
-          isVersionedTransaction: true,
         },
       });
       // validate state after

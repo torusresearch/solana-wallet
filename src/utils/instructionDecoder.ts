@@ -23,19 +23,11 @@ import {
   StakeProgram,
   SystemInstruction,
   SystemProgram,
-  Transaction,
   TransactionInstruction,
   VersionedTransaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import {
-  decompile,
-  isVersionedTransactionInstance,
-  SolanaToken,
-  TokenInfoController,
-  TokenTransactionData,
-  TransactionOrVersionedTransaction,
-} from "@toruslabs/solana-controllers";
+import { decompile, SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 // Custom address
@@ -342,16 +334,13 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
 export const constructTokenData = (
   tokenPriceMap: { [mintAddress: string]: { [currency: string]: number } },
   infoState: TokenInfoController["state"],
-  transaction?: TransactionOrVersionedTransaction,
+  transaction?: VersionedTransaction,
   tokenMap: SolanaToken[] = []
 ): TokenTransactionData | undefined => {
   try {
     if (!tokenMap || !transaction) return undefined;
-    const isVersionedTransaction = isVersionedTransactionInstance(transaction);
     // reconstruct Transaction as transaction object function is not accessible
-    const instructions = isVersionedTransaction
-      ? decompile((transaction as VersionedTransaction).message)
-      : (transaction as Transaction).instructions;
+    const instructions = decompile(transaction.message);
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
     let interestedTransactionInstructionidx = -1;

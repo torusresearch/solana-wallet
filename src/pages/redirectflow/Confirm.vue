@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Message, Transaction, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
-import { decompile, TransactionOrVersionedTransaction } from "@toruslabs/solana-controllers";
+import { VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import { decompile } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -22,7 +22,7 @@ const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estima
 
 const finalTxData = ref<FinalTxData>();
 
-const tx = ref<TransactionOrVersionedTransaction>();
+const tx = ref<VersionedTransaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
@@ -40,7 +40,6 @@ onMounted(async () => {
         type: method,
         message: params?.message,
         messageOnly: params?.messageOnly,
-        isVersionedTransaction: params?.isVersionedTransaction || true,
         signer: ControllerModule.selectedAddress,
         origin: window.origin,
       };
@@ -53,7 +52,7 @@ onMounted(async () => {
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, txData.isVersionedTransaction);
+      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
       decodedInst.value = decoded;
       estimationInProgress.value = false;
       hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -62,42 +61,24 @@ onMounted(async () => {
     }
 
     if (txData.messageOnly) {
-      if (txData.isVersionedTransaction) {
-        const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
-        tx.value = new VersionedTransaction(msgObj);
-      } else {
-        tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
-      }
-    } else if (!txData.messageOnly) {
-      if (txData.isVersionedTransaction) {
-        const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
-        tx.value = new VersionedTransaction(msgObj);
-      } else {
-        tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
-      }
+      const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
+      tx.value = new VersionedTransaction(msgObj);
+    } else {
+      tx.value = VersionedTransaction.deserialize(Buffer.from(txData.message as string, "hex"));
     }
 
-    estimateChanges(tx.value as TransactionOrVersionedTransaction, ControllerModule.connection, ControllerModule.selectedAddress);
+    estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = (
-      await calculateTxFee(
-        txData.isVersionedTransaction ? (tx.value as VersionedTransaction).message : (tx.value as Transaction).compileMessage(),
-        ControllerModule.connection,
-        ControllerModule.selectedAddress,
-        txData?.isVersionedTransaction || false
-      )
-    ).fee;
+    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection, ControllerModule.selectedAddress)).fee;
 
-    const instructions = txData.isVersionedTransaction
-      ? decompile((tx.value as VersionedTransaction).message)
-      : (tx.value as Transaction).instructions;
+    const instructions = decompile(tx.value.message);
 
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value as TransactionOrVersionedTransaction, txFee, false, instructions);
+      finalTxData.value = parsingTransferAmount(tx.value, txFee, false, instructions);
     } catch (e) {
       log.error(e);
     }
@@ -110,7 +91,7 @@ onMounted(async () => {
 
 const approveTxn = async (): Promise<void> => {
   loading.value = true;
-  let res: string | string[] | TransactionOrVersionedTransaction | undefined;
+  let res: string | string[] | VersionedTransaction | undefined;
   try {
     if (method === "send_transaction" && tx.value) {
       res = await ControllerModule.torus.transfer(tx.value, params);
@@ -119,10 +100,9 @@ const approveTxn = async (): Promise<void> => {
       res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
       redirectToResult(jsonrpc, { data: { signature: res.serialize() }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_all_transactions") {
-      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params, isVersionedTransaction: params?.isVersionedTransaction } as {
-        params: { message: Uint8Array[] };
+      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as {
+        params: { message: string[] };
         method: string;
-        isVersionedTransaction: boolean;
       });
       redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
     } else throw new Error();

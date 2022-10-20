@@ -185,7 +185,6 @@ export type TransactionChannelDataType = {
   type: string;
   message: string | string[];
   messageOnly?: boolean;
-  isVersionedTransaction?: boolean;
   origin: string;
   signer: string;
   balance: string;

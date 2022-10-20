@@ -63,7 +63,7 @@ describe("solana helper util", () => {
   it("calculateTxFee", async () => {
     const { transactionV0 } = createTransactionV();
 
-    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection(), sKeyPair[0].publicKey.toBase58(), false);
+    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection(), sKeyPair[0].publicKey.toBase58());
     assert.deepEqual(result.fee, 1);
   });
   // it("getEstimateBalanceChange", async () => {
@@ -154,7 +154,7 @@ describe("solana helper util", () => {
     //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c020000002c4a970200000000",
     //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c0200000057cf140500000000",
     // ];
-    const result = await solanaHelper.decodeAllInstruction([Buffer.from(transactionV0.serialize()).toString("hex")], false, true);
+    const result = await solanaHelper.decodeAllInstruction([Buffer.from(transactionV0.serialize()).toString("hex")], false);
     // console.log(result);
     // console.log({ result: JSON.stringify(result) });
     assert.deepEqual(result.length, 3);
