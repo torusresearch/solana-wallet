@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { VersionedMessage, VersionedTransaction } from "@solana/web3.js";
-import { decompile } from "@toruslabs/solana-controllers";
+import { TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -71,7 +70,7 @@ onMounted(async () => {
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection, ControllerModule.selectedAddress)).fee;
 
-    const instructions = decompile(tx.value.message);
+    const { instructions } = TransactionMessage.decompile(tx.value.message);
 
     try {
       decodedInst.value = instructions.map((inst) => {

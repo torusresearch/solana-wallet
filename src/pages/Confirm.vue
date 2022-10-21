@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import { clusterApiUrl, Connection, TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { decompile } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -72,7 +71,8 @@ onMounted(async () => {
       )
     )?.fee;
 
-    const instructions = decompile(tx.value.message);
+    const { instructions } = TransactionMessage.decompile(tx.value.message);
+
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);

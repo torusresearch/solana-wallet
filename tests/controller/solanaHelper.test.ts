@@ -1,7 +1,6 @@
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { decompile } from "@toruslabs/solana-controllers";
 import assert from "assert";
 import nock from "nock";
 
@@ -38,7 +37,7 @@ describe("solana helper util", () => {
       recentBlockhash: sKeyPair[0].publicKey.toBase58(),
     }).compileToV0Message();
     const transactionV0 = new VersionedTransaction(messageV0);
-    const instructions = decompile(transactionV0.message);
+    const { instructions } = TransactionMessage.decompile(transactionV0.message);
     return { instructions, transactionV0 };
   };
   it("parsingTransferAmount", async () => {
@@ -131,8 +130,9 @@ describe("solana helper util", () => {
       sKeyPair[0].publicKey.toBase58(),
       mockGetConnection()
     );
-    const instructions = decompile(associatedTokenResult.message);
-    const resultInstructions = decompile(result.message);
+    const { instructions } = TransactionMessage.decompile(associatedTokenResult.message);
+    const { instructions: resultInstructions } = TransactionMessage.decompile(result.message);
+
     assert.deepEqual(resultInstructions[0].keys[2].pubkey.toBase58(), sKeyPair[1].publicKey.toBase58());
     assert.deepEqual(instructions[0].keys[2].pubkey.toBase58(), associatedTokenAccount.toBase58());
     // changes in instruction between associated token account and normal sol account

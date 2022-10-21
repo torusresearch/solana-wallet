@@ -28,7 +28,6 @@ import {
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { get, post } from "@toruslabs/http-helpers";
-import { decompile } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
@@ -320,7 +319,7 @@ export async function calculateChanges(
 // Simulate transaction's balance changes
 export async function getEstimateBalanceChange(connection: Connection, tx: VersionedTransaction, signer: string): Promise<AccountEstimation[]> {
   try {
-    const instructions = decompile(tx.message);
+    const { instructions } = TransactionMessage.decompile(tx.message);
     // get writeable accounts from all instruction
     const accounts = instructions.reduce((prev, current) => {
       // log.info(current.keys)
@@ -360,7 +359,8 @@ export async function calculateTxFee(
   const blockHash = latestBlockHash.blockhash;
   const height = latestBlockHash.lastValidBlockHeight;
 
-  const instructions = decompile(message as unknown as VersionedMessage);
+  const { instructions } = TransactionMessage.decompile(message);
+
   const legacyMessage = Message.compile({
     instructions,
     recentBlockhash: (message as unknown as VersionedMessage).recentBlockhash,
@@ -380,7 +380,7 @@ export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
     } else {
       tx2 = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
     }
-    const instructions = decompile(tx2.message);
+    const { instructions } = TransactionMessage.decompile(tx2.message);
     instructions.forEach((inst) => {
       decoded.push(decodeInstruction(inst));
     });

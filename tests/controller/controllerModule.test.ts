@@ -5,7 +5,6 @@ import OpenLogin from "@toruslabs/openlogin";
 import { BasePostMessageStream, JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 import {
   CurrencyController,
-  decompile,
   KeyringController,
   NetworkController,
   PreferencesController,
@@ -349,7 +348,8 @@ describe("Controller Module", () => {
         recentBlockhash: sKeyPair[0].publicKey.toBase58(),
       }).compileToV0Message();
       const transactionV0 = new VersionedTransaction(messageV0);
-      const instructions = decompile(transactionV0.message);
+      const { instructions } = TransactionMessage.decompile(transactionV0.message);
+
       return { instructions, transactionV0 };
     };
     beforeEach(async () => {
@@ -554,7 +554,7 @@ describe("Controller Module", () => {
         recentBlockhash: sKeyPair[0].publicKey.toBase58(),
       }).compileToV0Message();
       const transactionV0 = new VersionedTransaction(messageV0);
-      const instructions = decompile(transactionV0.message);
+      const { instructions } = TransactionMessage.decompile(transactionV0.message);
       // transactionV0.sign([sKeyPair[0]]);
       return { instructions, transactionV0 };
     };
@@ -996,7 +996,8 @@ describe("Controller Module", () => {
         recentBlockhash: sKeyPair[0].publicKey.toBase58(),
       }).compileToV0Message();
       const transactionV0 = new VersionedTransaction(messageV0);
-      const instructions = decompile(transactionV0.message);
+      const { instructions } = TransactionMessage.decompile(transactionV0.message);
+
       return { instructions, transactionV0 };
     };
 

@@ -24,10 +24,11 @@ import {
   SystemInstruction,
   SystemProgram,
   TransactionInstruction,
+  TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { decompile, SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
+import { SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 // Custom address
@@ -340,7 +341,7 @@ export const constructTokenData = (
   try {
     if (!tokenMap || !transaction) return undefined;
     // reconstruct Transaction as transaction object function is not accessible
-    const instructions = decompile(transaction.message);
+    const { instructions } = TransactionMessage.decompile(transaction.message);
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
     let interestedTransactionInstructionidx = -1;
