@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
-import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -24,7 +24,7 @@ const props = withDefaults(
   {}
 );
 const invalidLink = ref("");
-const transaction = ref<Transaction>();
+const transaction = ref<VersionedTransaction>();
 const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
@@ -56,7 +56,8 @@ const estimateTxFee = ref(0);
 const router = useRouter();
 watch(transaction, async () => {
   if (transaction.value) {
-    const response = await ControllerModule.connection.getFeeForMessage(transaction.value.compileMessage());
+    const legacyMessage = TransactionMessage.decompile(transaction.value.message).compileToLegacyMessage();
+    const response = await ControllerModule.connection.getFeeForMessage(legacyMessage);
     log.info(response);
     estimateTxFee.value = response.value / LAMPORTS_PER_SOL;
   }
@@ -83,15 +84,22 @@ onMounted(async () => {
     } else if (isUrl(requestLink)) {
       // request link is an url. fetch transaction from url
       const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
-      log.info(result);
-      transaction.value = result.transaction;
-      linkParams.value = {
-        icon: result.icon,
-        label: result.label,
-        origin: result.link.origin,
-        decodedInst: result.decodedInst,
-        message: result.message || "",
-      };
+      if (result.transaction.feePayer && result.transaction.recentBlockhash) {
+        const messageV0 = new TransactionMessage({
+          payerKey: result.transaction.feePayer,
+          instructions: result.transaction.instructions,
+          recentBlockhash: result.transaction.recentBlockhash,
+        }).compileToV0Message();
+        log.info(result);
+        transaction.value = new VersionedTransaction(messageV0);
+        linkParams.value = {
+          icon: result.icon,
+          label: result.label,
+          origin: result.link.origin,
+          decodedInst: result.decodedInst,
+          message: result.message || "",
+        };
+      }
     } else {
       // check for publickey format, redirect to transfer page
       try {
@@ -152,7 +160,12 @@ onMounted(async () => {
       tx.lastValidBlockHeight = block.lastValidBlockHeight;
       tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
       // update ref state (ui)
-      transaction.value = tx;
+      const messageV0 = new TransactionMessage({
+        payerKey: new PublicKey(ControllerModule.selectedAddress),
+        instructions: tx?.instructions,
+        recentBlockhash: block.blockhash,
+      }).compileToV0Message();
+      transaction.value = new VersionedTransaction(messageV0);
       requestParams.value = result;
       log.info(result);
     }
@@ -169,6 +182,9 @@ onMounted(async () => {
     log.error(e);
   }
 });
+const decodeInstructionSolanaPay = () => {
+  return transaction.value ? TransactionMessage.decompile(transaction.value.message)?.instructions.map((inst) => decodeInstruction(inst)) || [] : [];
+};
 </script>
 
 <template>
@@ -188,7 +204,7 @@ onMounted(async () => {
     :token="symbol || 'SOL'"
     :crypto-tx-fee="estimateTxFee"
     :network="ControllerModule.selectedNetworkDisplayName"
-    :decoded-inst="transaction?.instructions.map((inst) => decodeInstruction(inst)) || []"
+    :decoded-inst="decodeInstructionSolanaPay"
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
