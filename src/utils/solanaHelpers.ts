@@ -27,6 +27,7 @@ import {
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import { get, post } from "@toruslabs/http-helpers";
+import { findArgs } from "@toruslabs/solana-controllers";
 import BigNumber from "bignumber.js";
 import log from "loglevel";
 
@@ -318,7 +319,9 @@ export async function calculateChanges(
 // Simulate transaction's balance changes
 export async function getEstimateBalanceChange(connection: Connection, tx: VersionedTransaction, signer: string): Promise<AccountEstimation[]> {
   try {
-    const transactionMessage = TransactionMessage.decompile(tx.message);
+    const args = await findArgs(connection, tx.message);
+
+    const transactionMessage = TransactionMessage.decompile(tx.message, args);
     // get writeable accounts from all instruction
     const accounts = transactionMessage.instructions.reduce((prev, current) => {
       // log.info(current.keys)
@@ -355,15 +358,16 @@ export async function calculateTxFee(message: VersionedMessage, connection: Conn
   const blockHash = latestBlockHash.blockhash;
   const height = latestBlockHash.lastValidBlockHeight;
 
-  const legacyMessage = TransactionMessage.decompile(message).compileToLegacyMessage();
+  const args = await findArgs(connection, message);
+  const legacyMessage = TransactionMessage.decompile(message, args).compileToLegacyMessage();
 
   const fee = await connection.getFeeForMessage(legacyMessage);
   return { blockHash, height, fee: fee.value || 0 };
 }
 
-export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
+export function decodeAllInstruction(messages: string[], messageOnly: boolean, connection: Connection) {
   const decoded: DecodedDataType[] = [];
-  (messages as string[]).forEach((msg) => {
+  (messages as string[]).forEach(async (msg) => {
     let tx2: VersionedTransaction;
     if (messageOnly) {
       const msgObj = VersionedMessage.deserialize(Buffer.from(msg as string, "hex"));
@@ -371,7 +375,8 @@ export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
     } else {
       tx2 = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
     }
-    const { instructions } = TransactionMessage.decompile(tx2.message);
+    const args = await findArgs(connection, tx2.message);
+    const { instructions } = TransactionMessage.decompile(tx2.message, args);
     instructions.forEach((inst) => {
       decoded.push(decodeInstruction(inst));
     });
@@ -379,8 +384,14 @@ export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
   return decoded;
 }
 
-export function parsingTransferAmount(tx: VersionedTransaction, txFee: number, isGasless: boolean): FinalTxData | undefined {
-  const { instructions } = TransactionMessage.decompile(tx.message);
+export async function parsingTransferAmount(
+  tx: VersionedTransaction,
+  txFee: number,
+  isGasless: boolean,
+  connection: Connection
+): Promise<FinalTxData | undefined> {
+  const args = await findArgs(connection, tx.message);
+  const { instructions } = TransactionMessage.decompile(tx.message, args);
 
   if (instructions.length > 1) return undefined;
   if (!instructions[0].programId.equals(SystemProgram.programId)) return undefined;

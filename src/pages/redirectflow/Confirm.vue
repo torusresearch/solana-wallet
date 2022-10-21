@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
+import { findArgs } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -51,7 +52,7 @@ onMounted(async () => {
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, ControllerModule.connection);
       decodedInst.value = decoded;
       estimationInProgress.value = false;
       hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -70,14 +71,16 @@ onMounted(async () => {
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection)).fee;
 
-    const { instructions } = TransactionMessage.decompile(tx.value.message);
+    const args = await findArgs(ControllerModule.connection, tx.value.message);
+
+    const { instructions } = TransactionMessage.decompile(tx.value.message, args);
 
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, false);
+      finalTxData.value = await parsingTransferAmount(tx.value, txFee, false, ControllerModule.connection);
     } catch (e) {
       log.error(e);
     }

@@ -497,12 +497,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.txController.on("store", (state2: TransactionState<VersionedTransaction>) => {
       this.update({ TransactionControllerState: state2 });
-      Object.keys(state2.transactions).forEach((txId) => {
+      Object.keys(state2.transactions).forEach(async (txId) => {
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
-          const tokenTransfer = constructTokenData(
+          const tokenTransfer = await constructTokenData(
             this.currencyController.state.tokenPriceMap,
             this.tokenInfoController.state,
+            this.connection,
             state2.transactions[txId].transaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );

@@ -18,6 +18,7 @@ import {
   TokenInstruction,
 } from "@solana/spl-token";
 import {
+  Connection,
   PublicKey,
   StakeInstruction,
   StakeProgram,
@@ -28,7 +29,7 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
+import { findArgs, SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 // Custom address
@@ -332,16 +333,18 @@ export const decodeInstruction = (instruction: TransactionInstruction): DecodedD
 };
 
 // in case of transfer/ burn
-export const constructTokenData = (
+export const constructTokenData = async (
   tokenPriceMap: { [mintAddress: string]: { [currency: string]: number } },
   infoState: TokenInfoController["state"],
+  connection: Connection,
   transaction?: VersionedTransaction,
   tokenMap: SolanaToken[] = []
-): TokenTransactionData | undefined => {
+): Promise<TokenTransactionData | undefined> => {
   try {
     if (!tokenMap || !transaction) return undefined;
     // reconstruct Transaction as transaction object function is not accessible
-    const { instructions } = TransactionMessage.decompile(transaction.message);
+    const args = await findArgs(connection, transaction.message);
+    const { instructions } = TransactionMessage.decompile(transaction.message, args);
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
     let interestedTransactionInstructionidx = -1;

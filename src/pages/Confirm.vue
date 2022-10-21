@@ -2,6 +2,7 @@
 import { clusterApiUrl, Connection, TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
+import { findArgs } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -45,7 +46,7 @@ onMounted(async () => {
       if (txData.message.length === 1) {
         txData.message = (txData.message as string[]).at(0) || "";
       } else {
-        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, connection);
         decodedInst.value = decoded;
         estimationInProgress.value = false;
         hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -64,15 +65,16 @@ onMounted(async () => {
     estimateChanges(tx.value, connection, txData.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
     const txFee = (await calculateTxFee(tx.value.message, new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"))))?.fee;
+    const args = await findArgs(connection, tx.value.message);
 
-    const { instructions } = TransactionMessage.decompile(tx.value.message);
+    const { instructions } = TransactionMessage.decompile(tx.value.message, args);
 
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, false);
+      finalTxData.value = await parsingTransferAmount(tx.value, txFee, false, connection);
       loading.value = false;
     } catch (e) {
       log.error(e);
