@@ -15,7 +15,6 @@ import {
 import {
   Connection,
   LAMPORTS_PER_SOL,
-  Message,
   PublicKey,
   SimulatedTransactionResponse,
   SystemInstruction,
@@ -319,9 +318,9 @@ export async function calculateChanges(
 // Simulate transaction's balance changes
 export async function getEstimateBalanceChange(connection: Connection, tx: VersionedTransaction, signer: string): Promise<AccountEstimation[]> {
   try {
-    const { instructions } = TransactionMessage.decompile(tx.message);
+    const transactionMessage = TransactionMessage.decompile(tx.message);
     // get writeable accounts from all instruction
-    const accounts = instructions.reduce((prev, current) => {
+    const accounts = transactionMessage.instructions.reduce((prev, current) => {
       // log.info(current.keys)
       current.keys.forEach((item) => {
         if (item.isWritable || item.isSigner) {
@@ -333,16 +332,17 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
 
     // add selected Account incase signer is just fee payer (instruction will not track fee payer)
     accounts.set(signer, new PublicKey(signer));
-
+    const additional = tx.message?.addressTableLookups?.map((address) => address.accountKey.toBase58()) || [];
     // Simulate Transaction with Accounts
     const addresses = Array.from(accounts.keys());
-    const result = await connection.simulateTransaction(tx, { accounts: { addresses, encoding: "base64" } });
+    const combinedAddress = [...addresses, ...additional];
+    const result = await connection.simulateTransaction(tx, { accounts: { addresses: combinedAddress, encoding: "base64" } });
 
     if (result.value.err) {
       throw new Error(result.value.err.toString());
     }
     // calculate diff of the token and sol
-    return calculateChanges(connection, result.value, signer, Array.from(accounts.keys()));
+    return calculateChanges(connection, result.value, signer, combinedAddress);
   } catch (e) {
     log.warn(e);
     // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
@@ -350,22 +350,13 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
   }
 }
 
-export async function calculateTxFee(
-  message: Message | VersionedMessage,
-  connection: Connection,
-  selectedAddress: string
-): Promise<{ blockHash: string; height: number; fee: number }> {
+export async function calculateTxFee(message: VersionedMessage, connection: Connection): Promise<{ blockHash: string; height: number; fee: number }> {
   const latestBlockHash = await connection.getLatestBlockhash("finalized");
   const blockHash = latestBlockHash.blockhash;
   const height = latestBlockHash.lastValidBlockHeight;
 
-  const { instructions } = TransactionMessage.decompile(message);
+  const legacyMessage = TransactionMessage.decompile(message).compileToLegacyMessage();
 
-  const legacyMessage = Message.compile({
-    instructions,
-    recentBlockhash: (message as unknown as VersionedMessage).recentBlockhash,
-    payerKey: new PublicKey(selectedAddress),
-  });
   const fee = await connection.getFeeForMessage(legacyMessage);
   return { blockHash, height, fee: fee.value || 0 };
 }
@@ -388,12 +379,9 @@ export function decodeAllInstruction(messages: string[], messageOnly: boolean) {
   return decoded;
 }
 
-export function parsingTransferAmount(
-  tx: VersionedTransaction,
-  txFee: number,
-  isGasless: boolean,
-  instructions: TransactionInstruction[]
-): FinalTxData | undefined {
+export function parsingTransferAmount(tx: VersionedTransaction, txFee: number, isGasless: boolean): FinalTxData | undefined {
+  const { instructions } = TransactionMessage.decompile(tx.message);
+
   if (instructions.length > 1) return undefined;
   if (!instructions[0].programId.equals(SystemProgram.programId)) return undefined;
   if (SystemInstruction.decodeInstructionType(instructions[0]) !== "Transfer") return undefined;

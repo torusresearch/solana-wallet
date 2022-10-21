@@ -68,7 +68,7 @@ onMounted(async () => {
 
     estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection, ControllerModule.selectedAddress)).fee;
+    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection)).fee;
 
     const { instructions } = TransactionMessage.decompile(tx.value.message);
 
@@ -77,7 +77,7 @@ onMounted(async () => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, false, instructions);
+      finalTxData.value = parsingTransferAmount(tx.value, txFee, false);
     } catch (e) {
       log.error(e);
     }

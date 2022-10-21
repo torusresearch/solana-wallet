@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { CreateTransferError, Memo, Recipient, References, SPLToken } from "@solana/pay";
-import { getAssociatedTokenAddress, getMint, Mint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import {
-  Connection,
-  LAMPORTS_PER_SOL,
-  ParsedAccountData,
-  PublicKey,
-  SystemProgram,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction,
-} from "@solana/web3.js";
+import { createTransfer } from "@solana/pay";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { ContactPayload } from "@toruslabs/base-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
-// import { BigNumber } from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
@@ -32,7 +23,7 @@ import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
-import { calculateTxFee, createSPLTransactionInstruction, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
+import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
 import CheckBox from "../../components/common/CheckBox.vue";
 
@@ -284,73 +275,23 @@ const createSolTransactionInstruction = (amount: number) => {
   ];
 };
 
-interface CreateTransferFields {
-  recipient: Recipient;
-  amount: number;
-  splToken?: SPLToken;
-  reference?: References;
-  memo?: Memo;
-}
-
-async function createTransfer(
-  connection: Connection,
-  sender: PublicKey,
-  { recipient, amount, splToken, memo: memoPay }: CreateTransferFields
-): Promise<VersionedTransaction> {
-  // Check that the sender and recipient accounts exist
-  const senderInfo = await connection.getAccountInfo(sender);
-  if (!senderInfo) throw new CreateTransferError("sender not found");
-
-  const recipientInfo = await connection.getAccountInfo(recipient);
-  if (!recipientInfo) throw new CreateTransferError("recipient not found");
-
-  const mint = splToken ? await getMint(connection, splToken) : ({} as Mint);
-
-  // A native SOL or SPL token transfer instruction
-  const instructions = splToken
-    ? await createSPLTransactionInstruction(
-        connection,
-        recipient,
-        sender,
-        {
-          mintAddress: mint.address.toBase58(),
-          balance: { decimals: mint.decimals, amount: mint.decimals.toString(), uiAmount: mint.decimals, uiAmountString: mint.decimals.toString() },
-        },
-        amount
-      )
-    : createSolTransactionInstruction(amount);
-
-  if (memoPay != null) {
-    instructions.push(
-      new TransactionInstruction({
-        programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-        keys: [],
-        data: Buffer.from(memoPay, "utf8"),
-      })
-    );
-  }
-  const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
-
-  const messageV0 = new TransactionMessage({
-    payerKey: new PublicKey(ControllerModule.selectedAddress),
-    instructions,
-    recentBlockhash: latestBlockhash.blockhash,
-  }).compileToV0Message();
-
-  const transactionV0 = new VersionedTransaction(messageV0);
-
-  return transactionV0;
-}
-
 const generateTransaction = async (amount: number): Promise<VersionedTransaction> => {
   if (reference.value || memo.value.length > 0) {
-    transaction.value = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
+    const solPayTransaction = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
       recipient: new PublicKey(resolvedAddress.value),
       reference: reference.value?.map((item) => new PublicKey(item)),
       memo: memo.value,
       splToken: selectedToken.value.mintAddress ? new PublicKey(selectedToken.value?.mintAddress) : undefined,
-      amount,
+      amount: new BigNumber(amount),
     });
+    if (solPayTransaction.feePayer && solPayTransaction.recentBlockhash) {
+      const messageV0 = new TransactionMessage({
+        payerKey: solPayTransaction?.feePayer,
+        instructions: solPayTransaction?.instructions,
+        recentBlockhash: solPayTransaction?.recentBlockhash,
+      }).compileToV0Message();
+      transaction.value = new VersionedTransaction(messageV0);
+    }
   } else if (selectedToken?.value?.mintAddress) {
     // SPL TRANSFER
     transaction.value = await generateSPLTransaction(
@@ -374,7 +315,7 @@ const generateTransaction = async (amount: number): Promise<VersionedTransaction
 
     transaction.value = transactionV0;
   }
-  return transaction.value;
+  return transaction.value as VersionedTransaction;
 };
 
 const showMessageModal = (params: { messageTitle: string; messageDescription?: string; messageStatus: STATUS_TYPE }) => {
@@ -436,12 +377,7 @@ const openModal = async () => {
   try {
     transaction.value = await generateTransaction(amount);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
-    const { blockHash, height, fee } = await calculateTxFee(
-      transaction.value.message,
-      ControllerModule.connection,
-      ControllerModule.selectedAddress,
-      true
-    );
+    const { blockHash, height, fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection);
     blockhash.value = blockHash;
     lastValidBlockHeight.value = height;
     transactionFee.value = fee / LAMPORTS_PER_SOL;

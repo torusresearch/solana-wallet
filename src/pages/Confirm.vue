@@ -63,13 +63,7 @@ onMounted(async () => {
 
     estimateChanges(tx.value, connection, txData.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = (
-      await calculateTxFee(
-        tx.value.message,
-        new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")),
-        ControllerModule.selectedAddress
-      )
-    )?.fee;
+    const txFee = (await calculateTxFee(tx.value.message, new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"))))?.fee;
 
     const { instructions } = TransactionMessage.decompile(tx.value.message);
 
@@ -78,7 +72,7 @@ onMounted(async () => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, false, instructions);
+      finalTxData.value = parsingTransferAmount(tx.value, txFee, false);
       loading.value = false;
     } catch (e) {
       log.error(e);

@@ -41,8 +41,8 @@ describe("solana helper util", () => {
     return { instructions, transactionV0 };
   };
   it("parsingTransferAmount", async () => {
-    const { instructions, transactionV0 } = createTransactionV();
-    const result = await solanaHelper.parsingTransferAmount(transactionV0, 1, false, instructions);
+    const { transactionV0 } = createTransactionV();
+    const result = await solanaHelper.parsingTransferAmount(transactionV0, 1, false);
     const slicedSenderAddress = addressSlicer(sKeyPair[0].publicKey.toBase58());
     const slicedReceiverAddress = addressSlicer(sKeyPair[1].publicKey.toBase58());
     const assertResult = {
@@ -62,7 +62,7 @@ describe("solana helper util", () => {
   it("calculateTxFee", async () => {
     const { transactionV0 } = createTransactionV();
 
-    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection(), sKeyPair[0].publicKey.toBase58());
+    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection());
     assert.deepEqual(result.fee, 1);
   });
   // it("getEstimateBalanceChange", async () => {
