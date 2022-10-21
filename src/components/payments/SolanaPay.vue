@@ -25,6 +25,7 @@ const props = withDefaults(
 );
 const invalidLink = ref("");
 const transaction = ref<VersionedTransaction>();
+const decodedInstructions = ref<DecodedDataType[]>([]);
 const requestParams = ref<TransferRequestURL>();
 const linkParams = ref<{ icon: string; label: string; decodedInst: DecodedDataType[]; origin: string; message: string }>();
 const symbol = ref<string>("");
@@ -56,10 +57,12 @@ const estimateTxFee = ref(0);
 const router = useRouter();
 watch(transaction, async () => {
   if (transaction.value) {
-    const legacyMessage = TransactionMessage.decompile(transaction.value.message).compileToLegacyMessage();
+    const transactionMessage = TransactionMessage.decompile(transaction.value.message);
+    const legacyMessage = transactionMessage.compileToLegacyMessage();
     const response = await ControllerModule.connection.getFeeForMessage(legacyMessage);
-    log.info(response);
     estimateTxFee.value = response.value / LAMPORTS_PER_SOL;
+
+    decodedInstructions.value = transactionMessage.instructions.map((inst) => decodeInstruction(inst));
   }
 });
 onMounted(async () => {
@@ -182,9 +185,6 @@ onMounted(async () => {
     log.error(e);
   }
 });
-const decodeInstructionSolanaPay = () => {
-  return transaction.value ? TransactionMessage.decompile(transaction.value.message)?.instructions.map((inst) => decodeInstruction(inst)) || [] : [];
-};
 </script>
 
 <template>
@@ -204,7 +204,7 @@ const decodeInstructionSolanaPay = () => {
     :token="symbol || 'SOL'"
     :crypto-tx-fee="estimateTxFee"
     :network="ControllerModule.selectedNetworkDisplayName"
-    :decoded-inst="decodeInstructionSolanaPay"
+    :decoded-inst="decodedInstructions"
     :estimation-in-progress="estimationInProgress"
     :estimated-balance-change="estimatedBalanceChange"
     :has-estimation-error="hasEstimationError"
