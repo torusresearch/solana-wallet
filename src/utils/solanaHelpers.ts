@@ -332,17 +332,17 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
 
     // add selected Account incase signer is just fee payer (instruction will not track fee payer)
     accounts.set(signer, new PublicKey(signer));
-    const additional = tx.message?.addressTableLookups?.map((address) => address.accountKey.toBase58()) || [];
+    const lookupAddresses = tx.message?.addressTableLookups?.map((address) => address.accountKey.toBase58()) || [];
     // Simulate Transaction with Accounts
-    const addresses = Array.from(accounts.keys());
-    const combinedAddress = [...addresses, ...additional];
-    const result = await connection.simulateTransaction(tx, { accounts: { addresses: combinedAddress, encoding: "base64" } });
+    const instructionAddresses = Array.from(accounts.keys());
+    const addresses = lookupAddresses?.length ? lookupAddresses : instructionAddresses;
+    const result = await connection.simulateTransaction(tx, { accounts: { addresses, encoding: "base64" } });
 
     if (result.value.err) {
       throw new Error(result.value.err.toString());
     }
     // calculate diff of the token and sol
-    return calculateChanges(connection, result.value, signer, combinedAddress);
+    return calculateChanges(connection, result.value, signer, addresses);
   } catch (e) {
     log.warn(e);
     // if ((e as Error).message.match("Too many accounts provided; max 0")) log.warn("Unable to estimate balances");
