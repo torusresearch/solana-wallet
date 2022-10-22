@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
 import { LAMPORTS_PER_SOL, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { findArgs } from "@toruslabs/solana-controllers";
+import { findAllLookUpTable } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -58,7 +58,7 @@ const estimateTxFee = ref(0);
 const router = useRouter();
 watch(transaction, async () => {
   if (transaction.value) {
-    const args = await findArgs(ControllerModule.connection, transaction.value.message);
+    const args = await findAllLookUpTable(ControllerModule.connection, transaction.value.message);
     const transactionMessage = TransactionMessage.decompile(transaction.value.message, args);
 
     const legacyMessage = transactionMessage.compileToLegacyMessage();

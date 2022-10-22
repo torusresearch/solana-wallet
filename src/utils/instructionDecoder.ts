@@ -29,7 +29,7 @@ import {
   VersionedTransaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
-import { findArgs, SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
+import { findAllLookUpTable, SolanaToken, TokenInfoController, TokenTransactionData } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 
 // Custom address
@@ -343,7 +343,7 @@ export const constructTokenData = async (
   try {
     if (!tokenMap || !transaction) return undefined;
     // reconstruct Transaction as transaction object function is not accessible
-    const args = await findArgs(connection, transaction.message);
+    const args = await findAllLookUpTable(connection, transaction.message);
     const { instructions } = TransactionMessage.decompile(transaction.message, args);
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
