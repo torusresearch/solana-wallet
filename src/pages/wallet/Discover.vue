@@ -84,8 +84,6 @@ const filteredDapps = computed(() => {
         dapp.network === "mainnet"
       );
     }) || [];
-  // eslint-disable-next-line no-console
-  console.log("filtered", filtered);
   return filtered;
 });
 </script>

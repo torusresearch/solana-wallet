@@ -20,18 +20,22 @@ const updateSymbol = async (mintAddress: string, decimals: number) => {
   const tokenInfoState = ControllerModule.torusState.TokenInfoState;
   let symbol = tokenInfoState.tokenInfoMap[mintAddress]?.symbol || tokenInfoState.metaplexMetaMap[mintAddress]?.symbol;
   if (!symbol && decimals > 0) symbol = (await ControllerModule.torus.fetchTokenInfo(mintAddress))?.symbol;
-  if (!symbol && decimals === 0) symbol = (await ControllerModule.torus.fetchMetaPlexNft([mintAddress]))[mintAddress]?.symbol;
+  if (!symbol && decimals === 0) symbol = (await ControllerModule.torus.fetchMetaPlexNft([mintAddress])).onChainMetadataMap[mintAddress]?.symbol;
   if (symbol) symbols.value[mintAddress] = symbol;
 };
 
-watch(props, () => {
-  log.info(props);
-  if (!props.estimationInProgress) {
-    props.estimatedBalanceChange.forEach((value) => {
-      updateSymbol(value.mint, value.decimals);
-    });
-  }
-});
+watch(
+  props,
+  () => {
+    log.info(props);
+    if (!props.estimationInProgress) {
+      props.estimatedBalanceChange.forEach((value) => {
+        updateSymbol(value.mint, value.decimals);
+      });
+    }
+  },
+  { immediate: true, deep: true }
+);
 
 const { t } = useI18n();
 </script>
