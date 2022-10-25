@@ -373,26 +373,27 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
   }
 }
 
-export async function calculateTxFee(message: VersionedMessage, connection: Connection): Promise<{ blockHash: string; height: number; fee: number }> {
+export async function calculateTxFee(
+  message: VersionedMessage,
+  connection: Connection
+): Promise<{ blockHash: string; height: number; fee: number; lookupArgs: any }> {
   const latestBlockHash = await connection.getLatestBlockhash("finalized");
   const blockHash = latestBlockHash.blockhash;
   const height = latestBlockHash.lastValidBlockHeight;
 
-  const args = await findAllLookUpTable(connection, message);
-  const legacyMessage = TransactionMessage.decompile(message, args).compileToLegacyMessage();
-
+  const lookupArgs = await findAllLookUpTable(connection, message);
+  const legacyMessage = TransactionMessage.decompile(message, lookupArgs).compileToLegacyMessage();
   const fee = await connection.getFeeForMessage(legacyMessage);
-  return { blockHash, height, fee: fee.value || 0 };
+  return { blockHash, height, fee: fee.value || 0, lookupArgs };
 }
 
 export async function parsingTransferAmount(
   tx: VersionedTransaction,
   txFee: number,
   isGasless: boolean,
-  connection: Connection
+  lookupArgs: any
 ): Promise<FinalTxData | undefined> {
-  const args = await findAllLookUpTable(connection, tx.message);
-  const { instructions } = TransactionMessage.decompile(tx.message, args);
+  const { instructions } = TransactionMessage.decompile(tx.message, lookupArgs);
 
   if (instructions.length > 1) return undefined;
   if (!instructions[0].programId.equals(SystemProgram.programId)) return undefined;

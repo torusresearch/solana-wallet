@@ -2,7 +2,6 @@
 import { clusterApiUrl, Connection, TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { findAllLookUpTable } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -63,18 +62,16 @@ onMounted(async () => {
     }
 
     estimateChanges(tx.value, connection, txData.selectedAddress);
-    // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection))?.fee;
-    const args = await findAllLookUpTable(connection, tx.value.message);
+    const txFee = await calculateTxFee(tx.value.message, ControllerModule.connection);
 
-    const { instructions } = TransactionMessage.decompile(tx.value.message, args);
+    const { instructions } = TransactionMessage.decompile(tx.value.message, txFee.lookupArgs);
 
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = await parsingTransferAmount(tx.value, txFee, false, connection);
+      finalTxData.value = await parsingTransferAmount(tx.value, txFee.fee, false, txFee.lookupArgs);
       loading.value = false;
     } catch (e) {
       log.error(e);

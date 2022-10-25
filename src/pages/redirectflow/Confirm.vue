@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
-import { findAllLookUpTable } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -69,18 +68,15 @@ onMounted(async () => {
 
     estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection)).fee;
-
-    const args = await findAllLookUpTable(ControllerModule.connection, tx.value.message);
-
-    const { instructions } = TransactionMessage.decompile(tx.value.message, args);
+    const txFee = await calculateTxFee(tx.value.message, ControllerModule.connection);
+    const { instructions } = TransactionMessage.decompile(tx.value.message, txFee.lookupArgs);
 
     try {
       decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = await parsingTransferAmount(tx.value, txFee, false, ControllerModule.connection);
+      finalTxData.value = await parsingTransferAmount(tx.value, txFee.fee, false, txFee.lookupArgs);
     } catch (e) {
       log.error(e);
     }
