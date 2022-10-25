@@ -4,6 +4,7 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import assert from "assert";
 import nock from "nock";
 
+import * as instructionDecoder from "@/utils/instructionDecoder";
 import * as solanaHelper from "@/utils/solanaHelpers";
 
 import { mockConnection, mockGetConnection } from "./mockConnection";
@@ -154,7 +155,7 @@ describe("solana helper util", () => {
     //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c020000002c4a970200000000",
     //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c0200000057cf140500000000",
     // ];
-    const result = await solanaHelper.decodeAllInstruction(
+    const result = await instructionDecoder.decodeAllInstruction(
       [Buffer.from(transactionV0.serialize()).toString("hex")],
       false,
       mockConnection as Connection

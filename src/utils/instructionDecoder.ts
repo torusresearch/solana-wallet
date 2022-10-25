@@ -26,6 +26,7 @@ import {
   SystemProgram,
   TransactionInstruction,
   TransactionMessage,
+  VersionedMessage,
   VersionedTransaction,
 } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
@@ -452,3 +453,22 @@ export const constructTokenData = async (
 //     )
 //   );
 // };
+
+export function decodeAllInstruction(messages: string[], messageOnly: boolean, connection: Connection) {
+  const decoded: DecodedDataType[] = [];
+  (messages as string[]).forEach(async (msg) => {
+    let tx2: VersionedTransaction;
+    if (messageOnly) {
+      const msgObj = VersionedMessage.deserialize(Buffer.from(msg as string, "hex"));
+      tx2 = new VersionedTransaction(msgObj); // only for instuctions
+    } else {
+      tx2 = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
+    }
+    const args = await findAllLookUpTable(connection, tx2.message);
+    const { instructions } = TransactionMessage.decompile(tx2.message, args);
+    instructions.forEach((inst) => {
+      decoded.push(decodeInstruction(inst));
+    });
+  });
+  return decoded;
+}

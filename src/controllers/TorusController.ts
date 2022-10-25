@@ -621,15 +621,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       // serialize transaction
-      const serializedTransaction = Buffer.from(signedTransaction.transactionMeta.transaction.serialize()).toString("hex");
+      const serializedTransaction = Buffer.from(signedTransaction.transactionMeta.transaction.serialize());
 
       // submit onchain
       const options = req?.params?.options;
-      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction as string, "hex"), options);
+      const signature = await this.connection.sendRawTransaction(serializedTransaction, options);
 
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
-      signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
+      signedTransaction.transactionMeta.rawTransaction = serializedTransaction.toString("hex");
       this.txController.setTxStatusSubmitted(signedTransaction.transactionMeta.id);
       return signature;
     } catch (error) {
@@ -1506,6 +1506,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
       }
 
+      // Fallback to whole tx
       // const msgObj = VersionedMessage.deserialize(msg);
       // const tx = new VersionedTransaction(msgObj);
       const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));

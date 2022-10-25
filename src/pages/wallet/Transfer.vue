@@ -291,6 +291,8 @@ const generateTransaction = async (amount: number): Promise<VersionedTransaction
         recentBlockhash: solPayTransaction?.recentBlockhash,
       }).compileToV0Message();
       transaction.value = new VersionedTransaction(messageV0);
+    } else {
+      // ??
     }
   } else if (selectedToken?.value?.mintAddress) {
     // SPL TRANSFER
@@ -303,6 +305,7 @@ const generateTransaction = async (amount: number): Promise<VersionedTransaction
     );
   } else {
     // SOL TRANSFER
+    // Write the same fn as generateSPLTransaction !
     const instructions = createSolTransactionInstruction(amount);
     const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
     // create v0 compatible message

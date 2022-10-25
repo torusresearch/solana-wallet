@@ -32,7 +32,7 @@ import BigNumber from "bignumber.js";
 import log from "loglevel";
 
 import { SNS, SOL } from "./enums";
-import { DecodedDataType, decodeInstruction } from "./instructionDecoder";
+import { decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
@@ -363,25 +363,6 @@ export async function calculateTxFee(message: VersionedMessage, connection: Conn
 
   const fee = await connection.getFeeForMessage(legacyMessage);
   return { blockHash, height, fee: fee.value || 0 };
-}
-
-export function decodeAllInstruction(messages: string[], messageOnly: boolean, connection: Connection) {
-  const decoded: DecodedDataType[] = [];
-  (messages as string[]).forEach(async (msg) => {
-    let tx2: VersionedTransaction;
-    if (messageOnly) {
-      const msgObj = VersionedMessage.deserialize(Buffer.from(msg as string, "hex"));
-      tx2 = new VersionedTransaction(msgObj); // only for instuctions
-    } else {
-      tx2 = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
-    }
-    const args = await findAllLookUpTable(connection, tx2.message);
-    const { instructions } = TransactionMessage.decompile(tx2.message, args);
-    instructions.forEach((inst) => {
-      decoded.push(decodeInstruction(inst));
-    });
-  });
-  return decoded;
 }
 
 export async function parsingTransferAmount(

@@ -13,9 +13,9 @@ import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
+import { decodeAllInstruction, DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { FinalTxData } from "@/utils/interfaces";
-import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
+import { calculateTxFee, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
@@ -64,7 +64,7 @@ onMounted(async () => {
 
     estimateChanges(tx.value, connection, txData.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = (await calculateTxFee(tx.value.message, new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"))))?.fee;
+    const txFee = (await calculateTxFee(tx.value.message, ControllerModule.connection))?.fee;
     const args = await findAllLookUpTable(connection, tx.value.message);
 
     const { instructions } = TransactionMessage.decompile(tx.value.message, args);
