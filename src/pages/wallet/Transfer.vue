@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createTransfer } from "@solana/pay";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, ParsedAccountData, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { ContactPayload } from "@toruslabs/base-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { helpers, maxValue, minValue, required } from "@vuelidate/validators";
@@ -23,7 +23,7 @@ import ControllerModule from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
-import { calculateTxFee, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
+import { calculateTxFee, generateSolTransaction, generateSPLTransaction, ruleVerifierId } from "@/utils/solanaHelpers";
 
 import CheckBox from "../../components/common/CheckBox.vue";
 
@@ -265,17 +265,8 @@ function convertFiatToCrypto(fiatValue = 1) {
   return fiatValue / (selectedToken.value?.price?.[selectedFiat] || 1);
 }
 
-const createSolTransactionInstruction = (amount: number) => {
-  return [
-    SystemProgram.transfer({
-      fromPubkey: new PublicKey(ControllerModule.selectedAddress),
-      toPubkey: new PublicKey(resolvedAddress.value),
-      lamports: amount * LAMPORTS_PER_SOL,
-    }),
-  ];
-};
-
 const generateTransaction = async (amount: number): Promise<VersionedTransaction> => {
+  // SolanaPay or URL transfer
   if (reference.value || memo.value.length > 0) {
     const solPayTransaction = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
       recipient: new PublicKey(resolvedAddress.value),
@@ -292,7 +283,7 @@ const generateTransaction = async (amount: number): Promise<VersionedTransaction
       }).compileToV0Message();
       transaction.value = new VersionedTransaction(messageV0);
     } else {
-      // ??
+      throw new Error("Solana Pay Transaction is not valid");
     }
   } else if (selectedToken?.value?.mintAddress) {
     // SPL TRANSFER
@@ -305,18 +296,7 @@ const generateTransaction = async (amount: number): Promise<VersionedTransaction
     );
   } else {
     // SOL TRANSFER
-    // Write the same fn as generateSPLTransaction !
-    const instructions = createSolTransactionInstruction(amount);
-    const latestBlockhash = await ControllerModule.connection.getLatestBlockhash();
-    // create v0 compatible message
-    const messageV0 = new TransactionMessage({
-      payerKey: new PublicKey(ControllerModule.selectedAddress),
-      instructions,
-      recentBlockhash: latestBlockhash.blockhash,
-    }).compileToV0Message();
-    const transactionV0 = new VersionedTransaction(messageV0);
-
-    transaction.value = transactionV0;
+    transaction.value = await generateSolTransaction(resolvedAddress.value, amount, ControllerModule.selectedAddress, ControllerModule.connection);
   }
   return transaction.value as VersionedTransaction;
 };

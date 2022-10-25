@@ -145,6 +145,26 @@ export async function createSPLTransactionInstruction(
 
 // fee Estimation
 // Generate Solana Transaction
+export async function generateSolTransaction(receiver: string, amount: number, sender: string, connection: Connection) {
+  const instructions = [
+    SystemProgram.transfer({
+      fromPubkey: new PublicKey(sender),
+      toPubkey: new PublicKey(receiver),
+      lamports: amount * LAMPORTS_PER_SOL,
+    }),
+  ];
+
+  const latestBlockhash = await connection.getLatestBlockhash();
+  // create v0 compatible message
+  const messageV0 = new TransactionMessage({
+    payerKey: new PublicKey(sender),
+    instructions,
+    recentBlockhash: latestBlockhash.blockhash,
+  }).compileToV0Message();
+  const transactionV0 = new VersionedTransaction(messageV0);
+  return transactionV0;
+}
+
 export async function generateSPLTransaction(
   receiver: string,
   amount: number,
