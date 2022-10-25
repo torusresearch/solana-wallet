@@ -1492,17 +1492,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
       if (req.params?.messageOnly) {
-        // fix for inconsistent account serialization
-        // let signature: Uint8Array;
-        // if (this.origin === "https://www.fractal.is") {
-        //   const msgObj = VersionedMessage.deserialize(msg as unknown as Uint8Array);
-        //   const tx = new VersionedTransaction(msgObj);
-        //   const targetMessage = tx.serialize();
-        //   signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-        // } else {
         const signature = this.keyringController.signMessage(Buffer.from(msg as string, "hex"), this.selectedAddress);
-        // }
-        // const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
         return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
       }
 
@@ -1527,28 +1517,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     if (req.params?.messageOnly) {
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
-
-      // if (this.origin === "https://www.fractal.is") {
-      //   if (req.params?.isVersionedTransaction) {
-      //     const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-      //     const tx = new VersionedTransaction(msgObj);
-      //     const targetMessage = tx.serialize();
-      //     signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-      //   } else {
-      //     const msgObj = Message.from(Buffer.from(message as string, "hex"));
-      //     const tx = Transaction.populate(msgObj);
-      //     tx.serializeMessage();
-      //     const targetMessage = tx.serializeMessage();
-      //     signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-      //   }
-      // } else if (req.params?.isVersionedTransaction) {
-      //   const msgObj = VersionedMessage.deserialize(message as unknown as Uint8Array);
-      //   const tx = new VersionedTransaction(msgObj);
-      //   const targetMessage = tx.serialize();
-      //   signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-      // } else {
-      //   signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
-      // }
 
       signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
 
