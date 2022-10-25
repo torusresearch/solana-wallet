@@ -3,8 +3,7 @@ import moonpay from "./moonpay";
 import ramp from "./ramp";
 import transak from "./transak";
 
-export const activeProvider = [TOPUP.MOONPAY, TOPUP.TRANSAK];
-// export const activeProvider = [TOPUP.MOONPAY, TOPUP.RAMPNETWORK, TOPUP.TRANSK];
+export const activeProvider = [TOPUP.MOONPAY, TOPUP.RAMPNETWORK, TOPUP.TRANSAK];
 
 export const topupPlugin = {
   [TOPUP.RAMPNETWORK]: ramp,

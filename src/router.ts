@@ -54,12 +54,12 @@ const router = createRouter({
           component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP" */ "@/pages/wallet/TopUp.vue"),
           meta: { title: "Top Up", tab: "topup" },
           children: [
-            // {
-            //   name: "rampNetwork",
-            //   path: "ramp-network",
-            //   component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
-            //   meta: { title: "Topup - Ramp Network" },
-            // },
+            {
+              name: "rampNetwork",
+              path: "ramp-network",
+              component: () => import(/* webpackPrefetch: true */ /* webpackChunkName: "TOPUP-RAMP" */ "@/components/topup/gateways/RampTopup.vue"),
+              meta: { title: "Topup - Ramp Network" },
+            },
             {
               name: "moonpay",
               path: "moonpay",
