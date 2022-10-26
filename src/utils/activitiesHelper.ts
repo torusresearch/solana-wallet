@@ -6,7 +6,8 @@ import {
   ParsedTransactionWithMeta,
   SystemInstruction,
   SystemProgram,
-  Transaction,
+  TransactionMessage,
+  VersionedTransaction,
 } from "@solana/web3.js";
 import {
   ACTIVITY_ACTION_BURN,
@@ -159,7 +160,7 @@ export const formatTransactionToActivity = (params: {
 
 // Formatting a Transaction (From Transaction Controller) to Display Activity Format
 export const formatNewTxToActivity = (
-  tx: TransactionMeta<Transaction>,
+  tx: TransactionMeta<VersionedTransaction>,
   currencyData: { selectedCurrency: string; conversionRate: number },
   selectedAddress: string,
   blockExplorerUrl: string,
@@ -191,8 +192,9 @@ export const formatNewTxToActivity = (
 
   // Check for decodable instruction (SOL transfer)
   // Expect SOL transfer to have only 1 instruction in 1 transaction
-  if (tx.transaction.instructions.length === 1) {
-    const instruction1 = tx.transaction.instructions[0];
+  const { instructions } = TransactionMessage.decompile(tx.transaction.message);
+  if (instructions.length === 1) {
+    const instruction1 = instructions[0];
     if (SystemProgram.programId.equals(instruction1.programId) && SystemInstruction.decodeInstructionType(instruction1) === "Transfer") {
       const parsedInst = SystemInstruction.decodeTransfer(instruction1);
 

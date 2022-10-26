@@ -146,7 +146,10 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
       return [];
     }
 
-    const onChainTransactions = await connection.getParsedTransactions(signatureInfo.map((s) => s.signature));
+    const onChainTransactions = await connection.getParsedTransactions(
+      signatureInfo.map((s) => s.signature),
+      { maxSupportedTransactionVersion: 1 }
+    );
 
     const temp = formatTransactionToActivity({
       transactions: onChainTransactions,
@@ -180,7 +183,6 @@ export default class ActivitiesController extends BaseController<BaseConfig, Act
 
   async refreshActivities(initialActivities?: { [key: string]: SolanaTransactionActivity }): Promise<void> {
     if (this.state.loading && !initialActivities) return;
-    this.update({ loading: true });
 
     log.info("refreshing");
     const selectedAddress = this.getSelectedAddress();
