@@ -195,12 +195,9 @@ input[type=number] {
 @-webkit-keyframes skeleton-loading {
   0% {
     background-color: hsl(200, 12%, 50%);
-    transform: translateY(6px) scale(0.98);
-    opacity: 0.2;
   }
   100% {
     background-color: #f0f3f5;
-    transform: translateY(0px) scale(1);
     opacity: 1;
   }
 }
@@ -208,12 +205,9 @@ input[type=number] {
 @keyframes skeleton-loading {
   0% {
     background-color: hsl(200, 12%, 50%);
-    transform: translateY(6px) scale(0.98);
-    opacity: 0.2;
   }
   100% {
     background-color: #f0f3f5;
-    transform: translateY(0px) scale(1);
     opacity: 1;
   }
 }

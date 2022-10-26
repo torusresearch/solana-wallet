@@ -376,13 +376,6 @@ export const mockConnection: Partial<Connection> = {
     };
   },
 
-  simulateTransaction: async (_transactionOrMessage: Transaction | Message) => {
-    return {
-      context: { slot: slotCounter },
-      value: mockSimulateTransaction,
-    };
-  },
-
   getParsedAccountInfo: async (accountAddress: PublicKey) => {
     const tokenOwned = parsedTokenAccountInfo.find((item) => {
       return item.pubkey === accountAddress;
