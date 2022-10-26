@@ -52,7 +52,7 @@ test.describe("Settings Page", async () => {
     // CHOOSE LIGHT
     await page.click("text=Light");
     await wait(1000);
-    await expect(await page.locator(".dark").elementHandles()).toHaveLength(0);
+    await expect(await page.locator(".light").elementHandles()).toHaveLength(0);
 
     // CHOOSE DARK
     await page.click("text=Dark");

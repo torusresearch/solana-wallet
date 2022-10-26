@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Message, Transaction } from "@solana/web3.js";
+import { TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
 
@@ -9,10 +9,10 @@ import { useEstimateChanges } from "@/components/payments/EstimateChangesComposa
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
+import { decodeAllInstruction, DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { FinalTxData } from "@/utils/interfaces";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflowHelpers";
-import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
+import { calculateTxFee, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 import ControllerModule from "../../modules/controllers";
 
@@ -21,7 +21,7 @@ const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estima
 
 const finalTxData = ref<FinalTxData>();
 
-const tx = ref<Transaction>();
+const tx = ref<VersionedTransaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
@@ -51,7 +51,7 @@ onMounted(async () => {
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, ControllerModule.connection);
       decodedInst.value = decoded;
       estimationInProgress.value = false;
       hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -60,21 +60,23 @@ onMounted(async () => {
     }
 
     if (txData.messageOnly) {
-      tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
+      const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
+      tx.value = new VersionedTransaction(msgObj);
     } else {
-      tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+      tx.value = VersionedTransaction.deserialize(Buffer.from(txData.message as string, "hex"));
     }
 
     estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
-    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless ? 0 : (await calculateTxFee(tx.value.compileMessage(), ControllerModule.connection)).fee;
+    // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
+    const txFee = await calculateTxFee(tx.value.message, ControllerModule.connection);
+    const { instructions } = TransactionMessage.decompile(tx.value.message, txFee.lookupArgs);
 
     try {
-      decodedInst.value = tx.value.instructions.map((inst) => {
+      decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
+      finalTxData.value = await parsingTransferAmount(tx.value, txFee.fee, false, txFee.lookupArgs);
     } catch (e) {
       log.error(e);
     }
@@ -87,21 +89,19 @@ onMounted(async () => {
 
 const approveTxn = async (): Promise<void> => {
   loading.value = true;
-  let res: string | string[] | Transaction | undefined;
+  let res: string | string[] | VersionedTransaction | undefined;
   try {
     if (method === "send_transaction" && tx.value) {
       res = await ControllerModule.torus.transfer(tx.value, params);
       redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_transaction" && tx.value) {
       res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
-      redirectToResult(
-        jsonrpc,
-        { data: { signature: res.serialize({ requireAllSignatures: false }).toString("hex") }, method, success: true },
-        req_id,
-        resolveRoute
-      );
+      redirectToResult(jsonrpc, { data: { signature: res.serialize() }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_all_transactions") {
-      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as { params: { message: string[] }; method: string });
+      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as {
+        params: { message: string[] };
+        method: string;
+      });
       redirectToResult(jsonrpc, { data: { signatures: res }, method, success: true }, req_id, resolveRoute);
     } else throw new Error();
   } catch (e) {

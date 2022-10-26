@@ -1,14 +1,21 @@
 import { getAssociatedTokenAddress } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { addressSlicer } from "@toruslabs/base-controllers";
 import assert from "assert";
 import nock from "nock";
 
+import * as instructionDecoder from "@/utils/instructionDecoder";
 import * as solanaHelper from "@/utils/solanaHelpers";
 
-import { mockGetConnection } from "./mockConnection";
+import { mockConnection, mockGetConnection } from "./mockConnection";
 import { mockClubbedNFTs, mockNFTs, sKeyPair } from "./mockData";
 import nockRequest from "./nockRequest";
+
+const checkPubKey = (transaction: VersionedTransaction, publicKey: PublicKey) => {
+  const signerPubkeys = transaction.message.staticAccountKeys.slice(0, transaction.message.header.numRequiredSignatures);
+  const signer = signerPubkeys.find((pubkey) => pubkey.equals(publicKey));
+  return signer;
+};
 
 describe("solana helper util", () => {
   beforeEach(async () => {
@@ -24,11 +31,19 @@ describe("solana helper util", () => {
       lamports: 0.1 * LAMPORTS_PER_SOL,
     });
   };
+  const createTransactionV = () => {
+    const messageV0 = new TransactionMessage({
+      payerKey: sKeyPair[0].publicKey,
+      instructions: [transferInstruction()],
+      recentBlockhash: sKeyPair[0].publicKey.toBase58(),
+    }).compileToV0Message();
+    const transactionV0 = new VersionedTransaction(messageV0);
+    const { instructions } = TransactionMessage.decompile(transactionV0.message);
+    return { instructions, transactionV0 };
+  };
   it("parsingTransferAmount", async () => {
-    const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
-    tx.add(transferInstruction());
-    const result = await solanaHelper.parsingTransferAmount(tx, 1, false);
-
+    const { transactionV0 } = createTransactionV();
+    const result = await solanaHelper.parsingTransferAmount(transactionV0, 1, false, mockConnection as Connection);
     const slicedSenderAddress = addressSlicer(sKeyPair[0].publicKey.toBase58());
     const slicedReceiverAddress = addressSlicer(sKeyPair[1].publicKey.toBase58());
     const assertResult = {
@@ -46,9 +61,9 @@ describe("solana helper util", () => {
     assert.deepEqual(result, assertResult);
   });
   it("calculateTxFee", async () => {
-    const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey });
-    tx.add(transferInstruction());
-    const result = await solanaHelper.calculateTxFee(tx.compileMessage(), mockGetConnection());
+    const { transactionV0 } = createTransactionV();
+
+    const result = await solanaHelper.calculateTxFee(transactionV0.message, mockGetConnection());
     assert.deepEqual(result.fee, 1);
   });
   // it("getEstimateBalanceChange", async () => {
@@ -106,9 +121,9 @@ describe("solana helper util", () => {
       sKeyPair[0].publicKey.toBase58(),
       mockGetConnection()
     );
-    assert.deepEqual(result.feePayer, sKeyPair[0].publicKey);
+    const signers = checkPubKey(result, sKeyPair[0].publicKey);
+    assert.notEqual(signers, sKeyPair[0].publicKey);
     const associatedTokenAccount = await getAssociatedTokenAddress(new PublicKey(mockNFTs[0].mintAddress), sKeyPair[1].publicKey, false);
-
     const associatedTokenResult = await solanaHelper.generateSPLTransaction(
       associatedTokenAccount.toBase58(),
       1,
@@ -116,24 +131,37 @@ describe("solana helper util", () => {
       sKeyPair[0].publicKey.toBase58(),
       mockGetConnection()
     );
-    assert.deepEqual(result.instructions[0].keys[2].pubkey.toBase58(), sKeyPair[1].publicKey.toBase58());
+    const { instructions } = TransactionMessage.decompile(associatedTokenResult.message);
+    const { instructions: resultInstructions } = TransactionMessage.decompile(result.message);
 
-    assert.deepEqual(associatedTokenResult.instructions[0].keys[2].pubkey.toBase58(), associatedTokenAccount.toBase58());
+    assert.deepEqual(resultInstructions[0].keys[2].pubkey.toBase58(), sKeyPair[1].publicKey.toBase58());
+    assert.deepEqual(instructions[0].keys[2].pubkey.toBase58(), associatedTokenAccount.toBase58());
     // changes in instruction between associated token account and normal sol account
     assert.notDeepEqual(JSON.stringify(associatedTokenResult), JSON.stringify(result));
   });
   it("decodeAllInstruction", async () => {
-    const tx = new Transaction({ recentBlockhash: sKeyPair[0].publicKey.toBase58(), feePayer: sKeyPair[0].publicKey }); // Transaction.serialize
-    const txs = [1, 2].map(() => tx.add(transferInstruction()));
-    const msgs = txs.map((item) => item.serialize({ requireAllSignatures: false }).toString("hex"));
+    const decodeInstructions = [transferInstruction()];
+
+    [1, 2].forEach(() => decodeInstructions.push(transferInstruction()));
+
+    const messageV0 = new TransactionMessage({
+      payerKey: sKeyPair[0].publicKey,
+      instructions: decodeInstructions,
+      recentBlockhash: sKeyPair[0].publicKey.toBase58(),
+    }).compileToV0Message();
+    const transactionV0 = new VersionedTransaction(messageV0);
 
     // const message = [
     //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c020000002c4a970200000000",
     //   "01000102956e41697918a4b3b7800d9292e50a9050443f53bef96296b5dced3f8dec93410000000000000000000000000000000000000000000000000000000000000000da56c1e43b1f54b5029b286ab6b692b80bf13e98e6a4cadf12b8769d7098138001010200000c0200000057cf140500000000",
     // ];
-    const result = await solanaHelper.decodeAllInstruction(msgs, false);
+    const result = await instructionDecoder.decodeAllInstruction(
+      [Buffer.from(transactionV0.serialize()).toString("hex")],
+      false,
+      mockConnection as Connection
+    );
     // console.log(result);
     // console.log({ result: JSON.stringify(result) });
-    assert.deepEqual(result.length, 4);
+    assert.deepEqual(result.length, 3);
   });
 });

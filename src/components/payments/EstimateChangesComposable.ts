@@ -1,4 +1,4 @@
-import { Connection, Transaction } from "@solana/web3.js";
+import { Connection, VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import { ref } from "vue";
 
@@ -10,7 +10,7 @@ export const useEstimateChanges = () => {
   const estimatedBalanceChange = ref<AccountEstimation[]>([]);
   const estimationInProgress = ref(true);
 
-  const estimateChanges = async (transaction: Transaction, connection: Connection, selectedAddress: string) => {
+  const estimateChanges = async (transaction: VersionedTransaction, connection: Connection, selectedAddress: string) => {
     try {
       estimationInProgress.value = true;
       estimatedBalanceChange.value = await getEstimateBalanceChange(connection, transaction, selectedAddress);

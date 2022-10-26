@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { clusterApiUrl, Connection, Message, Transaction } from "@solana/web3.js";
+import { clusterApiUrl, Connection, TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
@@ -12,15 +12,15 @@ import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
 import ControllerModule from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
-import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
+import { decodeAllInstruction, DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { FinalTxData } from "@/utils/interfaces";
-import { calculateTxFee, decodeAllInstruction, parsingTransferAmount } from "@/utils/solanaHelpers";
+import { calculateTxFee, parsingTransferAmount } from "@/utils/solanaHelpers";
 
 const channel = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${new URLSearchParams(window.location.search).get("instanceId")}`;
 
 const finalTxData = ref<FinalTxData>();
 
-const tx = ref<Transaction>();
+const tx = ref<VersionedTransaction>();
 const decodedInst = ref<DecodedDataType[]>();
 const origin = ref("");
 const network = ref("");
@@ -39,14 +39,13 @@ onMounted(async () => {
     const txData = await bcHandler.getMessageFromChannel<TransactionChannelDataType>();
     origin.value = txData.origin as string;
     network.value = txData.network || "";
-
     const connection = new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta"));
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
       if (txData.message.length === 1) {
         txData.message = (txData.message as string[]).at(0) || "";
       } else {
-        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false);
+        const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, connection);
         decodedInst.value = decoded;
         estimationInProgress.value = false;
         hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -56,23 +55,23 @@ onMounted(async () => {
     }
 
     if (txData.messageOnly) {
-      tx.value = Transaction.populate(Message.from(Buffer.from(txData.message as string, "hex")));
+      const msgObj = VersionedMessage.deserialize(Buffer.from(txData.message as string, "hex"));
+      tx.value = new VersionedTransaction(msgObj);
     } else {
-      tx.value = Transaction.from(Buffer.from(txData.message as string, "hex"));
+      tx.value = VersionedTransaction.deserialize(Buffer.from(txData.message as string, "hex"));
     }
 
     estimateChanges(tx.value, connection, txData.selectedAddress);
-    const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = isGasless
-      ? 0
-      : (await calculateTxFee(tx.value.compileMessage(), new Connection(txData.networkDetails?.rpcTarget || clusterApiUrl("mainnet-beta")))).fee;
+    const txFee = await calculateTxFee(tx.value.message, ControllerModule.connection);
+
+    const { instructions } = TransactionMessage.decompile(tx.value.message, txFee.lookupArgs);
 
     try {
-      decodedInst.value = tx.value.instructions.map((inst) => {
+      decodedInst.value = instructions.map((inst) => {
         return decodeInstruction(inst);
       });
 
-      finalTxData.value = parsingTransferAmount(tx.value, txFee, isGasless);
+      finalTxData.value = await parsingTransferAmount(tx.value, txFee.fee, false, txFee.lookupArgs);
       loading.value = false;
     } catch (e) {
       log.error(e);
