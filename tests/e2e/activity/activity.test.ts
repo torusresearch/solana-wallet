@@ -9,7 +9,7 @@ import {
   selectTransactionTypeFilter,
 } from "../../activity.utils";
 import { IMPORT_ACC_SECRET_KEY, login } from "../../auth-helper";
-import { ensureTextualElementExists, getLastWeeksDate, getOlderDate, importAccount, switchNetwork, switchTab, wait } from "../../utils";
+import { ensureTextualElementExists, getLastWeeksDate, getOlderDate, importAccount, switchNetwork, switchTab } from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Activity Page", async () => {
@@ -34,7 +34,6 @@ test.describe("Activity Page", async () => {
   test("Activities should work with network=mainnet", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
-    await wait(1000);
     // getting list of activities on activity page
     const activities = await getActivities(page);
 
@@ -49,7 +48,6 @@ test.describe("Activity Page", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     await switchNetwork(page, "testnet");
-    await wait(1000);
     // getting list of activities on activity page
     const activities = await getActivities(page);
 
@@ -64,7 +62,6 @@ test.describe("Activity Page", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     await switchNetwork(page, "devnet");
-    await wait(1000);
     // getting list of activities on activity page
     const activities = await getActivities(page);
 
@@ -80,7 +77,6 @@ test.describe("Activity Page", async () => {
     await switchTab(page, "activity");
     // Last 1 week filter
     await selectTimeFilter(page, "Last 1 week");
-    await wait(1000);
     // getting list of dates on activity page
     let activityDates = await getDateOfActivities(page);
     let elements = await activityDates.elementHandles();
@@ -96,7 +92,6 @@ test.describe("Activity Page", async () => {
 
     // Last 1 month filter
     await selectTimeFilter(page, "Last 1 month");
-    await wait(1000);
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
@@ -112,7 +107,6 @@ test.describe("Activity Page", async () => {
 
     // Last 6 months filter
     await selectTimeFilter(page, "Last 6 months");
-    await wait(1000);
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
@@ -134,7 +128,6 @@ test.describe("Activity Page", async () => {
 
     // Send filter
     await selectTransactionTypeFilter(page, "Send");
-    await wait(1000);
     // getting list on activities
     let activitiesList = await getActivities(page);
     let elements = await activitiesList.elementHandles();
@@ -148,7 +141,6 @@ test.describe("Activity Page", async () => {
 
     // Receive filter
     await selectTransactionTypeFilter(page, "Receive");
-    await wait(1000);
     // getting list on activities
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
@@ -162,7 +154,6 @@ test.describe("Activity Page", async () => {
 
     // Topup filter
     await selectTransactionTypeFilter(page, "Topup");
-    await wait(1000);
     // getting list on activities
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
@@ -233,7 +224,6 @@ test.skip("Activity Page with Imported Account", async () => {
   test("Activities should work with network=mainnet", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
-    await wait(1000);
     // getting list of activities on activity page
     const activities = await getActivities(page);
 
@@ -248,7 +238,6 @@ test.skip("Activity Page with Imported Account", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     await switchNetwork(page, "testnet");
-    await wait(1000);
     // getting list of activities on activity page
     const activities = await getActivities(page);
 
@@ -263,7 +252,6 @@ test.skip("Activity Page with Imported Account", async () => {
     // see navigation works correctly
     await switchTab(page, "activity");
     await switchNetwork(page, "devnet");
-    await wait(1000);
     // getting list of activities on activity page
     const activities = await getActivities(page);
 
@@ -279,7 +267,6 @@ test.skip("Activity Page with Imported Account", async () => {
     await switchTab(page, "activity");
     // Last 1 week filter
     await selectTimeFilter(page, "Last 1 week");
-    await wait(1000);
     // getting list of dates on activity page
     let activityDates = await getDateOfActivities(page);
     let elements = await activityDates.elementHandles();
@@ -295,7 +282,6 @@ test.skip("Activity Page with Imported Account", async () => {
 
     // Last 1 month filter
     await selectTimeFilter(page, "Last 1 month");
-    await wait(1000);
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
@@ -311,7 +297,6 @@ test.skip("Activity Page with Imported Account", async () => {
 
     // Last 6 months filter
     await selectTimeFilter(page, "Last 6 months");
-    await wait(1000);
     // getting list of dates on activity page
     activityDates = await getDateOfActivities(page);
     elements = await activityDates.elementHandles();
@@ -333,7 +318,6 @@ test.skip("Activity Page with Imported Account", async () => {
 
     // Send filter
     await selectTransactionTypeFilter(page, "Send");
-    await wait(1000);
     // getting list on activities
     let activitiesList = await getActivities(page);
     let elements = await activitiesList.elementHandles();
@@ -347,7 +331,6 @@ test.skip("Activity Page with Imported Account", async () => {
 
     // Receive filter
     await selectTransactionTypeFilter(page, "Receive");
-    await wait(1000);
     // getting list on activities
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
@@ -361,7 +344,6 @@ test.skip("Activity Page with Imported Account", async () => {
 
     // Topup filter
     await selectTransactionTypeFilter(page, "Topup");
-    await wait(1000);
     // getting list on activities
     activitiesList = await getActivities(page);
     elements = await activitiesList.elementHandles();
