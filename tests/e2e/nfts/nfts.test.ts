@@ -45,6 +45,7 @@ test.describe("Nfts Page", async () => {
     await switchNetwork(page, "testnet");
     await page.locator(".nft-item").first().click();
     await page.locator(".send-nft").first().click();
+    await wait(1000);
     await ensureTextualElementExists(page, "Transfer Details");
   });
 });

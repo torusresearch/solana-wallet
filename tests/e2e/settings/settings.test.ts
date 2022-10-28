@@ -47,16 +47,16 @@ test.describe("Settings Page", async () => {
   test("Theme Change should work", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
-    await wait(500);
+    await wait(1000);
 
     // **************DISPLAY CHANGES********
     // CHOOSE LIGHT
     await page.click("text=Light");
     await expect(await page.locator(".light").elementHandles()).toHaveLength(0);
-    await wait(500);
+    await wait(1000);
     // CHOOSE DARK
     await page.click("text=Dark");
-    await wait(500);
+    await wait(1000);
     await expect(await page.locator(".dark").elementHandles()).toHaveLength(1);
   });
 
@@ -152,7 +152,6 @@ test.describe("Settings Page", async () => {
   test("Language change should work", async () => {
     // see navigation works correctly
     await switchTab(page, "settings");
-
     await changeLanguage(page, "german");
     await wait(500);
     await ensureTextualElementExists(page, "die Einstellungen");
