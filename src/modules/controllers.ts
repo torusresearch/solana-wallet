@@ -3,6 +3,7 @@ import { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
+  ACTIVITY_ACTION_TOPUP,
   addressSlicer,
   BasePopupChannelData,
   BillboardEvent,
@@ -36,6 +37,8 @@ import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
+import { topupPlugin } from "@/plugins/Topup";
+import { TOPUP } from "@/plugins/Topup/interface";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
 import { delay, isMain } from "@/utils/helpers";
@@ -92,9 +95,24 @@ class ControllerModule extends VuexModule {
     return this.selectedAccountPreferences.crashReport || false;
   }
 
+  get isActivityLoading(): boolean {
+    return this.torusState.ActivitiesControllerState.loading;
+  }
+
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
-    const txns = Object.values(this.selectedAccountPreferences.displayActivities || {});
+    let txns = Object.values(this.torusState.ActivitiesControllerState.accounts[this.selectedAddress]?.activities);
+    txns = txns.filter((txn) => txn.chainId === this.torus.chainId);
     return txns.map((item) => {
+      // Top up
+      if (item.action === ACTIVITY_ACTION_TOPUP) {
+        let provider = item.from?.toLowerCase() || TOPUP.MOONPAY;
+        if (provider === "ramp") provider = TOPUP.RAMPNETWORK;
+        return {
+          ...item,
+          logoURI: topupPlugin[provider].getLogoUrl(this.isDarkMode),
+        };
+      }
+
       if (item.mintAddress) {
         if (item.decimal === 0) {
           const nftInfo = this.torusState.TokenInfoState.metaplexMetaMap[item.mintAddress];
@@ -120,6 +138,7 @@ class ControllerModule extends VuexModule {
           cryptoCurrency: addressSlicer(item.mintAddress),
         };
       }
+
       return item;
     });
   }

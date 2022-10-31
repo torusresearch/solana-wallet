@@ -107,6 +107,11 @@ export default () => {
 
   nockBackend.post("/transaction").reply(200, () => JSON.stringify(mockData.backend.transaction));
 
+  nockBackend.get("/transaction").reply(200, () => JSON.stringify(mockData.backend.transaction));
+
+  const nockCommonApiBackend = nock("https://common-api.tor.us").persist();
+
+  nockCommonApiBackend.get("/transaction").reply(200, () => JSON.stringify([]));
   // api.mainnet-beta nock
   // nock("https://api.mainnet-beta.solana.com")
   nock(WALLET_SUPPORTED_NETWORKS.mainnet.rpcTarget)

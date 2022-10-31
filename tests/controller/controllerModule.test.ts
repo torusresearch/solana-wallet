@@ -45,8 +45,6 @@ describe("Controller Module", () => {
   let popupResult = { approve: true };
   let popupStub: sinon.SinonStub;
 
-  let spyPrefIntializeDisp: sinon.SinonSpy;
-
   // init once only
 
   controllerModule.init({ state: cloneDeep(DEFAULT_STATE), origin: "https://localhost:8080/" });
@@ -90,7 +88,6 @@ describe("Controller Module", () => {
     log.info({ popupStub });
     // add sinon method stubs & spies on Controllers and TorusController
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
-    spyPrefIntializeDisp = sandbox.spy(PreferencesController.prototype, "initializeDisplayActivity");
     // addToStub = sandbox.spy(app.value.toastMessages, "addToast");
 
     // init
@@ -315,8 +312,6 @@ describe("Controller Module", () => {
       await controllerModule.triggerLogin({ loginProvider: "google" });
 
       assert.equal(controllerModule.torusState.KeyringControllerState.wallets.length, 1);
-      assert(spyPrefIntializeDisp.calledOnce);
-      log.info(sKeyPair[3]);
       // await controllerModule.torus.loginWithPrivateKey(base58.encode(sKeyPair[3].secretKey));
 
       // validate state
@@ -596,10 +591,7 @@ describe("Controller Module", () => {
       })) as string;
 
       // validate state after
-      assert.equal(
-        Object.keys(controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()].displayActivities).length,
-        1
-      );
+      assert.equal(Object.keys(controllerModule.selectedNetworkTransactions).length, 1);
 
       // log.error(result);
       transactionV0.sign([sKeyPair[0]]);
