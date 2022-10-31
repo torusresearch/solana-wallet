@@ -100,7 +100,8 @@ class ControllerModule extends VuexModule {
   }
 
   get selectedNetworkTransactions(): SolanaTransactionActivity[] {
-    const txns = Object.values(this.torusState.ActivitiesControllerState.accounts[this.selectedAddress]?.activities);
+    let txns = Object.values(this.torusState.ActivitiesControllerState.accounts[this.selectedAddress]?.activities);
+    txns = txns.filter((txn) => txn.chainId === this.torus.chainId);
     return txns.map((item) => {
       // Top up
       if (item.action === ACTIVITY_ACTION_TOPUP) {
