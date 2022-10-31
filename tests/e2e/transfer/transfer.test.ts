@@ -51,7 +51,7 @@ test.describe("Transfer page", async () => {
     expect(await page.locator("text=Must be greater than 0.0001").elementHandles()).toHaveLength(1);
   });
 
-  test.skip("Check if total cost is displayed before confirming", async () => {
+  test("Check if total cost is displayed before confirming", async () => {
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
     await page.fill("input[type='text']", PUB_ADDRESS);
@@ -203,7 +203,7 @@ test.describe("Transfer page", async () => {
 
 /** *****************IMPORT ACCOUNT TESTS********************** */
 
-test.skip("Transfer page using imported account", async () => {
+test.skip(" ", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
