@@ -27,6 +27,7 @@ test.describe("Nfts Page", async () => {
   });
 
   test("If no NFTs project eventually load popular NFTs project", async () => {
+    await wait(1000);
     await ensureTextualElementExists(page, "You might be keen to check out some of the popular NFT projects");
     expect(await page.locator(".popular-nft").count()).toBeGreaterThan(0);
   });

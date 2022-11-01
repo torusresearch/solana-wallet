@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, Transaction } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
@@ -18,7 +18,7 @@ const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estima
 
 const loading = ref(true);
 const transactionFee = ref(0);
-const transaction = ref<Transaction>();
+const transaction = ref<VersionedTransaction>();
 const selectedSplToken = computed(() => tokens.value.find((token) => token.mintAddress === params.mint_add));
 
 onMounted(async () => {
@@ -45,7 +45,7 @@ watch(selectedSplToken, async () => {
       ControllerModule.connection
     );
 
-    const { fee } = await calculateTxFee(transaction.value.compileMessage(), ControllerModule.connection);
+    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection);
     estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }

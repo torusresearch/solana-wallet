@@ -1,6 +1,6 @@
 /* eslint-disable vuejs-accessibility/media-has-caption */
 <script setup lang="ts">
-import { Transaction } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import QrScanner from "qr-scanner";
 import { onMounted, reactive, ref, watch } from "vue";
@@ -99,7 +99,7 @@ const rescan = async () => {
   loading.value = false;
 };
 
-const onApproved = async (tx: Transaction) => {
+const onApproved = async (tx: VersionedTransaction) => {
   // create Transaction send
   loading.value = true;
   try {

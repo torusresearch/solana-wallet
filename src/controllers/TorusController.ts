@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
 import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
-import { Connection, LAMPORTS_PER_SOL, Message, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import {
   BaseConfig,
   BaseController,
@@ -97,7 +97,7 @@ import {
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getRelaySigned, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getRandomWindowId, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instructionDecoder";
 import { burnAndCloseAccount } from "@/utils/solanaHelpers";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
@@ -495,15 +495,16 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
-    this.txController.on("store", (state2: TransactionState<Transaction>) => {
+    this.txController.on("store", (state2: TransactionState<VersionedTransaction>) => {
       this.update({ TransactionControllerState: state2 });
-      Object.keys(state2.transactions).forEach((txId) => {
+      Object.keys(state2.transactions).forEach(async (txId) => {
         if (state2.transactions[txId].status === TransactionStatus.submitted) {
           // Check if token transfer
-          const tokenTransfer = constructTokenData(
+          const tokenTransfer = await constructTokenData(
             this.currencyController.state.tokenPriceMap,
             this.tokenInfoController.state,
-            state2.transactions[txId].rawTransaction,
+            this.connection,
+            state2.transactions[txId].transaction,
             this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : []
           );
           this.preferencesController.patchNewTx(state2.transactions[txId], this.selectedAddress, tokenTransfer).catch((err) => {
@@ -610,7 +611,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     await this.txController.approveTransaction(txId, this.state.PreferencesControllerState.selectedAddress);
   }
 
-  async transfer(tx: Transaction, req?: Ihandler<SendTransactionParams>): Promise<string> {
+  async transfer(tx: VersionedTransaction, req?: Ihandler<SendTransactionParams>): Promise<string> {
     const signedTransaction = await this.txController.addSignTransaction(tx, req);
     try {
       await signedTransaction.result;
@@ -620,15 +621,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     try {
       // serialize transaction
-      const serializedTransaction = signedTransaction.transactionMeta.transaction.serialize().toString("hex");
+      const serializedTransaction = Buffer.from(signedTransaction.transactionMeta.transaction.serialize());
 
       // submit onchain
       const options = req?.params?.options;
-      const signature = await this.connection.sendRawTransaction(Buffer.from(serializedTransaction, "hex"), options);
+      const signature = await this.connection.sendRawTransaction(serializedTransaction, options);
 
       // attach necessary info and update controller state
       signedTransaction.transactionMeta.transactionHash = signature;
-      signedTransaction.transactionMeta.rawTransaction = serializedTransaction;
+      signedTransaction.transactionMeta.rawTransaction = serializedTransaction.toString("hex");
       this.txController.setTxStatusSubmitted(signedTransaction.transactionMeta.id);
       return signature;
     } catch (error) {
@@ -749,7 +750,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     return this.preferencesController && this.preferencesController.getAddressState(address);
   }
 
-  UNSAFE_signTransaction(transaction: Transaction): Transaction {
+  UNSAFE_signTransaction(transaction: VersionedTransaction): VersionedTransaction {
     return this.keyringController.signTransaction(transaction, this.state.PreferencesControllerState.selectedAddress);
   }
 
@@ -1327,12 +1328,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
   // Only called in redirect flow
   async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
     // sign all transaction
-    const allTransactions = req.params?.message?.map((msg) => {
-      let tx = Transaction.from(Buffer.from(msg, "hex"));
-      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+    const allTransactions = req.params?.message?.map((msg: string) => {
+      const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
+      const modifiedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = Buffer.from(modifiedTx.serialize()).toString("hex");
       return signedMessage;
     });
+
     return allTransactions;
   }
 
@@ -1478,35 +1480,28 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
   private async providerSignAllTransaction(req: Ihandler<SignAllTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
+
     const message = req.params?.message;
     if (!message?.length) throw new Error("Empty message from embed");
 
+    // if this approval fails, reject the entire tx
+    // this is different from `signTransaction` because controllers do not support multiple txs
     const approved = await this.handleTransactionPopup("", req);
-
-    // throw error on reject
     if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
       if (req.params?.messageOnly) {
-        // fix for inconsistent account serialization
-        let signature: Uint8Array;
-        if (this.origin === "https://www.fractal.is") {
-          const msgObj = Message.from(Buffer.from(msg, "hex"));
-          const tx = Transaction.populate(msgObj);
-          tx.serializeMessage();
-          const targetMessage = tx.serializeMessage();
-          signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-        } else {
-          signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
-        }
-        // const signature = this.keyringController.signMessage(Buffer.from(msg, "hex"), this.selectedAddress);
+        const signature = this.keyringController.signMessage(Buffer.from(msg as string, "hex"), this.selectedAddress);
         return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
       }
 
-      let tx = Transaction.from(Buffer.from(msg, "hex"));
-      tx = this.keyringController.signTransaction(tx, this.selectedAddress);
-      const signedMessage = tx.serialize({ requireAllSignatures: false }).toString("hex");
+      // Fallback to whole tx
+      // const msgObj = VersionedMessage.deserialize(msg);
+      // const tx = new VersionedTransaction(msgObj);
+      const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
+      const signedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
+      const signedMessage = Buffer.from(signedTx.serialize()).toString("hex");
       return signedMessage;
     });
     return allTransactions;
@@ -1523,15 +1518,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
-      if (this.origin === "https://www.fractal.is") {
-        const msgObj = Message.from(Buffer.from(message, "hex"));
-        const tx = Transaction.populate(msgObj);
-        tx.serializeMessage();
-        const targetMessage = tx.serializeMessage();
-        signature = this.keyringController.signMessage(targetMessage, this.selectedAddress);
-      } else {
-        signature = this.keyringController.signMessage(Buffer.from(message, "hex"), this.selectedAddress);
-      }
+      signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
 
       return JSON.stringify({
         publicKey: this.selectedAddress,
@@ -1539,7 +1526,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
     }
 
-    const tx = Transaction.from(Buffer.from(message, "hex"));
+    const tx = VersionedTransaction.deserialize(Buffer.from(message as string, "hex"));
 
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     try {
@@ -1548,28 +1535,20 @@ export default class TorusController extends BaseController<TorusControllerConfi
       throw ethErrors.provider.userRejectedRequest((e as Error).message);
     }
 
-    let signed_tx = ret_signed.transactionMeta.txReceipt as string;
-    const gaslessHost = this.getGaslessHost(tx.feePayer?.toBase58() || "");
-    if (gaslessHost) {
-      signed_tx = await getRelaySigned(gaslessHost, signed_tx, tx.recentBlockhash || "");
-    }
-
+    const signed_tx = ret_signed.transactionMeta.txReceipt as string;
     return signed_tx;
   }
 
   private async sendTransaction(req: JRPCRequest<SendTransactionParams>) {
     if (!this.selectedAddress) throw new Error("Not logged in");
-
     const message = req.params?.message;
     if (!message) throw new Error("empty error message");
 
-    let tx: Transaction;
+    let tx: VersionedTransaction;
     if (req.params?.messageOnly) {
-      tx = Transaction.populate(Message.from(Buffer.from(message, "hex")));
-      const block = await this.connection.getLatestBlockhash("max");
-      tx.recentBlockhash = block.blockhash;
-    } else tx = Transaction.from(Buffer.from(message, "hex"));
-
+      const msgObj = VersionedMessage.deserialize(Buffer.from(message, "hex"));
+      tx = new VersionedTransaction(msgObj);
+    } else tx = VersionedTransaction.deserialize(Buffer.from(message, "hex"));
     return this.transfer(tx, req);
   }
 

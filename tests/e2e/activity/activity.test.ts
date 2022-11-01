@@ -9,16 +9,7 @@ import {
   selectTransactionTypeFilter,
 } from "../../activity.utils";
 import { IMPORT_ACC_SECRET_KEY, login } from "../../auth-helper";
-import {
-  changeLanguage,
-  ensureTextualElementExists,
-  getLastWeeksDate,
-  getOlderDate,
-  importAccount,
-  switchNetwork,
-  switchTab,
-  wait,
-} from "../../utils";
+import { ensureTextualElementExists, getLastWeeksDate, getOlderDate, importAccount, switchNetwork, switchTab, wait } from "../../utils";
 import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Activity Page", async () => {
@@ -199,25 +190,25 @@ test.describe("Activity Page", async () => {
   //   }
   // });
 
-  test("Language Change Works Correctly", async () => {
-    await switchTab(page, "activity");
-    await changeLanguage(page, "german");
-    await wait(500);
-    await ensureTextualElementExists(page, "Transaktionsaktivitäten");
-    await changeLanguage(page, "japanese");
-    await wait(500);
-    await ensureTextualElementExists(page, "トランザクション履歴");
-    await changeLanguage(page, "korean");
-    await wait(500);
-    await ensureTextualElementExists(page, "거래 활동");
-    await changeLanguage(page, "mandarin");
-    await wait(500);
-    await ensureTextualElementExists(page, "交易活动");
-    await changeLanguage(page, "spanish");
-    await wait(500);
-    await ensureTextualElementExists(page, "Actividades de transacción");
-    await changeLanguage(page, "english");
-  });
+  // test("Language Change Works Correctly", async () => {
+  //   await switchTab(page, "activity");
+  //   await changeLanguage(page, "german");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Transaktionsaktivitäten");
+  //   await changeLanguage(page, "japanese");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "トランザクション履歴");
+  //   await changeLanguage(page, "korean");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "거래 활동");
+  //   await changeLanguage(page, "mandarin");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "交易活动");
+  //   await changeLanguage(page, "spanish");
+  //   await wait(500);
+  //   await ensureTextualElementExists(page, "Actividades de transacción");
+  //   await changeLanguage(page, "english");
+  // });
 });
 
 /** *******************************IMPORTED ACC TESTS***************************************** */
