@@ -74,6 +74,13 @@ body {
   overflow: auto;
 }
 
+.login-bg {
+  background: #111928;
+}
+.login-container {
+  border-radius: 30px;
+}
+
 .back-nav {
   height: 100vh;
   width: 100%;
