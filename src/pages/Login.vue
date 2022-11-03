@@ -13,8 +13,8 @@ import DiscordLoginImage from "@/assets/auth/login-discord.svg";
 import FacebookLoginImage from "@/assets/auth/login-facebook.svg";
 import GoogleLoginImage from "@/assets/auth/login-google.svg";
 import TwitterLoginImage from "@/assets/auth/login-twitter.svg";
-import Web3AuthLogo from "@/assets/web3auth.svg";
 import LoginDropDown from "@/components/loginDropdown/LoginDropDown.vue";
+import LoginFooter from "@/components/loginFooter/LoginFooter.vue";
 import LoginSlider from "@/components/loginSlider/LoginSlider.vue";
 import { LoginInteractions } from "@/directives/google-analytics";
 import { addToast, app } from "@/modules/app";
@@ -68,12 +68,6 @@ const listOfChains = ref<{ value: string; label: string; img?: string; link?: st
   { label: "Binance", value: "Binance", img: "icon-binance.svg", link: AVAILABLE_WEBSITES.Binance },
 ]);
 const selectedChain = ref(listOfChains.value[0]);
-
-const footerSupportLinks = [
-  { href: "https://docs.tor.us/legal/terms-and-conditions", translateText: "dappLogin.termsConditions" },
-  { href: "https://docs.tor.us/legal/privacy-policy", translateText: "dappLogin.privacyPolicy" },
-  { href: "https://t.me/TorusLabs", translateText: "dappLogin.contactUs" },
-];
 
 const { t } = useI18n();
 const router = useRouter();
@@ -157,7 +151,7 @@ watch(
     <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex">
       <div class="grid grid-cols-12 w-full">
         <div
-          class="col-start-1 col-end-12 xl:col-start-1 xl:col-end-11 login-container md:mt-5 md:ml-14 md:px-24 md:py-9 px-2 py-5 mx-4 mb-4 md:bg-[#1f2a37]"
+          class="col-start-1 col-end-13 xl:col-start-1 xl:col-end-12 md:col-start-0 md:col-end-13 login-container md:mt-[70px] md:ml-14 md:px-20 md:py-9 md:mx-3 md:mb-28 lg:mt-5 lg:ml-14 lg:px-24 lg:py-9 px-10 py-5 lg:mx-14 lg:mb-4 md:bg-[#1f2a37]"
         >
           <img
             height="1.5rem"
@@ -170,7 +164,7 @@ watch(
             <span class="mr-1.5"> Your </span>
             <LoginDropDown v-model="selectedChain" size="small" :items="listOfChains" />
           </div>
-          <div class="font-header text-app-text-500 dark:text-app-text-dark-500 text-xl mb-4 ml-auto mr-auto">wallet in one click</div>
+          <div class="font-header text-app-text-500 dark:text-app-text-dark-500 text-xl md:mb-4 mb-8 ml-auto mr-auto">wallet in one click</div>
           <div class="grid grid-cols-3 gap-2 w-full mx-auto">
             <template v-for="loginButton in socialLoginOptions" :key="loginButton.loginType">
               <div :class="loginButton.divClass || `col-span-1`">
@@ -184,7 +178,7 @@ watch(
                   ><img
                     width="1.5rem"
                     :height="loginButton.imageHeight || `auto`"
-                    :class="loginButton.imageClass || `w-6 mr-2`"
+                    :class="loginButton.imageClass || `w-6`"
                     :src="loginButton.imageSrc"
                     :alt="loginButton.imgAltText"
                   />
@@ -222,27 +216,8 @@ watch(
               </Button>
             </form>
           </div>
-          <div class="mt-8 mb-2 w-full">
-            <div class="text-xs text-app-text-600 dark:text-app-gray-400 mb-1">Self Custodial Login by</div>
-            <img :src="Web3AuthLogo" alt="web3auth" />
-            <div class="text-xs text-app-text-400 dark:text-app-text-dark-600 font-light mt-3 mb-4">
-              <a class="underline text-app-gray-500 font-normal" href="https://docs.web3auth.io/" target="_blank" rel="noreferrer noopener">
-                How does this works?
-              </a>
-            </div>
-            <div class="text-xs text-app-text-600 dark:text-app-text-dark-500 mb-5">
-              Web3Auth does not store any data related to your social logins.
-            </div>
-          </div>
-
-          <div class="inset-0 flex items-center mt-4 mb-1" aria-hidden="true">
-            <div class="w-full border-t border-gray-300" />
-          </div>
-
-          <div class="space-x-3">
-            <template v-for="footerSupportLink in footerSupportLinks" :key="footerSupportLink.translateText">
-              <a class="text-xs text-app-primary-500" :href="footerSupportLink.href" target="_blank">{{ t(footerSupportLink.translateText) }}</a>
-            </template>
+          <div class="hidden md:inline-block">
+            <LoginFooter />
           </div>
         </div>
       </div>
@@ -253,6 +228,9 @@ watch(
           <LoginSlider />
         </div>
       </div>
+    </div>
+    <div class="flex md:hidden col-span-6 md:col-span-2 lg:col-span-3 h-full items-center">
+      <LoginFooter />
     </div>
     <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
       <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" />
