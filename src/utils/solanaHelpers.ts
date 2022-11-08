@@ -358,7 +358,7 @@ export async function getEstimateBalanceChange(connection: Connection, tx: Versi
     // Simulate Transaction with Accounts
     const instructionAddresses = Array.from(accounts.keys());
     const addresses = lookupAddresses?.length ? lookupAddresses : instructionAddresses;
-    const result = await connection.simulateTransaction(tx, { accounts: { addresses, encoding: "base64" } });
+    const result = await connection.simulateTransaction(tx, { accounts: { addresses, encoding: "base64" }, commitment: "confirmed" });
 
     if (result.value.err) {
       throw new Error(result.value.err.toString());
@@ -461,7 +461,6 @@ export const parseSolanaPayRequestLink = async (request: string, account: string
   const { instructions } = TransactionMessage.decompile(transaction.message);
   const decodedInst = instructions.map((inst) => decodeInstruction(inst));
 
-  log.info(decodedInst);
   // assign transaction object
 
   // if (transaction.signatures.length === 0) {
