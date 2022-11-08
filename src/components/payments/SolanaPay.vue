@@ -90,23 +90,15 @@ onMounted(async () => {
       invalidLink.value = "Invalid Link";
     } else if (isUrl(requestLink)) {
       // request link is an url. fetch transaction from url
-      const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
-      if (result.transaction.feePayer && result.transaction.recentBlockhash) {
-        const messageV0 = new TransactionMessage({
-          payerKey: result.transaction.feePayer,
-          instructions: result.transaction.instructions,
-          recentBlockhash: result.transaction.recentBlockhash,
-        }).compileToV0Message();
-        log.info(result);
-        transaction.value = new VersionedTransaction(messageV0);
-        linkParams.value = {
-          icon: result.icon,
-          label: result.label,
-          origin: result.link.origin,
-          decodedInst: result.decodedInst,
-          message: result.message || "",
-        };
-      }
+      const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress);
+      transaction.value = result.transaction;
+      linkParams.value = {
+        icon: result.icon,
+        label: result.label,
+        origin: result.link.origin,
+        decodedInst: result.decodedInst,
+        message: result.message || "",
+      };
     } else {
       // check for publickey format, redirect to transfer page
       try {

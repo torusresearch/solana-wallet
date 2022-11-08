@@ -19,7 +19,6 @@ import {
   SimulatedTransactionResponse,
   SystemInstruction,
   SystemProgram,
-  Transaction,
   TransactionInstruction,
   TransactionMessage,
   VersionedMessage,
@@ -435,17 +434,17 @@ export async function parsingTransferAmount(
 }
 
 // SolanaPay
-export const validateUrlTransactionSignature = (transaction: Transaction, selectedAddress: string) => {
-  let signRequired = false;
-  transaction.signatures.forEach((sig) => {
-    if (sig.signature === null && sig.publicKey.toBase58() !== selectedAddress) throw new Error("Merchant Signature Verifcation Failed");
-    signRequired = signRequired || sig.publicKey.toBase58() === selectedAddress;
-  });
-  if (!signRequired) throw new Error("Wallet Signature Not Required");
-  transaction.serialize({ requireAllSignatures: false });
-};
+// export const validateUrlTransactionSignature = (transaction: VersionedTransaction, selectedAddress: string) => {
+//   let signRequired = false;
+//   transaction.signatures.forEach((sig) => {
+//     if (signature === null && sig.publicKey.toBase58() !== selectedAddress) throw new Error("Merchant Signature Verifcation Failed");
+//     signRequired = signRequired || sig.publicKey.toBase58() === selectedAddress;
+//   });
+//   if (!signRequired) throw new Error("Wallet Signature Not Required");
+//   transaction.serialize({ requireAllSignatures: false });
+// };
 
-export const parseSolanaPayRequestLink = async (request: string, account: string, connection: Connection) => {
+export const parseSolanaPayRequestLink = async (request: string, account: string) => {
   log.info(request);
   const { label, message, link } = parseURL(request) as TransactionRequestURL;
   // get link
@@ -457,19 +456,23 @@ export const parseSolanaPayRequestLink = async (request: string, account: string
   // return {"transaction":"<transaction>"} (base64)
   const postResult = await post<{ transaction: string; message?: string }>(link.toString(), { account });
 
-  const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
-  const decodedInst = transaction.instructions.map((inst) => decodeInstruction(inst));
+  // const transaction = Transaction.from(Buffer.from(postResult.transaction, "base64"));
+  const transaction = VersionedTransaction.deserialize(Buffer.from(postResult.transaction, "base64"));
+  const { instructions } = TransactionMessage.decompile(transaction.message);
+  const decodedInst = instructions.map((inst) => decodeInstruction(inst));
+
+  log.info(decodedInst);
   // assign transaction object
 
-  if (transaction.signatures.length === 0) {
-    log.info("empty signature");
-    transaction.feePayer = new PublicKey(account);
-    const block = await connection.getLatestBlockhash();
-    transaction.lastValidBlockHeight = block.lastValidBlockHeight;
-    transaction.recentBlockhash = block.blockhash;
-  } else {
-    validateUrlTransactionSignature(transaction, account);
-  }
+  // if (transaction.signatures.length === 0) {
+  //   log.info("empty signature");
+  //   transaction.feePayer = new PublicKey(account);
+  //   const block = await connection.getLatestBlockhash();
+  //   transaction.lastValidBlockHeight = block.lastValidBlockHeight;
+  //   transaction.recentBlockhash = block.blockhash;
+  // } else {
+  //   validateUrlTransactionSignature(transaction, account);
+  // }
 
   return { transaction, decodedInst, message: message || postResult.message, label: label || getResult.label, icon: getResult.icon, link };
 };
