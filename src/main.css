@@ -167,6 +167,13 @@ input[type=number] {
 .size-large {
   height: 60px;
 }
+.login-button-images {
+  min-height: 24px;
+  min-width: 24px;
+}
+.divider {
+  width: 75vw;
+}
 
 .no-scrollbar {
   scrollbar-width: none;

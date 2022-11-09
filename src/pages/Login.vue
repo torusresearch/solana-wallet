@@ -33,7 +33,7 @@ const socialLoginOptions = [
     googleAnalyticsTag: LoginInteractions.LOGIN_GOOGLE,
     loginType: LOGIN_PROVIDER.GOOGLE,
     imageHeight: "30px",
-    imageClass: "w-6 mr-2",
+    imageClass: "w-6 mr-2 login-button-images",
     divClass: "col-span-3",
     imageSrc: GoogleLoginImage,
     imgAltText: "Login with Google",
@@ -43,6 +43,7 @@ const socialLoginOptions = [
   },
   {
     googleAnalyticsTag: LoginInteractions.LOGIN_FACEBOOK,
+    imageClass: "w-6 login-button-images",
     loginType: LOGIN_PROVIDER.FACEBOOK,
     imageSrc: FacebookLoginImage,
     imgAltText: "Login with Facebook",
@@ -50,11 +51,13 @@ const socialLoginOptions = [
   {
     googleAnalyticsTag: LoginInteractions.LOGIN_TWITTER,
     loginType: LOGIN_PROVIDER.TWITTER,
+    imageClass: "w-6 login-button-images",
     imageSrc: TwitterLoginImage,
     imgAltText: "Login with Twitter",
   },
   {
     googleAnalyticsTag: LoginInteractions.LOGIN_DISCORD,
+    imageClass: "w-6 login-button-images",
     loginType: LOGIN_PROVIDER.DISCORD,
     imageSrc: DiscordLoginImage,
     imgAltText: "Login with Discord",
@@ -151,7 +154,7 @@ watch(
     <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex">
       <div class="grid grid-cols-12 w-full">
         <div
-          class="col-start-1 col-end-13 xl:col-start-1 xl:col-end-12 md:col-start-0 md:col-end-13 login-container md:mt-[70px] md:ml-14 md:px-20 md:py-9 md:mx-3 md:mb-28 lg:mt-5 lg:ml-14 lg:px-24 lg:py-9 px-10 py-5 lg:mx-14 lg:mb-4 md:bg-[#1f2a37]"
+          class="col-start-1 col-end-13 h-screen md:h-auto xl:col-start-1 xl:col-end-12 2xl:col-start-4 2xl:col-end-13 md:col-start-0 md:col-end-13 login-container md:mt-[70px] md:ml-14 md:px-20 md:py-9 md:mx-3 md:mb-28 2xl:mt-24 2xl:mb-32 2xl:ml-20 2xl:mr-24 lg:mt-5 lg:ml-14 lg:px-24 lg:py-9 px-10 py-5 lg:mx-14 lg:mb-4 md:bg-[#1f2a37]"
         >
           <img
             height="1.5rem"
@@ -229,7 +232,7 @@ watch(
         </div>
       </div>
     </div>
-    <div class="flex md:hidden col-span-6 md:col-span-2 lg:col-span-3 h-full items-center">
+    <div class="flex md:hidden flex-col col-span-6 md:col-span-2 lg:col-span-3 h-full justify-center mx-10 items-center">
       <LoginFooter />
     </div>
     <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">

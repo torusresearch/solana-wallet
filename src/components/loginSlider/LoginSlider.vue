@@ -59,7 +59,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <div>
+  <div class="carousel-height">
     <transition-group name="slide-next" tag="div" class="slides-group">
       <div :key="current" class="slide">
         <img :src="require(`../../assets/${slides[current].image}`)" alt="Landing page" />
@@ -68,36 +68,20 @@ onMounted(() => {
     <div class="font-header text-xl mb-2">{{ slides[current].title }}</div>
     <div class="text-base">{{ slides[current].subtitle1 }}</div>
     <div v-if="slides[current].subtitle2" class="text-base">{{ slides[current].subtitle2 }}</div>
-    <button
-      type="button"
-      value="0"
-      class="button-carousel"
-      :class="{ 'button-active': current === 0 }"
-      aria-label="Carousel slide 1 of 3"
-      @click="slide(0)"
-    >
-      <span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-circle theme--dark" style="font-size: 18px"></i></span>
-    </button>
-    <button
-      type="button"
-      value="0"
-      :class="{ 'button-active': current === 1 }"
-      class="button-carousel"
-      aria-label="Carousel slide 2 of 3"
-      @click="slide(1)"
-    >
-      <span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-circle theme--dark" style="font-size: 18px"></i></span>
-    </button>
-    <button
-      type="button"
-      :class="{ 'button-active': current === 2 }"
-      value="0"
-      class="button-carousel"
-      aria-label="Carousel slide 3 of 3"
-      @click="slide(2)"
-    >
-      <span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-circle theme--dark" style="font-size: 18px"></i></span>
-    </button>
+  </div>
+  <div>
+    <template v-for="index in 3" :key="index">
+      <button
+        type="button"
+        :value="index - 1"
+        class="button-carousel"
+        :class="{ 'button-active': current === index - 1 }"
+        aria-label="Carousel slide"
+        @click="slide(index - 1)"
+      >
+        <span class="v-btn__content"><i aria-hidden="true" class="v-icon notranslate mdi mdi-circle theme--dark" style="font-size: 18px"></i></span>
+      </button>
+    </template>
   </div>
 </template>
 <style scoped>
@@ -138,5 +122,11 @@ onMounted(() => {
 }
 .slide {
   min-height: 400px;
+}
+.slide > img {
+  display: inline;
+}
+.carousel-height {
+  min-height: 560px;
 }
 </style>
