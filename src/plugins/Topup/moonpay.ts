@@ -74,6 +74,11 @@ const configDetails: TopUpProvider = {
       label: "SOL",
       symbol: "sol",
     },
+    {
+      value: "USDC",
+      label: "USDC",
+      symbol: "usdc_sol",
+    },
   ],
   validCurrencies: ["USD", "EUR", "GBP"].map((k) => {
     return { value: k, label: k };
