@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 const props = withDefaults(
   defineProps<{
@@ -9,6 +10,7 @@ const props = withDefaults(
     isDark: true,
   }
 );
+const { t } = useI18n();
 
 const isDark = computed(() => {
   return props.isDark;
@@ -65,9 +67,11 @@ onMounted(() => {
         <img :src="require(`../../assets/${slides[current].image}`)" alt="Landing page" />
       </div>
     </transition-group>
-    <div class="font-header text-xl mb-2">{{ slides[current].title }}</div>
-    <div class="text-base">{{ slides[current].subtitle1 }}</div>
-    <div v-if="slides[current].subtitle2" class="text-base">{{ slides[current].subtitle2 }}</div>
+    <div class="font-header text-xl mb-2">
+      {{ t(slides[current].title) }}
+    </div>
+    <div class="text-base">{{ t(slides[current].subtitle1) }}</div>
+    <div v-if="slides[current].subtitle2" class="text-base">{{ t(slides[current].subtitle2) }}</div>
   </div>
   <div>
     <template v-for="index in 3" :key="index">
