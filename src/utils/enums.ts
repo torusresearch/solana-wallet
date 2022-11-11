@@ -354,3 +354,10 @@ export enum SORT_SPL_TOKEN {
   TOKEN_CURRENCY_VALUE = "token_currency_value",
   TOKEN_AMOUNT = "noOfTokens",
 }
+
+export const AVAILABLE_WEBSITES = {
+  Ethereum: "https://app.tor.us",
+  Solana: "https://solana.tor.us",
+  Polygon: "https://polygon.tor.us",
+  Binance: "https://bnb.tor.us",
+};
