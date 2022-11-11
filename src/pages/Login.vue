@@ -151,81 +151,81 @@ watch(
 
 <template>
   <div class="height-full bg-white dark:bg-app-loginBg grid grid-cols-6 py-3" :class="[isLoading ? 'overflow-hidden' : '']">
-    <div class="col-span-6 md:col-span-4 lg:col-span-3 h-full flex">
-      <div class="grid grid-cols-12 w-full">
-        <div
-          class="col-start-1 col-end-13 h-screen md:h-auto xl:col-start-1 xl:col-end-12 2xl:col-start-4 2xl:col-end-13 md:col-start-0 md:col-end-13 login-container md:mt-[70px] md:ml-14 md:px-20 md:py-9 md:mx-3 md:mb-28 2xl:mt-24 2xl:mb-32 2xl:ml-20 2xl:mr-24 lg:mt-5 lg:ml-14 lg:px-24 lg:py-9 px-10 py-5 lg:mx-14 lg:mb-4 md:bg-[#1f2a37]"
-        >
-          <img
-            height="1.5rem"
-            width="auto"
-            class="block h-6 w-auto my-7"
-            :src="require(`../assets/torus-logo-${app.isDarkMode ? 'white' : 'blue'}.svg`)"
-            alt="Torus Logo"
-          />
-          <div class="font-header text-app-text-500 dark:text-app-text-dark-500 text-2xl ml-auto mr-auto flex">
-            <span class="mr-1.5"> Your </span>
-            <LoginDropDown v-model="selectedChain" size="small" :items="listOfChains" />
-          </div>
-          <div class="font-header text-app-text-500 dark:text-app-text-dark-500 text-xl md:mb-4 mb-8 ml-auto mr-auto">wallet in one click</div>
-          <div class="grid grid-cols-3 gap-2 w-full mx-auto">
-            <template v-for="loginButton in socialLoginOptions" :key="loginButton.loginType">
-              <div :class="loginButton.divClass || `col-span-1`">
+    <div class="grid grid-cols-12 col-span-6 md:col-span-4 lg:col-span-3 2xl:col-span-2 2xl:col-start-2 h-full md:h-auto">
+      <div class="col-end-12 col-span-10 lg:col-end-13 lg:col-span-9 xl:col-end-12 xl:col-span-8 2xl:col-end-10 2xl:col-span-9 md:m-auto">
+        <div class="grid grid-cols-12 md-h-screen md:h-auto login-container md:bg-[#1f2a37]">
+          <div class="col-start-2 col-span-10 mb-32 md:col-start-3 md:col-span-8 md:mb-[10%] md:mt-[10%]">
+            <img
+              height="1.5rem"
+              width="auto"
+              class="block h-6 w-auto my-7"
+              :src="require(`../assets/torus-logo-${app.isDarkMode ? 'white' : 'blue'}.svg`)"
+              alt="Torus Logo"
+            />
+            <div class="font-header text-app-text-500 dark:text-app-text-dark-500 text-2xl ml-auto mr-auto flex">
+              <span class="mr-1.5"> Your </span>
+              <LoginDropDown v-model="selectedChain" size="small" :items="listOfChains" />
+            </div>
+            <div class="font-header text-app-text-500 dark:text-app-text-dark-500 text-xl md:mb-4 mb-8 ml-auto mr-auto">wallet in one click</div>
+            <div class="grid grid-cols-3 gap-2 w-full mx-auto">
+              <template v-for="loginButton in socialLoginOptions" :key="loginButton.loginType">
+                <div :class="loginButton.divClass || `col-span-1`">
+                  <Button
+                    size="large"
+                    :v-ga="loginButton.googleAnalyticsTag"
+                    variant="tertiary"
+                    :block="true"
+                    class="border-2 border-app-gray-500 dark:bg-app-loginBg border-solid w-full dark:text-app-gray-400"
+                    @click="onLogin(loginButton.loginType)"
+                    ><img
+                      width="1.5rem"
+                      :height="loginButton.imageHeight || `auto`"
+                      :class="loginButton.imageClass || `w-6`"
+                      :src="loginButton.imageSrc"
+                      :alt="loginButton.imgAltText"
+                    />
+                    <template v-if="loginButton.buttonLoginText">
+                      {{ t(loginButton.translateLoginText, { verifier: loginButton.verifier }) }}
+                    </template>
+                  </Button>
+                </div>
+              </template>
+            </div>
+            <div class="mt-3 relative w-full">
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-app-text-400"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
+              </div>
+            </div>
+            <div class="mt-3 w-full">
+              <form @submit.prevent="onEmailLogin">
+                <TextField
+                  v-model.lazy="userEmail"
+                  variant="dark-bg"
+                  class="mb-3 dark:text-app-text-dark-500 dark:bg-app-loginBg"
+                  :placeholder="t('login.enterYourEmail')"
+                  :errors="$v.userEmail.$errors"
+                />
                 <Button
-                  size="large"
-                  :v-ga="loginButton.googleAnalyticsTag"
+                  v-ga="LoginInteractions.LOGIN_EMAIL"
                   variant="tertiary"
                   :block="true"
-                  class="border-2 border-app-gray-500 dark:bg-app-loginBg border-solid w-full dark:text-app-gray-400"
-                  @click="onLogin(loginButton.loginType)"
-                  ><img
-                    width="1.5rem"
-                    :height="loginButton.imageHeight || `auto`"
-                    :class="loginButton.imageClass || `w-6`"
-                    :src="loginButton.imageSrc"
-                    :alt="loginButton.imgAltText"
-                  />
-                  <template v-if="loginButton.buttonLoginText">
-                    {{ t(loginButton.translateLoginText, { verifier: loginButton.verifier }) }}
-                  </template>
+                  type="submit"
+                  class="w-full mt-2 dark:text-app-gray-400 dark:bg-app-loginBg"
+                  >{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}
                 </Button>
-              </div>
-            </template>
-          </div>
-          <div class="mt-3 relative w-full">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t border-app-text-400"></div>
+              </form>
             </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white dark:bg-app-gray-800 text-app-text-500 dark:text-app-text-dark-600">or</span>
+            <div class="hidden md:inline-block">
+              <LoginFooter />
             </div>
-          </div>
-          <div class="mt-3 w-full">
-            <form @submit.prevent="onEmailLogin">
-              <TextField
-                v-model.lazy="userEmail"
-                variant="dark-bg"
-                class="mb-3 dark:text-app-text-dark-500 dark:bg-app-loginBg"
-                :placeholder="t('login.enterYourEmail')"
-                :errors="$v.userEmail.$errors"
-              />
-              <Button
-                v-ga="LoginInteractions.LOGIN_EMAIL"
-                variant="tertiary"
-                :block="true"
-                type="submit"
-                class="w-full mt-2 dark:text-app-gray-400 dark:bg-app-loginBg"
-                >{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}
-              </Button>
-            </form>
-          </div>
-          <div class="hidden md:inline-block">
-            <LoginFooter />
           </div>
         </div>
       </div>
     </div>
-    <div class="col-span-6 md:col-span-2 lg:col-span-3 h-full flex items-center">
+    <div class="col-span-6 md:col-span-2 lg:col-span-3 xl:col-span-2 h-full flex items-center">
       <div class="grid grid-cols-8 w-full">
         <div class="col-span-6 col-start-2 w-full mx-auto text-center text-app-text-500 dark:text-app-text-dark-500">
           <LoginSlider />
