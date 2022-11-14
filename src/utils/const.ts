@@ -1,6 +1,7 @@
+import { ProviderConfig } from "@toruslabs/base-controllers";
 import { SUPPORTED_NETWORKS } from "@toruslabs/solana-controllers";
 
-export const WALLET_SUPPORTED_NETWORKS = {
+export const WALLET_SUPPORTED_NETWORKS: { [key: string]: ProviderConfig } = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,
@@ -13,6 +14,11 @@ export const WALLET_SUPPORTED_NETWORKS = {
   devnet: {
     ...SUPPORTED_NETWORKS.devnet,
     rpcTarget: "https://api.devnet.solana.com",
+  },
+  invalid: {
+    ...SUPPORTED_NETWORKS.devnet,
+    displayName: "Network Error",
+    chainId: "loading",
   },
 };
 
