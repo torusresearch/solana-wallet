@@ -136,7 +136,7 @@
     "lint-staged": "^12.4.3",
     "mocha": "^10.0.0",
     "nock": "^13.2.9",
-    "node-fetch": "^3.3.0",
+    "node-fetch": "^2.6.7",
     "nyc": "^15.1.0",
     "os-browserify": "^0.3.0",
     "postcss": "^8.4.16",
