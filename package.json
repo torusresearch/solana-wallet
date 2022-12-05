@@ -15,7 +15,7 @@
     "test:controller": "npx mocha ./tests/controller/**.ts",
     "test:report": "rm -rf .nyc_output && rm -rf coverage && npx nyc --reporter=text --reporter=html npm run test:controller",
     "install:local": "npm i ../controllers/packages/solana-controllers/*.tgz &&  npm i ../controllers/packages/base-controllers/*.tgz",
-    "locale": "node ./src/scripts/importLocales.js",
+    "locale": "node ./src/scripts/importLocales.mjs",
     "serve:prod": "vue-cli-service serve --mode production"
   },
   "dependencies": {
@@ -136,6 +136,7 @@
     "lint-staged": "^12.4.3",
     "mocha": "^10.0.0",
     "nock": "^13.2.9",
+    "node-fetch": "^2.6.7",
     "nyc": "^15.1.0",
     "os-browserify": "^0.3.0",
     "postcss": "^8.4.16",
