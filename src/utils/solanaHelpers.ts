@@ -1,4 +1,4 @@
-import { parseURL, TransactionRequestURL } from "@solana/pay";
+import { TransactionRequestURL } from "@solana/pay";
 import {
   Account,
   AccountLayout,
@@ -445,9 +445,9 @@ export const validateUrlTransactionSignature = (transaction: Transaction, select
   transaction.serialize({ requireAllSignatures: false });
 };
 
-export const parseSolanaPayRequestLink = async (request: string, account: string, connection: Connection) => {
+export const parseSolanaPayRequestLink = async (request: TransactionRequestURL, account: string, connection: Connection) => {
   log.info(request);
-  const { label, message, link } = parseURL(request) as TransactionRequestURL;
+  const { label, message, link } = request;
   // get link
   // return {"label":"<label>","icon":"<icon>"}
   // update label and icon on tx display

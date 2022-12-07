@@ -85,7 +85,7 @@ onMounted(async () => {
 
     if ((parsed as TransactionRequestURL).link) {
       // request link is an url. fetch transaction from url
-      const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
+      const result = await parseSolanaPayRequestLink(parsed as TransactionRequestURL, ControllerModule.selectedAddress, ControllerModule.connection);
       if (result.transaction.feePayer && result.transaction.recentBlockhash) {
         const messageV0 = new TransactionMessage({
           payerKey: result.transaction.feePayer,
@@ -115,7 +115,7 @@ onMounted(async () => {
         return;
       } catch (e) {}
       // parse solanapay format
-      const result = parseURL(requestLink) as TransferRequestURL;
+      const result = parsed as TransferRequestURL;
       const { recipient, splToken, reference, memo, amount, message } = result;
       // redirect to transfer page if amount is not available
       if (amount === undefined) {
