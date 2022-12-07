@@ -81,6 +81,18 @@ onMounted(async () => {
       return;
     }
 
+    // check for publickey format, redirect to transfer page
+    try {
+      const address = new PublicKey(requestLink);
+      router.push({
+        name: "walletTransfer",
+        query: {
+          receiverPubKey: address.toBase58(),
+        },
+      });
+      return;
+    } catch (e) {}
+
     const parsed = parseURL(requestLink);
 
     if ((parsed as TransactionRequestURL).link) {
@@ -103,17 +115,6 @@ onMounted(async () => {
         };
       }
     } else {
-      // check for publickey format, redirect to transfer page
-      try {
-        const address = new PublicKey(requestLink);
-        router.push({
-          name: "walletTransfer",
-          query: {
-            receiverPubKey: address.toBase58(),
-          },
-        });
-        return;
-      } catch (e) {}
       // parse solanapay format
       const result = parsed as TransferRequestURL;
       const { recipient, splToken, reference, memo, amount, message } = result;
