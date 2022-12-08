@@ -14,6 +14,8 @@ import ControllerModule from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 
 const { resolve, promise } = promiseCreator<void>();
+
+(window as any).$crisp.push(["do", "chat:hide"]);
 let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";
 
 const initParams = {

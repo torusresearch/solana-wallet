@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createTransfer, parseURL, TransferRequestURL } from "@solana/pay";
+import { createTransfer, parseURL, TransactionRequestURL, TransferRequestURL } from "@solana/pay";
 import { LAMPORTS_PER_SOL, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { findAllLookUpTable } from "@toruslabs/solana-controllers";
 import log from "loglevel";
@@ -43,17 +43,7 @@ const onCancel = () => {
 const onConfirm = () => {
   emits("onApproved", transaction.value);
 };
-const isUrl = (UrlString: string) => {
-  try {
-    const splitString = UrlString.split(":");
-    if (["https", "http"].includes(splitString[1])) {
-      return Boolean(new URL(UrlString));
-    }
-    return false;
-  } catch (e) {
-    return false;
-  }
-};
+
 const estimateTxFee = ref(0);
 const router = useRouter();
 watch(transaction, async () => {
@@ -88,9 +78,26 @@ onMounted(async () => {
     if (!requestLink.length) {
       // set loaded
       invalidLink.value = "Invalid Link";
-    } else if (isUrl(requestLink)) {
+      return;
+    }
+
+    // check for publickey format, redirect to transfer page
+    try {
+      const address = new PublicKey(requestLink);
+      router.push({
+        name: "walletTransfer",
+        query: {
+          receiverPubKey: address.toBase58(),
+        },
+      });
+      return;
+    } catch (e) {}
+
+    const parsed = parseURL(requestLink);
+
+    if ((parsed as TransactionRequestURL).link) {
       // request link is an url. fetch transaction from url
-      const result = await parseSolanaPayRequestLink(requestLink, ControllerModule.selectedAddress, ControllerModule.connection);
+      const result = await parseSolanaPayRequestLink(parsed as TransactionRequestURL, ControllerModule.selectedAddress, ControllerModule.connection);
       if (result.transaction.feePayer && result.transaction.recentBlockhash) {
         const messageV0 = new TransactionMessage({
           payerKey: result.transaction.feePayer,
@@ -108,19 +115,8 @@ onMounted(async () => {
         };
       }
     } else {
-      // check for publickey format, redirect to transfer page
-      try {
-        const address = new PublicKey(requestLink);
-        router.push({
-          name: "walletTransfer",
-          query: {
-            receiverPubKey: address.toBase58(),
-          },
-        });
-        return;
-      } catch (e) {}
       // parse solanapay format
-      const result = parseURL(requestLink) as TransferRequestURL;
+      const result = parsed as TransferRequestURL;
       const { recipient, splToken, reference, memo, amount, message } = result;
       // redirect to transfer page if amount is not available
       if (amount === undefined) {
