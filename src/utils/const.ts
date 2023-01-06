@@ -5,11 +5,12 @@ export const WALLET_SUPPORTED_NETWORKS: { [key: string]: ProviderConfig } = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,
-    rpcTarget: "https://green-dark-sky.solana-mainnet.quiknode.pro/97c87069b81ef4ec0765a267525c82153e5404fc/",
+    rpcTarget: "https://solana-mainnet-rpc.gateway.pokt.network/",
+    // rpcTarget: "https://nyc39.rpcpool.com",
   },
   testnet: {
     ...SUPPORTED_NETWORKS.testnet,
-    rpcTarget: "https://spring-black-waterfall.solana-testnet.quiknode.pro/89830c37acd15df105b23742d37f33dc85b5eff8/",
+    rpcTarget: "https://api.testnet.solana.com/",
   },
   devnet: {
     ...SUPPORTED_NETWORKS.devnet,
