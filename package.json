@@ -37,7 +37,7 @@
     "@toruslabs/eccrypto": "^1.1.8",
     "@toruslabs/http-helpers": "^3.0.0",
     "@toruslabs/loglevel-sentry": "^4.0.0",
-    "@toruslabs/openlogin": "^2.5.0",
+    "@toruslabs/openlogin": "^2.13.0",
     "@toruslabs/openlogin-ed25519": "^2.0.0",
     "@toruslabs/openlogin-jrpc": "^2.5.0",
     "@toruslabs/openlogin-subkey": "^2.1.0",
