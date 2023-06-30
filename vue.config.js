@@ -19,6 +19,8 @@ module.exports = {
             os: require.resolve("os-browserify/browser"),
             https: require.resolve("https-browserify"),
             http: require.resolve("stream-http"),
+            zlib: require.resolve('browserify-zlib'),
+            url: require.resolve('url'),
         };
         config.resolve.alias = {
             ...config.resolve.alias,

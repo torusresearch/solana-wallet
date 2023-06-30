@@ -59,13 +59,13 @@ describe("Controller Module", () => {
     sandbox.stub(config, "torusNetwork").get(() => "mainnet");
     sandbox.stub(OpenLogin.prototype, "init").callsFake(noopAsync);
     sandbox.stub(OpenLogin.prototype, "logout").callsFake(noopAsync);
-    sandbox.stub(OpenLogin.prototype, "_syncState").callsFake(noopAsync);
+    // sandbox.stub(OpenLogin.prototype, "_syncState").callsFake(noopAsync);
     sandbox.stub(TorusStorageLayer.prototype, "getMetadata").callsFake(async () => {
       return openloginFaker[1];
     });
-    sandbox.stub(OpenLogin.prototype, "_getData").callsFake(async () => {
-      return {};
-    });
+    // sandbox.stub(OpenLogin.prototype, "_getData").callsFake(async () => {
+    //   return {};
+    // });
     // sandbox.stub(TokenInfoController.prototype, "fetchMetaplexNFTs").callsFake(async () => {
     //   return {
     //     [mockNFTs[1].mintAddress]: mockNFTs[1].metaplexData,

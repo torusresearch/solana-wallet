@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/solid";
-import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 

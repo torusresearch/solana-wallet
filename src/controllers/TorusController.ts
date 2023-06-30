@@ -28,9 +28,8 @@ import {
   PopupHandler,
   PopupWithBcHandler,
   PROVIDER_NOTIFICATIONS,
-  providerAsMiddleware,
   ProviderConfig,
-  SafeEventEmitterProvider,
+  randomId,
   THEME,
   TopupInput,
   TransactionState,
@@ -39,7 +38,6 @@ import {
   UserInfo,
 } from "@toruslabs/base-controllers";
 import eccrypto from "@toruslabs/eccrypto";
-import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import {
   createEngineStream,
   JRPCEngine,
@@ -47,11 +45,13 @@ import {
   JRPCEngineNextCallback,
   JRPCRequest,
   JRPCResponse,
+  providerAsMiddleware,
+  SafeEventEmitterProvider,
   setupMultiplex,
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
-import { randomId } from "@toruslabs/openlogin-utils";
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -1268,7 +1268,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const userDapp = new Map();
       const accountPromise = targetAccount.map((account) => {
         userDapp.set(account.address, account.app);
-        return this.addAccount(account.solanaPrivKey, userInfo);
+        return this.addAccount(account.solanaPrivKey, userInfo as UserInfo);
       });
       this.update({ UserDapp: userDapp });
 
@@ -1426,7 +1426,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
               }
             } else {
               log.info("login with userinfo, redo solana backend login");
-              address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo);
+              address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo as UserInfo);
             }
             return address;
           });

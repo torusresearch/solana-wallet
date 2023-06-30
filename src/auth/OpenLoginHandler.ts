@@ -1,7 +1,6 @@
 import { PopupWithBcHandler, randomId } from "@toruslabs/base-controllers";
-import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
 import { JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
-import { safebtoa } from "@toruslabs/openlogin-utils";
+import { LOGIN_PROVIDER_TYPE, safebtoa } from "@toruslabs/openlogin-utils";
 import log from "loglevel";
 
 import type { OpenLoginPopupResponse } from "@/utils/enums";

@@ -10,9 +10,8 @@ import {
   ProviderConfig,
   TransactionConfig,
   TransactionState,
-  UserInfo,
 } from "@toruslabs/base-controllers";
-import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin-utils";
 import {
   SolanaBlock,
   SolanaCurrencyControllerConfig,
@@ -49,7 +48,7 @@ export interface KeyState {
 }
 
 export interface OpenLoginBackendState {
-  userInfo?: UserInfo;
+  userInfo?: OpenloginUserInfo;
   publicKey: string;
   privateKey: string;
   accounts: ProjectAccountType[];

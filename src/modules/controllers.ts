@@ -17,14 +17,14 @@ import {
   PopupData,
   PopupStoreChannel,
   ProviderConfig,
+  randomId,
   SelectedAddresssChangeChannelData,
   ThemeChannelData,
   TX_EVENTS,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
-import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
-import { randomId } from "@toruslabs/openlogin-utils";
+import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash-es";
@@ -32,7 +32,6 @@ import log from "loglevel";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
-import config from "@/config";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
@@ -499,17 +498,18 @@ class ControllerModule extends VuexModule {
     this.torus.handleLogout();
   }
 
+  // todo:
   @Action
   async openloginLogout() {
     try {
       const openLoginInstance = await OpenLoginFactory.getInstance();
-      if (openLoginInstance.state.support3PC) {
-        // eslint-disable-next-line no-underscore-dangle
-        openLoginInstance._syncState(await openLoginInstance._getData());
-        await openLoginInstance.logout({
-          clientId: config.openLoginClientId,
-        });
-      }
+      // if (openLoginInstance.state.support3PC) {
+
+      openLoginInstance.logout();
+      // await openLoginInstance.logout({
+      //   clientId: config.openLoginClientId,
+      // });
+      // }
     } catch (error) {
       log.warn(error, "unable to logout with openlogin");
     }

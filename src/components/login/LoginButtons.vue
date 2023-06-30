@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 import Button from "@toruslabs/vue-components/common/Button.vue";
 import {
   AppleIcon,
