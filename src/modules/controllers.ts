@@ -29,6 +29,7 @@ import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaT
 import { BigNumber } from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
@@ -41,6 +42,7 @@ import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 import { isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import store from "../store";
 import { addToast } from "./app";
 
