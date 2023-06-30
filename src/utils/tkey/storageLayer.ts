@@ -127,7 +127,6 @@ class TorusStorageLayer {
       timestamp: new BN((this.serverTimeOffset + Date.now()) / 1000).toString(16),
     };
 
-    // todo:
     const hash = keccak256(Buffer.from(stringify(setTKeyStore), "utf-8")).slice(2);
     if (privKey) {
       const unparsedSig = toPrivKeyEC(privKey).sign(hash);

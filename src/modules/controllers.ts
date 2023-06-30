@@ -500,7 +500,6 @@ class ControllerModule extends VuexModule {
     this.torus.handleLogout();
   }
 
-  // todo:
   @Action
   async openloginLogout() {
     try {
@@ -508,10 +507,6 @@ class ControllerModule extends VuexModule {
       // if (openLoginInstance.state.support3PC) {
 
       openLoginInstance.logout();
-      // await openLoginInstance.logout({
-      //   clientId: config.openLoginClientId,
-      // });
-      // }
     } catch (error) {
       log.warn(error, "unable to logout with openlogin");
     }
