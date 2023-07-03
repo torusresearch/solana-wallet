@@ -37,7 +37,7 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
-import eccrypto from "@toruslabs/eccrypto";
+import { generatePrivate, getPublic } from "@toruslabs/eccrypto";
 import {
   createEngineStream,
   JRPCEngine,
@@ -1346,8 +1346,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
    */
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
-    const ecc_privateKey = eccrypto.generatePrivate();
-    const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
+    const ecc_privateKey = generatePrivate();
+    const ecc_publicKey = getPublic(ecc_privateKey);
 
     // (ephemeral private key, user public key)
     const keyState: KeyState = {
