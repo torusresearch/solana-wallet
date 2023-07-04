@@ -1,13 +1,17 @@
 import { PopupWithBcHandler, randomId } from "@toruslabs/base-controllers";
 import { JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 import { LOGIN_PROVIDER_TYPE, safebtoa } from "@toruslabs/openlogin-utils";
+import { Mutex } from "async-mutex";
 import log from "loglevel";
 
 import type { OpenLoginPopupResponse } from "@/utils/enums";
 
 import config from "../config";
+import OpenLoginFactory from "./OpenLogin";
 
 class OpenLoginHandler {
+  private static mutex = new Mutex();
+
   nonce = randomId();
 
   windowId?: string;
@@ -45,6 +49,20 @@ class OpenLoginHandler {
         })
       )
     );
+  }
+
+  static async getInstance(reinitialize = false) {
+    const releaseLock = await this.mutex.acquire();
+    try {
+      const openLoginInstance = await OpenLoginFactory.getInstance();
+
+      if (reinitialize) {
+        await openLoginInstance.init();
+      }
+      return openLoginInstance;
+    } finally {
+      releaseLock();
+    }
   }
 
   async handleLoginWindow({
