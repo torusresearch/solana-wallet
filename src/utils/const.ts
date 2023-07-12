@@ -5,7 +5,7 @@ export const WALLET_SUPPORTED_NETWORKS: { [key: string]: ProviderConfig } = {
   ...SUPPORTED_NETWORKS,
   mainnet: {
     ...SUPPORTED_NETWORKS.mainnet,
-    rpcTarget: "https://solana-mainnet.g.alchemy.com/v2/UHN0uqcLQ1K8kJXHoEA6I7qp5aViWhFo",
+    rpcTarget: "https://green-dark-sky.solana-mainnet.quiknode.pro/0b4b99540b7930cf590dc7fb0a2d1c9a906fd53c/",
   },
   testnet: {
     ...SUPPORTED_NETWORKS.testnet,
