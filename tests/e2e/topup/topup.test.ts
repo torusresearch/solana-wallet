@@ -8,9 +8,8 @@ import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Topup page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser, browserName }) => {
+  test.beforeEach(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
-    await wait(3000);
   });
   test.afterAll(() => {
     page.close();
@@ -22,53 +21,46 @@ test.describe("Topup page", async () => {
   test("Topup Page Should render", async () => {
     // // see navigation works correctly
     await page.click("button:has-text('Top up')");
-    await wait(1000);
     // ENSURE UI IS INTACT
+    await wait(500);
     await ensureTextualElementExists(page, "Select a Provider");
   });
 
   test("Changing amount changes received value", async () => {
     // // see navigation works correctly
     await page.click("button:has-text('Top up')");
-    await wait(1000);
     // MoonPay SHOULD WORK AS EXPECTED
     // set amount to be transferred as 100 US Dollars, expect a positive value for expected SOL
     await page.click("img[alt=moonpay]");
     await page.fill("input[type='number']", "100");
-    await wait(2000);
     const usdToSol100 = Number(await getInnerText(page, "#resCryptoAmt"));
     expect(usdToSol100).toBeGreaterThan(0);
 
     // set amount to be transferred as 200 US Dollars, expect a positive value for expected SOL
     await page.fill("input[type='number']", "200");
-    await wait(1000);
     const usdToSol200 = Number(await getInnerText(page, "#resCryptoAmt"));
-    await wait(2000);
     expect(usdToSol200).toBeGreaterThan(usdToSol100);
   });
 
   test("Pop up page should show for top up", async () => {
     // // see navigation works correctly
     await page.click("button:has-text('Top up')");
-    await wait(1000);
     // MoonPay SHOULD WORK AS EXPECTED
     // set amount to be transferred as 100 US Dollars, expect a positive value for expected SOL
     await page.click("img[alt=moonpay]");
     await page.fill("input[type='number']", "100");
-    await wait(2000);
 
     // ensure that on clicking Top up, it is redirected to MoonPay Payment page
     const [page2] = await Promise.all([page.waitForEvent("popup"), page.click("button:has-text('Top up')")]);
     // closing moonpay page, will show an error on top up page
     page2.close();
-    await wait(500);
+    await wait(1000);
     await ensureTextualElementExists(page, "Transaction could not complete.");
   });
 
   test("Changing of crypto/fiat currency changes the value you receive correctly", async () => {
     // see navigation works correctly
     await page.click("button:has-text('Top up')");
-    await wait(1000);
     // change crypto currency to SOL
     await switchCryptoCurrency(page, "SOL");
     // change fiat currency EUR

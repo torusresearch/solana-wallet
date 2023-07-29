@@ -12,24 +12,24 @@ test("Should Login successfully", async ({ context, browserName }) => {
   const page = await login(context, browserName);
 
   await page.click("text=Home");
-  await wait(1000);
+  await wait(500);
   expect(page.url().includes("/wallet/home")).toBeTruthy();
 
   await page.click("text=NFTs");
-  await wait(1000);
+  await wait(500);
   expect(page.url().includes("/wallet/nfts")).toBeTruthy();
 
   await page.click("text=Activity");
-  await wait(1000);
+  await wait(500);
   expect(page.url().includes("/wallet/activity")).toBeTruthy();
 
   // Click text=Settings
   await page.click("text=Settings");
-  await wait(1000);
+  await wait(500);
   expect(page.url().includes("/wallet/settings")).toBeTruthy();
 
   await page.click("text=Discover");
-  await wait(1000);
+  await wait(500);
   expect(page.url().includes("/wallet/discover")).toBeTruthy();
   await page.close();
 });

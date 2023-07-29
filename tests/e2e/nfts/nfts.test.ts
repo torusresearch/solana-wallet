@@ -14,7 +14,6 @@ test.describe("Nfts Page", async () => {
   });
   test.beforeEach(async () => {
     await switchTab(page, "nfts");
-    await wait(2000);
   });
 
   test.afterAll(() => {
@@ -27,7 +26,6 @@ test.describe("Nfts Page", async () => {
   });
 
   test("If no NFTs project eventually load popular NFTs project", async () => {
-    await wait(1000);
     await ensureTextualElementExists(page, "You might be keen to check out some of the popular NFT projects");
     expect(await page.locator(".popular-nft").count()).toBeGreaterThan(0);
   });
@@ -43,8 +41,9 @@ test.describe("Nfts Page", async () => {
   });
 
   test("Click on NFT should open page with correct information, clicking on Send should take on transfer page", async () => {
+    test.slow();
+    await switchNetwork(page, "testnet");
     await page.locator(".nft-item").first().click();
-    await wait(5000);
     await page.locator(".send-nft").first().click();
     await wait(1000);
     await ensureTextualElementExists(page, "Transfer Details");

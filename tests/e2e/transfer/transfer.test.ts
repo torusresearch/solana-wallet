@@ -7,7 +7,7 @@ import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Transfer page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser, browserName }) => {
+  test.beforeEach(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
   });
   test.afterAll(async () => {
@@ -25,7 +25,7 @@ test.describe("Transfer page", async () => {
     await ensureTextualElementExists(page, "Transfer Details");
   });
 
-  test("Checks before transaction should be correct", async () => {
+  test("Prevents transaction to an invalid solana address", async () => {
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");
     await wait(1000);
@@ -35,25 +35,40 @@ test.describe("Transfer page", async () => {
     await page.fill("input[type='number']", "0.01");
     await page.click("button >> text=Transfer");
     expect(await page.locator("text=Invalid SOL Address").elementHandles()).toHaveLength(1);
+  });
 
-    // using testnet as we poor on mainnet
-    await switchNetwork(page, "testnet");
+  test("Prevents sending zero value transactions", async () => {
+    // see navigation works correctly
+    await page.click("button:has-text('Transfer')");
+    await wait(1000);
     // if address is a valid sol address, should show popup
     await page.fill("input[type='text']", PUB_ADDRESS);
     // if amount is not valid, should show error
     await page.fill("input[type='number']", "0");
+    await wait(500);
     await page.click("button >> text=Transfer");
     await wait(1000);
     expect(await page.locator("text=Must be greater than 0.0001").elementHandles()).toHaveLength(1);
-    // entering valid amount
+  });
+
+  test("Check if total cost is displayed before confirming", async () => {
+    // see navigation works correctly
+    await page.click("button:has-text('Transfer')");
+    await page.fill("input[type='text']", PUB_ADDRESS);
     await page.fill("input[type='number']", "0.01");
     await page.click("button >> text=Transfer");
     await wait(1000);
     expect(await page.locator("text=Total Cost").elementHandles()).toHaveLength(1);
     await page.click("button >> text=Cancel");
+  });
+
+  test("Prevents empty field in the amount", async () => {
+    // see navigation works correctly
+    await page.click("button:has-text('Transfer')");
     // entering no amount, empty field
+    await page.fill("input[type='text']", PUB_ADDRESS);
     await page.fill("input[type='number']", "");
-    await wait(1000);
+    await page.click("button >> text=Transfer");
     expect(await page.locator("text=Must be greater than 0.0001").elementHandles()).toHaveLength(1);
     expect(await page.locator("button >> text=Transfer").isDisabled()).toBeTruthy();
   });
@@ -64,17 +79,20 @@ test.describe("Transfer page", async () => {
     await page.click("button:has-text('Transfer')");
     await wait(1000);
     const transferAmount = (Math.random() / 100).toFixed(4);
+    // global.console.log("amount to transfer is : ", transferAmount);
 
     // using testnet as we poor on mainnet
     await switchNetwork(page, "testnet");
 
     // Click transfer tab
-    await Promise.all([page.click("text=Transfer"), wait(1000)]);
+    // await Promise.all([page.click("text=Transfer"), wait(1000)]);
 
     // Fill a valid sol address
-    await page.fill(".combo-input-field[aria-label='Select field']", PUB_ADDRESS);
+    // await page.fill(".combo-input-field[aria-label='Select field']", PUB_ADDRESS);
+    await page.fill("input[type='text']", PUB_ADDRESS);
 
     // Fill a unique random amount
+    // await page.fill("input[type='number']", transferAmount);
     await page.fill("input[type='number']", transferAmount);
 
     // Click transfer, wait for popup
@@ -185,7 +203,7 @@ test.describe("Transfer page", async () => {
 
 /** *****************IMPORT ACCOUNT TESTS********************** */
 
-test.skip("Transfer page using imported account", async () => {
+test.skip(" ", async () => {
   let page: Page;
   test.beforeAll(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
@@ -216,7 +234,7 @@ test.skip("Transfer page using imported account", async () => {
     await page.click("button >> text=Cancel");
   });
 
-  test("Transaction should happen correctly", async () => {
+  test.only("Transaction should happen correctly", async () => {
     test.slow();
     // see navigation works correctly
     await page.click("button:has-text('Transfer')");

@@ -10,7 +10,7 @@
     "build": "npm run locale && vue-cli-service build",
     "lint": "vue-cli-service lint",
     "prepare": "husky install",
-    "test": "npx playwright test --config=playwright.config.ts --workers=1",
+    "test": "npx playwright test --config=playwright.config.ts --workers=10",
     "test:browserstack": "npx playwright test --config=playwright-browserstack.config.ts --workers=1",
     "test:controller": "npx mocha ./tests/controller/**.ts",
     "test:report": "rm -rf .nyc_output && rm -rf coverage && npx nyc --reporter=text --reporter=html npm run test:controller",

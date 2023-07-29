@@ -15,7 +15,7 @@ import test, { markResult, setBrowserStackTestTitle } from "../fixtures";
 
 test.describe("Home Page", async () => {
   let page: Page;
-  test.beforeAll(async ({ browser, browserName }) => {
+  test.beforeEach(async ({ browser, browserName }) => {
     page = await login(await browser.newContext(), browserName);
   });
   test.afterAll(async () => {
@@ -37,7 +37,8 @@ test.describe("Home Page", async () => {
     await switchTab(page, "home");
 
     // ENSURE TopUp button click should take to topup page
-    await clickTopupButton(page);
+    // await clickTopupButton(page);
+    await page.click("button >> text=Top up");
     await wait(1000);
     await ensureTextualElementExists(page, "Select a Provider");
   });
@@ -55,20 +56,17 @@ test.describe("Home Page", async () => {
   test("Currency Change should work correctly", async () => {
     // see navigation works correctly
     await switchTab(page, "home");
-    await wait(1000);
     // Switching to testnet as it has > 0 balance
     await switchNetwork(page, "testnet");
     expect(await getInnerText(page, "#selected_network")).toContain("Solana Testnet");
 
     // ENSURE On selecting EUR as currency, conversion rate has a positive value
     await selectCurrency(page, "EUR");
-    await wait(1000);
     const eurRate = Number(await getInnerText(page, "#conversionRate"));
     expect(eurRate).toBeGreaterThan(0);
 
     // ENSURE On selecting USD as currency, conversion rate has a positive value
     await selectCurrency(page, "USD");
-    await wait(1000);
     const usdRate = Number(await getInnerText(page, "#conversionRate"));
     expect(usdRate).toBeGreaterThan(0);
 
@@ -83,7 +81,6 @@ test.describe("Home Page", async () => {
     await switchNetwork(page, "testnet");
     // Ensure Tokens are displayed
     await ensureTextualElementExists(page, "Tokens");
-    await wait(1000);
     await clickTokenIfAvailable(page);
   });
 
