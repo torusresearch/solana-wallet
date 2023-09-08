@@ -28,6 +28,8 @@ function getTracesSampleRate() {
 }
 
 export function installSentry(Vue: App) {
+  if (!process.env.VUE_APP_SENTRY_DSN) return;
+
   Sentry.init({
     Vue,
     dsn: process.env.VUE_APP_SENTRY_DSN,

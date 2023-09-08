@@ -3,7 +3,7 @@ import { significantDigits } from "@toruslabs/base-controllers";
 import { useVuelidate } from "@vuelidate/core";
 import { throttle } from "lodash-es";
 import log from "loglevel";
-import { onMounted, ref, watch } from "vue";
+import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
@@ -20,8 +20,8 @@ const props = defineProps<{
   selectedProvider: TopUpProvider;
 }>();
 
-const selectedCryptocurrency = ref(props.selectedProvider.validCryptocurrencies[0]);
-const selectedCurrency = ref(props.selectedProvider.validCurrencies[0]);
+const selectedCryptocurrency = computed<{ value: string; label: string; symbol: string }>(() => props.selectedProvider.validCryptocurrencies[0]);
+const selectedCurrency = ref<{ value: string; label: string }>({ value: "", label: "" });
 const currency = ControllerModule.torus.currentCurrency;
 
 const cryptoCurrencyRate = ref(0);
@@ -31,6 +31,7 @@ const isLoadingQuote = ref(false);
 const sendingTopup = ref(false);
 const errorMsg = ref("");
 let decimals = 0;
+// eslint-disable-next-line vue/no-setup-props-destructure
 const $v = useVuelidate(props.selectedProvider.rules, { amount });
 
 async function refreshTransferEstimate(quote: (requestObject: RequestObject) => Promise<QuoteResponse>) {
@@ -89,9 +90,12 @@ const onTopup = async () => {
   }
 };
 
-onMounted(() => {
+onBeforeMount(() => {
   selectedCurrency.value =
     props.selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || props.selectedProvider.validCurrencies[0];
+});
+
+onMounted(() => {
   refreshTransferEstimate(props.selectedProvider.getQuoteOnCrypto);
 });
 </script>

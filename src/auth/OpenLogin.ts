@@ -23,6 +23,7 @@ class OpenLoginFactory {
           originData: {
             [window.location.origin]: config.openLoginOriginSig as string,
           },
+          sessionTime: 3 * 86400,
         });
         await instance.init();
 

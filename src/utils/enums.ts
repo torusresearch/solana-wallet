@@ -155,7 +155,7 @@ export const STATUS = {
   INFO: "info",
 } as const;
 
-export type STATUS_TYPE = typeof STATUS[keyof typeof STATUS];
+export type STATUS_TYPE = (typeof STATUS)[keyof typeof STATUS];
 
 // export type TX_TYPE = "Transfer" | "Deploy" | "Buy Crypto";
 
@@ -166,7 +166,7 @@ export const BUTTON_POSITION = {
   TOP_RIGHT: "top-right",
 } as const;
 
-export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_POSITION];
+export type BUTTON_POSITION_TYPE = (typeof BUTTON_POSITION)[keyof typeof BUTTON_POSITION];
 export interface EmbedInitParams {
   buttonPosition: BUTTON_POSITION_TYPE;
   isIFrameFullScreen: boolean;

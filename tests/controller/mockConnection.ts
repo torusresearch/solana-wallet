@@ -29,7 +29,7 @@ export const mockMintInfo: Record<string, Mint> = {
     decimals: 6,
     supply: BigInt(1000000000),
     isInitialized: true,
-  },
+  } as Mint,
   [mockMintAddress[1]]: {
     address: new PublicKey(mockMintAddress[1]),
     mintAuthority: sKeyPair[0].publicKey,
@@ -37,7 +37,7 @@ export const mockMintInfo: Record<string, Mint> = {
     decimals: 0,
     supply: BigInt(1000000000),
     isInitialized: true,
-  },
+  } as Mint,
 };
 
 export const mockSimulateTransaction = {

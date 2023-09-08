@@ -29,12 +29,11 @@ import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaT
 import { BigNumber } from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useI18n } from "vue-i18n";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
 import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
-import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
@@ -42,7 +41,6 @@ import { delay, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 import { isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import store from "../store";
 import { addToast } from "./app";
 
@@ -290,7 +288,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
-    const { t } = i18n.global;
+    const { t } = useI18n({ useScope: "global" });
     const isSet = await this.torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
@@ -342,7 +340,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async addContact(contactPayload: ContactPayload): Promise<void> {
-    const { t } = i18n.global;
+    const { t } = useI18n({ useScope: "global" });
     const isDeleted = await this.torus.addContact(contactPayload);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
@@ -353,7 +351,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async deleteContact(contactId: number): Promise<void> {
-    const { t } = i18n.global;
+    const { t } = useI18n({ useScope: "global" });
     const isDeleted = await this.torus.deleteContact(contactId);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
@@ -383,7 +381,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
-    const { t } = i18n.global;
+    const { t } = useI18n({ useScope: "global" });
     const isSet = await this.torus.setDefaultCurrency(currency);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
@@ -394,7 +392,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async setLocale(locale: string): Promise<void> {
-    const { t } = i18n.global;
+    const { t } = useI18n({ useScope: "global" });
     const isSet = await this.torus.setLocale(locale);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));

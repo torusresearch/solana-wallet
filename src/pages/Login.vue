@@ -88,6 +88,7 @@ const hasSelectedPrivateKey = computed(() => ControllerModule.hasSelectedPrivate
 const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
 onMounted(() => {
+  log.info("app is dark mode", app);
   if (hasSelectedPrivateKey.value && isRedirectFlow) {
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
   }

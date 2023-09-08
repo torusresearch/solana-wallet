@@ -688,7 +688,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         .slice(0, 64);
     } catch (e1) {
       try {
-        pKey = base58.decode(privKey).toString("hex").slice(0, 64);
+        pKey = Buffer.from(base58.decode(privKey)).toString("hex").slice(0, 64);
       } catch (e2) {
         pKey = privKey;
       }

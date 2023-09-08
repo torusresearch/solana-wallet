@@ -82,9 +82,9 @@ async function endLogin() {
       throw new Error("Login unsuccessful");
     }
 
-    userInfo = await openLoginInstance.getUserInfo();
+    userInfo = openLoginInstance.getUserInfo();
 
-    const openLoginStore = openLoginState.store;
+    const openLoginStore = openLoginState.userInfo;
     if (!openLoginStore?.appState) {
       throw new Error("Login unsuccessful");
     }
@@ -179,6 +179,7 @@ endLogin();
           <button
             v-for="({ app, address }, index) in accountsProps"
             :key="address"
+            type="button"
             :value="index"
             class="flex flex-col overflow-hidden w-full mt-1 mb-1 hover:border-cyan-100 text-app-primary-500"
             @click="() => selectAccount(index)"
