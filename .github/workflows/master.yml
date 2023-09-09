@@ -56,7 +56,7 @@ jobs:
       - name: invalidate
         uses: chaitanyapotti/cloudfront-update-distribution@v2
         with:
-          cloudfront-distribution-id: ${{ secrets.DISTRIBUTION_BETA }}
+          cloudfront-distribution-id: ${{ secrets.DISTRIBUTION_PROD }}
           cloudfront-invalidation-path: "/*"
           cloudfront-invalidation-required: true
           cloudfront-wait-for-service-update: false
