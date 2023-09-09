@@ -10,9 +10,8 @@ import {
   ProviderConfig,
   TransactionConfig,
   TransactionState,
-  UserInfo,
 } from "@toruslabs/base-controllers";
-import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER, OpenloginUserInfo } from "@toruslabs/openlogin-utils";
 import {
   SolanaBlock,
   SolanaCurrencyControllerConfig,
@@ -49,7 +48,7 @@ export interface KeyState {
 }
 
 export interface OpenLoginBackendState {
-  userInfo?: UserInfo;
+  userInfo?: OpenloginUserInfo;
   publicKey: string;
   privateKey: string;
   accounts: ProjectAccountType[];
@@ -156,7 +155,7 @@ export const STATUS = {
   INFO: "info",
 } as const;
 
-export type STATUS_TYPE = typeof STATUS[keyof typeof STATUS];
+export type STATUS_TYPE = (typeof STATUS)[keyof typeof STATUS];
 
 // export type TX_TYPE = "Transfer" | "Deploy" | "Buy Crypto";
 
@@ -167,7 +166,7 @@ export const BUTTON_POSITION = {
   TOP_RIGHT: "top-right",
 } as const;
 
-export type BUTTON_POSITION_TYPE = typeof BUTTON_POSITION[keyof typeof BUTTON_POSITION];
+export type BUTTON_POSITION_TYPE = (typeof BUTTON_POSITION)[keyof typeof BUTTON_POSITION];
 export interface EmbedInitParams {
   buttonPosition: BUTTON_POSITION_TYPE;
   isIFrameFullScreen: boolean;

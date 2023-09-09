@@ -1,5 +1,4 @@
-import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE, storageAvailable } from "@toruslabs/openlogin";
-import type { WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE, storageAvailable, WhiteLabelData } from "@toruslabs/openlogin-utils";
 import log, { LogLevelDesc } from "loglevel";
 
 import { getBrandColor, getWhiteLabelLocale, isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";

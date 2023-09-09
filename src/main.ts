@@ -1,5 +1,6 @@
 import "@/main.css";
 
+import { createGtm } from "@gtm-support/vue-gtm";
 import log from "loglevel";
 import { createApp } from "vue";
 import VueGtag from "vue-gtag";
@@ -14,7 +15,7 @@ import * as serviceWorker from "./registerServiceWorker";
 import { installSentry } from "./sentry";
 import store from "./store";
 
-const { VUE_APP_GA_ID } = process.env;
+const { VUE_APP_GA_ID, NODE_ENV } = process.env;
 
 const vue = createApp(App);
 vue
@@ -22,11 +23,25 @@ vue
   .use(router)
   .use(store)
   .use(VueGtag, {
-    config: { id: VUE_APP_GA_ID },
-  })
-  .mount("#app");
+    config: { id: VUE_APP_GA_ID as string },
+  });
+
+if (NODE_ENV === "production") {
+  vue.use(
+    createGtm({
+      id: VUE_APP_GA_ID as string,
+      defer: true,
+      enabled: true,
+      debug: false,
+      loadScript: true,
+      vueRouter: router, // Pass the router instance to automatically sync with router (optional)
+      trackOnNextTick: true, // Whether or not call trackView in Vue.nextTick
+    })
+  );
+}
 applyWhiteLabelColors();
 installSentry(vue);
+vue.mount("#app");
 serviceWorker.register({
   onUpdate: (registration) => {
     const waitingServiceWorker = registration.waiting;

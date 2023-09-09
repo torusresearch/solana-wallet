@@ -27,6 +27,7 @@ const { t } = useI18n();
         class="property-value text-app-text-500 dark:text-app-text-dark-500"
         :href="`https://solscan.io/token/${props.mintAddress}`"
         target="_blank"
+        rel="noopener noreferrer"
         >{{ props.token?.name }}</a
       >
     </div>

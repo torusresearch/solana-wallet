@@ -69,7 +69,9 @@ function openLink() {
           <p class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("dappProvider.requestFrom") }} {{ props.label }}</p>
 
           <div class="w-full flex flex-row justify-between items-center bg-white dark:bg-app-gray-700 h-12 px-5 mt-3 rounded-md">
-            <a :href="props.origin" target="_blank" class="text-sm text-app-primary-500">{{ getDomainFromUrl(props.origin) }}</a>
+            <a :href="props.origin" target="_blank" rel="noopener noreferrer" class="text-sm text-app-primary-500">{{
+              getDomainFromUrl(props.origin)
+            }}</a>
             <div class="h-6 w-6 flex items-center justify-center rounded-md cursor-pointer" @click="openLink" @keydown="openLink">
               <img :src="GoToLinkLogo" alt="GoToLink" />
             </div>

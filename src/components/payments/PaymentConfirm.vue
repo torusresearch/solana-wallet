@@ -112,7 +112,7 @@ const explorerUrl = computed(() => {
             class="flex flex-row justify-between items-center w-full whitespace-no-wrap overflow-hidden overflow-ellipsis text-sm text-app-text-500 dark:text-app-text-dark-500 mt-3"
           >
             <p>{{ `${t("walletTransfer.pay")} ${t("walletActivity.to")}` }} : {{ props.label }}</p>
-            <a :href="explorerUrl" target="_blank" class="underline flex"
+            <a :href="explorerUrl" target="_blank" rel="noopener noreferrer" class="underline flex"
               >{{ addressSlicer(props.receiverPubKey) }}
               <ExternalLinkIcon class="w-4 h-4" />
             </a>

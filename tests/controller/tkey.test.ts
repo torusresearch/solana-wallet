@@ -1,4 +1,4 @@
-import eccrypto, { decrypt as ecDecrypt, encrypt as ecEncrypt } from "@toruslabs/eccrypto";
+import { decrypt as ecDecrypt, encrypt as ecEncrypt, generatePrivate } from "@toruslabs/eccrypto";
 import assert from "assert";
 import BN from "bn.js";
 import { ec as EC } from "elliptic";
@@ -19,7 +19,7 @@ describe("tkey utils", () => {
   const privKey = toPrivKeyECC(keyPair.getPrivate());
   const msg = Buffer.from(JSON.stringify(openloginFaker[0]), "utf-8");
   const storageLayer = new TorusStorageLayer({ hostUrl: "https://solana-openlogin-state.tor.us" });
-  const ecc_privateKey = eccrypto.generatePrivate();
+  const ecc_privateKey = generatePrivate();
   //   const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
   beforeEach(async () => {
     nockRequest();

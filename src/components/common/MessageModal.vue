@@ -3,9 +3,10 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon, XCircleIcon, XIcon } from "@heroicons/vue/solid";
 import { ref } from "vue";
 
-import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 import { STATUS, STATUS_TYPE } from "@/utils/enums";
+
+import Button from "./Button.vue";
 
 withDefaults(
   defineProps<{

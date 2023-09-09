@@ -3,10 +3,9 @@ import { Keypair } from "@solana/web3.js";
 import { broadcastChannelOptions, PopupData } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { get } from "@toruslabs/http-helpers";
-import { OpenloginUserInfo } from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
 import { subkey } from "@toruslabs/openlogin-subkey";
-import { safeatob } from "@toruslabs/openlogin-utils";
+import { OpenloginUserInfo, safeatob } from "@toruslabs/openlogin-utils";
 import { Button, Loader } from "@toruslabs/vue-components/common";
 import base58 from "bs58";
 import log from "loglevel";
@@ -83,10 +82,10 @@ async function endLogin() {
       throw new Error("Login unsuccessful");
     }
 
-    userInfo = await openLoginInstance.getUserInfo();
+    userInfo = openLoginInstance.getUserInfo();
 
-    const openLoginStore = openLoginState.store.getStore();
-    if (!openLoginStore.appState) {
+    const openLoginStore = openLoginState.userInfo;
+    if (!openLoginStore?.appState) {
       throw new Error("Login unsuccessful");
     }
     const appState = JSON.parse(safeatob(decodeURIComponent(decodeURIComponent(openLoginStore.appState as string))));
@@ -180,6 +179,7 @@ endLogin();
           <button
             v-for="({ app, address }, index) in accountsProps"
             :key="address"
+            type="button"
             :value="index"
             class="flex flex-col overflow-hidden w-full mt-1 mb-1 hover:border-cyan-100 text-app-primary-500"
             @click="() => selectAccount(index)"
