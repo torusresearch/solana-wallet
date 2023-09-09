@@ -91,6 +91,7 @@ const refDiv = ref(null);
                   {{ t("walletTransfer.cancel") }}
                 </Button>
                 <button
+                  type="button"
                   class="flex items-center justify-center bg-red-500 text-white text-base size-medium flex-auto mx-2 w-1/2 rounded-md"
                   @click="onConfirm"
                 >

@@ -29,7 +29,9 @@ const footerSupportLinks = [
 
   <div class="space-x-3 mb-14 sm:mb-5">
     <template v-for="footerSupportLink in footerSupportLinks" :key="footerSupportLink.translateText">
-      <a class="text-xs text-app-primary-500" :href="footerSupportLink.href" target="_blank">{{ t(footerSupportLink.translateText) }}</a>
+      <a class="text-xs text-app-primary-500" :href="footerSupportLink.href" target="_blank" rel="noopener noreferrer">{{
+        t(footerSupportLink.translateText)
+      }}</a>
     </template>
   </div>
 </template>

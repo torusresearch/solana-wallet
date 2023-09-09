@@ -13,12 +13,14 @@ module.exports = {
     configureWebpack: (config) => {
         config.resolve.fallback = {
             ...config.resolve.fallback,
-            crypto: require.resolve("crypto-browserify"),
-            stream: require.resolve("stream-browserify"),
-            assert: require.resolve("assert"),
-            os: require.resolve("os-browserify/browser"),
-            https: require.resolve("https-browserify"),
-            http: require.resolve("stream-http"),
+            crypto: false,
+            stream: false,
+            assert: false,
+            os: false,
+            https: false,
+            http: false,
+            zlib: false,
+            url: false,
         };
         config.resolve.alias = {
             ...config.resolve.alias,

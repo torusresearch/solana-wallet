@@ -1,12 +1,11 @@
-import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE, storageAvailable } from "@toruslabs/openlogin";
-import type { WhiteLabelData } from "@toruslabs/openlogin-jrpc";
+import { LOGIN_PROVIDER, OPENLOGIN_NETWORK_TYPE, storageAvailable, WhiteLabelData } from "@toruslabs/openlogin-utils";
 import log, { LogLevelDesc } from "loglevel";
 
 import { getBrandColor, getWhiteLabelLocale, isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import { LOCAL_STORAGE_KEY, SESSION_STORAGE_KEY } from "./utils/enums";
 
-const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE, VUE_APP_DEVELOPER_DASHBOARD_URL } = process.env;
+const { VUE_APP_TORUS_NETWORK, NODE_ENV, VUE_APP_MODE, VUE_APP_DEVELOPER_DASHBOARD_URL, VUE_APP_OPENLOGIN_ORIGIN_SIGNATURE } = process.env;
 
 const baseUrl = window.location.origin;
 
@@ -42,6 +41,7 @@ export default {
   // api: "http://localhost:4021",
   openloginStateAPI: "https://solana-openlogin-state.tor.us",
   // openloginStateAPI: "http://localhost:4022",
+  openLoginOriginSig: VUE_APP_OPENLOGIN_ORIGIN_SIGNATURE,
   redirect_uri: redirectURI,
   dappStorageKey,
   developerDashboardUrl: VUE_APP_DEVELOPER_DASHBOARD_URL,

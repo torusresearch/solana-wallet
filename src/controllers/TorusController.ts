@@ -28,9 +28,8 @@ import {
   PopupHandler,
   PopupWithBcHandler,
   PROVIDER_NOTIFICATIONS,
-  providerAsMiddleware,
   ProviderConfig,
-  SafeEventEmitterProvider,
+  randomId,
   THEME,
   TopupInput,
   TransactionState,
@@ -38,8 +37,7 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
-import eccrypto from "@toruslabs/eccrypto";
-import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { generatePrivate, getPublic } from "@toruslabs/eccrypto";
 import {
   createEngineStream,
   JRPCEngine,
@@ -47,11 +45,13 @@ import {
   JRPCEngineNextCallback,
   JRPCRequest,
   JRPCResponse,
+  providerAsMiddleware,
+  SafeEventEmitterProvider,
   setupMultiplex,
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
-import { randomId } from "@toruslabs/openlogin-utils";
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
   CurrencyController,
@@ -688,7 +688,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         .slice(0, 64);
     } catch (e1) {
       try {
-        pKey = base58.decode(privKey).toString("hex").slice(0, 64);
+        pKey = Buffer.from(base58.decode(privKey)).toString("hex").slice(0, 64);
       } catch (e2) {
         pKey = privKey;
       }
@@ -1268,7 +1268,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const userDapp = new Map();
       const accountPromise = targetAccount.map((account) => {
         userDapp.set(account.address, account.app);
-        return this.addAccount(account.solanaPrivKey, userInfo);
+        return this.addAccount(account.solanaPrivKey, userInfo as UserInfo);
       });
       this.update({ UserDapp: userDapp });
 
@@ -1346,8 +1346,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
    */
   async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
     // Random generated secp256k1
-    const ecc_privateKey = eccrypto.generatePrivate();
-    const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
+    const ecc_privateKey = generatePrivate();
+    const ecc_publicKey = getPublic(ecc_privateKey);
 
     // (ephemeral private key, user public key)
     const keyState: KeyState = {
@@ -1426,7 +1426,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
               }
             } else {
               log.info("login with userinfo, redo solana backend login");
-              address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo);
+              address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo as UserInfo);
             }
             return address;
           });

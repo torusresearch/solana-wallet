@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LOGIN_PROVIDER } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 import { useI18n } from "vue-i18n";
 
 import { LOGIN_CONFIG } from "@/utils/enums";

@@ -1,6 +1,17 @@
 import { Creator, Metadata, MetadataData, MetadataDataData } from "@metaplex-foundation/mpl-token-metadata";
 import { Mint, MintLayout, RawMint, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { AccountInfo, Commitment, Connection, Message, ParsedAccountData, PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
+import {
+  AccountInfo,
+  Commitment,
+  ConfirmedSignatureInfo,
+  Connection,
+  Message,
+  ParsedAccountData,
+  PublicKey,
+  Transaction,
+  TransactionConfirmationStatus,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import base58 from "bs58";
 import crypto from "crypto";
 import log from "loglevel";
@@ -18,7 +29,7 @@ export const mockMintInfo: Record<string, Mint> = {
     decimals: 6,
     supply: BigInt(1000000000),
     isInitialized: true,
-  },
+  } as Mint,
   [mockMintAddress[1]]: {
     address: new PublicKey(mockMintAddress[1]),
     mintAuthority: sKeyPair[0].publicKey,
@@ -26,7 +37,7 @@ export const mockMintInfo: Record<string, Mint> = {
     decimals: 0,
     supply: BigInt(1000000000),
     isInitialized: true,
-  },
+  } as Mint,
 };
 
 export const mockSimulateTransaction = {
@@ -280,11 +291,11 @@ const parsedTokenAccountInfo: { pubkey: PublicKey; account: AccountInfo<ParsedAc
   },
 ];
 
-const generateSignatureStatus = (signature: string, status = "finalized", signSlot = 0) => {
+const generateSignatureStatus = (signature: string, status = "finalized", signSlot = 0): ConfirmedSignatureInfo => {
   const slot = signSlot || slotCounter;
   return {
     blockTime: 1642059750 + slot,
-    confirmationStatus: status,
+    confirmationStatus: status as TransactionConfirmationStatus,
     err: null,
     memo: null,
     signature,

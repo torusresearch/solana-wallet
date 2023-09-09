@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
@@ -25,7 +25,7 @@ const props = withDefaults(
   }
 );
 const { t } = useI18n();
-const localToken = ref(props.selectedToken);
+const localToken = computed(() => props.selectedToken);
 const emits = defineEmits(["update:selectedToken"]);
 
 watch(localToken, () => {

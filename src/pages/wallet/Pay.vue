@@ -140,7 +140,7 @@ const onReject = () => {
       @on-close="onMessageModalClosed"
     />
     <FullDivLoader v-if="loading" class="absolute" />
-    <button v-else-if="errMessage.length" @click="rescan">{{ errMessage }}</button>
+    <button v-else-if="errMessage.length" type="button" @click="rescan">{{ errMessage }}</button>
     <SolanaPay
       v-else-if="requestLink.length"
       class="spay z-40 sm:z-0"

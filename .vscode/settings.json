@@ -2,8 +2,10 @@
   "javascript.suggestionActions.enabled": false,
   "files.associations": { "*.css": "postcss" },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.codeActionsOnSave": { "source.fixAll": true },
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+}
 }

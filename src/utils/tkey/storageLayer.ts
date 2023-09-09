@@ -1,5 +1,5 @@
 import { post } from "@toruslabs/http-helpers";
-import { keccak256 } from "@toruslabs/openlogin-utils";
+import { keccak256 } from "@toruslabs/metadata-helpers";
 import BN from "bn.js";
 import stringify from "json-stable-stringify";
 
@@ -127,7 +127,7 @@ class TorusStorageLayer {
       timestamp: new BN((this.serverTimeOffset + Date.now()) / 1000).toString(16),
     };
 
-    const hash = keccak256(stringify(setTKeyStore)).slice(2);
+    const hash = keccak256(Buffer.from(stringify(setTKeyStore), "utf-8"));
     if (privKey) {
       const unparsedSig = toPrivKeyEC(privKey).sign(hash);
       sig = Buffer.from(unparsedSig.r.toString(16, 64) + unparsedSig.s.toString(16, 64) + new BN(0).toString(16, 2), "hex").toString("base64");

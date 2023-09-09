@@ -85,6 +85,7 @@ const refDiv = ref(null);
                   </div>
                   <div class="ml-auto flex">
                     <button
+                      type="button"
                       class="w-10 h-10 mr-2 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
                       @click="() => showWallet('wallet/transfer')"
                     >
@@ -92,6 +93,7 @@ const refDiv = ref(null);
                     </button>
                     <button
                       v-if="!isTopupHidden()"
+                      type="button"
                       class="w-10 h-10 rounded-full shadow-md dark:shadow-dark2 flex items-center justify-center focus-within:outline-none"
                       @click="() => showWallet('wallet/topup')"
                     >
@@ -122,7 +124,7 @@ const refDiv = ref(null);
                   </div>
                 </div>
               </div>
-              <button class="torus-widget__button">
+              <button class="torus-widget__button" type="button">
                 <img class="torus-widget__button-img" :src="getWhiteLabelLogoLight() || SolanaLogo" alt="Login icon" />
               </button>
             </div>
