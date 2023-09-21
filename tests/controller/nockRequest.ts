@@ -115,8 +115,7 @@ export default () => {
     .reply(200, (_uri: string, body: JRPCRequest<unknown>) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { method, params, ...others } = body;
-      // log.error(method);
-      if (method === "getHealth" || method === "qn_fetchNFTs") {
+      if (method === "getHealth" || method === "qn_fetchNFTs" || method === "getLatestBlockhash") {
         const value = { ...others, result: "ok" };
         // log.error(value);
         return value;

@@ -7,7 +7,6 @@ export const WALLET_SUPPORTED_NETWORKS: { [key: string]: ProviderConfig } = {
     ...SUPPORTED_NETWORKS.mainnet,
     rpcTarget: "https://solana-mainnet-rpc.gateway.pokt.network/",
     // rpcTarget: "https://nyc39.rpcpool.com",
-    // rpcTarget: "https://green-dark-sky.solana-mainnet.quiknode.pro/0b4b99540b7930cf590dc7fb0a2d1c9a906fd53c/",
   },
   testnet: {
     ...SUPPORTED_NETWORKS.testnet,

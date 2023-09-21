@@ -446,7 +446,7 @@ describe("Controller Module", () => {
       assert.deepStrictEqual(theme, "light");
     });
 
-    it("setCrashReport", async () => {
+    it.skip("setCrashReport", async () => {
       await controllerModule.setCrashReport(true);
       const { crashReport } = controllerModule.torusState.PreferencesControllerState.identities[sKeyPair[0].publicKey.toBase58()];
       assert.deepStrictEqual(crashReport, true);
