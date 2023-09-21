@@ -80,7 +80,7 @@ export const bonfidaResolve = async (connection: Connection, domain: string) => 
     const recordKey = await getDomainKey(`${Record.SOL}.${domain}`, true);
     const solRecord = await getSolRecord(connection, domain);
 
-    if (solRecord.data?.length !== 96) {
+    if (solRecord?.data?.length !== 96) {
       throw new Error("Invalid SOL record data");
     }
 

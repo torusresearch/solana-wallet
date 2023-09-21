@@ -243,7 +243,7 @@ export async function calculateChanges(
     const bufferData = Buffer.from(item.data[0], item.data[1] as BufferEncoding);
     if (TOKEN_PROGRAM_ID.equals(new PublicKey(item.owner)) && bufferData.length > MINT_SIZE) {
       const rawAccount = AccountLayout.decode(bufferData);
-      const tokenDetail: Account = {
+      const tokenDetail = {
         address: new PublicKey(accountKeys[idx]),
         mint: rawAccount.mint,
         owner: rawAccount.owner,
@@ -259,7 +259,7 @@ export async function calculateChanges(
          * remain in the balance until the account is closed.
          */
         rentExemptReserve: null,
-      };
+      } as Account;
 
       mintTokenAddress.push(tokenDetail.mint.toBase58());
       postTokenDetails.push(tokenDetail);

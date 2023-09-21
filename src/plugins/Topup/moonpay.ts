@@ -20,7 +20,7 @@ export const getSignature = async (requestObject: { url: string }) => {
         // Authorization: `Bearer ${requestObject.token}`,
       },
     };
-    const { signature } = await get(`${config.moonpayApiHost}/sign?url=${requestObject.url}`, options);
+    const { signature }: { signature: string } = await get(`${config.moonpayApiHost}/sign?url=${requestObject.url}`, options);
     return signature as string;
   } catch (error) {
     log.error(error);

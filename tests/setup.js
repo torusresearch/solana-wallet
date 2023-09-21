@@ -1,7 +1,6 @@
 const path = require("path");
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-const fetch = require("node-fetch");
 require("jsdom-global")("", {
   url: "https://solana.tor.us",
 });
@@ -23,7 +22,3 @@ require("ts-node").register({
   transpileOnly: true,
   compilerOptions: { module: "commonjs" },
 });
-
-
-global.fetch = fetch;
-global.Headers = fetch.Headers;

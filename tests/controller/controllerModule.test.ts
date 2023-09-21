@@ -1,6 +1,6 @@
 import { LAMPORTS_PER_SOL, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { BaseEmbedController, KeyPair, PAYMENT_PROVIDER_TYPE, PopupHandler, PopupWithBcHandler } from "@toruslabs/base-controllers";
-import eccrypto from "@toruslabs/eccrypto";
+import { generatePrivate, getPublic } from "@toruslabs/eccrypto";
 import OpenLogin from "@toruslabs/openlogin";
 import { BasePostMessageStream, JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 import {
@@ -59,13 +59,13 @@ describe("Controller Module", () => {
     sandbox.stub(config, "torusNetwork").get(() => "mainnet");
     sandbox.stub(OpenLogin.prototype, "init").callsFake(noopAsync);
     sandbox.stub(OpenLogin.prototype, "logout").callsFake(noopAsync);
-    sandbox.stub(OpenLogin.prototype, "_syncState").callsFake(noopAsync);
+    // sandbox.stub(OpenLogin.prototype, "_syncState").callsFake(noopAsync);
     sandbox.stub(TorusStorageLayer.prototype, "getMetadata").callsFake(async () => {
       return openloginFaker[1];
     });
-    sandbox.stub(OpenLogin.prototype, "_getData").callsFake(async () => {
-      return {};
-    });
+    // sandbox.stub(OpenLogin.prototype, "_getData").callsFake(async () => {
+    //   return {};
+    // });
     // sandbox.stub(TokenInfoController.prototype, "fetchMetaplexNFTs").callsFake(async () => {
     //   return {
     //     [mockNFTs[1].mintAddress]: mockNFTs[1].metaplexData,
@@ -851,8 +851,8 @@ describe("Controller Module", () => {
     it("saveToOpenloginBackend", async () => {
       const setMetaDataSpy = sandbox.spy(TorusStorageLayer.prototype, "setMetadata");
       const { publicKey, secretKey } = sKeyPair[0];
-      const ecc_privateKey = eccrypto.generatePrivate();
-      const ecc_publicKey = eccrypto.getPublic(ecc_privateKey);
+      const ecc_privateKey = generatePrivate();
+      const ecc_publicKey = getPublic(ecc_privateKey);
 
       const keyState: KeyState = {
         priv_key: ecc_privateKey.toString("hex"),

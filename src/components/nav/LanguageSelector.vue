@@ -16,7 +16,7 @@ const value = customRef((track, trigger) => {
       const value2 = LOCALES.find((x) => x.value === i18n.global.locale) || LOCALES[0];
       return value2;
     },
-    set(input: typeof LOCALES[0]) {
+    set(input: (typeof LOCALES)[0]) {
       trackUserClick(GeneralInteractions.GENERAL_LANGUAGE + input.value);
       setLocale(i18n, input.value);
       ControllersModule.setLocale(input.value);

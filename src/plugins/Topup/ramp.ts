@@ -96,7 +96,7 @@ const configDetails: TopUpProvider = {
     const parameters = {
       userAddress: params.selectedAddress || state.selectedAddress || undefined,
       userEmailAddress: state.email || undefined,
-      swapAsset: params.selectedCryptoCurrency || "SOLANA_SOL" || undefined,
+      swapAsset: params.selectedCryptoCurrency || "SOLANA_SOL",
       swapAmount: params.cryptoAmount || undefined,
       fiatValue: params.fiatValue || undefined,
       fiatCurrency: params.selectedCurrency || undefined,

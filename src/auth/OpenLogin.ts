@@ -20,6 +20,10 @@ class OpenLoginFactory {
           redirectUrl: `${config.baseRoute}end`,
           replaceUrlOnRedirect: true,
           uxMode: "redirect",
+          originData: {
+            [window.location.origin]: config.openLoginOriginSig as string,
+          },
+          sessionTime: 3 * 86400,
         });
         await instance.init();
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER, LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import { Loader } from "@toruslabs/vue-components/common";
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
@@ -88,6 +88,7 @@ const hasSelectedPrivateKey = computed(() => ControllerModule.hasSelectedPrivate
 const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
 onMounted(() => {
+  log.info("app is dark mode", app);
   if (hasSelectedPrivateKey.value && isRedirectFlow) {
     redirectToResult(jsonrpc, { success: true, data: { selectedAddress: selectedAddress.value }, method }, req_id, resolveRoute);
   }
