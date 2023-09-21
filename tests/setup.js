@@ -5,6 +5,8 @@ require("jsdom-global")("", {
   url: "https://solana.tor.us",
 });
 
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
 global.localStorage = window.localStorage;
 global.sessionStorage = window.sessionStorage;
 global.open = window.open;
@@ -22,3 +24,6 @@ require("ts-node").register({
   transpileOnly: true,
   compilerOptions: { module: "commonjs" },
 });
+
+global.fetch = fetch;
+global.Headers = fetch.Headers;
