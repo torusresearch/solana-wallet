@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
@@ -25,15 +25,16 @@ const props = withDefaults(
   }
 );
 const { t } = useI18n();
-const localToken = computed(() => props.selectedToken);
 const emits = defineEmits(["update:selectedToken"]);
-
-watch(localToken, () => {
-  emits("update:selectedToken", localToken.value);
+const value = computed({
+  get: () => {
+    return props.selectedToken;
+  },
+  set: (val) => emits("update:selectedToken", val),
 });
 </script>
 <template>
-  <Listbox v-model="localToken" as="div">
+  <Listbox v-model="value" as="div">
     <ListboxLabel class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">
