@@ -10,7 +10,7 @@ const props = defineProps<{
   token: string;
 }>();
 
-const currencies = computed(() => supportedCurrencies(props.token.toUpperCase()));
+const currencies = computed(() => supportedCurrencies());
 const emits = defineEmits(["onChange"]);
 
 const value = computed({
