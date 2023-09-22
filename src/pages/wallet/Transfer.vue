@@ -506,7 +506,7 @@ async function onSelectTransferType() {
             <div class="w-full flex flex-row space-x-2">
               <ComboBox
                 v-model="transferTo"
-                :label="t('walletActivity.sendTo')"
+                :label="$t('walletActivity.sendTo')"
                 :errors="isOpen ? undefined : $v.transferTo.$errors"
                 :items="contacts"
                 class="w-2/3 flex-auto"
@@ -518,16 +518,16 @@ async function onSelectTransferType() {
             <div v-if="isNewContact()" class="w-full">
               <CheckBox class="mb-4" label="Save Contact" :checked="checked" label-position="right" @change="checked = !checked" />
               <div v-if="checked">
-                <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="t('walletSettings.enterContact')" />
+                <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="$t('walletSettings.enterContact')" />
               </div>
             </div>
 
             <div v-if="showAmountField" class="w-full">
               <TextField
                 v-model="sendAmount"
-                :label="t('dappTransfer.amount')"
+                :label="$t('dappTransfer.amount')"
                 :errors="$v.sendAmount.$errors"
-                :postfix-text="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
+                :postfix-text="isSendAllActive ? $t('walletTransfer.reset') : $t('walletTransfer.sendAll')"
                 type="number"
                 @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
               >
@@ -554,10 +554,10 @@ async function onSelectTransferType() {
               </TextField>
             </div>
             <div v-if="spayMessage" class="w-full">
-              <TextField :label="t('walletPay.message')" :disabled="true" :model-value="spayMessage"> </TextField>
+              <TextField :label="$t('walletPay.message')" :disabled="true" :model-value="spayMessage"> </TextField>
             </div>
             <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
-              {{ t("dappTransfer.transfer") }}
+              {{ $t("dappTransfer.transfer") }}
             </Button>
           </div>
         </form>

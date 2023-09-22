@@ -4,10 +4,10 @@ import { computed, ref, watch } from "vue";
 
 import { Card, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
+// import { i18n } from "@/plugins/i18nPlugin";
 import { SolAndSplToken } from "@/utils/interfaces";
 
-const { t } = i18n.global;
+// const { t } = i18n.global;
 
 const props = defineProps<{
   selectedToken?: Partial<SolAndSplToken>;
@@ -42,7 +42,7 @@ watch(
   <Card>
     <div class="flex w-full justify-between items-center">
       <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
-        {{ t("walletHome.totalValue") }}
+        {{ $t("walletHome.totalValue") }}
       </div>
       <NetworkDisplay />
     </div>

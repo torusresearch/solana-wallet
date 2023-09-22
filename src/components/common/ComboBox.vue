@@ -2,8 +2,6 @@
 import { ErrorObject } from "@vuelidate/core";
 import { computed, ref } from "vue";
 
-import { i18n } from "@/plugins/i18nPlugin";
-
 type ItemType = { text: string; value: string };
 
 const props = withDefaults(
@@ -34,8 +32,6 @@ const filteredItems = computed(() => {
   });
 });
 
-const { t } = i18n.global;
-
 const setSelectedItem = (item: ItemType) => {
   value.value = item.value;
   isListOpen.value = false;
@@ -52,7 +48,7 @@ const onBlur = () => {
   <div class="flex flex-col">
     <div v-show="filteredItems.length > 0 && isListOpen" class="absolute inset-0 z-0" @click="isListOpen = false" @keydown="isListOpen = false"></div>
 
-    <div class="text-sm mb-1 text-app-text-600 dark:text-app-text-dark-500">{{ t("walletActivity.sendTo") }}</div>
+    <div class="text-sm mb-1 text-app-text-600 dark:text-app-text-dark-500">{{ $t("walletActivity.sendTo") }}</div>
     <input
       v-model="value"
       type="text"

@@ -9,12 +9,10 @@ import { useRouter } from "vue-router";
 import WalletIcon from "@/assets/wallet.svg";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { copyText } from "@/utils/helpers";
 
 import QrcodeDisplay from "./QrcodeDisplay.vue";
 
-const { t } = i18n.global;
 const router = useRouter();
 defineProps<{
   selectedAddress: string;
@@ -55,7 +53,7 @@ const closeQr = () => {
       @keydown="router.push('/wallet/pay')"
     >
       <ScanIcon class="w-4 h-4 mr-2" />
-      <span class="text-app-text-500 text-xs font-bold"> {{ t("walletHome.scanAndPay") }}</span>
+      <span class="text-app-text-500 text-xs font-bold"> {{ $t("walletHome.scanAndPay") }}</span>
     </div>
     <QrcodeDisplay
       v-if="displayQr"

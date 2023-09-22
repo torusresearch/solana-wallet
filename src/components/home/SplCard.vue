@@ -5,10 +5,7 @@ import { computed } from "vue";
 import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
 import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { SolAndSplToken } from "@/utils/interfaces";
-
-const { t } = i18n.global;
 
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 
@@ -61,7 +58,7 @@ function splClicked() {
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
       <p v-if="!hasGeckoPrice">
-        {{ t("homeToken.noRate") }}
+        {{ $t("homeToken.noRate") }}
       </p>
       <p v-if="hasGeckoPrice">
         ~{{
