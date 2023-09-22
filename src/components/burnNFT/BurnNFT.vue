@@ -6,7 +6,6 @@ import { ref } from "vue";
 import FallbackNft from "@/assets/fallback-nft.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
@@ -28,8 +27,6 @@ const props = withDefaults(
     isOpen: false,
   }
 );
-
-const { t } = i18n.global;
 
 const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
@@ -88,7 +85,7 @@ const refDiv = ref(null);
               </div>
               <div class="flex flex-row items-center my-6 mx-3">
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
-                  {{ t("walletTransfer.cancel") }}
+                  {{ $t("walletTransfer.cancel") }}
                 </Button>
                 <button
                   type="button"
