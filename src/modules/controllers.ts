@@ -504,7 +504,7 @@ class ControllerModule extends VuexModule {
       const openLoginInstance = await OpenLoginFactory.getInstance();
       // if (openLoginInstance.state.support3PC) {
 
-      openLoginInstance.logout();
+      await openLoginInstance.logout();
     } catch (error) {
       log.warn(error, "unable to logout with openlogin");
     }
