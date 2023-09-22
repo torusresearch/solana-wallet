@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { SelectField } from "@/components/common";
 import { SettingsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
 import { WALLET_SUPPORTED_NETWORKS } from "../../utils/const";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   const value = WALLET_SUPPORTED_NETWORKS[key as keyof typeof WALLET_SUPPORTED_NETWORKS];
   return {

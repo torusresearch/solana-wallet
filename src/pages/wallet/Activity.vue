@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 
 import ActivityItem from "@/components/activity/ActivityItem.vue";
 import { SelectField } from "@/components/common";
 import { ActivityPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
 const ACTIVITY_ACTION_ALL = "walletActivity.allTransactions";
 const ACTIVITY_ACTION_SEND = "walletActivity.send";
@@ -17,7 +17,7 @@ const ACTIVITY_PERIOD_WEEK_ONE = "walletActivity.lastOneWeek";
 const ACTIVITY_PERIOD_MONTH_ONE = "walletActivity.lastOneMonth";
 const ACTIVITY_PERIOD_MONTH_SIX = "walletActivity.lastSixMonts";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const actionTypes = [
   {

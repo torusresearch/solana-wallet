@@ -4,17 +4,17 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import { ScanIcon } from "@toruslabs/vue-icons/basic";
 import log from "loglevel";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import WalletIcon from "@/assets/wallet.svg";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { copyText } from "@/utils/helpers";
 
 import QrcodeDisplay from "./QrcodeDisplay.vue";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const router = useRouter();
 defineProps<{
   selectedAddress: string;

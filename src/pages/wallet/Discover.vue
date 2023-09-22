@@ -2,14 +2,15 @@
 import { DiscoverDapp } from "@toruslabs/base-controllers";
 import log from "loglevel";
 import { computed, onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
+import { VueI18nTranslation } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 import { RoundLoader, SelectField } from "@/components/common";
 import DappItem from "@/components/discover/DappItem.vue";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
-const { t } = useI18n();
+const t = i18n.global.t as VueI18nTranslation;
 
 const ALL_CATEGORIES = {
   value: "All DApps",

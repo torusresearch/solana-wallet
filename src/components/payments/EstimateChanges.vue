@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import log from "loglevel";
 import { ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { AccountEstimation } from "@/utils/interfaces";
 
 const props = defineProps<{
@@ -37,7 +37,7 @@ watch(
   { immediate: true, deep: true }
 );
 
-const { t } = useI18n();
+const { t } = i18n.global;
 </script>
 <template>
   <div class="flex w-full">

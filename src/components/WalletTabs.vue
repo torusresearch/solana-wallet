@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
@@ -26,7 +25,7 @@ const props = withDefaults(
   }
 );
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const tabs = ref(NAVIGATION_LIST);
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);

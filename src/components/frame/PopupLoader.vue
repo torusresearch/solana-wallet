@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { Dialog, DialogOverlay, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
+import { i18n } from "@/plugins/i18nPlugin";
 import { getTailwindColor } from "@/utils/tailwindHelper";
 import { isWhiteLabelDark } from "@/utils/whitelabel";
 
 import ControllerModule from "../../modules/controllers";
 import BoxLoader from "../common/BoxLoader.vue";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const refDiv = ref(null);
 </script>

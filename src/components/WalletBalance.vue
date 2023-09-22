@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { LoadingState } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import { GeneralInteractions, HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { isTopupHidden } from "@/utils/whitelabel";
 
-const { t } = useI18n();
+const { t } = i18n.global;
+
 const isCurrencyRateUpdate = computed(() => ControllerModule.isCurrencyRateUpdate);
 const isSplTokenLoading = computed(() => ControllerModule.isSplTokenLoading);
 

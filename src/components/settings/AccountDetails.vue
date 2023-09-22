@@ -3,14 +3,14 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { CopyIcon, EyeIcon, EyeNoIcon } from "@toruslabs/vue-icons/basic";
 import { KeyIcon } from "@toruslabs/vue-icons/security";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
 import { SettingsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { copyText } from "@/utils/helpers";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const isOpen = ref(false);
 const isKeyShown = ref(false);
 const key = computed(() => ControllerModule.torus.privateKey);

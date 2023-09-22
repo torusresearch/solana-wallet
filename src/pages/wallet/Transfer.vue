@@ -9,7 +9,6 @@ import { BigNumber } from "bignumber.js";
 import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
@@ -20,6 +19,7 @@ import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-he
 import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
@@ -27,7 +27,7 @@ import { calculateTxFee, generateSolTransaction, generateSPLTransaction, ruleVer
 
 import CheckBox from "../../components/common/CheckBox.vue";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);

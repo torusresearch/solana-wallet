@@ -3,12 +3,12 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { XIcon } from "@heroicons/vue/solid";
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
 import { LoginButtons } from "@/components/login";
 import config from "@/config";
+import { i18n } from "@/plugins/i18nPlugin";
 import { LOGIN_CONFIG } from "@/utils/enums";
 import { getWhiteLabelLogo, isWhiteLabelSet } from "@/utils/whitelabel";
 
@@ -25,7 +25,7 @@ withDefaults(
   }
 );
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const emits = defineEmits(["onClose", "onLogin"]);
 

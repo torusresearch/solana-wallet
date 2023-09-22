@@ -18,7 +18,6 @@ import {
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import { computed, ref, RenderFunction } from "vue";
-import { useI18n } from "vue-i18n";
 
 import {
   ActiveAppleIcon,
@@ -34,11 +33,12 @@ import {
   ActiveTwitterIcon,
   ActiveWechatIcon,
 } from "@/assets/auth";
+import { i18n } from "@/plugins/i18nPlugin";
 import { LOGIN_CONFIG } from "@/utils/enums";
 
 import { TextField } from "../common";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const iconList: Record<string, { default: RenderFunction; active: string }> = {
   google: {
     default: GoogleIcon,

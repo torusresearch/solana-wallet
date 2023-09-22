@@ -10,16 +10,16 @@ import { Button, Loader } from "@toruslabs/vue-components/common";
 import base58 from "bs58";
 import log from "loglevel";
 import { onErrorCaptured, ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 import config from "@/config";
+import { i18n } from "@/plugins/i18nPlugin";
 import { generateTorusAuthHeaders, openCrispChat } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
 import { APPLE, OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const loading = ref(true);
 const selectedAccountIndex = ref(0);

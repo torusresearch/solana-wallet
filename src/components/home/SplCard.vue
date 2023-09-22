@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { significantDigits } from "@toruslabs/base-controllers";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 
 import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
 import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { SolAndSplToken } from "@/utils/interfaces";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 

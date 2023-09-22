@@ -5,16 +5,16 @@ import { GlobeIcon, ListIcon, OptionsIcon } from "@toruslabs/vue-icons/basic";
 import { MonitorIcon } from "@toruslabs/vue-icons/gadgets";
 import { LockIcon } from "@toruslabs/vue-icons/security";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Panel } from "@/components/common";
 import { AccountDetails, AddressBook, CrashReporting, Display, Network } from "@/components/settings";
 import Language from "@/components/settings/Language.vue";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
 const contacts = computed(() => ControllerModule.contacts);
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const saveContact = async (contactPayload: ContactPayload): Promise<void> => {
   await ControllerModule.addContact(contactPayload);

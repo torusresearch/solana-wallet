@@ -2,12 +2,13 @@
 import { Menu, MenuButton, MenuItems } from "@headlessui/vue";
 import { UserInfo } from "@toruslabs/base-controllers";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { useI18n } from "vue-i18n";
+
+import { i18n } from "@/plugins/i18nPlugin";
 
 defineProps<{
   user: UserInfo;
 }>();
-const { t } = useI18n();
+const { t } = i18n.global;
 </script>
 
 <template>

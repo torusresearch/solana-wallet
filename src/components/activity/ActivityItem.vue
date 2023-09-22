@@ -3,12 +3,12 @@ import { ACTIVITY_STATUS_CANCELLED, ACTIVITY_STATUS_SUCCESSFUL, ACTIVITY_STATUS_
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import dateFormat from "dateformat";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 
 import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
 import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
 import { ActivityPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
 const props = defineProps<{
   activity: SolanaTransactionActivity;
@@ -17,7 +17,7 @@ const props = defineProps<{
 // const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
 // const showDetails = ref(false);
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const openExplorerLink = (link: string) => {
   trackUserClick(ActivityPageInteractions.ACTIVITY_DETAIL + link);

@@ -8,18 +8,18 @@ import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import { GeneralInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { copyText } from "@/utils/helpers";
 
 import QrcodeDisplay from "../home/QrcodeDisplay.vue";
 import LanguageSelector from "./LanguageSelector.vue";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 defineProps<{
   user: UserInfo;
   selectedAddress: string;

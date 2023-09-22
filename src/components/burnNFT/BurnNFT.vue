@@ -2,11 +2,11 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { NFTInfo } from "@toruslabs/solana-controllers";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
 
 import NetworkDisplay from "../common/NetworkDisplay.vue";
@@ -29,7 +29,7 @@ const props = withDefaults(
   }
 );
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 

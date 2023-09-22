@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { RadioGroup, RadioGroupDescription, RadioGroupLabel, RadioGroupOption } from "@headlessui/vue";
 import { ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import controllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { activeProvider, topupPlugin } from "@/plugins/Topup";
 import { TOPUP, TopUpProvider } from "@/plugins/Topup/interface";
 import { getBrandColor } from "@/utils/whitelabel";
@@ -14,7 +14,7 @@ const router = useRouter();
 const routeName = router.currentRoute.value.name === "walletTopUp" ? TOPUP.MOONPAY : router.currentRoute.value.name;
 const selectedProvider = ref<TopUpProvider>(topupPlugin[routeName?.toString() || TOPUP.MOONPAY]);
 const providers = activeProvider.map((item) => topupPlugin[item]);
-const { t } = useI18n();
+const { t } = i18n.global;
 
 watch(selectedProvider, () => {
   router.push({ name: selectedProvider.value.name });

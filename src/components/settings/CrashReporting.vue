@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Switch } from "@headlessui/vue";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const enabled = computed(() => ControllerModule.crashReport);
 </script>
 <template>

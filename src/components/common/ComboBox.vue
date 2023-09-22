@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ErrorObject } from "@vuelidate/core";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
+
+import { i18n } from "@/plugins/i18nPlugin";
 
 type ItemType = { text: string; value: string };
 
@@ -33,7 +34,7 @@ const filteredItems = computed(() => {
   });
 });
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const setSelectedItem = (item: ItemType) => {
   value.value = item.value;

@@ -5,10 +5,10 @@ import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { reactive, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Button, TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 
 const props = withDefaults(
   defineProps<{
@@ -25,7 +25,7 @@ const props = withDefaults(
   }
 );
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const emits = defineEmits(["importConfirm", "importCanceled", "onCloseModal"]);
 
