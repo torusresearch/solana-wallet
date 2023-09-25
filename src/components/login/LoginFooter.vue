@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
+import { i18n } from "@/plugins/i18nPlugin";
 
 withDefaults(
   defineProps<{
@@ -11,7 +11,7 @@ withDefaults(
     isEmbed: false,
   }
 );
-const { t } = useI18n();
+const { t } = i18n.global;
 </script>
 
 <template>

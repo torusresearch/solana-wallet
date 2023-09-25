@@ -30,7 +30,7 @@ import { BigNumber } from "bignumber.js";
 import { cloneDeep, merge, omit } from "lodash-es";
 import log from "loglevel";
 import { VueI18nTranslation } from "vue-i18n";
-// import { useI18n } from "vue-i18n";
+// import { i18n } from "@/plugins/i18nPlugin";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";

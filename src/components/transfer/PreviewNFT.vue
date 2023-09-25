@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { NFTInfo } from "@toruslabs/solana-controllers";
-import { useI18n } from "vue-i18n";
+import { VueI18nTranslation } from "vue-i18n";
+
+import { i18n } from "@/plugins/i18nPlugin";
 
 const props = withDefaults(
   defineProps<{
@@ -9,7 +11,7 @@ const props = withDefaults(
   }>(),
   {}
 );
-const { t } = useI18n();
+const t = i18n.global.t as VueI18nTranslation;
 </script>
 <template>
   <div class="flex flex-col justify-center items-start h-full w-full ml-6">

@@ -3,7 +3,7 @@ import { ChevronLeftIcon, GlobeAltIcon } from "@heroicons/vue/outline";
 import { DotsHorizontalIcon } from "@heroicons/vue/solid";
 import { NFTInfo, SolanaToken } from "@toruslabs/solana-controllers";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
+import { VueI18nTranslation } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
@@ -11,12 +11,13 @@ import PaperAirplane from "@/assets/paper-airplane.svg";
 import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
 import { NftsPageInteractions, trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { STATUS, STATUS_TYPE } from "@/utils/enums";
 import { delay, getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const router = useRouter();
-const { t } = useI18n();
+const t = i18n.global.t as VueI18nTranslation;
 const tabs = NAVIGATION_LIST;
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);

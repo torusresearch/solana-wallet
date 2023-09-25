@@ -4,17 +4,17 @@ import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { WiFiIcon } from "@toruslabs/vue-icons/connection";
 import { BigNumber } from "bignumber.js";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import { tokens } from "@/components/transfer/token-helper";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
 import EstimateChanges from "../payments/EstimateChanges.vue";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 
 const props = withDefaults(

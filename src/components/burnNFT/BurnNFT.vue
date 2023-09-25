@@ -2,7 +2,6 @@
 import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } from "@headlessui/vue";
 import { NFTInfo } from "@toruslabs/solana-controllers";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/fallback-nft.svg";
 import { Button } from "@/components/common";
@@ -28,8 +27,6 @@ const props = withDefaults(
     isOpen: false,
   }
 );
-
-const { t } = useI18n();
 
 const emits = defineEmits(["transferConfirm", "transferReject", "onCloseModal"]);
 
@@ -88,7 +85,7 @@ const refDiv = ref(null);
               </div>
               <div class="flex flex-row items-center my-6 mx-3">
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
-                  {{ t("walletTransfer.cancel") }}
+                  {{ $t("walletTransfer.cancel") }}
                 </Button>
                 <button
                   type="button"

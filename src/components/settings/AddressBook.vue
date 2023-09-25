@@ -6,13 +6,13 @@ import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import { debounce } from "lodash-es";
 import { computed, reactive, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Button, SelectField, TextField } from "@/components/common";
+import { i18n } from "@/plugins/i18nPlugin";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, TransferType } from "@/utils/enums";
 import { ruleVerifierId } from "@/utils/solanaHelpers";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const searchFilter = ref("");
 const typeFilter = ref<TransferType>();
 

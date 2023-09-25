@@ -5,7 +5,6 @@ import { useVuelidate } from "@vuelidate/core";
 import { helpers, required } from "@vuelidate/validators";
 import log from "loglevel";
 import { reactive, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Button, TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
@@ -24,8 +23,6 @@ const props = withDefaults(
     pricePerToken: 0,
   }
 );
-
-const { t } = useI18n();
 
 const emits = defineEmits(["importConfirm", "importCanceled", "onCloseModal"]);
 
@@ -75,7 +72,7 @@ function setImportTokenState(contractAddress: string, name: string, symbol: stri
 
 function resetState() {
   setImportTokenState("", "", "", true);
-  $v.value.$reset();
+  $v.value.$rese$t();
 }
 
 const onCancel = () => {
@@ -136,10 +133,10 @@ const refDiv = ref(null);
               </form>
               <div class="flex flex-row items-center my-6 mx-3">
                 <Button class="flex-auto mx-2 w-1/2" :block="true" variant="tertiary" @click="onCancel">
-                  {{ t("walletTransfer.cancel") }}
+                  {{ $t("walletTransfer.cancel") }}
                 </Button>
                 <Button class="flex-auto mx-2 w-1/2" :disabled="$v.$invalid || importDisabled" :block="true" variant="primary" @click="onImport">
-                  {{ t("walletTransfer.confirm") }}
+                  {{ $t("walletTransfer.confirm") }}
                 </Button>
               </div>
             </div>

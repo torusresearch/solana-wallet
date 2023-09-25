@@ -6,7 +6,6 @@ import { email, required } from "@vuelidate/validators";
 import { throttle } from "lodash-es";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import DiscordLoginImage from "@/assets/auth/login-discord.svg";
@@ -18,6 +17,7 @@ import LoginFooter from "@/components/loginFooter/LoginFooter.vue";
 import LoginSlider from "@/components/loginSlider/LoginSlider.vue";
 import { LoginInteractions } from "@/directives/google-analytics";
 import { addToast, app } from "@/modules/app";
+import { i18n } from "@/plugins/i18nPlugin";
 import { AVAILABLE_WEBSITES } from "@/utils/enums";
 import { isWhiteLabelDark } from "@/utils/whitelabel";
 
@@ -72,7 +72,7 @@ const listOfChains = ref<{ value: string; label: string; img?: string; link?: st
 ]);
 const selectedChain = ref(listOfChains.value[0]);
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const router = useRouter();
 const userEmail = ref("");
 const isLoading = ref(false);
@@ -186,7 +186,7 @@ watch(
                       :alt="loginButton.imgAltText"
                     />
                     <template v-if="loginButton.buttonLoginText">
-                      {{ t(loginButton.translateLoginText, { verifier: loginButton.verifier }) }}
+                      {{ $t(loginButton.translateLoginText, { verifier: loginButton.verifier }) }}
                     </template>
                   </Button>
                 </div>
@@ -206,7 +206,7 @@ watch(
                   v-model.lazy="userEmail"
                   variant="dark-bg"
                   class="mb-3 dark:text-app-text-dark-500 dark:bg-app-loginBg"
-                  :placeholder="t('login.enterYourEmail')"
+                  :placeholder="$t('login.enterYourEmail')"
                   :errors="$v.userEmail.$errors"
                 />
                 <Button
@@ -215,7 +215,7 @@ watch(
                   :block="true"
                   type="submit"
                   class="w-full mt-2 dark:text-app-gray-400 dark:bg-app-loginBg"
-                  >{{ t("dappLogin.continue", { verifier: t("loginCountry.email") }) }}
+                  >{{ $t("dappLogin.continue", { verifier: $t("loginCountry.email") }) }}
                 </Button>
               </form>
             </div>
@@ -238,7 +238,7 @@ watch(
     </div>
     <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
       <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" />
-      <p class="absolute bottom-12 text-white text-center">{{ t("dappLogin.completeVerification") }}.</p>
+      <p class="absolute bottom-12 text-white text-center">{{ $t("dappLogin.completeVerification") }}.</p>
     </div>
   </div>
 </template>

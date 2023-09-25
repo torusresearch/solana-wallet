@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
+import { VueI18nTranslation } from "vue-i18n";
 
 import Web3AuthLogo from "@/assets/web3auth.svg";
+import { i18n } from "@/plugins/i18nPlugin";
 
-const { t } = useI18n();
+const t = i18n.global.t as VueI18nTranslation;
 
 const footerSupportLinks = [
   { href: "https://docs.tor.us/legal/terms-and-conditions", translateText: "dappLogin.termsConditions" },
