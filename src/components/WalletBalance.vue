@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { LoadingState } from "@toruslabs/solana-controllers";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import { Button, Card, CurrencySelector, NetworkDisplay } from "@/components/common";
 import { GeneralInteractions, HomePageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+// import { i18n } from "@/plugins/i18nPlugin";
 import { isTopupHidden } from "@/utils/whitelabel";
 
-const { t } = useI18n();
+// const { t } = i18n.global;
+
 const isCurrencyRateUpdate = computed(() => ControllerModule.isCurrencyRateUpdate);
 const isSplTokenLoading = computed(() => ControllerModule.isSplTokenLoading);
 
@@ -37,7 +38,7 @@ const updateCurrency = (newCurrency: string) => {
   <Card :height="showButtons ? '164px' : undefined">
     <div class="flex w-full justify-between items-center">
       <div class="font-header font-semibold text-app-text-600 dark:text-app-text-dark-500">
-        {{ t("walletHome.totalValue") }}
+        {{ $t("walletHome.totalValue") }}
       </div>
       <NetworkDisplay />
     </div>
@@ -71,7 +72,7 @@ const updateCurrency = (newCurrency: string) => {
           variant="tertiary"
           class="w-full mr-3 text-app-primary-500"
           @click="router.push('/wallet/topup')"
-          >{{ t("walletHome.topUp") }}</Button
+          >{{ $t("walletHome.topUp") }}</Button
         >
         <Button
           v-ga="HomePageInteractions.TRANSFER"
@@ -79,7 +80,7 @@ const updateCurrency = (newCurrency: string) => {
           variant="tertiary"
           class="w-full text-app-primary-500"
           @click="router.push('/wallet/transfer')"
-          >{{ t("walletHome.transfer") }}</Button
+          >{{ $t("walletHome.transfer") }}</Button
         >
       </div>
     </template>

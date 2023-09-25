@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { CheckCircleIcon } from "@heroicons/vue/solid";
-import { useI18n } from "vue-i18n";
 
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { getDomainFromUrl } from "@/utils/helpers";
 import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const props = withDefaults(
   defineProps<{
     requestedFrom: string;

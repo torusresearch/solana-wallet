@@ -4,16 +4,16 @@ import { VersionedTransaction } from "@solana/web3.js";
 import log from "loglevel";
 import QrScanner from "qr-scanner";
 import { onMounted, reactive, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import MessageModal from "@/components/common/MessageModal.vue";
 import FullDivLoader from "@/components/FullDivLoader.vue";
 import SolanaPay from "@/components/payments/SolanaPay.vue";
 import controllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { STATUS, STATUS_TYPE } from "@/utils/enums";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 const router = useRouter();
 const route = useRoute();
 const requestLink = ref("");

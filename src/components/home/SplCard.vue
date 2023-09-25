@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { significantDigits } from "@toruslabs/base-controllers";
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 
 import SolanaLogoDark from "@/assets/solana-logo-shaded.png";
 import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
-
-const { t } = useI18n();
 
 const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
 
@@ -61,7 +58,7 @@ function splClicked() {
         {{ (currency === "sol" ? "usd" : currency).toUpperCase() }}
       </p>
       <p v-if="!hasGeckoPrice">
-        {{ t("homeToken.noRate") }}
+        {{ $t("homeToken.noRate") }}
       </p>
       <p v-if="hasGeckoPrice">
         ~{{

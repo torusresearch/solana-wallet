@@ -3,7 +3,6 @@ import { Dialog, DialogOverlay, DialogTitle, TransitionChild, TransitionRoot } f
 import { XIcon } from "@heroicons/vue/solid";
 import { LOGIN_PROVIDER } from "@toruslabs/openlogin-utils";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import TorusLogoURL from "@/assets/torus-logo.svg";
 import TorusLogoLightURL from "@/assets/torus-logo-light.svg";
@@ -24,8 +23,6 @@ withDefaults(
     otherWallets: "false",
   }
 );
-
-const { t } = useI18n();
 
 const emits = defineEmits(["onClose", "onLogin"]);
 
@@ -73,7 +70,7 @@ const refDiv = ref(null);
                   "
                 >
                   <DialogTitle as="div" class="focus-within:outline-none bg-transparent w-full" tabindex="0">
-                    <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ t("login.setupWallet") }}</h1>
+                    <h1 class="font-bold dark:text-white text-app-text-600 text-2xl mt-8">{{ $t("login.setupWallet") }}</h1>
                     <div
                       class="w-7 h-7 absolute top-3 right-3 cursor-pointer rounded-full bg-opacity-3 dark:bg-white dark:bg-opacity-5 flex items-center justify-center"
                       @click="closeModal"
@@ -82,7 +79,7 @@ const refDiv = ref(null);
                       <XIcon class="w-5 h-5 text-app-gray-800 dark:text-white text-opacity-70 hover:text-opacity-100" />
                     </div>
                   </DialogTitle>
-                  <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1 pr-5">{{ t("login.poweredBy") }}</p>
+                  <p class="dark:text-white text-app-text-600 text-opacity-80 font-normal text-sm mt-1 pr-5">{{ $t("login.poweredBy") }}</p>
                 </div>
               </div>
               <div class="mt-8 w-full px-4">
@@ -95,7 +92,7 @@ const refDiv = ref(null);
                 />
               </div>
               <div class="w-full mt-6 mb-12 text-center">
-                <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ t("dappLogin.poweredBy") }}</span>
+                <span class="dark:text-white text-app-text-600 text-opacity-70 text-xs font-normal mr-2">{{ $t("dappLogin.poweredBy") }}</span>
                 <img
                   :src="ControllerModule.isDarkMode ? TorusLogoLightURL : TorusLogoURL"
                   alt="Torus Logo"
@@ -107,7 +104,7 @@ const refDiv = ref(null);
                 class="mt-auto pt-4 pb-6 px-2 w-full border-t-2 border-solid border-white border-opacity-10 text-center"
               >
                 <span class="cursor-pointer text-base dark:text-white text-app-text-600 font-normal hover:text-opacity-80" tabindex="0">{{
-                  t("login.differentWallet")
+                  $t("login.differentWallet")
                 }}</span>
               </div>
             </div>

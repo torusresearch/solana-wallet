@@ -9,7 +9,6 @@ import { BigNumber } from "bignumber.js";
 import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
@@ -20,6 +19,7 @@ import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-he
 import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
@@ -27,7 +27,7 @@ import { calculateTxFee, generateSolTransaction, generateSPLTransaction, ruleVer
 
 import CheckBox from "../../components/common/CheckBox.vue";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
@@ -506,7 +506,7 @@ async function onSelectTransferType() {
             <div class="w-full flex flex-row space-x-2">
               <ComboBox
                 v-model="transferTo"
-                :label="t('walletActivity.sendTo')"
+                :label="$t('walletActivity.sendTo')"
                 :errors="isOpen ? undefined : $v.transferTo.$errors"
                 :items="contacts"
                 class="w-2/3 flex-auto"
@@ -518,16 +518,16 @@ async function onSelectTransferType() {
             <div v-if="isNewContact()" class="w-full">
               <CheckBox class="mb-4" label="Save Contact" :checked="checked" label-position="right" @change="checked = !checked" />
               <div v-if="checked">
-                <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="t('walletSettings.enterContact')" />
+                <TextField v-model="contactName" :errors="$v.contactName.$errors" :placeholder="$t('walletSettings.enterContact')" />
               </div>
             </div>
 
             <div v-if="showAmountField" class="w-full">
               <TextField
                 v-model="sendAmount"
-                :label="t('dappTransfer.amount')"
+                :label="$t('dappTransfer.amount')"
                 :errors="$v.sendAmount.$errors"
-                :postfix-text="isSendAllActive ? t('walletTransfer.reset') : t('walletTransfer.sendAll')"
+                :postfix-text="isSendAllActive ? $t('walletTransfer.reset') : $t('walletTransfer.sendAll')"
                 type="number"
                 @update:postfix-text-clicked="setTokenAmount(isSendAllActive ? 'reset' : 'max')"
               >
@@ -554,10 +554,10 @@ async function onSelectTransferType() {
               </TextField>
             </div>
             <div v-if="spayMessage" class="w-full">
-              <TextField :label="t('walletPay.message')" :disabled="true" :model-value="spayMessage"> </TextField>
+              <TextField :label="$t('walletPay.message')" :disabled="true" :model-value="spayMessage"> </TextField>
             </div>
             <Button class="ml-auto" :disabled="$v.$dirty && $v.$invalid" @click="openModal">
-              {{ t("dappTransfer.transfer") }}
+              {{ $t("dappTransfer.transfer") }}
             </Button>
           </div>
         </form>

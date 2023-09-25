@@ -6,11 +6,12 @@ import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
+import { VueI18nTranslation } from "vue-i18n";
 
 import FallbackSPL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { setFallbackImg } from "@/utils/helpers";
 import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
@@ -47,7 +48,7 @@ const props = withDefaults(
   }
 );
 
-const { t } = useI18n();
+const t = i18n.global.t as VueI18nTranslation;
 
 const currency = computed(() => ControllerModule.torus.currentCurrency);
 const pricePerToken = computed<number>((): number => {

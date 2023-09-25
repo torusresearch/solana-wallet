@@ -4,17 +4,17 @@ import { useVuelidate } from "@vuelidate/core";
 import { throttle } from "lodash-es";
 import log from "loglevel";
 import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { TopUpProvider } from "@/plugins/Topup/interface";
 import { isTopupHidden } from "@/utils/whitelabel";
 
 import { QuoteResponse, RequestObject } from "./types";
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const props = defineProps<{
   selectedProvider: TopUpProvider;

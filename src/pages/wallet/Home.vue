@@ -3,7 +3,6 @@ import { RefreshIcon } from "@heroicons/vue/solid";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
 import { throttle } from "lodash-es";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
 import AddressAndScan from "@/components/home/AddressAndScan.vue";
@@ -13,6 +12,7 @@ import WalletBalance from "@/components/WalletBalance.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const isImportTokenOpen = ref(false);
@@ -20,7 +20,7 @@ const tokenList = computed(() => ControllerModule.torus.existingTokenAddress);
 const connection = computed(() => ControllerModule.torus.connection);
 const importDisabled = ref(true);
 
-const { t } = useI18n();
+const { t } = i18n.global;
 
 const lastRefreshDate = computed(() => ControllerModule.lastTokenRefreshDate);
 

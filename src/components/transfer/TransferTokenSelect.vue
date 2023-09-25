@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { computed, watch } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed } from "vue";
 
 import FallbackNft from "@/assets/nft.png";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import solicon from "@/assets/solana-mascot.svg";
+import { i18n } from "@/plugins/i18nPlugin";
 import { setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { getClubbedNfts } from "@/utils/solanaHelpers";
@@ -24,16 +24,17 @@ const props = withDefaults(
     selectedToken: tokens.value[0],
   }
 );
-const { t } = useI18n();
-const localToken = computed(() => props.selectedToken);
+const { t } = i18n.global;
 const emits = defineEmits(["update:selectedToken"]);
-
-watch(localToken, () => {
-  emits("update:selectedToken", localToken.value);
+const value = computed({
+  get: () => {
+    return props.selectedToken;
+  },
+  set: (val) => emits("update:selectedToken", val),
 });
 </script>
 <template>
-  <Listbox v-model="localToken" as="div">
+  <Listbox v-model="value" as="div">
     <ListboxLabel class="text-sm text-app-text-600 dark:text-app-text-dark-500">{{ t("walletTransfer.selectItem") }}</ListboxLabel>
     <div class="mt-1 relative">
       <ListboxButton class="bg-white dark:bg-app-gray-800 select-container shadow-inner dark:shadow-none rounded-md w-full px-3">

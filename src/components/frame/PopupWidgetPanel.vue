@@ -8,16 +8,17 @@ import { GoogleIcon } from "@toruslabs/vue-icons/auth";
 import { PlusIcon } from "@toruslabs/vue-icons/basic";
 import { CreditcardFaceIcon } from "@toruslabs/vue-icons/finance";
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
+import { VueI18nTranslation } from "vue-i18n";
 
 import SolanaLogo from "@/assets/solana-dark.svg";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
+import { i18n } from "@/plugins/i18nPlugin";
 import { getWhiteLabelLogoDark, getWhiteLabelLogoLight, isTopupHidden } from "@/utils/whitelabel";
 
-const { t } = useI18n();
+const t = i18n.global.t as VueI18nTranslation;
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllerModule.selectedAddress);
 const formattedBalance = computed(() => ControllerModule.totalBalance);

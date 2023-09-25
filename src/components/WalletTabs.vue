@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useI18n } from "vue-i18n";
 
 import SolanaLogoURL from "@/assets/solana-dark.svg";
 import SolanaLightLogoURL from "@/assets/solana-light.svg";
@@ -26,7 +25,6 @@ const props = withDefaults(
   }
 );
 
-const { t } = useI18n();
 const tabs = ref(NAVIGATION_LIST);
 const user = computed(() => ControllerModule.torus.userInfo);
 const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
@@ -62,7 +60,7 @@ const logout = async () => {
                 value.navHidden && 'hidden',
               ]"
               :aria-current="key === tab ? 'page' : undefined"
-              >{{ t(value.name) }}</router-link
+              >{{ $t(value.name) }}</router-link
             >
           </div>
         </div>
@@ -79,7 +77,7 @@ const logout = async () => {
       <header v-if="props.showHeader">
         <div class="flex items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-wrap">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
-            {{ t(tabs[tab]?.title) || "" }}
+            {{ $t(tabs[tab]?.title) || "" }}
           </h1>
           <div class="grow flex">
             <div id="rightPanel" class="w-full" />
@@ -117,7 +115,7 @@ const logout = async () => {
             class="text-xs text-center leading-none mt-1"
             :class="[key === tab ? (ControllerModule.isDarkMode ? 'item-white' : 'item-black') : 'item-gray opacity-90']"
           >
-            {{ t(value.name) || "" }}
+            {{ $t(value.name) || "" }}
           </p>
         </div>
       </router-link>

@@ -4,7 +4,6 @@ import { addressSlicer } from "@toruslabs/base-controllers";
 import { ScanIcon } from "@toruslabs/vue-icons/basic";
 import log from "loglevel";
 import { ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import WalletIcon from "@/assets/wallet.svg";
@@ -14,7 +13,6 @@ import { copyText } from "@/utils/helpers";
 
 import QrcodeDisplay from "./QrcodeDisplay.vue";
 
-const { t } = useI18n();
 const router = useRouter();
 defineProps<{
   selectedAddress: string;
@@ -55,7 +53,7 @@ const closeQr = () => {
       @keydown="router.push('/wallet/pay')"
     >
       <ScanIcon class="w-4 h-4 mr-2" />
-      <span class="text-app-text-500 text-xs font-bold"> {{ t("walletHome.scanAndPay") }}</span>
+      <span class="text-app-text-500 text-xs font-bold"> {{ $t("walletHome.scanAndPay") }}</span>
     </div>
     <QrcodeDisplay
       v-if="displayQr"

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
-import { useI18n } from "vue-i18n";
 
 import LoginUrl from "@/assets/login.png";
 import SolanaLogoLight from "@/assets/solana-light.svg";
 import { RoundLoader } from "@/components/common";
+import { i18n } from "@/plugins/i18nPlugin";
 import { getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
 import PopupWidgetPanel from "./PopupWidgetPanel.vue";
@@ -16,7 +16,7 @@ defineProps<{
   buttonPosition: string;
   lastTransaction: SolanaTransactionActivity;
 }>();
-const { t } = useI18n();
+const { t } = i18n.global;
 const emits = defineEmits(["closePanel", "togglePanel", "showLoginModal", "showWallet"]);
 const closePanel = () => {
   emits("closePanel");

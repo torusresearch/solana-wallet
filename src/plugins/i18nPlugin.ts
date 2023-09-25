@@ -23,7 +23,7 @@ export function setI18nLanguage(i18n: I18n, locale: string) {
 
 export function setupI18n(locale = LOCALE_EN) {
   const i18n = createI18n({
-    legacy: false,
+    // legacy: false,
     globalInjection: true,
     locale,
     fallbackLocale: locale,

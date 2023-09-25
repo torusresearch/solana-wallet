@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 
 import { SelectField } from "@/components/common";
 import { SettingsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { LOCALES } from "@/utils/enums";
-
-const { t } = useI18n();
 
 const selectedLanguage = computed({
   get: () => LOCALES.find((x) => x.value === i18n.global.locale) || LOCALES[0],
@@ -24,7 +21,7 @@ const selectedLanguage = computed({
 <template>
   <div class="pb-4">
     <div class="mb-4">
-      <SelectField v-if="selectedLanguage" v-model="selectedLanguage" :label="t('walletSettings.language')" :items="LOCALES" />
+      <SelectField v-if="selectedLanguage" v-model="selectedLanguage" :label="$t('walletSettings.language')" :items="LOCALES" />
     </div>
   </div>
 </template>
