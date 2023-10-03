@@ -65,5 +65,5 @@ export const setLocale = async (i18n: I18n, lang: string) => {
   setI18nLanguage(i18n, finalLang);
 };
 
-export const i18n = setupI18n();
+export const i18n = setupI18n(localeTarget);
 loadLocaleMessages(i18n, localeTarget);
