@@ -436,7 +436,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (this.preferencesController.state.selectedAddress) {
         // this.preferencesController.sync(this.preferencesController.state.selectedAddress);
         this.accountTracker.refresh();
-        this.tokensTracker.updateSolanaTokens();
+        this.tokensTracker.updateSolanaTokens(this.selectedAddress);
         this.preferencesController.updateDisplayActivities();
       }
       this.emit("newBlock", block);
@@ -727,7 +727,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // get state from chain
     this.accountTracker.refresh();
 
-    this.tokensTracker.updateSolanaTokens();
+    this.tokensTracker.updateSolanaTokens(this.selectedAddress);
     this.preferencesController.initializeDisplayActivity();
   }
 
