@@ -57,8 +57,12 @@ export default {
   torusNetwork: VUE_APP_TORUS_NETWORK as OPENLOGIN_NETWORK_TYPE,
   openLoginClientId: "BImWlKqOHk90Eth1F7sq29AbQQWsPDBCbKPbTpbPR7KcUzdNO8DkqlTQoOyIlzK_QVGChKft-1QRjc8yrF7mEVE", // or BMZf6WLV8sgy7uevrgbgPi1eSXdpbBJK6DValUJjz1MuXZKj9kRzcYU10HUm-ZGFjKVVH7Yb0VXeWiKP1-v1J4c
   openLoginWhiteLabel: {
-    dark: isWhiteLabelSet() ? isWhiteLabelDark() : true,
-    name: "Solana Wallet",
+    // eslint-disable-next-line no-nested-ternary
+    mode: isWhiteLabelSet() ? (isWhiteLabelDark() ? "dark" : "light") : "auto",
+    appName: "Solana Wallet",
+    appUrl: window.location.origin,
+    logoLight: "",
+    logoDark: "",
     theme: {
       primary: isWhiteLabelSet() ? getBrandColor() : "#9945ff",
     },

@@ -6,6 +6,7 @@ import { email, required } from "@vuelidate/validators";
 import { throttle } from "lodash-es";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 import DiscordLoginImage from "@/assets/auth/login-discord.svg";
@@ -17,7 +18,6 @@ import LoginFooter from "@/components/loginFooter/LoginFooter.vue";
 import LoginSlider from "@/components/loginSlider/LoginSlider.vue";
 import { LoginInteractions } from "@/directives/google-analytics";
 import { addToast, app } from "@/modules/app";
-import { i18n } from "@/plugins/i18nPlugin";
 import { AVAILABLE_WEBSITES } from "@/utils/enums";
 import { isWhiteLabelDark } from "@/utils/whitelabel";
 
@@ -72,7 +72,7 @@ const listOfChains = ref<{ value: string; label: string; img?: string; link?: st
 ]);
 const selectedChain = ref(listOfChains.value[0]);
 
-const { t } = i18n.global;
+const { t } = useI18n({ useScope: "global" });
 const router = useRouter();
 const userEmail = ref("");
 const isLoading = ref(false);

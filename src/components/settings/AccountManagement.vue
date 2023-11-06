@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { GithubIcon } from "@toruslabs/vue-icons/symbols";
+import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
-import { i18n } from "@/plugins/i18nPlugin";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const accounts = [
   {

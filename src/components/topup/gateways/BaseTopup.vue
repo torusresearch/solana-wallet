@@ -4,17 +4,17 @@ import { useVuelidate } from "@vuelidate/core";
 import { throttle } from "lodash-es";
 import log from "loglevel";
 import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button, RoundLoader, SelectField, TextField } from "@/components/common";
 import { addToast } from "@/modules/app";
-import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { TopUpProvider } from "@/plugins/Topup/interface";
 import { isTopupHidden } from "@/utils/whitelabel";
 
 import { QuoteResponse, RequestObject } from "./types";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const props = defineProps<{
   selectedProvider: TopUpProvider;
@@ -22,7 +22,7 @@ const props = defineProps<{
 
 const selectedCryptocurrency = computed<{ value: string; label: string; symbol: string }>(() => props.selectedProvider.validCryptocurrencies[0]);
 const selectedCurrency = ref<{ value: string; label: string }>({ value: "", label: "" });
-const currency = ControllerModule.torus.currentCurrency;
+const currency = computed(() => ControllerModule.currentCurrency);
 
 const cryptoCurrencyRate = ref(0);
 const receivingCryptoAmount = ref(0);
@@ -77,7 +77,7 @@ const onTopup = async () => {
   if (!$v.value.$invalid) {
     sendingTopup.value = true;
     try {
-      await ControllerModule.torus.handleTopup(props.selectedProvider.name, {
+      await torus.handleTopup(props.selectedProvider.name, {
         selectedCryptoCurrency: selectedCryptocurrency.value.symbol,
         cryptoAmount: Math.trunc(receivingCryptoAmount.value * 10 ** (decimals || 0)),
         selectedCurrency: selectedCurrency.value.value,
@@ -92,7 +92,7 @@ const onTopup = async () => {
 
 onBeforeMount(() => {
   selectedCurrency.value =
-    props.selectedProvider.validCurrencies.find((k) => k.value === currency.toUpperCase()) || props.selectedProvider.validCurrencies[0];
+    props.selectedProvider.validCurrencies.find((k) => k.value === currency.value.toUpperCase()) || props.selectedProvider.validCurrencies[0];
 });
 
 onMounted(() => {

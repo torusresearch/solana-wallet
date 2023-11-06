@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+// import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
+import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import { PopupLoader, PopupLogin, PopupWidget } from "@/components/frame";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
 import { hideCrispButton, isCrispClosed, isMain, promiseCreator, recordDapp } from "@/utils/helpers";
 import { setWhiteLabel } from "@/utils/whitelabel";
 
-import ControllerModule from "../modules/controllers";
+import ControllerModule, { torus } from "../modules/controllers";
 import { WALLET_SUPPORTED_NETWORKS } from "../utils/const";
 
 const { resolve, promise } = promiseCreator<void>();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (window as any).$crisp.push(["do", "chat:hide"]);
 let dappOrigin = window.location.ancestorOrigins ? window.location.ancestorOrigins[0] : "";
 
@@ -73,9 +76,9 @@ function startLogin() {
 startLogin();
 
 const isLoggedIn = computed(() => ControllerModule.hasSelectedPrivateKey);
-const isEmbedLoginInProgress = computed(() => ControllerModule.torus.embedLoginInProgress);
-const oauthModalVisibility = computed(() => ControllerModule.torus.embedOauthModalVisibility);
-const isIFrameFullScreen = computed(() => ControllerModule.torus.embedIsIFrameFullScreen);
+const isEmbedLoginInProgress = computed(() => ControllerModule.torusState.EmbedControllerState.loginInProgress);
+const oauthModalVisibility = computed(() => ControllerModule.torusState.EmbedControllerState.oauthModalVisibility);
+const isIFrameFullScreen = computed(() => ControllerModule.torusState.EmbedControllerState.isIFrameFullScreen);
 const allTransactions = computed(() => ControllerModule.selectedNetworkTransactions);
 const lastTransaction = computed(() => {
   const txns = allTransactions.value;
@@ -119,6 +122,21 @@ onMounted(async () => {
       origin: dappOrigin,
     });
 
+    const openloginInstance = await OpenLoginHandler.getInstance(true);
+    if (openloginInstance.privKey) {
+      const address = await torus.addAccount(
+        openloginInstance.privKey,
+        {
+          email: "",
+          name: "",
+          profileImage: "",
+          ...openloginInstance.getUserInfo(),
+        },
+        true
+      );
+      torus.setSelectedAccount(address);
+    }
+
     ControllerModule.setupCommunication(dappOrigin);
     showUI.value = true;
     hideCrispButton();
@@ -126,7 +144,7 @@ onMounted(async () => {
 });
 const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) => {
   try {
-    ControllerModule.torus.embededOAuthLoginInProgress();
+    torus.embededOAuthLoginInProgress();
     await ControllerModule.triggerLogin({
       loginProvider,
       login_hint: userEmail,
@@ -137,10 +155,10 @@ const onLogin = async (loginProvider: LOGIN_PROVIDER_TYPE, userEmail?: string) =
 };
 const cancelLogin = (): void => {
   log.info("cancelLogin");
-  ControllerModule.torus.emit("LOGIN_RESPONSE", "User cancelled login");
+  torus.emit("LOGIN_RESPONSE", "User cancelled login");
 };
 const loginFromWidget = () => {
-  ControllerModule.torus.loginFromWidgetButton();
+  torus.loginFromWidgetButton();
 };
 const closePanel = () => {
   ControllerModule.closeIframeFullScreen();

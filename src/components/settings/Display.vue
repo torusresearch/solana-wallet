@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 import { Button } from "@/components/common";
 import { SettingsPageInteractions } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 </script>
 <template>
   <div class="pb-4">

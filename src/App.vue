@@ -3,11 +3,28 @@ import { onBeforeMount } from "vue";
 
 import { Toast } from "@/components/common";
 
-import ControllerModule from "./modules/controllers";
+import OpenLoginHandler from "./auth/OpenLoginHandler";
+import ControllerModule, { torus } from "./modules/controllers";
 import { hideCrispButton, isMain } from "./utils/helpers";
 
-onBeforeMount(() => {
-  if (isMain) ControllerModule.init({ origin: window.location.origin });
+onBeforeMount(async () => {
+  if (isMain) {
+    const openloginInstance = await OpenLoginHandler.getInstance(true);
+    ControllerModule.init({ origin: window.location.origin });
+    if (openloginInstance.privKey) {
+      const address = await torus.addAccount(
+        openloginInstance.privKey,
+        {
+          email: "",
+          name: "",
+          profileImage: "",
+          ...openloginInstance.getUserInfo(),
+        },
+        true
+      );
+      torus.setSelectedAccount(address);
+    }
+  }
 
   // hide crispbutton on inital load
   hideCrispButton();

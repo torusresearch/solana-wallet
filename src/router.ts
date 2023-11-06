@@ -2,7 +2,7 @@ import { config as gtagConfig, pageview } from "vue-gtag";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
-import ControllerModule from "@/modules/controllers";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { getBrowserKey } from "@/utils/helpers";
 
 const enum AuthStates {
@@ -11,7 +11,7 @@ const enum AuthStates {
 }
 
 export function hasSelectedAddress(): boolean {
-  return !!ControllerModule?.torus?.selectedAddress;
+  return !!torus?.selectedAddress;
 }
 
 const router = createRouter({
@@ -235,7 +235,7 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
 
 const restoreOrlogout = async () => {
   try {
-    const result = await ControllerModule.torus.restoreFromBackend();
+    const result = await torus.restoreFromBackend();
     if (!result) ControllerModule.setLogoutRequired(true);
   } catch (_e) {
     ControllerModule.setLogoutRequired(true);
@@ -262,7 +262,7 @@ router.beforeEach(async (to, _, next) => {
     }
 
     // route is authenticated and so is user, good to go
-    gtagConfig({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
+    gtagConfig({ user_id: `loggedIn_${torus?.selectedAddress}_${getBrowserKey()}` });
   } else if (authMeta === AuthStates.NON_AUTHENTICATED) {
     // user tried to access a un-authenticated route being authenticated
     // opportunistic login flow ( restore privatekey take time, keep user login first and logout user if restore failed )

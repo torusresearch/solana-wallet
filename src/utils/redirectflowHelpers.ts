@@ -1,6 +1,6 @@
 import { useRoute, useRouter } from "vue-router";
 
-import ControllerModule from "../modules/controllers";
+import ControllerModule, { torus } from "../modules/controllers";
 import { REDIRECT_FLOW_CONFIG } from "./enums";
 
 export const getB64DecodedData = (hashString: string, defaultData?: unknown) => {
@@ -61,7 +61,7 @@ export async function evalRedirectflow() {
 
   const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
 
-  await ControllerModule.torus.restoreFromBackend();
+  await torus.restoreFromBackend();
   if (!ControllerModule.hasSelectedPrivateKey && requiresLogin) {
     return router.push({
       name: "login",

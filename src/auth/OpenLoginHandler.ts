@@ -83,6 +83,18 @@ class OpenLoginHandler {
       instanceId: this.nonce,
     });
     const result = await verifierWindow.handle();
+    if (result.sessionId) {
+      if (config.isStorageAvailable.localStorage) {
+        const openloginStore = localStorage.getItem("openlogin_store");
+        if (openloginStore) {
+          const openloginStoreParsed = JSON.parse(openloginStore);
+          openloginStoreParsed.sessionId = result.sessionId;
+          localStorage.setItem("openlogin_store", JSON.stringify(openloginStoreParsed));
+        } else {
+          localStorage.setItem("openlogin_store", JSON.stringify({ sessionId: result.sessionId }));
+        }
+      }
+    }
     return result;
   }
 

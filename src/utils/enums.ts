@@ -40,6 +40,7 @@ export type OpenLoginPopupResponse = {
   privKey: string;
   userInfo: OpenloginUserInfo;
   accounts: ProjectAccountType[];
+  sessionId: string;
 };
 
 export interface KeyState {

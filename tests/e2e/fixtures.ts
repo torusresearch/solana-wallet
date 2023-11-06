@@ -88,11 +88,11 @@ async function setBrowserstackResult(page: Page, testInfo: TestInfo) {
   if (testInfo.error) {
     // eslint-disable-next-line no-console
     console.log(testInfo.error.stack);
-    testResult.arguments.reason = `${process.env.CURRENT_TEST_TITLE || "beforeAll"} failed` || "";
+    testResult.arguments.reason = `${process.env.CURRENT_TEST_TITLE ?? "beforeAll"} failed`;
   }
 
   // Execute BrowserStack's result executor
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   const result = await page.evaluate(() => {}, `browserstack_executor: ${JSON.stringify(testResult)}`);
   return result;
 }

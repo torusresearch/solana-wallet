@@ -8,7 +8,7 @@ import ControllerModule from "./controllers";
 export function requireLoggedIn(): void {
   const router = useRouter();
   onMounted(async () => {
-    if (!ControllerModule.torus.selectedAddress) router.push("/login");
+    if (!ControllerModule.selectedAddress) router.push("/login");
     const openLoginHandler = await OpenLoginHandler.getInstance(true);
     const { sessionId } = openLoginHandler;
     if (!sessionId) {
@@ -17,7 +17,7 @@ export function requireLoggedIn(): void {
     }
   });
 
-  const currentAddress = computed(() => ControllerModule.torus.selectedAddress);
+  const currentAddress = computed(() => ControllerModule.selectedAddress);
 
   watch(currentAddress, (newAddr, oldAddr) => {
     if (newAddr !== oldAddr && !newAddr) {

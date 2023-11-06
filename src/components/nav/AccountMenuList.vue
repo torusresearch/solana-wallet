@@ -8,28 +8,30 @@ import { CopyIcon, ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { WalletIcon } from "@toruslabs/vue-icons/finance";
 import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import solicon from "@/assets/solana-logo-light.svg";
 import { Button } from "@/components/common";
 import { GeneralInteractions, trackUserClick } from "@/directives/google-analytics";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { copyText } from "@/utils/helpers";
 
 import QrcodeDisplay from "../home/QrcodeDisplay.vue";
 import LanguageSelector from "./LanguageSelector.vue";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 defineProps<{
   user: UserInfo;
   selectedAddress: string;
 }>();
 const emits = defineEmits(["onLogout"]);
-const currency = computed(() => ControllerModule.torus.currentCurrency);
+const currency = computed(() => ControllerModule.currentCurrency);
 const currentAccount = computed(() => ControllerModule.selectedAddress);
 
 const explorerUrl = (address: string) => {
-  return `${ControllerModule.torus.blockExplorerUrl}/account/${address}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
+  return `${ControllerModule.torusState.NetworkControllerState.providerConfig.blockExplorerUrl}/account/${address}/?cluster=${getChainIdToNetwork(
+    ControllerModule.torusState.NetworkControllerState.chainId
+  )}`;
 };
 const logout = () => {
   emits("onLogout");
@@ -84,7 +86,7 @@ const closeQr = () => {
           <div class="flex items-center">
             <WalletIcon class="w-4 h-4 mr-1 text-app-text-500 dark:text-app-text-dark-500" />
             <div class="font-bold text-sm text-app-text-600 dark:text-app-text-dark-500">
-              {{ ControllerModule.torus.state.UserDapp.get(wallet) }}
+              {{ ControllerModule.torusState.UserDapp.get(wallet) }}
             </div>
           </div>
           <div class="ml-auto text-xs text-app-text-500 dark:text-app-text-dark-500 uppercase">{{ getWalletBalance(wallet) }} {{ currency }}</div>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable class-methods-use-this */
 import { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
@@ -21,13 +22,14 @@ import {
   SelectedAddresssChangeChannelData,
   ThemeChannelData,
   TX_EVENTS,
+  UserInfo,
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
 import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin-utils";
 import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import { cloneDeep, merge, omit } from "lodash-es";
+import { cloneDeep, merge } from "lodash-es";
 import log from "loglevel";
 import { VueI18nTranslation } from "vue-i18n";
 // import { i18n } from "@/plugins/i18nPlugin";
@@ -39,12 +41,17 @@ import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import { CONTROLLER_MODULE_KEY, LOCAL_STORAGE_KEY, TorusControllerState } from "@/utils/enums";
-import { delay, isMain } from "@/utils/helpers";
+import { delay, getUserLanguage, isMain } from "@/utils/helpers";
 import { NAVBAR_MESSAGES } from "@/utils/messages";
 import { isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import store from "../store";
 import { addToast } from "./app";
+
+export const torus = new TorusController({
+  _config: DEFAULT_CONFIG,
+  _state: cloneDeep(DEFAULT_STATE),
+});
 
 @Module({
   name: CONTROLLER_MODULE_KEY,
@@ -53,11 +60,6 @@ import { addToast } from "./app";
   store,
 })
 class ControllerModule extends VuexModule {
-  public torus = new TorusController({
-    _config: DEFAULT_CONFIG,
-    _state: cloneDeep(DEFAULT_STATE),
-  });
-
   public torusState: TorusControllerState = cloneDeep(DEFAULT_STATE);
 
   public instanceId = "";
@@ -77,7 +79,7 @@ class ControllerModule extends VuexModule {
   }
 
   get selectedAccountPreferences(): ExtendedAddressPreferences {
-    const preferences = this.torus.getAccountPreferences(this.selectedAddress);
+    const preferences = torus.getAccountPreferences(this.selectedAddress);
     return (
       preferences || {
         ...DEFAULT_PREFERENCES,
@@ -87,6 +89,22 @@ class ControllerModule extends VuexModule {
         theme: "dark",
       }
     );
+  }
+
+  get locale(): string {
+    return this.selectedAccountPreferences?.locale?.split("-")[0] || getUserLanguage();
+  }
+
+  get userInfo(): UserInfo {
+    return this.selectedAccountPreferences.userInfo || cloneDeep(DEFAULT_PREFERENCES.userInfo);
+  }
+
+  get currentNetworkName(): string {
+    return this.torusState.NetworkControllerState.providerConfig.displayName;
+  }
+
+  get privateKey(): string | undefined {
+    return this.torusState.KeyringControllerState.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey;
   }
 
   get crashReport(): boolean {
@@ -133,15 +151,15 @@ class ControllerModule extends VuexModule {
   }
 
   get conversionRate(): number {
-    return this.torus.conversionRate;
+    return this.torusState.CurrencyControllerState.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 
   get currentCurrency(): string {
-    return this.torus.currentCurrency;
+    return this.torusState.CurrencyControllerState.currentCurrency;
   }
 
   get lastTokenRefreshDate(): Date {
-    return this.torus.lastTokenRefreshDate;
+    return new Date(Number(this.torusState.CurrencyControllerState.conversionDate) * 1000);
   }
 
   get isNFTloading(): LoadingState {
@@ -189,12 +207,12 @@ class ControllerModule extends VuexModule {
   }
 
   get isDarkMode(): boolean {
-    if (isWhiteLabelSet() && !this.torus.getAccountPreferences(this.selectedAddress)) return isWhiteLabelDark();
+    if (isWhiteLabelSet() && !torus.getAccountPreferences(this.selectedAddress)) return isWhiteLabelDark();
     return this.selectedAccountPreferences.theme === "dark";
   }
 
   get userTokens(): SolanaToken[] {
-    return this.torus.state.TokensTrackerState.tokens ? this.torus.state.TokensTrackerState.tokens[this.selectedAddress] : [];
+    return this.torusState.TokensTrackerState.tokens ? this.torusState.TokensTrackerState.tokens[this.selectedAddress] : [];
   }
 
   get nonFungibleTokens(): SolanaToken[] {
@@ -225,6 +243,7 @@ class ControllerModule extends VuexModule {
       return this.userTokens
         .reduce((acc: SolanaToken[], current: SolanaToken) => {
           const data = this.torusState.TokenInfoState.tokenInfoMap[current.mintAddress];
+
           if (data?.address === "So11111111111111111111111111111111111111112") (data as any).symbol = "WSOL";
           if (current.balance?.decimals !== 0 && current.balance?.uiAmount && data) {
             return [
@@ -242,12 +261,13 @@ class ControllerModule extends VuexModule {
     return [];
   }
 
-  get connection() {
-    return this.torus.connection;
+  get hasSelectedPrivateKey() {
+    return this.torusState.KeyringControllerState.wallets.find((keyring) => keyring.address === this.selectedAddress)?.privateKey || false;
   }
 
-  get hasSelectedPrivateKey() {
-    return this.torus.hasSelectedPrivateKey;
+  get existingTokenAddress(): string[] {
+    const tokenList = this.torusState.TokenInfoState.tokenInfoMap || {};
+    return Object.keys(tokenList);
   }
 
   @Mutation
@@ -265,14 +285,6 @@ class ControllerModule extends VuexModule {
     this.torusState = { ...state };
   }
 
-  @Mutation
-  public resetTorusController(): void {
-    this.torus = new TorusController({
-      _config: DEFAULT_CONFIG,
-      _state: cloneDeep(DEFAULT_STATE),
-    });
-  }
-
   @Action
   handleError(error: string): void {
     addToast({ type: "error", message: error });
@@ -285,13 +297,13 @@ class ControllerModule extends VuexModule {
 
   @Action
   openWalletPopup(path: string) {
-    this.torus.showWalletPopup(path, this.instanceId);
+    torus.showWalletPopup(path, this.instanceId);
   }
 
   @Action
   public async setCrashReport(status: boolean): Promise<void> {
     const t = i18n.global.t as VueI18nTranslation;
-    const isSet = await this.torus.setCrashReport(status);
+    const isSet = await torus.setCrashReport(status);
     if (isSet) {
       if (storageAvailable("localStorage")) {
         localStorage.setItem("torus-enable-crash-reporter", String(status));
@@ -304,13 +316,13 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async refreshUserTokens() {
-    await this.torus.refreshUserTokens();
+    await torus.refreshUserTokens();
   }
 
   @Action
   public async getNFTmetadata(mint_address: string): Promise<NFTInfo | undefined> {
     try {
-      const { onChainMetadataMap } = await this.torus.fetchMetaPlexNft([mint_address]);
+      const { onChainMetadataMap } = await torus.fetchMetaPlexNft([mint_address]);
       return onChainMetadataMap[mint_address];
     } catch (error) {
       return undefined;
@@ -331,7 +343,7 @@ class ControllerModule extends VuexModule {
         filtered_address = "";
     }
     try {
-      const data = await this.torus.getSNSAccount(type, filtered_address);
+      const data = await torus.getSNSAccount(type, filtered_address);
       if (data instanceof PublicKey) return data.toBase58();
       if (data instanceof NameRegistryState) return data.owner.toBase58();
       return null;
@@ -344,7 +356,7 @@ class ControllerModule extends VuexModule {
   public async addContact(contactPayload: ContactPayload): Promise<void> {
     const t = i18n.global.t as VueI18nTranslation;
     // const { t } = useI18n({ useScope: "global" });
-    const isDeleted = await this.torus.addContact(contactPayload);
+    const isDeleted = await torus.addContact(contactPayload);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.ADD_CONTACT_SUCCESS));
     } else {
@@ -356,7 +368,7 @@ class ControllerModule extends VuexModule {
   public async deleteContact(contactId: number): Promise<void> {
     const t = i18n.global.t as VueI18nTranslation;
     // const { t } = useI18n({ useScope: "global" });
-    const isDeleted = await this.torus.deleteContact(contactId);
+    const isDeleted = await torus.deleteContact(contactId);
     if (isDeleted) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.DELETE_CONTACT_SUCCESS));
     } else {
@@ -380,13 +392,13 @@ class ControllerModule extends VuexModule {
       });
       themeChannel.close();
     }
-    this.torus.setTheme(theme);
+    torus.setTheme(theme);
   }
 
   @Action
   public async setCurrency(currency: string): Promise<void> {
     const t = i18n.global.t as VueI18nTranslation;
-    const isSet = await this.torus.setDefaultCurrency(currency);
+    const isSet = await torus.setDefaultCurrency(currency);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_CURRENCY_SUCCESS));
     } else {
@@ -397,7 +409,7 @@ class ControllerModule extends VuexModule {
   @Action
   public async setLocale(locale: string): Promise<void> {
     const t = i18n.global.t as VueI18nTranslation;
-    const isSet = await this.torus.setLocale(locale);
+    const isSet = await torus.setLocale(locale);
     if (isSet) {
       this.handleSuccess(t(NAVBAR_MESSAGES.success.SET_LOCALE_SUCCESS));
     } else {
@@ -407,17 +419,17 @@ class ControllerModule extends VuexModule {
 
   @Action
   public async getBillBoardData(): Promise<BillboardEvent[]> {
-    return this.torus.getBillboardData();
+    return torus.getBillboardData();
   }
 
   @Action
   public toggleIframeFullScreen(): void {
-    this.torus.toggleIframeFullScreen();
+    torus.toggleIframeFullScreen();
   }
 
   @Action
   public closeIframeFullScreen(): void {
-    this.torus.closeIframeFullScreen();
+    torus.closeIframeFullScreen();
   }
 
   /**
@@ -426,26 +438,26 @@ class ControllerModule extends VuexModule {
   @Action
   public init({ state, origin }: { state?: Partial<TorusControllerState>; origin: string }): void {
     const instanceId = randomId();
-    this.torus.init({
+    torus.init({
       _config: DEFAULT_CONFIG,
       _state: merge(this.torusState, state),
     });
-    this.torus.setOrigin(origin);
-    this.torus.setInstanceId(instanceId);
-    this.torus.on("store", (_state: TorusControllerState) => {
+    torus.setOrigin(origin);
+    torus.setInstanceId(instanceId);
+    torus.on("store", (_state: TorusControllerState) => {
       this.updateTorusState(_state);
     });
-    // this.torus.setupUntrustedCommunication();
+    // torus.setupUntrustedCommunication();
     // Good
-    this.torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
+    torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
       if (isMain) {
-        this.torus.approveSignTransaction(txMeta.id);
+        torus.approveSignTransaction(txMeta.id);
       } else {
-        await this.torus.handleTransactionPopup(txMeta.id, req);
+        await torus.handleTransactionPopup(txMeta.id, req);
       }
     });
 
-    this.torus.on("logout", () => {
+    torus.on("logout", () => {
       // logoutWithBC();
       this.logout();
     });
@@ -478,8 +490,8 @@ class ControllerModule extends VuexModule {
       target: "embed_communication",
       targetWindow: window.parent,
     });
-    this.torus.setupUnTrustedCommunication(torusStream, origin);
-    this.torus.setupCommunicationChannel(communicationStream, origin);
+    torus.setupUnTrustedCommunication(torusStream, origin);
+    torus.setupCommunicationChannel(communicationStream, origin);
   }
 
   @Action
@@ -494,12 +506,12 @@ class ControllerModule extends VuexModule {
   }): Promise<void> {
     this.setLogoutRequired(false);
     // do not need to restore beyond login
-    await this.torus.triggerLogin({ loginProvider, login_hint, waitSaving });
+    await torus.triggerLogin({ loginProvider, login_hint, waitSaving });
   }
 
   @Action
   handleLogoutChannelMsg(): void {
-    this.torus.handleLogout();
+    torus.handleLogout();
   }
 
   @Action
@@ -522,18 +534,18 @@ class ControllerModule extends VuexModule {
     const initialState = { ...cloneDeep(DEFAULT_STATE) };
     // this.updateTorusState(initialState);
 
-    const { origin } = this.torus;
+    const { origin } = torus;
     if (isMain) {
-      this.torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
+      torus.init({ _config: cloneDeep(DEFAULT_CONFIG), _state: initialState });
     } else {
       // prevent network state reseted during logout due to failed restoration
-      this.torus.init({
+      torus.init({
         _config: cloneDeep(DEFAULT_CONFIG),
         _state: { ...initialState, NetworkControllerState: cloneDeep(this.torusState.NetworkControllerState) },
       });
     }
 
-    this.torus.setOrigin(origin);
+    torus.setOrigin(origin);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(
@@ -560,7 +572,7 @@ class ControllerModule extends VuexModule {
   setNetwork(chainId: string): void {
     const providerConfig = Object.values(WALLET_SUPPORTED_NETWORKS).find((x) => x.chainId === chainId);
     if (!providerConfig) throw new Error(`Unsupported network: ${chainId}`);
-    this.torus.setNetwork(providerConfig);
+    torus.setNetwork(providerConfig);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const networkChangeChannel = new BroadcastChannel<PopupData<NetworkChangeChannelData>>(
@@ -580,8 +592,8 @@ class ControllerModule extends VuexModule {
   @Action
   async importExternalAccount(privKey: string): Promise<void> {
     const paddedKey = privKey.padStart(64, "0");
-    const address = await this.torus.importExternalAccount(paddedKey, this.torus.userInfo);
-    this.torus.setSelectedAccount(address);
+    const address = await torus.importExternalAccount(paddedKey, torus.userInfo);
+    torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const accountImportChannel = new BroadcastChannel<PopupData<AccountImportedChannelData>>(
@@ -611,7 +623,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async setSelectedAccount(address: string) {
-    this.torus.setSelectedAccount(address);
+    torus.setSelectedAccount(address);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
       const selectedAddressChannel = new BroadcastChannel<PopupData<SelectedAddresssChangeChannelData>>(
@@ -633,7 +645,7 @@ class ControllerModule extends VuexModule {
     let res;
     switch (method) {
       case "topup":
-        await this.torus.handleTopup(
+        await torus.handleTopup(
           params.provider,
           params.params ? params.params : { selectedAddress: this.selectedAddress },
           undefined,
@@ -646,29 +658,29 @@ class ControllerModule extends VuexModule {
         break;
       case "get_provider_state":
         res = {
-          currentLoginProvider: this.torus.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+          currentLoginProvider: torus.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
           isLoggedIn: !!this.selectedAddress,
         };
         break;
       case "wallet_get_provider_state":
         res = {
-          accounts: this.torus.state.KeyringControllerState.wallets.map((e) => e.publicKey),
-          chainId: this.torus.state.NetworkControllerState.chainId,
+          accounts: torus.state.KeyringControllerState.wallets.map((e) => e.publicKey),
+          chainId: torus.state.NetworkControllerState.chainId,
           isUnlocked: !!this.selectedAddress,
         };
         break;
       case "user_info":
-        res = this.torus.userInfo;
+        res = torus.userInfo;
         break;
       case "get_gasless_public_key":
-        res = { pubkey: await this.torus.getGaslessPublicKey() };
+        res = { pubkey: await torus.getGaslessPublicKey() };
         break;
       case "get_accounts":
-        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(torus.state.PreferencesControllerState.identities) : [];
         res = [this.selectedAddress];
         break;
       case "solana_request_accounts":
-        // res = this.selectedAddress ? Object.keys(this.torus.state.PreferencesControllerState.identities) : [];
+        // res = this.selectedAddress ? Object.keys(torus.state.PreferencesControllerState.identities) : [];
         res = [this.selectedAddress];
         break;
       case "nft_list":
@@ -685,7 +697,7 @@ class ControllerModule extends VuexModule {
 
   @Action
   async getDappList(): Promise<DiscoverDapp[]> {
-    return this.torus.getDappList();
+    return torus.getDappList();
   }
 }
 
@@ -693,23 +705,12 @@ const moduleName = `${CONTROLLER_MODULE_KEY}`;
 installStorePlugin({
   key: moduleName,
   storage: LOCAL_STORAGE_KEY,
-  saveState: (key: string, state: Record<string, unknown>, storage?: Storage) => {
-    const requiredState = omit(state, [`${moduleName}.torus`, `${moduleName}.logoutRequired`, `${moduleName}.torusState.KeyringControllerState`]);
-    storage?.setItem(key, JSON.stringify(requiredState));
-  },
-  restoreState: (key: string, storage?: Storage) => {
-    const value = storage?.getItem(key);
-    if (typeof value === "string") {
-      // If string, parse, or else, just return
-      const parsedValue = JSON.parse(value || "{}");
-      return {
-        [moduleName]: {
-          torus: new TorusController({ _config: cloneDeep(DEFAULT_CONFIG), _state: cloneDeep(DEFAULT_STATE) }),
-          ...(parsedValue[moduleName] || {}),
-        },
-      };
-    }
-    return value || {};
+  reducer: (state: unknown, moduleKey: string) => {
+    const currentModuleState = (state as Record<string, unknown>)[moduleKey];
+    const clone = cloneDeep(currentModuleState);
+    delete (clone as any).torusState.KeyringControllerState;
+    delete (clone as any).logoutRequired;
+    return { [moduleKey]: clone };
   },
 });
 

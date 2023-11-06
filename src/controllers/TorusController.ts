@@ -398,7 +398,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.PreferencesControllerConfig,
       signAuthMessage: this.keyringController.signAuthMessage.bind(this.keyringController),
       getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
-      getNativeCurrency: this.currencyController.getNativeCurrency.bind(this.currencyController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       // getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
       getConversionRate: () => this.conversionRate,
@@ -1722,6 +1721,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
       handleWindowRpc: this.communicationManager.handleWindowRpc,
       getProviderState: this.getCommProviderState.bind(this),
       loginWithPrivateKey: this.loginWithPrivateKey.bind(this),
+      showCheckout: () => {
+        throw new Error("Unsupported method");
+      },
+      showWalletConnect: () => {
+        throw new Error("Unsupported method");
+      },
+      showWalletUi: () => {
+        throw new Error("Unsupported method");
+      },
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }

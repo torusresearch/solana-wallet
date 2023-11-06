@@ -10,7 +10,7 @@ import TransferSPL from "@/components/transfer/TransferSPL.vue";
 import { delay } from "@/utils/helpers";
 import { calculateTxFee, generateSPLTransaction } from "@/utils/solanaHelpers";
 
-import ControllerModule from "../../modules/controllers";
+import ControllerModule, { torus } from "../../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
@@ -42,11 +42,11 @@ watch(selectedSplToken, async () => {
       params.amount * 10 ** (selectedSplToken.value?.balance?.decimals || 0),
       selectedSplToken.value,
       ControllerModule.selectedAddress,
-      ControllerModule.connection
+      torus.connection
     );
 
-    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection);
-    estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
+    const { fee } = await calculateTxFee(transaction.value.message, torus.connection);
+    estimateChanges(transaction.value, torus.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }
 });
@@ -56,7 +56,7 @@ async function confirmTransfer() {
   await delay(500);
   try {
     if (selectedSplToken.value && transaction.value) {
-      const res = await ControllerModule.torus.transfer(transaction.value);
+      const res = await torus.transfer(transaction.value);
       redirectToResult(jsonrpc, { signature: res, success: true, method }, req_id, resolveRoute);
     } else redirectToResult(jsonrpc, { message: "Selected SPL token not found", success: false }, req_id, resolveRoute);
   } catch (error) {

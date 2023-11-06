@@ -10,16 +10,16 @@ import { Button, Loader } from "@toruslabs/vue-components/common";
 import base58 from "bs58";
 import log from "loglevel";
 import { onErrorCaptured, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 import config from "@/config";
-import { i18n } from "@/plugins/i18nPlugin";
 import { generateTorusAuthHeaders, openCrispChat } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
 import { APPLE, OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const loading = ref(true);
 const selectedAccountIndex = ref(0);
@@ -27,6 +27,7 @@ const accountsProps = ref<ProjectAccountType[]>([]);
 const accounts: ProjectAccountType[] = [];
 let channel: string;
 let userInfo: OpenloginUserInfo;
+let sessionId: string;
 
 const selectAccount = (index: number) => {
   selectedAccountIndex.value = index;
@@ -50,6 +51,7 @@ const continueToApp = async (selectedIndex: number) => {
         userInfo,
         privKey: accounts[0].privKey,
         accounts,
+        sessionId,
       },
     } as PopupData<OpenLoginPopupResponse>);
   } catch (error) {
@@ -83,6 +85,7 @@ async function endLogin() {
     }
 
     userInfo = openLoginInstance.getUserInfo();
+    sessionId = openLoginInstance.sessionId;
 
     const openLoginStore = openLoginState.userInfo;
     if (!openLoginStore?.appState) {

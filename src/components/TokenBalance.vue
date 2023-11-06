@@ -7,13 +7,13 @@ import ControllerModule from "@/modules/controllers";
 // import { i18n } from "@/plugins/i18nPlugin";
 import { SolAndSplToken } from "@/utils/interfaces";
 
-// const { t } = i18n.global;
+// const { t } =  useI18n();
 
 const props = defineProps<{
   selectedToken?: Partial<SolAndSplToken>;
 }>();
 
-const currency = computed(() => ControllerModule.torus.currentCurrency);
+const currency = computed(() => ControllerModule.currentCurrency);
 const token = computed(() => {
   return props.selectedToken?.symbol;
 });
@@ -21,9 +21,9 @@ const token = computed(() => {
 const conversionRate = ref<number>();
 const setConversionRate = async () => {
   if (props?.selectedToken?.symbol !== "SOL") {
-    if (currency.value === "SOL") conversionRate.value = ControllerModule.torus.conversionRate;
+    if (currency.value === "SOL") conversionRate.value = ControllerModule.conversionRate;
     else conversionRate.value = props.selectedToken?.price?.[currency.value.toLowerCase()] || 0;
-  } else conversionRate.value = ControllerModule.torus.conversionRate;
+  } else conversionRate.value = ControllerModule.conversionRate;
 };
 
 const formattedBalance = computed(() => {

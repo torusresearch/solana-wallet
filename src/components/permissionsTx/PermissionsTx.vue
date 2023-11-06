@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { CheckCircleIcon } from "@heroicons/vue/solid";
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import GoToLinkLogo from "@/assets/go-to-link.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { getDomainFromUrl } from "@/utils/helpers";
 import { DecodedDataType } from "@/utils/instructionDecoder";
 import { AccountEstimation } from "@/utils/interfaces";
@@ -16,7 +16,7 @@ import NetworkDisplay from "../common/NetworkDisplay.vue";
 import EstimateChanges from "../payments/EstimateChanges.vue";
 import InstructionDisplay from "../payments/InstructionDisplay.vue";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 const props = withDefaults(
   defineProps<{
     logoUrl?: string;

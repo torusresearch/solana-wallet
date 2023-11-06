@@ -9,7 +9,7 @@ import ControllerModule from "@/modules/controllers";
 // import { i18n } from "@/plugins/i18nPlugin";
 import { isTopupHidden } from "@/utils/whitelabel";
 
-// const { t } = i18n.global;
+// const { t } =  useI18n();
 
 const isCurrencyRateUpdate = computed(() => ControllerModule.isCurrencyRateUpdate);
 const isSplTokenLoading = computed(() => ControllerModule.isSplTokenLoading);
@@ -19,12 +19,12 @@ defineProps<{
 }>();
 
 const router = useRouter();
-const currency = computed(() => ControllerModule.torus.currentCurrency);
+const currency = computed(() => ControllerModule.currentCurrency);
 const token = computed(() => {
-  return ControllerModule.torus.nativeCurrency;
+  return ControllerModule.torusState.CurrencyControllerState.nativeCurrency;
 });
 const conversionRate = computed(() => {
-  return ControllerModule.torus.conversionRate;
+  return ControllerModule.conversionRate;
 });
 const formattedBalance = computed(() => {
   return Number(ControllerModule.totalBalance);

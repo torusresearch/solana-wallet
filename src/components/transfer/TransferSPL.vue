@@ -6,12 +6,11 @@ import { getChainIdToNetwork } from "@toruslabs/solana-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import BigNumber from "bignumber.js";
 import { computed, ref } from "vue";
-import { VueI18nTranslation } from "vue-i18n";
+import { useI18n } from "vue-i18n";
 
 import FallbackSPL from "@/assets/solana-mascot.svg";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { setFallbackImg } from "@/utils/helpers";
 import { AccountEstimation, SolAndSplToken } from "@/utils/interfaces";
 
@@ -48,11 +47,11 @@ const props = withDefaults(
   }
 );
 
-const t = i18n.global.t as VueI18nTranslation;
+const { t } = useI18n();
 
-const currency = computed(() => ControllerModule.torus.currentCurrency);
+const currency = computed(() => ControllerModule.currentCurrency);
 const pricePerToken = computed<number>((): number => {
-  return ControllerModule.torus.conversionRate;
+  return ControllerModule.conversionRate;
 });
 const emits = defineEmits(["transferConfirm", "transferCancel", "onCloseModal"]);
 
@@ -77,7 +76,9 @@ const totalCostString = computed(() => {
 });
 
 const explorerUrl = computed(() => {
-  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${getChainIdToNetwork(ControllerModule.torus.chainId)}`;
+  return `${ControllerModule.torusState.NetworkControllerState.providerConfig.blockExplorerUrl}/account/${
+    props.receiverPubKey
+  }/?cluster=${getChainIdToNetwork(ControllerModule.torusState.NetworkControllerState.chainId)}`;
 });
 const refDiv = ref(null);
 </script>
