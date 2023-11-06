@@ -399,8 +399,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       signAuthMessage: this.keyringController.signAuthMessage.bind(this.keyringController),
       getProviderConfig: this.networkController.getProviderConfig.bind(this.networkController),
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
-      // getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
-      getConversionRate: () => this.conversionRate,
+      getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
       getConnection: this.networkController.getConnection.bind(this),
     });
 

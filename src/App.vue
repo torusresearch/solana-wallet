@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Keypair } from "@solana/web3.js";
+import base58 from "bs58";
 import { onBeforeMount } from "vue";
 
 import { Toast } from "@/components/common";
@@ -13,7 +15,7 @@ onBeforeMount(async () => {
     ControllerModule.init({ origin: window.location.origin });
     if (openloginInstance.privKey) {
       const address = await torus.addAccount(
-        openloginInstance.privKey,
+        base58.encode(Keypair.fromSecretKey(Buffer.from(openloginInstance.ed25519PrivKey, "hex")).secretKey),
         {
           email: "",
           name: "",
