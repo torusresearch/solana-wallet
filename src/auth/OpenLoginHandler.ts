@@ -7,7 +7,6 @@ import log from "loglevel";
 import type { OpenLoginPopupResponse } from "@/utils/enums";
 
 import config from "../config";
-import OpenLoginFactory from "./OpenLogin";
 
 class OpenLoginHandler {
   private static mutex = new Mutex();
@@ -49,20 +48,6 @@ class OpenLoginHandler {
         })
       )
     );
-  }
-
-  static async getInstance(reinitialize = false) {
-    const releaseLock = await this.mutex.acquire();
-    try {
-      const openLoginInstance = await OpenLoginFactory.getInstance();
-
-      if (reinitialize) {
-        await openLoginInstance.init();
-      }
-      return openLoginInstance;
-    } finally {
-      releaseLock();
-    }
   }
 
   async handleLoginWindow({

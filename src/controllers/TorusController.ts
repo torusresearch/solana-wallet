@@ -37,7 +37,6 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
-import { generatePrivate, getPublic } from "@toruslabs/eccrypto";
 import {
   createEngineStream,
   JRPCEngine,
@@ -72,14 +71,12 @@ import {
   TransactionController,
 } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
-import BN from "bn.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
 import { cloneDeep, omit } from "lodash-es";
 import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
-import stringify from "safe-stable-stringify";
 
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
@@ -89,15 +86,13 @@ import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
 import {
   BUTTON_POSITION,
   CONTROLLER_MODULE_KEY,
-  KeyState,
-  OpenLoginBackendState,
   OpenLoginPopupResponse,
   SignMessageChannelDataType,
   TorusControllerConfig,
   TorusControllerState,
   TransactionChannelDataType,
 } from "@/utils/enums";
-import { getRandomWindowId, getUserLanguage, isMain, normalizeJson, parseJwt } from "@/utils/helpers";
+import { getRandomWindowId, getUserLanguage, isMain, normalizeJson } from "@/utils/helpers";
 import { constructTokenData } from "@/utils/instructionDecoder";
 import { burnAndCloseAccount } from "@/utils/solanaHelpers";
 import TorusStorageLayer from "@/utils/tkey/storageLayer";
@@ -444,11 +439,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // ensure accountTracker updates balances after network change
     this.networkController.on("networkDidChange", async () => {
       if (this.selectedAddress) {
-        try {
-          this.preferencesController.initializeDisplayActivity();
-        } catch (e) {
-          log.error(e, this.selectedAddress);
-        }
+        this.preferencesController.initializeDisplayActivity().catch((err) => {
+          log.error(err, "error while initializing display activity", this.selectedAddress);
+        });
       }
 
       this.engine?.emit("notification", {
@@ -1241,6 +1234,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     login_hint?: string;
     waitSaving?: boolean;
   }): Promise<OpenLoginPopupResponse> {
+    log.info(waitSaving);
     try {
       const extraLoginOptions: Record<string, string> = {
         dappOrigin: this.origin,
@@ -1275,15 +1269,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const address = await accountPromise[0];
       this.setSelectedAccount(address);
 
-      // save to openloginState backend
       if (!this.hasSelectedPrivateKey || !this.privateKey) throw new Error("Wallet Error: Invalid private key ");
-      const saveToOpenLogin = this.saveToOpenloginBackend({
-        privateKey: this.privateKey,
-        publicKey: this.selectedAddress,
-        userInfo,
-        accounts: targetAccount,
-      });
-      if (waitSaving) await saveToOpenLogin;
 
       this.emit("LOGIN_RESPONSE", null, address);
       return result;
@@ -1335,121 +1321,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     return allTransactions;
-  }
-
-  /**
-   * DISCLAIMER: This is a session management component which allows faster reloads and easier access when
-   * the user opens the wallet site. The implementation is optional and can be removed.
-   *
-   * @param saveState - save state to openloginStateServer
-   */
-  async saveToOpenloginBackend(saveState: OpenLoginBackendState) {
-    // Random generated secp256k1
-    const ecc_privateKey = generatePrivate();
-    const ecc_publicKey = getPublic(ecc_privateKey);
-
-    // (ephemeral private key, user public key)
-    const keyState: KeyState = {
-      priv_key: ecc_privateKey.toString("hex"),
-      pub_key: ecc_publicKey.toString("hex"),
-    };
-
-    try {
-      // save encrypted ed25519
-      await this.storageLayer?.setMetadata<OpenLoginBackendState>({
-        input: saveState,
-        privKey: new BN(ecc_privateKey),
-      });
-
-      // session should be priority and there should be only one login in one browser tab session
-      window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-      window.localStorage?.setItem(`${EPHERMAL_KEY}`, stringify(keyState));
-    } catch (error) {
-      log.error(error, "Error saving state!");
-    }
-  }
-
-  async restoreFromBackend(): Promise<boolean> {
-    // has selected keypair (logged in)
-    if (this.hasSelectedPrivateKey) {
-      return true;
-    }
-
-    try {
-      const localKey = window.localStorage?.getItem(`${EPHERMAL_KEY}`);
-      const sessionKey = window.sessionStorage?.getItem(`${EPHERMAL_KEY}`);
-      const value = sessionKey || localKey;
-
-      // Saving to SessionStorage - user refresh with restored key
-      if (!sessionKey && value) window.sessionStorage?.setItem(`${EPHERMAL_KEY}`, value);
-
-      const keyState: KeyState =
-        typeof value === "string"
-          ? JSON.parse(value)
-          : {
-              priv_key: "",
-              pub_key: "",
-            };
-
-      if (keyState.priv_key && keyState.pub_key) {
-        const metadata = await this.storageLayer?.getMetadata({ privKey: new BN(keyState.priv_key, "hex") });
-
-        const decryptedState = metadata as OpenLoginBackendState;
-
-        if (!decryptedState.privateKey) {
-          throw new Error("Private key not found in state");
-        }
-        log.info("try to restore key");
-        try {
-          // populate accounts
-          const userDapp = new Map();
-          const accountPromise = decryptedState.accounts.map(async (account) => {
-            userDapp.set(account.address, account.app);
-
-            let address;
-            if (this.preferencesController.state.identities[account.address]) {
-              // Try key restore with session state (localstorage) intact.
-              log.info("login without userinfo, use prefrence controller state");
-              // Restore keyringController only ( no Sync / initPreferenes )
-              address = await this.addAccount(account.solanaPrivKey);
-
-              const jwt = this.preferencesController.state.identities[address]?.jwtToken;
-
-              if (jwt) {
-                const expire = parseJwt(jwt).exp;
-                if (expire < Date.now() / 1000) {
-                  // required to set selectedAddress before jwt refresh
-                  this.preferencesController.setSelectedAddress(address);
-                  await this.refreshJwt();
-                }
-              }
-            } else {
-              log.info("login with userinfo, redo solana backend login");
-              address = await this.addAccount(account.solanaPrivKey, decryptedState.userInfo as UserInfo);
-            }
-            return address;
-          });
-
-          this.update({ UserDapp: userDapp });
-
-          // find previous selected account
-          const address = this.selectedAddress || decryptedState.publicKey;
-          const selectedIndex = decryptedState.accounts.findIndex((account) => account.address === address);
-          const selectedAddress = await accountPromise[selectedIndex];
-          // This call sync and refresh blockchain state
-          await this.setSelectedAccount(selectedAddress, true);
-
-          return true;
-        } catch (e) {
-          log.error(e, "Error restoring state after successful decrypt!");
-        }
-      }
-      log.warn("Invalid or no key in local storage");
-      return false;
-    } catch (error) {
-      log.warn(error, "Error restoring state!");
-      return false;
-    }
   }
 
   async getDappList(): Promise<DiscoverDapp[]> {
@@ -1577,7 +1448,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     // Try to restore from backend (restore privatekey)
     this.embedController.update({ loginInProgress: true });
-    await this.restoreFromBackend();
     this.embedController.update({ loginInProgress: false });
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
@@ -1660,20 +1530,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.setSelectedAccount(publicKey);
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
-    this.saveToOpenloginBackend({
-      privateKey: req.params?.privateKey,
-      publicKey: this.selectedAddress,
-      userInfo: req.params?.userInfo,
-      accounts: [
-        {
-          privKey: "",
-          address: this.selectedAddress,
-          solanaPrivKey: req.params?.privateKey,
-          app: `${req.params?.userInfo.email}`,
-          name: `${req.params?.userInfo.email}`,
-        },
-      ],
-    });
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {

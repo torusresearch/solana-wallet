@@ -1,6 +1,5 @@
 import { LAMPORTS_PER_SOL, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { BaseEmbedController, KeyPair, PAYMENT_PROVIDER_TYPE, PopupHandler, PopupWithBcHandler } from "@toruslabs/base-controllers";
-import { generatePrivate, getPublic } from "@toruslabs/eccrypto";
 import OpenLogin from "@toruslabs/openlogin";
 import { BasePostMessageStream, JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
 import {
@@ -25,7 +24,6 @@ import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import TorusController, { DEFAULT_STATE } from "@/controllers/TorusController";
 import controllerModule, { torus } from "@/modules/controllers";
-import { KeyState } from "@/utils/enums";
 import * as helper from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 import * as SolanaHelper from "@/utils/solanaHelpers";
@@ -845,27 +843,6 @@ describe("Controller Module", () => {
       await torus.setSelectedAccount(publicKey.toString(), true);
       assert.deepEqual(result, publicKey.toString());
       assert.deepEqual(torus.jwtToken, mockData.backend.verify.token);
-    });
-
-    it("saveToOpenloginBackend", async () => {
-      const setMetaDataSpy = sandbox.spy(TorusStorageLayer.prototype, "setMetadata");
-      const { publicKey, secretKey } = sKeyPair[0];
-      const ecc_privateKey = generatePrivate();
-      const ecc_publicKey = getPublic(ecc_privateKey);
-
-      const keyState: KeyState = {
-        priv_key: ecc_privateKey.toString("hex"),
-        pub_key: ecc_publicKey.toString("hex"),
-      };
-
-      log.info({ keyState });
-      await torus.saveToOpenloginBackend({
-        privateKey: secretKey.toString(),
-        publicKey: publicKey.toString(),
-        accounts: openloginFaker[0].accounts,
-        userInfo: openloginFaker[0].userInfo,
-      });
-      assert(setMetaDataSpy.calledOnce);
     });
 
     // unable to mock bonfida resolve which called request to chain

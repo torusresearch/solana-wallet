@@ -151,6 +151,7 @@ class ControllerModule extends VuexModule {
   }
 
   get conversionRate(): number {
+    if (!this.torusState.CurrencyControllerState.tokenPriceMap.solana) return NaN;
     return this.torusState.CurrencyControllerState.tokenPriceMap.solana[this.currentCurrency.toLowerCase()];
   }
 

@@ -24,7 +24,13 @@ const props = defineProps<{
 }>();
 
 const emits = defineEmits(["splClicked"]);
-const hasGeckoPrice = computed(() => props.splToken?.symbol === "SOL" || !!props.splToken?.price?.usd);
+const hasGeckoPrice = computed(() => {
+  if (props.splToken?.symbol === "SOL") return !Number.isNaN(ControllerModule.conversionRate);
+  if (props.splToken?.price) {
+    return props.splToken.price[currency.value];
+  }
+  return false;
+});
 
 function splClicked() {
   emits("splClicked");
