@@ -50,6 +50,7 @@ import {
   Stream,
   Substream,
 } from "@toruslabs/openlogin-jrpc";
+import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import {
   AccountTrackerController,
@@ -78,6 +79,7 @@ import log from "loglevel";
 import pump from "pump";
 import { Duplex } from "readable-stream";
 
+import OpenLoginFactory, { createSession, updateSession } from "@/auth/OpenLogin";
 import OpenLoginHandler from "@/auth/OpenLoginHandler";
 import config from "@/config";
 import { topupPlugin } from "@/plugins/Topup";
@@ -1530,6 +1532,53 @@ export default class TorusController extends BaseController<TorusControllerConfi
     this.setSelectedAccount(publicKey);
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
+
+    // const appState = safebtoa(
+    //   JSON.stringify({
+    //     instanceId: '',
+    //     verifier: '',
+    //     origin: this.origin,
+    //     whiteLabel: state.whiteLabel || {},
+    //     loginConfig: {},
+    //   })
+    // )
+    const privateKey = req.params?.privateKey;
+
+    const openLoginHandler = await OpenLoginFactory.getInstance();
+    const { sessionId: openloginSessionId, state: openloginState } = openLoginHandler;
+    // this is import private key into torus wallet
+    if (openloginSessionId && openloginState.walletKey === privateKey) {
+      const _store = openloginState?.userInfo || {};
+      const sessionData = {
+        ...openloginState,
+        userInfo: {
+          ..._store,
+          // whiteLabel: state.whiteLabel,
+          // ...userInfo,
+        },
+      };
+      await updateSession(sessionData);
+    } else {
+      // login with private key from torus wallet plugin
+      const sessionId = OpenloginSessionManager.generateRandomSessionKey();
+      const sessionData = {
+        walletKey: privateKey,
+        sessionId,
+        userInfo: {
+          isPlugin: true,
+          // whiteLabel: state.whiteLabel,
+          // appState,
+          // ...userInfo,
+        },
+      };
+      // openLoginHandler.state = sessionData;
+      // if (storageAvailability[storageUtils.storageType]) {
+      // const storage = BrowserStorage.getInstance(storageUtils.openloginStoreKey, storageUtils.storageType);
+      // storage.set("sessionId", sessionId);
+      // }
+      await createSession(sessionId, sessionData);
+    }
+
     this.engine?.emit("notification", {
       method: PROVIDER_NOTIFICATIONS.UNLOCK_STATE_CHANGED,
       params: {

@@ -2,6 +2,7 @@ import { Keypair } from "@solana/web3.js";
 import { get } from "@toruslabs/http-helpers";
 import OpenLogin from "@toruslabs/openlogin";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
+import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
 import { subkey } from "@toruslabs/openlogin-subkey";
 import { Mutex } from "async-mutex";
 import base58 from "bs58";
@@ -49,19 +50,19 @@ class OpenLoginFactory {
   }
 
   public static async computeAccount() {
-    const openLoginInstance = await OpenLoginFactory.getInstance();
-    if (!openLoginInstance || !openLoginInstance.state.sessionId) {
+    const instance = await OpenLoginFactory.getInstance();
+    if (!instance || !instance.state.sessionId) {
       throw new Error("Openlogin instance/session not found");
     }
 
-    const openLoginState = openLoginInstance.state;
+    const openLoginState = instance.state;
     const { privKey, tKey, oAuthPrivateKey } = openLoginState;
 
     if (!privKey) {
       throw new Error("Login unsuccessful");
     }
 
-    const userInfo = openLoginInstance.getUserInfo();
+    const userInfo = instance.getUserInfo();
 
     const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
     const typeOfLoginDisplay = userInfo.typeOfLogin.charAt(0).toUpperCase() + userInfo.typeOfLogin.slice(1);
@@ -129,4 +130,38 @@ class OpenLoginFactory {
     };
   }
 }
+export async function updateSession(sessionData: any) {
+  try {
+    const instance = await OpenLoginFactory.getInstance();
+    if (instance.sessionId) {
+      const sessionManager = new OpenloginSessionManager({
+        sessionId: instance.sessionId,
+        sessionNamespace: instance.sessionNamespace,
+      });
+
+      await sessionManager.updateSession(sessionData);
+    }
+  } catch (error) {
+    log.warn(error);
+  }
+}
+
+export async function createSession(sessionId: string, data: any) {
+  if (!sessionId) throw new Error("Session Id is required");
+  try {
+    const sessionManager = new OpenloginSessionManager({
+      sessionId,
+      sessionNamespace: (await OpenLoginFactory.getInstance()).sessionNamespace,
+    });
+
+    await sessionManager.createSession(data);
+  } catch (error) {
+    log.error(error);
+  }
+}
+
+export async function invalidateSession() {
+  await (await OpenLoginFactory.getInstance()).logout();
+}
+
 export default OpenLoginFactory;

@@ -41,6 +41,7 @@
     "@toruslabs/openlogin": "^6.0.0",
     "@toruslabs/openlogin-ed25519": "^6.0.0",
     "@toruslabs/openlogin-jrpc": "^6.0.0",
+    "@toruslabs/openlogin-session-manager": "^3.0.0",
     "@toruslabs/openlogin-subkey": "^6.0.0",
     "@toruslabs/openlogin-utils": "^6.0.0",
     "@toruslabs/solana-controllers": "^4.7.0",
