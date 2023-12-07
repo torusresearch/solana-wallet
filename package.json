@@ -33,7 +33,7 @@
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "^1.78.4",
     "@toruslabs/base-controllers": "^3.0.3",
-    "@toruslabs/broadcast-channel": "^8.0.0",
+    "@toruslabs/broadcast-channel": "^9.0.1",
     "@toruslabs/eccrypto": "^4.0.0",
     "@toruslabs/http-helpers": "^5.0.0",
     "@toruslabs/loglevel-sentry": "^6.0.1",
