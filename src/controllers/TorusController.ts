@@ -1527,6 +1527,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async loginWithPrivateKey(req: Ihandler<LoginWithPrivateKeyParams>): Promise<{ success: boolean }> {
     if (!req.params?.privateKey) throw new Error("Invalid Private Key");
 
+    const userInfo = req.params?.userInfo;
     // Do not need this as embed restore trigger moved to on 'requestAccount` called and state save in SessionStorage
     const publicKey = await this.addAccount(req.params?.privateKey, req.params?.userInfo);
     this.setSelectedAccount(publicKey);
@@ -1554,7 +1555,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
         userInfo: {
           ..._store,
           // whiteLabel: state.whiteLabel,
-          // ...userInfo,
+          ...userInfo,
         },
       };
       await updateSession(sessionData);
@@ -1568,11 +1569,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
           isPlugin: true,
           // whiteLabel: state.whiteLabel,
           // appState,
-          // ...userInfo,
+          ...userInfo,
         },
       };
-      // openLoginHandler.state = sessionData;
-      // if (storageAvailability[storageUtils.storageType]) {
+      openLoginHandler.state = sessionData;
+      // if (config.isStorageAvailable[LOCAL_STORAGE_KEY]) {
       // const storage = BrowserStorage.getInstance(storageUtils.openloginStoreKey, storageUtils.storageType);
       // storage.set("sessionId", sessionId);
       // }

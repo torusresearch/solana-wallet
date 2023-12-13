@@ -308,3 +308,11 @@ export function sortSolanaTokens(solanaTokens: SolanaToken[], sortType: SORT_SPL
       });
   }
 }
+
+export const storageUtils = {
+  storage: config.isStorageAvailable.localStorage ? window.localStorage : undefined,
+  storageType: "local",
+  // storageKey: config.isCustomLogin ? `torus_app_${config.sessionNamespace || getIFrameOriginObject().hostname}` : 'torus-app',
+  // openloginStoreKey: config.isCustomLogin ? `openlogin_store_${config.sessionNamespace || getIFrameOriginObject().hostname}` : 'openlogin_store',
+  // openloginStoreKey: config.isCustomLogin ? `openlogin_store_${config.sessionNamespace || getIFrameOriginObject().hostname}` : 'openlogin_store',
+};
