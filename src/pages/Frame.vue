@@ -1,7 +1,9 @@
 <script setup lang="ts">
 // import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin";
+import { Keypair } from "@solana/web3.js";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import { SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import base58 from "bs58";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
@@ -125,7 +127,7 @@ onMounted(async () => {
     const openloginInstance = await OpenLoginHandler.getInstance(true);
     if (openloginInstance.privKey) {
       const address = await torus.addAccount(
-        openloginInstance.privKey,
+        base58.encode(Keypair.fromSecretKey(Buffer.from(openloginInstance.ed25519PrivKey, "hex")).secretKey),
         {
           email: "",
           name: "",

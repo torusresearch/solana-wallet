@@ -47,7 +47,6 @@ const getWalletBalance = (address: string): string => {
   const { allBalances } = ControllerModule;
   const lamports = new BigNumber(allBalances[address]?.balance || 0);
   const solBal = lamports.div(LAMPORTS_PER_SOL);
-
   const pricePerToken = ControllerModule.conversionRate;
   const selectedCurrency = ControllerModule.currentCurrency;
   const value = solBal.times(new BigNumber(pricePerToken));
