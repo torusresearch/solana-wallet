@@ -7,7 +7,7 @@ import base58 from "bs58";
 import log from "loglevel";
 import { computed, onMounted, ref, watch } from "vue";
 
-import OpenLoginHandler from "@/auth/OpenLoginHandler";
+import OpenLoginFactory from "@/auth/OpenLogin";
 import { PopupLoader, PopupLogin, PopupWidget } from "@/components/frame";
 import { i18n, setLocale } from "@/plugins/i18nPlugin";
 import { BUTTON_POSITION, EmbedInitParams } from "@/utils/enums";
@@ -77,7 +77,7 @@ function startLogin() {
 }
 startLogin();
 
-const isLoggedIn = computed(() => ControllerModule.hasSelectedPrivateKey);
+const isLoggedIn = computed(() => !!ControllerModule.hasSelectedPrivateKey);
 const isEmbedLoginInProgress = computed(() => ControllerModule.torusState.EmbedControllerState.loginInProgress);
 const oauthModalVisibility = computed(() => ControllerModule.torusState.EmbedControllerState.oauthModalVisibility);
 const isIFrameFullScreen = computed(() => ControllerModule.torusState.EmbedControllerState.isIFrameFullScreen);
@@ -124,8 +124,8 @@ onMounted(async () => {
       origin: dappOrigin,
     });
 
-    const openloginInstance = await OpenLoginHandler.getInstance(true);
-    if (openloginInstance.privKey) {
+    const openloginInstance = await OpenLoginFactory.getInstance(true);
+    if (openloginInstance.ed25519PrivKey) {
       const address = await torus.addAccount(
         base58.encode(Keypair.fromSecretKey(Buffer.from(openloginInstance.ed25519PrivKey, "hex")).secretKey),
         {
