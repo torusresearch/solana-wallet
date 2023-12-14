@@ -56,15 +56,16 @@ class OpenLoginFactory {
     }
 
     const openLoginState = instance.state;
-    const { privKey, tKey, oAuthPrivateKey } = openLoginState;
+    const { tKey, oAuthPrivateKey, ed25519PrivKey } = openLoginState;
 
-    if (!privKey) {
+    if (!ed25519PrivKey) {
       throw new Error("Login unsuccessful");
     }
 
     const userInfo = instance.getUserInfo();
 
-    const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    // const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    const secretKey = Buffer.from(ed25519PrivKey!, "hex");
     const typeOfLoginDisplay = userInfo.typeOfLogin.charAt(0).toUpperCase() + userInfo.typeOfLogin.slice(1);
     const accountDisplay = (userInfo.typeOfLogin !== APPLE && userInfo.email) || userInfo.name;
     const mainKeyPair = Keypair.fromSecretKey(secretKey);
@@ -72,7 +73,7 @@ class OpenLoginFactory {
     accounts.push({
       app: `${typeOfLoginDisplay} ${accountDisplay}`,
       solanaPrivKey: base58.encode(mainKeyPair.secretKey),
-      privKey,
+      privKey: ed25519PrivKey,
       name: `Solana Wallet ${window.location.origin}`,
       address: `${mainKeyPair.publicKey.toBase58()}`,
     });

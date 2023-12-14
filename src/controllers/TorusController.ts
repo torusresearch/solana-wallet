@@ -1534,27 +1534,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
 
-    // const appState = safebtoa(
-    //   JSON.stringify({
-    //     instanceId: '',
-    //     verifier: '',
-    //     origin: this.origin,
-    //     whiteLabel: state.whiteLabel || {},
-    //     loginConfig: {},
-    //   })
-    // )
     const privateKey = req.params?.privateKey;
 
     const openLoginHandler = await OpenLoginFactory.getInstance();
     const { sessionId: openloginSessionId, state: openloginState } = openLoginHandler;
     // this is import private key into torus wallet
-    if (openloginSessionId && openloginState.walletKey === privateKey) {
-      const _store = openloginState?.userInfo || {};
+    if (openloginSessionId && openloginState.ed25519PrivKey === privateKey) {
+      const store = openloginState?.userInfo || {};
       const sessionData = {
         ...openloginState,
         userInfo: {
-          ..._store,
-          // whiteLabel: state.whiteLabel,
+          ...store,
           ...userInfo,
         },
       };
@@ -1563,20 +1553,14 @@ export default class TorusController extends BaseController<TorusControllerConfi
       // login with private key from torus wallet plugin
       const sessionId = OpenloginSessionManager.generateRandomSessionKey();
       const sessionData = {
-        walletKey: privateKey,
+        ed25519PrivKey: privateKey,
         sessionId,
         userInfo: {
           isPlugin: true,
-          // whiteLabel: state.whiteLabel,
-          // appState,
           ...userInfo,
         },
       };
       openLoginHandler.state = sessionData;
-      // if (config.isStorageAvailable[LOCAL_STORAGE_KEY]) {
-      // const storage = BrowserStorage.getInstance(storageUtils.openloginStoreKey, storageUtils.storageType);
-      // storage.set("sessionId", sessionId);
-      // }
       await createSession(sessionId, sessionData);
     }
 
