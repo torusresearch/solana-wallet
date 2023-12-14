@@ -39,7 +39,7 @@ onBeforeMount(async () => {
       torus.update({
         UserDapp: userDapp,
       });
-      await Promise.all(addAccountPromises);
+      // await Promise.all(addAccountPromises);
       const address = await addAccountPromises[result.matchedDappHost];
       await ControllerModule.setSelectedAccount(address);
     }
