@@ -78,9 +78,9 @@ async function endLogin() {
     const openLoginInstance = await OpenLoginFactory.getInstance();
 
     const openLoginState = openLoginInstance.state;
-    const { privKey, tKey, oAuthPrivateKey } = openLoginState;
+    const { tKey, oAuthPrivateKey, ed25519PrivKey } = openLoginState;
 
-    if (!privKey) {
+    if (!ed25519PrivKey) {
       throw new Error("Login unsuccessful");
     }
 
@@ -95,15 +95,17 @@ async function endLogin() {
     const { instanceId } = appState;
     channel = instanceId;
 
-    // Main wallet's Account
-    const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    // Main wallet's Accoun
+    // const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    const secretKey = Buffer.from(ed25519PrivKey!, "hex");
+
     const typeOfLoginDisplay = userInfo.typeOfLogin.charAt(0).toUpperCase() + userInfo.typeOfLogin.slice(1);
     const accountDisplay = (userInfo.typeOfLogin !== APPLE && userInfo.email) || userInfo.name;
     const mainKeyPair = Keypair.fromSecretKey(secretKey);
     accounts.push({
       app: `${typeOfLoginDisplay} ${accountDisplay}`,
       solanaPrivKey: base58.encode(mainKeyPair.secretKey),
-      privKey,
+      privKey: ed25519PrivKey,
       name: `Solana Wallet ${window.location.origin}`,
       address: `${mainKeyPair.publicKey.toBase58()}`,
     });
@@ -112,7 +114,7 @@ async function endLogin() {
     const userDapps: Record<string, string> = {};
 
     let matchedDappHost = -1;
-    const dappOrigin = sessionStorage.getItem("dappOrigin");
+    const dappOrigin = sessionStorage.getItem("dappOrigin") || window.location.origin;
     const dappHost = new URL(dappOrigin || "");
 
     if (tKey && oAuthPrivateKey) {

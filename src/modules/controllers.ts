@@ -66,6 +66,12 @@ class ControllerModule extends VuexModule {
 
   public logoutRequired = false;
 
+  public rehydrating = false;
+
+  get isRehydrating(): boolean {
+    return this.rehydrating;
+  }
+
   get selectedAddress(): string {
     return this.torusState.PreferencesControllerState?.selectedAddress || "";
   }
@@ -269,6 +275,11 @@ class ControllerModule extends VuexModule {
   get existingTokenAddress(): string[] {
     const tokenList = this.torusState.TokenInfoState.tokenInfoMap || {};
     return Object.keys(tokenList);
+  }
+
+  @Mutation
+  public setIsRehydrating(status: boolean) {
+    this.rehydrating = status;
   }
 
   @Mutation

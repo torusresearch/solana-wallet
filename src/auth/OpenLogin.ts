@@ -83,7 +83,7 @@ class OpenLoginFactory {
 
     // let matchedDappHost = -1;
     let matchedDappHost = 0;
-    const dappOrigin = sessionStorage.getItem("dappOrigin") || "https://solana.tor.us";
+    const dappOrigin = sessionStorage.getItem("dappOrigin") || window.location.origin;
     const dappHost = new URL(dappOrigin);
 
     if (tKey && oAuthPrivateKey) {
