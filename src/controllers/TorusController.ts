@@ -1450,6 +1450,38 @@ export default class TorusController extends BaseController<TorusControllerConfi
   private async requestAccounts(req: JRPCRequest<unknown>): Promise<string[]> {
     // Try to restore from backend (restore privatekey)
     this.embedController.update({ loginInProgress: true });
+
+    const openloginInstance = await OpenLoginFactory.getInstance(true);
+    const result = await OpenLoginFactory.computeAccount().catch((err) => {
+      log.error(err);
+      return null;
+    });
+    // rehydration
+    if (result?.accounts.length) {
+      const userDapp = new Map();
+      const addAccountPromises = result.accounts.map(async (account) => {
+        userDapp.set(account.address, account.app);
+
+        const address = await this.addAccount(
+          account.solanaPrivKey,
+          {
+            email: "",
+            name: "",
+            profileImage: "",
+            ...openloginInstance.getUserInfo(),
+          },
+          true
+        );
+        return address;
+      });
+      this.update({
+        UserDapp: userDapp,
+      });
+      // await Promise.all(addAccountPromises);
+      const address = await addAccountPromises[result.matchedDappHost];
+      await this.setSelectedAccount(address);
+    }
+
     this.embedController.update({ loginInProgress: false });
     return new Promise((resolve, reject) => {
       const [requestedLoginProvider, login_hint] = req.params as string[];
