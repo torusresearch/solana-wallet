@@ -1565,7 +1565,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     if (!this.hasSelectedPrivateKey) throw new Error("Waller Error");
 
-    const privateKey = req.params?.privateKey;
+    const privateKey = Buffer.from(base58.decode(req.params?.privateKey)).toString("hex");
 
     const openLoginHandler = await OpenLoginFactory.getInstance();
     const { sessionId: openloginSessionId, state: openloginState } = openLoginHandler;
