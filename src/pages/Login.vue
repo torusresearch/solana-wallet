@@ -87,6 +87,10 @@ const $v = useVuelidate(rules, { userEmail });
 const hasSelectedPrivateKey = computed(() => ControllerModule.hasSelectedPrivateKey);
 const selectedAddress = computed(() => ControllerModule.selectedAddress);
 
+const finalIsLoading = computed(() => {
+  return isLoading.value || ControllerModule.isRehydrating;
+});
+
 onMounted(() => {
   log.info("app is dark mode", app);
   if (hasSelectedPrivateKey.value && isRedirectFlow) {
@@ -236,7 +240,7 @@ watch(
     <div class="flex md:hidden flex-col col-span-6 md:col-span-2 lg:col-span-3 h-full justify-center mx-10 items-center">
       <LoginFooter />
     </div>
-    <div v-if="isLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
+    <div v-if="finalIsLoading" class="flex justify-center items-center fixed bg-white dark:bg-app-gray-800 inset-0 h-full w-full z-10">
       <Loader :use-spinner="true" :is-dark="isWhiteLabelDark()" />
       <p class="absolute bottom-12 text-white text-center">{{ $t("dappLogin.completeVerification") }}.</p>
     </div>
