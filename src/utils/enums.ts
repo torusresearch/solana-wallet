@@ -16,12 +16,12 @@ import {
   SolanaBlock,
   SolanaCurrencyControllerConfig,
   SolanaCurrencyControllerState,
+  SolanaNetworkState,
   SolanaPreferencesConfig,
   SolanaPreferencesState,
 } from "@toruslabs/solana-controllers";
-import { SolanaNetworkState } from "@toruslabs/solana-controllers/dist/types/Network/NetworkController";
 import { TokenInfoState, TokensInfoConfig } from "@toruslabs/solana-controllers/dist/types/Tokens/TokenInfoController";
-import { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
+import type { TokensTrackerConfig, TokensTrackerState } from "@toruslabs/solana-controllers/dist/types/Tokens/TokensTrackerController";
 
 export const LOCAL_STORAGE_KEY = "localStorage";
 export const SESSION_STORAGE_KEY = "sessionStorage";

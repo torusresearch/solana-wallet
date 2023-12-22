@@ -1651,6 +1651,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       showWalletUi: () => {
         throw new Error("Unsupported method");
       },
+      showWindowBlockAlert: () => {
+        throw new Error("Unsupported method");
+      },
     };
     this.embedController.initializeProvider(commProviderHandlers);
   }
