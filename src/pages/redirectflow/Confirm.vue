@@ -14,7 +14,7 @@ import { FinalTxData } from "@/utils/interfaces";
 import { redirectToResult, useRedirectFlow } from "@/utils/redirectflowHelpers";
 import { calculateTxFee, parsingTransferAmount } from "@/utils/solanaHelpers";
 
-import ControllerModule from "../../modules/controllers";
+import ControllerModule, { torus } from "../../modules/controllers";
 
 const { params, method, jsonrpc, req_id, resolveRoute } = useRedirectFlow();
 const { hasEstimationError, estimatedBalanceChange, estimationInProgress, estimateChanges } = useEstimateChanges();
@@ -51,7 +51,7 @@ onMounted(async () => {
 
     // TODO: currently, controllers does not support multi transaction flow
     if (txData.type === "sign_all_transactions") {
-      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, ControllerModule.connection);
+      const decoded = decodeAllInstruction(txData.message as string[], txData.messageOnly || false, torus.connection);
       decodedInst.value = decoded;
       estimationInProgress.value = false;
       hasEstimationError.value = "Failed to simulate transaction for balance changes";
@@ -66,9 +66,9 @@ onMounted(async () => {
       tx.value = VersionedTransaction.deserialize(Buffer.from(txData.message as string, "hex"));
     }
 
-    estimateChanges(tx.value, ControllerModule.connection, ControllerModule.selectedAddress);
+    estimateChanges(tx.value, torus.connection, ControllerModule.selectedAddress);
     // const isGasless = tx.value.feePayer?.toBase58() !== txData.signer;
-    const txFee = await calculateTxFee(tx.value.message, ControllerModule.connection);
+    const txFee = await calculateTxFee(tx.value.message, torus.connection);
     const { instructions } = TransactionMessage.decompile(tx.value.message, txFee.lookupArgs);
 
     try {
@@ -92,13 +92,13 @@ const approveTxn = async (): Promise<void> => {
   let res: string | string[] | VersionedTransaction | undefined;
   try {
     if (method === "send_transaction" && tx.value) {
-      res = await ControllerModule.torus.transfer(tx.value, params);
+      res = await torus.transfer(tx.value, params);
       redirectToResult(jsonrpc, { data: { signature: res }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_transaction" && tx.value) {
-      res = ControllerModule.torus.UNSAFE_signTransaction(tx.value);
+      res = torus.UNSAFE_signTransaction(tx.value);
       redirectToResult(jsonrpc, { data: { signature: res.serialize() }, method, success: true }, req_id, resolveRoute);
     } else if (method === "sign_all_transactions") {
-      res = await ControllerModule.torus.UNSAFE_signAllTransactions({ params } as {
+      res = await torus.UNSAFE_signAllTransactions({ params } as {
         params: { message: string[] };
         method: string;
       });

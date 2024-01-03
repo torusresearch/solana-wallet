@@ -9,17 +9,9 @@ module.exports = {
     ecmaVersion: 2022,
     project: "./tsconfig.json",
   },
-  ignorePatterns: [
-    "*.cjs",
-    "*.config.js",
-    "vite.config.ts",
-    "importLocales.js",
-    "__generated__",
-    ".eslintrc.js",
-    "crisp.js",
-    "tests/setup.js"
-  ],
+  ignorePatterns: ["*.cjs", "*.config.js", "vite.config.ts", "importLocales.js", "__generated__", ".eslintrc.js", "crisp.js", "tests/setup.js"],
   rules: {
+    "@typescript-eslint/no-explicit-any": 1,
     camelcase: 0,
     "no-new": 0,
     "vue/multi-word-component-names": 0,

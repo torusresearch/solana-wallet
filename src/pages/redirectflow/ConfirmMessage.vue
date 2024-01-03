@@ -6,7 +6,7 @@ import FullDivLoader from "@/components/FullDivLoader.vue";
 import Permissions from "@/components/permissions/Permissions.vue";
 import { SignMessageChannelDataType } from "@/utils/enums";
 
-import ControllerModule from "../../modules/controllers";
+import { torus } from "../../modules/controllers";
 import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 
 const { params, method, resolveRoute, jsonrpc, req_id } = useRedirectFlow();
@@ -48,7 +48,7 @@ onMounted(async () => {
 
 const approveTxn = async (): Promise<void> => {
   loading.value = true;
-  const res = await ControllerModule.torus.signMessage(
+  const res = await torus.signMessage(
     {
       params: {
         data: params.message,

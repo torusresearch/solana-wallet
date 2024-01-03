@@ -2,12 +2,12 @@
 import { Listbox, ListboxButton, ListboxLabel, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 import FallbackNft from "@/assets/nft.png";
 import NftLogo from "@/assets/nft_token.svg";
 import SolTokenLogo from "@/assets/sol_token.svg";
 import solicon from "@/assets/solana-mascot.svg";
-import { i18n } from "@/plugins/i18nPlugin";
 import { setFallbackImg } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
 import { getClubbedNfts } from "@/utils/solanaHelpers";
@@ -24,7 +24,7 @@ const props = withDefaults(
     selectedToken: tokens.value[0],
   }
 );
-const { t } = i18n.global;
+const { t } = useI18n();
 const emits = defineEmits(["update:selectedToken"]);
 const value = computed({
   get: () => {

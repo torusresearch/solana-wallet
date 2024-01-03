@@ -7,7 +7,7 @@ import SolanaLogoLight from "@/assets/solana-logo-shaded-light.png";
 import ControllerModule from "@/modules/controllers";
 import { SolAndSplToken } from "@/utils/interfaces";
 
-const currency = computed(() => ControllerModule.torus.currentCurrency?.toLocaleLowerCase());
+const currency = computed(() => ControllerModule.currentCurrency?.toLocaleLowerCase());
 
 function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLength = 5): number {
   return parseFloat((perTokenPrice * tokenAmount).toFixed(subStringLength));
@@ -15,7 +15,7 @@ function getUiTokenValue(perTokenPrice: number, tokenAmount: number, subStringLe
 
 const formattedSOLBalance = computed(() => ControllerModule.convertedSolBalance);
 const conversionRate = computed(() => {
-  return ControllerModule.torus.conversionRate;
+  return ControllerModule.conversionRate;
 });
 
 const props = defineProps<{
@@ -24,7 +24,13 @@ const props = defineProps<{
 }>();
 
 const emits = defineEmits(["splClicked"]);
-const hasGeckoPrice = computed(() => props.splToken?.symbol === "SOL" || !!props.splToken?.price?.usd);
+const hasGeckoPrice = computed(() => {
+  if (props.splToken?.symbol === "SOL") return !Number.isNaN(ControllerModule.conversionRate);
+  if (props.splToken?.price) {
+    return props.splToken.price[currency.value];
+  }
+  return false;
+});
 
 function splClicked() {
   emits("splClicked");

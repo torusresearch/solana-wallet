@@ -42,7 +42,7 @@ export default () => {
     .query(true)
     .reply(200, (_uri, _body) => {
       // log.error(uri);
-      return JSON.stringify(mockData.coingekco["usd-coin"]);
+      return mockData.coingekco["usd-coin"];
     });
 
   const nockBackend = nock("https://solana-api.tor.us").persist();
@@ -52,28 +52,34 @@ export default () => {
     .query(true)
     .reply(200, (_uri) => {
       log.error(_uri);
-      return JSON.stringify(mockData.backend.user);
+      return mockData.backend.user;
     });
 
-  nockBackend.get("/currency?fsym=SOL&tsyms=USD").reply(200, () => JSON.stringify(mockData.backend.currency));
+  nockBackend.get("/currency?fsym=SOL&tsyms=USD").reply(200, () => mockData.backend.currency);
 
-  nockBackend.post("/auth/message").reply(200, () => JSON.stringify(mockData.backend.message));
+  nockBackend.post("/auth/message").reply(200, () => {
+    return mockData.backend.message;
+  });
 
-  nockBackend.post("/auth/verify").reply(200, () => JSON.stringify(mockData.backend.verify));
+  nockBackend.post("/auth/verify").reply(200, () => mockData.backend.verify);
 
-  nockBackend.post("/user").reply(200, (_uri, _requestbody) => JSON.stringify(mockData.backend.user));
+  nockBackend.post("/user").reply(200, (_uri, _requestbody) => mockData.backend.user);
 
-  nockBackend.post("/contact").reply(200, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, message: "Contact Added", success: true }));
+  nockBackend.post("/contact").reply(200, (_uri, _requestbody) => {
+    return { data: _requestbody, message: "Contact Added", success: true };
+  });
 
   nockBackend.post("/customtoken/fetchToken").reply(200, (_uri, _requestbody) => {
     return { response: mockTokens.tokens, success: true };
   });
 
-  nockBackend
-    .delete("/contact/46")
-    .reply(200, (_uri, _requestbody) => JSON.stringify({ data: { id: 46 }, message: "Contact Deleted", success: true }));
+  nockBackend.delete("/contact/46").reply(200, (_uri, _requestbody) => {
+    return { data: { id: 46 }, message: "Contact Deleted", success: true };
+  });
 
-  nockBackend.patch("/user").reply(201, (_uri, _requestbody) => JSON.stringify({ data: _requestbody, success: true }));
+  nockBackend.patch("/user").reply(201, (_uri, _requestbody) => {
+    return { data: _requestbody, success: true };
+  });
 
   nockBackend.get("/billboard").reply(200, (_uri, _requestbody) => {
     return { success: true, data: mockBillBoardEvent };
@@ -103,9 +109,9 @@ export default () => {
     return { response: mockTokens.tokens, success: true };
   });
 
-  nockBackend.post("/user/recordLogin").reply(200, () => JSON.stringify(mockData.backend.recordLogin));
+  nockBackend.post("/user/recordLogin").reply(200, () => mockData.backend.recordLogin);
 
-  nockBackend.post("/transaction").reply(200, () => JSON.stringify(mockData.backend.transaction));
+  nockBackend.post("/transaction").reply(200, () => mockData.backend.transaction);
 
   // api.mainnet-beta nock
   // nock("https://api.mainnet-beta.solana.com")

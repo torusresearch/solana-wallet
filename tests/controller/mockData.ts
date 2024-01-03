@@ -49,6 +49,7 @@ export const openloginFaker = [
         solanaPrivKey: base58.encode(sKeyPair[0].secretKey),
       },
     ],
+    sessionId: "0x123",
   },
   {
     solanaPrivKey: "",
@@ -63,6 +64,7 @@ export const openloginFaker = [
       typeOfLogin: "google",
     },
     accounts: [],
+    sessionId: "0x123",
   },
   {
     solanaPrivKey: "",
@@ -77,6 +79,7 @@ export const openloginFaker = [
       typeOfLogin: "google",
     },
     accounts: [],
+    sessionId: "0x123",
   },
 ];
 

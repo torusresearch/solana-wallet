@@ -9,6 +9,7 @@ import { BigNumber } from "bignumber.js";
 import { debounce } from "lodash-es";
 import log from "loglevel";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 import { Button, Card, ComboBox, SelectField, TextField } from "@/components/common";
@@ -18,8 +19,7 @@ import { nftTokens, tokens } from "@/components/transfer/token-helper";
 import { addressPromise, isOwnerEscrow } from "@/components/transfer/transfer-helper";
 import TransferTokenSelect from "@/components/transfer/TransferTokenSelect.vue";
 import { trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
-import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { ALLOWED_VERIFIERS, ALLOWED_VERIFIERS_ERRORS, STATUS, STATUS_TYPE, TransferType } from "@/utils/enums";
 import { delay } from "@/utils/helpers";
 import { SolAndSplToken } from "@/utils/interfaces";
@@ -27,7 +27,7 @@ import { calculateTxFee, generateSolTransaction, generateSPLTransaction, ruleVer
 
 import CheckBox from "../../components/common/CheckBox.vue";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const snsError = ref("Account Does Not Exist");
 const isOpen = ref(false);
@@ -48,9 +48,9 @@ const transferDisabled = ref(true);
 const isSendAllActive = ref(false);
 const isCurrencyFiat = ref(false);
 
-const currency = computed(() => ControllerModule.torus.currentCurrency);
+const currency = computed(() => torus.currentCurrency);
 const solConversionRate = computed(() => {
-  return ControllerModule.torus.conversionRate;
+  return torus.conversionRate;
 });
 
 const transferTypes = ALLOWED_VERIFIERS;
@@ -158,7 +158,7 @@ const tokenAddressVerifier = async (value: string) => {
     log.info("failed to generate associatedAccount, account key in might be associatedAccount");
   }
 
-  const accountInfo = await ControllerModule.torus.connection.getParsedAccountInfo(associatedAccount);
+  const accountInfo = await torus.connection.getParsedAccountInfo(associatedAccount);
   // check if the assoc account is (owned by) token selected
   if (accountInfo.value?.owner.equals(TOKEN_PROGRAM_ID)) {
     const data = accountInfo.value.data as ParsedAccountData;
@@ -268,7 +268,7 @@ function convertFiatToCrypto(fiatValue = 1) {
 const generateTransaction = async (amount: number): Promise<VersionedTransaction> => {
   // SolanaPay or URL transfer
   if (reference.value || memo.value.length > 0) {
-    const solPayTransaction = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
+    const solPayTransaction = await createTransfer(torus.connection, new PublicKey(ControllerModule.selectedAddress), {
       recipient: new PublicKey(resolvedAddress.value),
       reference: reference.value?.map((item) => new PublicKey(item)),
       memo: memo.value,
@@ -292,11 +292,11 @@ const generateTransaction = async (amount: number): Promise<VersionedTransaction
       amount * 10 ** (selectedToken?.value?.data?.decimals || 0),
       selectedToken.value as SolAndSplToken,
       ControllerModule.selectedAddress,
-      ControllerModule.connection
+      torus.connection
     );
   } else {
     // SOL TRANSFER
-    transaction.value = await generateSolTransaction(resolvedAddress.value, amount, ControllerModule.selectedAddress, ControllerModule.connection);
+    transaction.value = await generateSolTransaction(resolvedAddress.value, amount, ControllerModule.selectedAddress, torus.connection);
   }
   return transaction.value as VersionedTransaction;
 };
@@ -359,8 +359,8 @@ const openModal = async () => {
   const amount = isCurrencyFiat.value ? convertFiatToCrypto(sendAmount.value) : sendAmount.value;
   try {
     transaction.value = await generateTransaction(amount);
-    estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
-    const { blockHash, height, fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection);
+    estimateChanges(transaction.value, torus.connection, ControllerModule.selectedAddress);
+    const { blockHash, height, fee } = await calculateTxFee(transaction.value.message, torus.connection);
     blockhash.value = blockHash;
     lastValidBlockHeight.value = height;
     transactionFee.value = fee / LAMPORTS_PER_SOL;
@@ -380,7 +380,7 @@ const confirmTransfer = async () => {
   await delay(500);
   try {
     if (!transaction.value) throw new Error("Invalid Transaction");
-    await ControllerModule.torus.transfer(transaction.value);
+    await torus.transfer(transaction.value);
     // resetForm();
     transferConfirmed.value = true;
     showMessageModal({

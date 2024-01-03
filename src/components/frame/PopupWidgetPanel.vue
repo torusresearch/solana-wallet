@@ -22,8 +22,8 @@ const t = i18n.global.t as VueI18nTranslation;
 const selectedNetworkDisplayName = computed(() => ControllerModule.selectedNetworkDisplayName);
 const selectedPublicKey = computed(() => ControllerModule.selectedAddress);
 const formattedBalance = computed(() => ControllerModule.totalBalance);
-const currentFiatCurrency = computed(() => ControllerModule.torus.currentCurrency);
-const userInfo = computed(() => ControllerModule.torus.userInfo);
+const currentFiatCurrency = computed(() => ControllerModule.currentCurrency);
+const userInfo = computed(() => ControllerModule.userInfo);
 
 withDefaults(
   defineProps<{

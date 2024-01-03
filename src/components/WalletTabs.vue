@@ -12,7 +12,7 @@ import { getWhiteLabelLocale, getWhiteLabelLogoDark, getWhiteLabelLogoLight, isW
 
 requireLoggedIn();
 
-setLocale(i18n, isWhiteLabelSet() ? getWhiteLabelLocale() : ControllerModule.torus.locale || i18n.global.locale);
+setLocale(i18n, isWhiteLabelSet() ? getWhiteLabelLocale() : ControllerModule.locale || (i18n.global.locale as string));
 
 const props = withDefaults(
   defineProps<{
@@ -26,8 +26,8 @@ const props = withDefaults(
 );
 
 const tabs = ref(NAVIGATION_LIST);
-const user = computed(() => ControllerModule.torus.userInfo);
-const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
+const user = computed(() => ControllerModule.userInfo);
+const selectedAddress = computed(() => ControllerModule.selectedAddress);
 const logout = async () => {
   await ControllerModule.logout();
 };

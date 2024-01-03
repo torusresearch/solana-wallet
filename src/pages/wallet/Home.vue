@@ -3,6 +3,7 @@ import { RefreshIcon } from "@heroicons/vue/solid";
 import { CustomTokenInfo } from "@toruslabs/solana-controllers";
 import { throttle } from "lodash-es";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { Button } from "@/components/common";
 import AddressAndScan from "@/components/home/AddressAndScan.vue";
@@ -11,16 +12,15 @@ import TokensAssetsBalance from "@/components/TokensAssetsBalance.vue";
 import WalletBalance from "@/components/WalletBalance.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
-import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const isImportTokenOpen = ref(false);
-const tokenList = computed(() => ControllerModule.torus.existingTokenAddress);
-const connection = computed(() => ControllerModule.torus.connection);
+const tokenList = computed(() => ControllerModule.existingTokenAddress);
+// const connection = computed(() => ControllerModule.torusState.NetworkControllerState.connection);
 const importDisabled = ref(true);
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const lastRefreshDate = computed(() => ControllerModule.lastTokenRefreshDate);
 
@@ -40,7 +40,7 @@ const importCanceled = async () => {
 const importConfirm = async (importToken: CustomTokenInfo) => {
   isImportTokenOpen.value = false;
   try {
-    await ControllerModule.torus.importCustomToken(importToken);
+    await torus.importCustomToken(importToken);
     // close dialog and show success message
     addToast({
       message: `Token ${importToken.name} Imported Successfully`,
@@ -56,7 +56,7 @@ const importConfirm = async (importToken: CustomTokenInfo) => {
 };
 
 const pricePerToken = computed<number>((): number => {
-  return ControllerModule.torus.conversionRate;
+  return torus.conversionRate;
 });
 
 const lastUpdateString = computed(() => {
@@ -127,7 +127,6 @@ const lastUpdateString = computed(() => {
       </div>
     </div>
     <ImportToken
-      :connection="connection"
       :price-per-token="pricePerToken"
       :token-list="tokenList"
       :is-open="isImportTokenOpen"

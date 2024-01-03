@@ -10,16 +10,16 @@ import { Button, Loader } from "@toruslabs/vue-components/common";
 import base58 from "bs58";
 import log from "loglevel";
 import { onErrorCaptured, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 
 import config from "@/config";
-import { i18n } from "@/plugins/i18nPlugin";
 import { generateTorusAuthHeaders, openCrispChat } from "@/utils/helpers";
 
 import OpenLoginFactory from "../auth/OpenLogin";
 import { APPLE, OpenLoginPopupResponse, ProjectAccountType } from "../utils/enums";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const loading = ref(true);
 const selectedAccountIndex = ref(0);
@@ -27,6 +27,7 @@ const accountsProps = ref<ProjectAccountType[]>([]);
 const accounts: ProjectAccountType[] = [];
 let channel: string;
 let userInfo: OpenloginUserInfo;
+let sessionId: string;
 
 const selectAccount = (index: number) => {
   selectedAccountIndex.value = index;
@@ -50,6 +51,7 @@ const continueToApp = async (selectedIndex: number) => {
         userInfo,
         privKey: accounts[0].privKey,
         accounts,
+        sessionId,
       },
     } as PopupData<OpenLoginPopupResponse>);
   } catch (error) {
@@ -76,13 +78,14 @@ async function endLogin() {
     const openLoginInstance = await OpenLoginFactory.getInstance();
 
     const openLoginState = openLoginInstance.state;
-    const { privKey, tKey, oAuthPrivateKey } = openLoginState;
+    const { tKey, oAuthPrivateKey, ed25519PrivKey } = openLoginState;
 
-    if (!privKey) {
+    if (!ed25519PrivKey) {
       throw new Error("Login unsuccessful");
     }
 
     userInfo = openLoginInstance.getUserInfo();
+    sessionId = openLoginInstance.sessionId;
 
     const openLoginStore = openLoginState.userInfo;
     if (!openLoginStore?.appState) {
@@ -92,15 +95,17 @@ async function endLogin() {
     const { instanceId } = appState;
     channel = instanceId;
 
-    // Main wallet's Account
-    const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    // Main wallet's Accoun
+    // const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
+    const secretKey = Buffer.from(ed25519PrivKey!, "hex");
+
     const typeOfLoginDisplay = userInfo.typeOfLogin.charAt(0).toUpperCase() + userInfo.typeOfLogin.slice(1);
     const accountDisplay = (userInfo.typeOfLogin !== APPLE && userInfo.email) || userInfo.name;
     const mainKeyPair = Keypair.fromSecretKey(secretKey);
     accounts.push({
       app: `${typeOfLoginDisplay} ${accountDisplay}`,
       solanaPrivKey: base58.encode(mainKeyPair.secretKey),
-      privKey,
+      privKey: ed25519PrivKey,
       name: `Solana Wallet ${window.location.origin}`,
       address: `${mainKeyPair.publicKey.toBase58()}`,
     });
@@ -109,7 +114,7 @@ async function endLogin() {
     const userDapps: Record<string, string> = {};
 
     let matchedDappHost = -1;
-    const dappOrigin = sessionStorage.getItem("dappOrigin");
+    const dappOrigin = sessionStorage.getItem("dappOrigin") || window.location.origin;
     const dappHost = new URL(dappOrigin || "");
 
     if (tKey && oAuthPrivateKey) {

@@ -56,17 +56,20 @@ const categoryList = computed(() => {
     ALL_CATEGORIES,
     ...new Set(
       dapps.value
-        .reduce((categories, dapp) => {
-          if (dapp?.category?.length) {
-            const found = categories.find((category: { value: string; label: string }) => category.value === dapp.category);
-            if (!found)
-              categories.push({
-                value: dapp.category,
-                label: dapp.category,
-              });
-          }
-          return categories;
-        }, [])
+        .reduce(
+          (categories, dapp) => {
+            if (dapp?.category?.length) {
+              const found = categories.find((category: { value: string; label: string }) => category.value === dapp.category);
+              if (!found)
+                categories.push({
+                  value: dapp.category,
+                  label: dapp.category,
+                });
+            }
+            return categories;
+          },
+          [] as { value: string; label: string }[]
+        )
         ?.sort()
     ),
   ];
@@ -77,7 +80,7 @@ const filteredDapps = computed(() => {
     dapps.value.filter((dapp) => {
       return (
         (selectedCategory.value.value === ALL_CATEGORIES.value || selectedCategory.value.value === dapp.category) &&
-        ControllerModule.torus.chainId === "0x1" &&
+        ControllerModule.torusState.NetworkControllerState.chainId === "0x1" &&
         dapp.network === "mainnet"
       );
     }) || [];

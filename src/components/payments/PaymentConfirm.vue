@@ -3,12 +3,12 @@ import { addressSlicer, significantDigits } from "@toruslabs/base-controllers";
 import { ExternalLinkIcon } from "@toruslabs/vue-icons/basic";
 import { BigNumber } from "bignumber.js";
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 
 import QuestionMark from "@/assets/question-circle.svg";
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, NetworkDisplay } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { DecodedDataType } from "@/utils/instructionDecoder";
 import { AccountEstimation } from "@/utils/interfaces";
 import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
@@ -16,7 +16,7 @@ import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabe
 import EstimateChanges from "./EstimateChanges.vue";
 import InstructionDisplay from "./InstructionDisplay.vue";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const props = withDefaults(
   defineProps<{
@@ -88,7 +88,7 @@ const totalFiatCostString = computed(() => {
 });
 
 const explorerUrl = computed(() => {
-  return `${ControllerModule.torus.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${props.network}`;
+  return `${ControllerModule.torusState.NetworkControllerState.providerConfig.blockExplorerUrl}/account/${props.receiverPubKey}/?cluster=${props.network}`;
 });
 </script>
 <template>

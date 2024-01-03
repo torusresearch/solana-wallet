@@ -61,7 +61,6 @@ export async function evalRedirectflow() {
 
   const { redirectPath, requiresLogin, shouldRedirect } = getRedirectConfig(method);
 
-  await ControllerModule.torus.restoreFromBackend();
   if (!ControllerModule.hasSelectedPrivateKey && requiresLogin) {
     return router.push({
       name: "login",

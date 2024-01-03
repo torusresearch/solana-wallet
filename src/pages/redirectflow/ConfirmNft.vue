@@ -7,7 +7,7 @@ import { useEstimateChanges } from "@/components/payments/EstimateChangesComposa
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
 import TransferNFT from "@/components/transfer/TransferNFT.vue";
 
-import ControllerModule from "../../modules/controllers";
+import ControllerModule, { torus } from "../../modules/controllers";
 import { delay } from "../../utils/helpers";
 import { redirectToResult, useRedirectFlow } from "../../utils/redirectflowHelpers";
 import { calculateTxFee, generateSPLTransaction } from "../../utils/solanaHelpers";
@@ -33,16 +33,10 @@ onMounted(async () => {
 watch(selectedNft, async () => {
   if (selectedNft.value?.mintAddress && loading.value) {
     loading.value = false;
-    transaction.value = await generateSPLTransaction(
-      params.receiver_add,
-      1,
-      selectedNft.value,
-      ControllerModule.selectedAddress,
-      ControllerModule.connection
-    );
+    transaction.value = await generateSPLTransaction(params.receiver_add, 1, selectedNft.value, ControllerModule.selectedAddress, torus.connection);
 
-    const { fee } = await calculateTxFee(transaction.value.message, ControllerModule.connection);
-    estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
+    const { fee } = await calculateTxFee(transaction.value.message, torus.connection);
+    estimateChanges(transaction.value, torus.connection, ControllerModule.selectedAddress);
     transactionFee.value = fee / LAMPORTS_PER_SOL;
   }
 });
@@ -52,7 +46,7 @@ async function confirmTransfer() {
   await delay(500);
   try {
     if (selectedNft.value && transaction.value) {
-      const res = await ControllerModule.torus.transfer(transaction.value);
+      const res = await torus.transfer(transaction.value);
       redirectToResult(jsonrpc, { signature: res, success: true, method }, req_id, resolveRoute);
     } else redirectToResult(jsonrpc, { message: "Selected NFT not found", success: false, method }, req_id, resolveRoute);
   } catch (error) {

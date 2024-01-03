@@ -9,7 +9,7 @@ import FullDivLoader from "@/components/FullDivLoader.vue";
 import { PaymentConfirm } from "@/components/payments";
 import { useEstimateChanges } from "@/components/payments/EstimateChangesComposable";
 import PermissionsTx from "@/components/permissionsTx/PermissionsTx.vue";
-import ControllerModule from "@/modules/controllers";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { TransactionChannelDataType } from "@/utils/enums";
 import { hideCrispButton, openCrispChat } from "@/utils/helpers";
 import { decodeAllInstruction, DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
@@ -62,7 +62,7 @@ onMounted(async () => {
     }
 
     estimateChanges(tx.value, connection, txData.selectedAddress);
-    const txFee = await calculateTxFee(tx.value.message, ControllerModule.connection);
+    const txFee = await calculateTxFee(tx.value.message, torus.connection);
 
     const { instructions } = TransactionMessage.decompile(tx.value.message, txFee.lookupArgs);
 

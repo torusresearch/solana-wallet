@@ -10,7 +10,7 @@ import FallbackNft from "@/assets/fallback-nft.svg";
 import PaperAirplane from "@/assets/paper-airplane.svg";
 import BurnNFT from "@/components/burnNFT/BurnNFT.vue";
 import { NftsPageInteractions, trackUserClick, TransferPageInteractions } from "@/directives/google-analytics";
-import ControllerModule from "@/modules/controllers";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { i18n } from "@/plugins/i18nPlugin";
 import { STATUS, STATUS_TYPE } from "@/utils/enums";
 import { delay, getImgProxyUrl, setFallbackImg } from "@/utils/helpers";
@@ -19,8 +19,8 @@ import { NAVIGATION_LIST } from "@/utils/navHelpers";
 const router = useRouter();
 const t = i18n.global.t as VueI18nTranslation;
 const tabs = NAVIGATION_LIST;
-const user = computed(() => ControllerModule.torus.userInfo);
-const selectedAddress = computed(() => ControllerModule.torus.selectedAddress);
+const user = computed(() => ControllerModule.userInfo);
+const selectedAddress = computed(() => ControllerModule.selectedAddress);
 const isOpen = ref(false);
 const transferDisabled = ref(false);
 
@@ -114,7 +114,7 @@ const confirmTransfer = async () => {
   // Delay needed for the message modal
   await delay(500);
   try {
-    await ControllerModule.torus.burnToken(mint.value);
+    await torus.burnToken(mint.value);
     burnConfirmed.value = true;
     showMessageModal({
       messageTitle: "Your transaction is submitted",
