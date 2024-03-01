@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
+
 import SolanaLogoURL from "@/assets/solana-mascot.svg";
 import { Button, TextField } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 import { getWhiteLabelLogoDark, getWhiteLabelLogoLight } from "@/utils/whitelabel";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 
 defineProps<{
   origin: string;

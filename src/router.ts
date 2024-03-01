@@ -2,7 +2,7 @@ import { config as gtagConfig, pageview } from "vue-gtag";
 import { createRouter, createWebHistory, RouteLocationNormalized, RouteRecordName } from "vue-router";
 
 import { PKG } from "@/const";
-import ControllerModule from "@/modules/controllers";
+import { torus } from "@/modules/controllers";
 import { getBrowserKey } from "@/utils/helpers";
 
 const enum AuthStates {
@@ -11,7 +11,7 @@ const enum AuthStates {
 }
 
 export function hasSelectedAddress(): boolean {
-  return !!ControllerModule?.torus?.selectedAddress;
+  return !!torus?.selectedAddress;
 }
 
 const router = createRouter({
@@ -233,15 +233,6 @@ router.beforeResolve((toRoute: RouteLocationNormalized, fromRoute: RouteLocation
   return next();
 });
 
-const restoreOrlogout = async () => {
-  try {
-    const result = await ControllerModule.torus.restoreFromBackend();
-    if (!result) ControllerModule.setLogoutRequired(true);
-  } catch (_e) {
-    ControllerModule.setLogoutRequired(true);
-  }
-};
-
 router.beforeEach(async (to, _, next) => {
   document.title = to.meta.title ? `${to.meta.title} | ${PKG.app.name}` : PKG.app.name;
   const authMeta = to.meta.auth;
@@ -252,17 +243,12 @@ router.beforeEach(async (to, _, next) => {
 
   // route below might need key restoration
   if (authMeta === AuthStates.AUTHENTICATED) {
-    // restore will skip if keypair is exist in restore function
-    const rol = restoreOrlogout();
-    if (to.name === "walletDiscover") await rol;
-
     // user tried to access a authenticated route without being authenticated
     if (!hasSelectedAddress() && !isRedirectFlow) {
       return next("/login");
     }
-
     // route is authenticated and so is user, good to go
-    gtagConfig({ user_id: `loggedIn_${ControllerModule?.torus?.selectedAddress}_${getBrowserKey()}` });
+    gtagConfig({ user_id: `loggedIn_${torus?.selectedAddress}_${getBrowserKey()}` });
   } else if (authMeta === AuthStates.NON_AUTHENTICATED) {
     // user tried to access a un-authenticated route being authenticated
     // opportunistic login flow ( restore privatekey take time, keep user login first and logout user if restore failed )

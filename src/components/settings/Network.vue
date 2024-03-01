@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { SelectField } from "@/components/common";
 import { SettingsPageInteractions, trackUserClick } from "@/directives/google-analytics";
 import { addToast } from "@/modules/app";
 import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
 
 import { WALLET_SUPPORTED_NETWORKS } from "../../utils/const";
 
-const { t } = i18n.global;
+const { t } = useI18n();
 const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   const value = WALLET_SUPPORTED_NETWORKS[key as keyof typeof WALLET_SUPPORTED_NETWORKS];
   return {
@@ -18,19 +18,19 @@ const networks = Object.keys(WALLET_SUPPORTED_NETWORKS).map((key) => {
   };
 });
 const selectedNetwork = computed({
-  get: () => networks.find((it) => it.value === ControllerModule.torus.chainId),
+  get: () => networks.find((it) => it.value === ControllerModule.torusState.NetworkControllerState.chainId),
   set: (value) => {
     trackUserClick(SettingsPageInteractions.NETWORK + (value?.value || ""));
     if (value) ControllerModule.setNetwork(value.value);
   },
 });
 
-const chainId = computed(() => ControllerModule.torus.chainId);
+const chainId = computed(() => ControllerModule.torusState.NetworkControllerState.chainId);
 
 watch(chainId, () => {
-  if (ControllerModule.torus.chainId === "loading") {
+  if (ControllerModule.torusState.NetworkControllerState.chainId === "loading") {
     addToast({ message: "Network Error! - Fallback to Devnet", type: "error" });
-    if (ControllerModule.torus.state.NetworkControllerState.providerConfig.chainId !== WALLET_SUPPORTED_NETWORKS.devnet.chainId) {
+    if (ControllerModule.torusState.NetworkControllerState.providerConfig.chainId !== WALLET_SUPPORTED_NETWORKS.devnet.chainId) {
       ControllerModule.setNetwork(WALLET_SUPPORTED_NETWORKS.devnet.chainId);
     }
   }

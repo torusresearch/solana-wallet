@@ -12,7 +12,7 @@ const props = withDefaults(
     network: undefined,
   }
 );
-const network = computed(() => props.network || ControllerModule.torus.currentNetworkName);
+const network = computed(() => props.network || ControllerModule.currentNetworkName);
 </script>
 
 <template>

@@ -18,12 +18,14 @@ export default function installStorePlugin({
   saveState,
   restoreState,
   filter,
+  reducer,
   moduleKey,
 }: {
   key: string;
   storage?: STORAGE_TYPE;
   saveState?: (key2: string, state: Record<string, unknown>, storage2?: Storage) => void;
   restoreState?: (key2: string, storage2?: Storage) => unknown;
+  reducer?: (state: unknown, reducerKey: string) => Partial<unknown>;
   filter?: (mutation: Payload) => boolean;
   moduleKey?: string;
 }): void {
@@ -42,6 +44,9 @@ export default function installStorePlugin({
   }
   if (filter) {
     pluginOptions.filter = filter;
+  }
+  if (reducer) {
+    pluginOptions.reducer = reducer;
   }
   if (config.isStorageAvailable[finalStorage]) {
     persistInstance.addModule(pluginOptions);

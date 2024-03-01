@@ -56,7 +56,7 @@ describe("TorusController", () => {
     sandbox.stub(config, "baseUrl").get(() => "http://localhost:8080/");
     sandbox.stub(config, "baseRoute").get(() => "http://localhost:8080/");
     sandbox.stub(NetworkController.prototype, "getConnection").callsFake(mockGetConnection);
-    sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async (_) => {
+    sandbox.stub(OpenLoginHandler.prototype, "handleLoginWindow").callsFake(async () => {
       log.error("sinon stub working");
       return mockData.openLoginHandler;
     });

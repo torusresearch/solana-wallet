@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import log from "loglevel";
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
-import ControllerModule from "@/modules/controllers";
-import { i18n } from "@/plugins/i18nPlugin";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { AccountEstimation } from "@/utils/interfaces";
 
 const props = defineProps<{
@@ -19,8 +19,8 @@ const updateSymbol = async (mintAddress: string, decimals: number) => {
 
   const tokenInfoState = ControllerModule.torusState.TokenInfoState;
   let symbol = tokenInfoState.tokenInfoMap[mintAddress]?.symbol || tokenInfoState.metaplexMetaMap[mintAddress]?.symbol;
-  if (!symbol && decimals > 0) symbol = (await ControllerModule.torus.fetchTokenInfo(mintAddress))?.symbol;
-  if (!symbol && decimals === 0) symbol = (await ControllerModule.torus.fetchMetaPlexNft([mintAddress])).onChainMetadataMap[mintAddress]?.symbol;
+  if (!symbol && decimals > 0) symbol = (await torus.fetchTokenInfo(mintAddress))?.symbol;
+  if (!symbol && decimals === 0) symbol = (await torus.fetchMetaPlexNft([mintAddress])).onChainMetadataMap[mintAddress]?.symbol;
   if (symbol) symbols.value[mintAddress] = symbol;
 };
 
@@ -37,7 +37,7 @@ watch(
   { immediate: true, deep: true }
 );
 
-const { t } = i18n.global;
+const { t } = useI18n();
 </script>
 <template>
   <div class="flex w-full">

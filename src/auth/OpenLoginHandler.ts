@@ -7,7 +7,6 @@ import log from "loglevel";
 import type { OpenLoginPopupResponse } from "@/utils/enums";
 
 import config from "../config";
-import OpenLoginFactory from "./OpenLogin";
 
 class OpenLoginHandler {
   private static mutex = new Mutex();
@@ -51,20 +50,6 @@ class OpenLoginHandler {
     );
   }
 
-  static async getInstance(reinitialize = false) {
-    const releaseLock = await this.mutex.acquire();
-    try {
-      const openLoginInstance = await OpenLoginFactory.getInstance();
-
-      if (reinitialize) {
-        await openLoginInstance.init();
-      }
-      return openLoginInstance;
-    } finally {
-      releaseLock();
-    }
-  }
-
   async handleLoginWindow({
     communicationEngine,
     communicationWindowManager,
@@ -83,6 +68,18 @@ class OpenLoginHandler {
       instanceId: this.nonce,
     });
     const result = await verifierWindow.handle();
+    if (result.sessionId) {
+      if (config.isStorageAvailable.localStorage) {
+        const openloginStore = localStorage.getItem("openlogin_store");
+        if (openloginStore) {
+          const openloginStoreParsed = JSON.parse(openloginStore);
+          openloginStoreParsed.sessionId = result.sessionId;
+          localStorage.setItem("openlogin_store", JSON.stringify(openloginStoreParsed));
+        } else {
+          localStorage.setItem("openlogin_store", JSON.stringify({ sessionId: result.sessionId }));
+        }
+      }
+    }
     return result;
   }
 

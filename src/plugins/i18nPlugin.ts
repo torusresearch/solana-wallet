@@ -1,7 +1,8 @@
+/* eslint-disable no-param-reassign */
 import * as Sentry from "@sentry/vue";
 import log from "loglevel";
 import { nextTick } from "vue";
-import { createI18n, I18n } from "vue-i18n";
+import { Composer, createI18n, I18n, VueI18n } from "vue-i18n";
 
 import { LOCALE_EN } from "@/utils/enums";
 import { getUserLanguage } from "@/utils/helpers";
@@ -17,22 +18,25 @@ export const languageMap: Record<string, string> = {
 };
 
 export function setI18nLanguage(i18n: I18n, locale: string) {
-  // eslint-disable-next-line no-param-reassign
-  i18n.global.locale = locale;
+  if (i18n.mode === "legacy") {
+    (i18n.global as unknown as VueI18n).locale = locale;
+  } else {
+    (i18n.global as unknown as Composer).locale.value = locale;
+  }
 }
 
 export function setupI18n(locale = LOCALE_EN) {
   const i18n = createI18n({
-    // legacy: false,
-    globalInjection: true,
     locale,
     fallbackLocale: locale,
+    legacy: false,
+    allowComposition: true,
   }) as I18n;
   setI18nLanguage(i18n, locale);
   return i18n;
 }
 
-export async function loadLocaleMessages(i18n: I18n, locale: any) {
+export async function loadLocaleMessages(i18n: I18n, locale: string) {
   let lang = locale;
   if (!languageMap[lang]) {
     lang = "en";
@@ -65,5 +69,5 @@ export const setLocale = async (i18n: I18n, lang: string) => {
   setI18nLanguage(i18n, finalLang);
 };
 
-export const i18n = setupI18n();
+export const i18n = setupI18n(localeTarget);
 loadLocaleMessages(i18n, localeTarget);

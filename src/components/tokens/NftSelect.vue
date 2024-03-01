@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { ChevronBottomIcon } from "@toruslabs/vue-icons/arrows";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import { getTokenFromMint, nftTokens } from "@/components/transfer/token-helper";
 import { getImgProxyUrl } from "@/utils/helpers";
@@ -17,7 +17,10 @@ const props = withDefaults(
 );
 const selectedNft = computed(() => getTokenFromMint(nftTokens.value, props.selectedMint));
 
-const localMintAddress = ref(props.selectedMint);
+const localMintAddress = ref("");
+onMounted(() => {
+  localMintAddress.value = props.selectedMint;
+});
 const emits = defineEmits(["update:selectedMintAddress"]);
 watch(localMintAddress, () => {
   emits("update:selectedMintAddress", localMintAddress.value);

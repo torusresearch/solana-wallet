@@ -24,7 +24,6 @@ async function startLogin() {
       loginProvider: loginProvider as string,
       appState: state as string,
       extraLoginOptions: rest,
-      // relogin: true,
     });
   } catch (error) {
     log.error(error);

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-
-import { i18n } from "@/plugins/i18nPlugin";
+import { useI18n } from "vue-i18n";
 
 const props = withDefaults(
   defineProps<{
@@ -11,7 +10,7 @@ const props = withDefaults(
     isDark: true,
   }
 );
-const { t } = i18n.global;
+const { t } = useI18n();
 
 const isDark = computed(() => {
   return props.isDark;

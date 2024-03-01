@@ -7,7 +7,7 @@ import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import MessageModal from "@/components/common/MessageModal.vue";
-import ControllerModule from "@/modules/controllers";
+import ControllerModule, { torus } from "@/modules/controllers";
 import { STATUS } from "@/utils/enums";
 import { DecodedDataType, decodeInstruction } from "@/utils/instructionDecoder";
 import { parseSolanaPayRequestLink } from "@/utils/solanaHelpers";
@@ -48,12 +48,13 @@ const estimateTxFee = ref(0);
 const router = useRouter();
 watch(transaction, async () => {
   if (transaction.value) {
-    const args = await findAllLookUpTable(ControllerModule.connection, transaction.value.message);
+    const args = await findAllLookUpTable(torus.connection, transaction.value.message);
     const transactionMessage = TransactionMessage.decompile(transaction.value.message, args);
 
     const legacyMessage = transactionMessage.compileToLegacyMessage();
 
-    const response = await ControllerModule.connection.getFeeForMessage(legacyMessage);
+    const response = await torus.connection.getFeeForMessage(legacyMessage);
+    if (!response.value) return;
     estimateTxFee.value = response.value / LAMPORTS_PER_SOL;
 
     decodedInstructions.value = transactionMessage.instructions.map((inst) => decodeInstruction(inst));
@@ -97,7 +98,7 @@ onMounted(async () => {
 
     if ((parsed as TransactionRequestURL).link) {
       // request link is an url. fetch transaction from url
-      const result = await parseSolanaPayRequestLink(parsed as TransactionRequestURL, ControllerModule.selectedAddress, ControllerModule.connection);
+      const result = await parseSolanaPayRequestLink(parsed as TransactionRequestURL, ControllerModule.selectedAddress, torus.connection);
       if (result.transaction.feePayer && result.transaction.recentBlockhash) {
         const messageV0 = new TransactionMessage({
           payerKey: result.transaction.feePayer,
@@ -139,7 +140,7 @@ onMounted(async () => {
         return;
       }
       // create transaction based on the solanapay format
-      const tx = await createTransfer(ControllerModule.connection, new PublicKey(ControllerModule.selectedAddress), {
+      const tx = await createTransfer(torus.connection, new PublicKey(ControllerModule.selectedAddress), {
         recipient,
         amount,
         splToken,
@@ -158,7 +159,7 @@ onMounted(async () => {
           ControllerModule.torusState.CurrencyControllerState.tokenPriceMap[splToken.toBase58()][ControllerModule.currentCurrency] || 0;
       }
       // set blockhash and feepayer
-      const block = await ControllerModule.connection.getLatestBlockhash();
+      const block = await torus.connection.getLatestBlockhash();
       tx.recentBlockhash = block.blockhash;
       tx.lastValidBlockHeight = block.lastValidBlockHeight;
       tx.feePayer = new PublicKey(ControllerModule.selectedAddress);
@@ -173,7 +174,7 @@ onMounted(async () => {
       log.info(result);
     }
     // estimate changes if transaction available
-    if (transaction.value) estimateChanges(transaction.value, ControllerModule.connection, ControllerModule.selectedAddress);
+    if (transaction.value) estimateChanges(transaction.value, torus.connection, ControllerModule.selectedAddress);
   } catch (e) {
     // invalidLink.value = true;
     if (e instanceof Error) {

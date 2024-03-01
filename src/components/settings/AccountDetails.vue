@@ -11,7 +11,7 @@ import { copyText } from "@/utils/helpers";
 
 const isOpen = ref(false);
 const isKeyShown = ref(false);
-const key = computed(() => ControllerModule.torus.privateKey);
+const key = computed(() => ControllerModule.privateKey);
 
 const closeModal = () => {
   isOpen.value = false;
