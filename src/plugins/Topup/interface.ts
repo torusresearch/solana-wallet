@@ -6,7 +6,7 @@ import { QuoteResponse, RequestObject } from "@/components/topup/gateways/types"
 export const enum TOPUP {
   RAMPNETWORK = "rampNetwork",
   MOONPAY = "moonpay",
-  TRANSK = "transk",
+  TRANSAK = "transak",
 }
 
 export interface TopUpProvider {
