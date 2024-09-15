@@ -68,7 +68,7 @@ const validVerifier = (value: string) => {
 const getErrorMessage = () => {
   const selectedType = newContactState.transferType?.value || "";
   if (!selectedType) return "";
-  return ALLOWED_VERIFIERS_ERRORS[selectedType];
+  return t(ALLOWED_VERIFIERS_ERRORS[selectedType]);
 };
 
 const validNewContact = (value: string): boolean => {
