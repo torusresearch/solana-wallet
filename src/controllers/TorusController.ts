@@ -68,14 +68,12 @@ import {
   JRPCRequest,
   JRPCResponse,
   providerAsMiddleware,
-  SafeEventEmitter,
   SafeEventEmitterProvider,
   setupMultiplex,
   Stream,
   Substream,
   WEB3AUTH_NETWORK,
 } from "@web3auth/auth";
-import { BaseControllerEvents } from "@toruslabs/base-controllers";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
@@ -398,7 +396,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
     });
-    const combinedTokens = {...this.tokenInfoController.state.userTokenInfoMap, ...this.tokenInfoController.state.tokenInfoMap};
+    const combinedTokens = { ...this.tokenInfoController.state.userTokenInfoMap, ...this.tokenInfoController.state.tokenInfoMap };
     this.currencyController.updateQueryToken(Object.values(combinedTokens), true);
     if (this.preferencesController?.state?.selectedAddress) {
       this.currencyController.scheduleConversionInterval();
@@ -498,8 +496,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
-      const combinedTokens = {...state2.userTokenInfoMap, ...state2.tokenInfoMap};
-      this.currencyController.updateQueryToken(Object.values(combinedTokens), true);
+      const combinedUserTokens = { ...state2.userTokenInfoMap, ...state2.tokenInfoMap };
+      this.currencyController.updateQueryToken(Object.values(combinedUserTokens), true);
     });
 
     this.keyringController.on("store", (state2) => {
@@ -1687,11 +1685,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
       showWindowBlockAlert: () => {
         throw new Error("Unsupported method");
       },
-      loginWithSessionId(req: Ihandler<[string, string]>): Promise<{ success: boolean }> {
+      loginWithSessionId(_req: Ihandler<[string, string]>): Promise<{ success: boolean }> {
         throw new Error("Function not implemented.");
       },
       showSwap(
-        // eslint-disable-next-line to ignore the next line.
         _req: JRPCRequest<BaseEmbedControllerState["showCheckout"]>,
         _res: JRPCResponse<boolean>,
         _next: JRPCEngineNextCallback,
