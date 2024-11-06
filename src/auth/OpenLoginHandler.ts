@@ -1,6 +1,6 @@
 import { PopupWithBcHandler, randomId } from "@toruslabs/base-controllers";
-import { JRPCEngine, SafeEventEmitter } from "@toruslabs/openlogin-jrpc";
-import { LOGIN_PROVIDER_TYPE, safebtoa } from "@toruslabs/openlogin-utils";
+import type { JRPCEngine, SafeEventEmitter } from "@web3auth/auth";
+import { LOGIN_PROVIDER_TYPE, safebtoa } from "@web3auth/auth";
 import { Mutex } from "async-mutex";
 import log from "loglevel";
 
@@ -60,12 +60,13 @@ class OpenLoginHandler {
     log.info("channel name", this.nonce);
     const verifierWindow = new PopupWithBcHandler<OpenLoginPopupResponse, never>({
       config: {
-        dappStorageKey: config.dappStorageKey || undefined,
         communicationEngine,
         communicationWindowManager,
+        instanceId: `${this.nonce}`,
+        timeout: 30000,
       },
-      state: { url: this.finalURL, windowId: this.windowId },
-      instanceId: this.nonce,
+      state: { url: this.finalURL, windowId: "" },
+      channelPrefix: "openlogin",
     });
     const result = await verifierWindow.handle();
     if (result.sessionId) {
