@@ -729,7 +729,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
           calledFromEmbed: !isMain,
           userInfo,
           rehydrate,
-          type: ACCOUNT_CATEGORY.SOLANA,
+          type: ACCOUNT_CATEGORY.IMPORTED,
         });
       } catch (e) {
         log.error(e);
