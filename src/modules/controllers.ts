@@ -14,6 +14,7 @@ import {
   ContactPayload,
   DEFAULT_PREFERENCES,
   DiscoverDapp,
+  LOGIN_PROVIDER_TYPE,
   NetworkChangeChannelData,
   PopupData,
   PopupStoreChannel,
@@ -26,8 +27,8 @@ import {
 } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { BasePostMessageStream } from "@toruslabs/openlogin-jrpc";
-import { LOGIN_PROVIDER_TYPE, storageAvailable } from "@toruslabs/openlogin-utils";
-import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaTransactionActivity } from "@toruslabs/solana-controllers";
+import { storageAvailable } from "@toruslabs/openlogin-utils";
+import { ExtendedAddressPreferences, LoadingState, NFTInfo, SolanaToken, SolanaTransactionActivity, TokenInfo } from "@toruslabs/solana-controllers";
 import { BigNumber } from "bignumber.js";
 import { cloneDeep, merge } from "lodash-es";
 import log from "loglevel";
@@ -36,7 +37,7 @@ import { VueI18nTranslation } from "vue-i18n";
 import { Action, getModule, Module, Mutation, VuexModule } from "vuex-module-decorators";
 
 import OpenLoginFactory from "@/auth/OpenLogin";
-import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY } from "@/controllers/TorusController";
+import TorusController, { DEFAULT_CONFIG, DEFAULT_STATE, EPHERMAL_KEY, EventMap } from "@/controllers/TorusController";
 import { i18n } from "@/plugins/i18nPlugin";
 import installStorePlugin from "@/plugins/persistPlugin";
 import { WALLET_SUPPORTED_NETWORKS } from "@/utils/const";
@@ -222,6 +223,11 @@ class ControllerModule extends VuexModule {
     return this.torusState.TokensTrackerState.tokens ? this.torusState.TokensTrackerState.tokens[this.selectedAddress] : [];
   }
 
+  get customTokens(): TokenInfo[] {
+    const userTokenInfo = this.torusState.TokenInfoState.userTokenInfoMap;
+    return userTokenInfo ? Object.values(userTokenInfo) : [];
+  }
+
   get nonFungibleTokens(): SolanaToken[] {
     if (this.userTokens)
       return this.userTokens
@@ -265,6 +271,45 @@ class ControllerModule extends VuexModule {
           return acc;
         }, [])
         .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    return [];
+  }
+
+  get userCustomTokens(): SolanaToken[] {
+    if (this.customTokens) {
+      return this.customTokens
+        .reduce((acc: SolanaToken[], current: TokenInfo) => {
+          const userToken = this.userTokens.find((token) => token.mintAddress === current.address);
+
+          if (userToken?.balance) {
+            return acc; // Ignore if present in userTokens
+          }
+
+          const data = this.torusState.TokenInfoState.userTokenInfoMap[current.address];
+          if (data?.address === "So11111111111111111111111111111111111111112") {
+            (data as any).symbol = "WSOL";
+          }
+          const solanaToken: SolanaToken = {
+            tokenAddress: current.address,
+            mintAddress: current.address,
+            balance: userToken ? userToken?.balance : undefined,
+            price: this.torusState.CurrencyControllerState.tokenPriceMap[current.address] || {},
+            metaplexData: this.torusState.TokenInfoState.metaplexMetaMap[current.address],
+            isFungible: false,
+            data: {
+              address: current.address,
+              decimals: data?.decimals || 0,
+              name: data?.name || "",
+              symbol: data?.symbol || "",
+              chainId: parseInt(data?.chainId?.toString() || "101", 10),
+              logoURI: data?.logoURI || "",
+              tags: data?.tags || [],
+            },
+          };
+
+          return [...acc, solanaToken];
+        }, [])
+        .sort((a: SolanaToken, b: SolanaToken) => a.tokenAddress.localeCompare(b.tokenAddress));
+    }
     return [];
   }
 
@@ -460,8 +505,7 @@ class ControllerModule extends VuexModule {
       this.updateTorusState(_state);
     });
     // torus.setupUntrustedCommunication();
-    // Good
-    torus.on(TX_EVENTS.TX_UNAPPROVED, async ({ txMeta, req }) => {
+    torus.on(TX_EVENTS.TX_UNAPPROVED as keyof EventMap, async ({ txMeta, req }: any) => {
       if (isMain) {
         torus.approveSignTransaction(txMeta.id);
       } else {
