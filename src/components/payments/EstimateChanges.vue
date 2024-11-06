@@ -46,7 +46,7 @@ const { t } = useI18n();
       <div v-if="props.estimationInProgress" class="text-xs italic text-app-text-500 dark:text-app-text-dark-500">Estimating...</div>
       <div v-for="item in props.estimatedBalanceChange" :key="item.symbol" class="text-xs italic text-red-500">
         <div v-if="!props.estimationInProgress" :class="item.changes >= 0 && 'text-green-400'">
-          {{ item.changes + "   " + symbols[item.mint] }}
+          {{ `${item.changes}   ${symbols[item.mint]}` }}
         </div>
       </div>
     </div>

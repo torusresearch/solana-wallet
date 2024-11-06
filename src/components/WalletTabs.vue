@@ -101,7 +101,7 @@ const logout = async () => {
         :class="[value.mobHidden ? 'hidden' : 'block']"
       >
         <div
-          :id="key + '_link'"
+          :id="`${key}_link`"
           class="flex flex-col h-full items-center justify-center select-none w-16 py-1"
           :class="[key === tab ? 'border-t-2 border-app-primary-500' : '']"
         >
