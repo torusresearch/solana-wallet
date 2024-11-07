@@ -8,6 +8,7 @@ import { useI18n } from "vue-i18n";
 import { Button } from "@/components/common";
 import AddressAndScan from "@/components/home/AddressAndScan.vue";
 import ImportToken from "@/components/home/ImportToken.vue";
+import ImportTokenConfirmation from "@/components/home/ImportTokenConfirmation.vue";
 import TokensAssetsBalance from "@/components/TokensAssetsBalance.vue";
 import WalletBalance from "@/components/WalletBalance.vue";
 import { HomePageInteractions } from "@/directives/google-analytics";
@@ -16,9 +17,11 @@ import ControllerModule, { torus } from "@/modules/controllers";
 import { NAVIGATION_LIST } from "@/utils/navHelpers";
 
 const isImportTokenOpen = ref(false);
+const isImportConfirmationOpen = ref(false);
 const tokenList = computed(() => ControllerModule.existingTokenAddress);
-// const connection = computed(() => ControllerModule.torusState.NetworkControllerState.connection);
 const importDisabled = ref(true);
+const importConfirmationDisabled = ref(false);
+const customToken = ref<CustomTokenInfo | null>(null);
 
 const { t } = useI18n();
 
@@ -37,22 +40,61 @@ const importCanceled = async () => {
   isImportTokenOpen.value = false;
 };
 
-const importConfirm = async (importToken: CustomTokenInfo) => {
-  isImportTokenOpen.value = false;
+const importTokenCall = async (importToken: CustomTokenInfo) => {
+  // if not proceed to import token api call
   try {
     await torus.importCustomToken(importToken);
     // close dialog and show success message
     addToast({
-      message: `Token ${importToken.name} Imported Successfully`,
+      message: `Token ${importToken.name} imported successfully`,
       type: "success",
     });
   } catch (err) {
     // showing transaction failed message
     addToast({
-      message: `Token could not Imported: ${err || "Something Went Wrong"}`,
+      message: `Token could not be imported: ${err || "Something went wrong"}`,
       type: "error",
     });
   }
+};
+
+const importConfirm = async (importToken: CustomTokenInfo) => {
+  const { address, name, symbol } = importToken;
+  isImportTokenOpen.value = false;
+  // check if token is already present in the spl token list
+  const result = await torus.fetchTokenInfo(address);
+  const tokenInfo = {
+    address,
+    name,
+    symbol,
+    publicAddress: "",
+    network: "",
+  };
+  // if present show dialog to import token
+  if (result && result.address) {
+    customToken.value = { ...result, network: result.chainId };
+    isImportConfirmationOpen.value = true;
+  } else {
+    await importTokenCall(tokenInfo);
+  }
+};
+
+const canceledSplTokenImport = async () => {
+  isImportConfirmationOpen.value = false;
+};
+
+const confirmSplTokenImport = async () => {
+  importConfirmationDisabled.value = true;
+  if (customToken.value) {
+    await importTokenCall(customToken.value);
+  } else {
+    addToast({
+      message: "Token could not be imported: Something went wrong",
+      type: "error",
+    });
+  }
+  importConfirmationDisabled.value = false;
+  isImportConfirmationOpen.value = false;
 };
 
 const pricePerToken = computed<number>((): number => {
@@ -102,16 +144,6 @@ const lastUpdateString = computed(() => {
           <Button v-ga="HomePageInteractions.REFRESH" class="flex flex-column" variant="text" @click="importTokens"> Import Token </Button>
         </div>
       </div>
-      <!-- <div
-        class="shadow dark:shadow_box border border-app-gray-300 dark:border-transparent bg-white dark:bg-app-gray-700 rounded-md h-20 flex flex-col justify-center"
-      >
-        <div class="dark:shadow_down flex flex-row justify-center items-center flex-auto border-b border-app-gray-300 dark:border-b-0">
-          <span class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-sm black">Did not see your Tokens?</span>
-        </div>
-        <div class="flex justify-center items-center flex-auto">
-          <span class="cursor-pointer font-normal text-app-primary-500 text-xs">Add your Tokens here</span>
-        </div>
-      </div> -->
       <div class="flex flex-col w-full items-end !mt-8">
         <div class="bg-white border dark:border-0 dark:bg-app-gray-700 flex items-center space-x-2 py-2 px-4 rounded-full w-fit">
           <RefreshIcon class="w-3 h-3 text-app-text-500 dark:text-app-text-dark-400" />
@@ -133,6 +165,12 @@ const lastUpdateString = computed(() => {
       :import-disabled="importDisabled"
       @import-canceled="importCanceled"
       @import-confirm="importConfirm"
+    />
+    <ImportTokenConfirmation
+      :is-open="isImportConfirmationOpen"
+      :import-disabled="importConfirmationDisabled"
+      @import-canceled="canceledSplTokenImport"
+      @import-confirm="confirmSplTokenImport"
     />
   </div>
 </template>
