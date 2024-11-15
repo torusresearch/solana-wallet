@@ -5,6 +5,16 @@ import { ref } from "vue";
 import { Button } from "@/components/common";
 import ControllerModule from "@/modules/controllers";
 
+const props = withDefaults(
+  defineProps<{
+    isOpen?: boolean;
+    importDisabled?: boolean;
+  }>(),
+  {
+    isOpen: false,
+    importDisabled: false,
+  }
+);
 const emits = defineEmits(["importConfirm", "importCanceled", "onCloseModal"]);
 
 const closeModal = () => {
