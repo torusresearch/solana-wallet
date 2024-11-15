@@ -72,7 +72,7 @@ const importConfirm = async (importToken: CustomTokenInfo) => {
   };
   // if present show dialog to import token
   if (result && result.address) {
-    customToken.value = { ...result, network: result.chainId };
+    customToken.value = { ...result, network: result.chainId.toString(), publicAddress: result.address };
     isImportConfirmationOpen.value = true;
   } else {
     await importTokenCall(tokenInfo);
