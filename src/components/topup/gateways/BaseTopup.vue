@@ -31,7 +31,7 @@ const isLoadingQuote = ref(false);
 const sendingTopup = ref(false);
 const errorMsg = ref("");
 let decimals = 0;
-// eslint-disable-next-line vue/no-setup-props-destructure
+
 const $v = useVuelidate(props.selectedProvider.rules, { amount });
 
 async function refreshTransferEstimate(quote: (requestObject: RequestObject) => Promise<QuoteResponse>) {

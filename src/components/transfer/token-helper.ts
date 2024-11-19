@@ -37,7 +37,7 @@ export const tokens = computed<Partial<SolAndSplToken>[]>(() => {
   );
 
   const customTokensFormatted = customTokens.map((ct) => {
-    return { ...ct, name: ct.data?.name || "", iconURL: ct.data?.logoURI ? `${ct.data?.logoURI}` : "", symbol: ct.data?.symbol };
+    return { ...ct, name: ct.data?.name || "", iconURL: ct.data?.logoURI ? `${ct.data?.logoURI}` : "", symbol: ct.data?.symbol, isImportToken: true };
   });
 
   return [solToken, ...fungibleTokens, ...customTokensFormatted];

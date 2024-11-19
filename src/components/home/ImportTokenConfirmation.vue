@@ -32,7 +32,7 @@ const onImport = async () => {
 const refDiv = ref(null);
 </script>
 <template>
-  <TransitionRoot appear :show="isOpen" as="template">
+  <TransitionRoot appear :show="isOpen || props.isOpen" as="template">
     <Dialog :open="isOpen" :class="{ dark: ControllerModule.isDarkMode }" as="div" :initial-focus="refDiv" @close="closeModal">
       <div ref="refDiv" class="fixed inset-0 z-30 overflow-y-auto">
         <div class="min-h-screen px-4 text-center">
