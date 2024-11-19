@@ -573,7 +573,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       token.network = this.currentNetworkName;
       const result = await this.tokenInfoController.importCustomToken(token);
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
-      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
+      await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
     } catch (err) {
       log.error(err);
