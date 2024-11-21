@@ -85,7 +85,7 @@ describe.skip("TorusController", () => {
 
   // Wallet Api
   // Provider API tests
-  describe("#Embedded Wallet API", () => {
+  describe.skip("#Embedded Wallet API", () => {
     //  "logout" is covered in login logout flow
 
     it("returns first address when dapp calls getAccounts", async () => {
@@ -147,7 +147,7 @@ describe.skip("TorusController", () => {
   });
 
   // on update
-  describe("#On Update flow", () => {
+  describe.skip("#On Update flow", () => {
     it("network changed trigger updates", async () => {
       await waitNetwork();
       await torusController.triggerLogin({ loginProvider: "google" });
