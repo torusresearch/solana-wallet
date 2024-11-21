@@ -1,7 +1,6 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import {
   ACCOUNT_CATEGORY,
@@ -104,6 +103,11 @@ import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
+
+async function loadSplNameService() {
+  const module = await import("@solana/spl-name-service");
+  return module;
+}
 
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
@@ -599,12 +603,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async getInputKey(input: string) {
+    const { getHashedName, getNameAccountKey } = await loadSplNameService();
+
     const hashedInputName = await getHashedName(input);
     const inputDomainKey = await getNameAccountKey(hashedInputName, undefined, SOL_TLD_AUTHORITY);
     return { inputDomainKey, hashedInputName };
   }
 
-  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null | PublicKey> {
+  async getSNSAccount(type: string, address: string): Promise<null | PublicKey | any> {
+    const { getTwitterRegistry } = await loadSplNameService();
     // const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns": {

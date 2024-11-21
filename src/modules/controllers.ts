@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable class-methods-use-this */
-import { NameRegistryState } from "@solana/spl-name-service";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import {
   AccountImportedChannelData,
@@ -48,6 +47,11 @@ import { isWhiteLabelDark, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import store from "../store";
 import { addToast } from "./app";
+
+async function loadSplNameService() {
+  const module = await import("@solana/spl-name-service");
+  return module;
+}
 
 export const torus = new TorusController({
   _config: DEFAULT_CONFIG,
@@ -389,6 +393,7 @@ class ControllerModule extends VuexModule {
   @Action
   public async getSNSAddress({ type, address }: { type: string; address: string }): Promise<string | null> {
     let filtered_address;
+    const { NameRegistryState } = await loadSplNameService();
     switch (type) {
       case "sns":
         filtered_address = address.replace(/\.sol$/, "");
