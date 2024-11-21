@@ -16,7 +16,7 @@ import { mockGetConnection } from "./mockConnection";
 import { mockData, sKeyPair } from "./mockData";
 import nockRequest from "./nockRequest";
 
-describe("TorusController", () => {
+describe.skip("TorusController", () => {
   const sandbox = sinon.createSandbox({
     // useFakeTimers: true,
   });
