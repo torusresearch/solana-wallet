@@ -389,10 +389,17 @@ const confirmTransfer = async () => {
     });
   } catch (error) {
     log.error(error);
-    showMessageModal({
-      messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
-      messageStatus: STATUS.ERROR,
-    });
+    if ((error as Error).message.match("found no record of a prior credit")) {
+      showMessageModal({
+        messageTitle: t("walletTransfer.insufficientSol"),
+        messageStatus: STATUS.ERROR,
+      });
+    } else {
+      showMessageModal({
+        messageTitle: `${t("walletTransfer.submitFailed")}: ${(error as Error)?.message || t("walletSettings.somethingWrong")}`,
+        messageStatus: STATUS.ERROR,
+      });
+    }
   }
 };
 
