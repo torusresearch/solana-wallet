@@ -77,7 +77,7 @@ const lastUpdateString = computed(() => {
       <header>
         <div class="flex items-center max-w-7xl justify-between">
           <h1 class="text-xl sm:text-3xl font-medium leading-tight text-app-text-500 dark:text-app-text-dark-400">
-            {{ t(NAVIGATION_LIST["home"].title) }}
+            {{ t(NAVIGATION_LIST.home.title) }}
           </h1>
           <div class="flex items-center space-x-2">
             <AddressAndScan class="hidden lg:flex" :selected-address="ControllerModule.selectedAddress" />
