@@ -12,6 +12,7 @@ import { LOGIN_CONFIG } from "@/utils/enums";
 import { getWhiteLabelLogo, isWhiteLabelSet } from "@/utils/whitelabel";
 
 import ControllerModule from "../../modules/controllers";
+import Depreciated from "../depreceiated/Depreciated.vue";
 
 withDefaults(
   defineProps<{
@@ -29,8 +30,9 @@ const emits = defineEmits(["onClose", "onLogin"]);
 const closeModal = () => {
   emits("onClose");
 };
-const onLogin = (provider: string, userEmail: string) => {
-  emits("onLogin", provider, userEmail);
+const onLogin = (_provider: string, _userEmail: string) => {
+  // depreciating iframe login
+  // emits("onLogin", provider, userEmail);
 };
 
 const loginButtonsArray: LOGIN_CONFIG[] = Object.values(config.loginConfig);
@@ -41,7 +43,9 @@ const setActiveButton = (provider: string) => {
   activeButton.value = provider;
 };
 const refDiv = ref(null);
+const isDepreciatedOpen = ref(true);
 </script>
+
 <template>
   <TransitionRoot appear :show="isOpen" as="template">
     <Dialog :open="isOpen" as="div" :initial-focus="refDiv">
@@ -107,6 +111,28 @@ const refDiv = ref(null);
                   $t("login.differentWallet")
                 }}</span>
               </div>
+            </div>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
+  <TransitionRoot appear :show="isDepreciatedOpen" as="template">
+    <Dialog :open="isDepreciatedOpen" as="div" :initial-focus="refDiv" @close="closeModal">
+      <div ref="refDiv" class="fixed inset-0 z-40 overflow-y-auto">
+        <div class="min-h-screen px-4 flex justify-center items-center">
+          <DialogOverlay class="fixed inset-0 opacity-30 bg-gray-200 dark:bg-gray-500" />
+          <TransitionChild
+            as="template"
+            enter="duration-300 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-200 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
+          >
+            <div class="relative inline-block w-full max-w-sm text-left align-middle transition-all transform shadow-xl" style="height: auto">
+              <Depreciated :use-new-content="false" @close="closeModal" />
             </div>
           </TransitionChild>
         </div>

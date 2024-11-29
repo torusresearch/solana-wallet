@@ -141,7 +141,7 @@ const explorerUrl = computed(() => {
           </div>
           <span class="flex flex-row mt-3 justify-between items-center w-full text-sm text-app-text-500 dark:text-app-text-dark-500">
             <p>{{ t("walletTransfer.transferFee") }} <img :src="QuestionMark" alt="QuestionMark" class="ml-2 float-right mt-1 cursor-pointer" /></p>
-            <p>{{ props.isGasless ? "Paid by DApp" : props.cryptoTxFee + " SOL" }}</p>
+            <p>{{ props.isGasless ? "Paid by DApp" : `${props.cryptoTxFee} SOL` }}</p>
           </span>
 
           <p
