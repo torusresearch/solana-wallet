@@ -1,3 +1,6 @@
+// eslint-disable-next-line
+import "@/global";
+
 import "@/main.css";
 
 import { createGtm } from "@gtm-support/vue-gtm";

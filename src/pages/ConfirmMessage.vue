@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, reactive, ref } from "vue";
@@ -44,7 +44,7 @@ onMounted(async () => {
 
 const approveTxn = async (): Promise<void> => {
   loading.value = true;
-  const bc = new BroadcastChannel(channel, { webWorkerSupport: false });
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({
     data: { type: POPUP_RESULT, approve: true },
   });
@@ -53,7 +53,7 @@ const approveTxn = async (): Promise<void> => {
 
 const closeModal = async () => {
   loading.value = true;
-  const bc = new BroadcastChannel(channel, { webWorkerSupport: false });
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
   bc.close();
 };
