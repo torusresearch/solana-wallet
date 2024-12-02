@@ -72,7 +72,7 @@ function setImportTokenState(contractAddress: string, name: string, symbol: stri
 
 function resetState() {
   setImportTokenState("", "", "", true);
-  $v.value.$rese$t();
+  $v.value.$reset();
 }
 
 const onCancel = () => {

@@ -51,8 +51,9 @@ function splClicked() {
           :src="splToken?.iconURL || (ControllerModule.isDarkMode ? SolanaLogoLight : SolanaLogoDark)"
           alt="TOKEN Logo"
         />
-        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p></span
-      >
+        <p class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate">{{ splToken?.name }}</p>
+        <span v-if="splToken.isImportToken" class="text-xs text-app-primary-500 ml-1 border border-gray-300 rounded px-1">Imported</span>
+      </span>
       <p class="font-medium text-xs leading-3 text-right text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20">
         ~ {{ significantDigits(splToken.balance?.uiAmount || 0, false, 4) }} {{ splToken?.symbol }}
       </p>
@@ -85,12 +86,13 @@ function splClicked() {
         <img
           :class="splTokenLoading ? 'skeleton-animation skeleton-img' : ''"
           class="block h-5 mr-2 w-auto text-white font-bold text-xs leading-3"
-          alt="" />
+          alt=""
+        />
         <p
           class="text-app-text-600 dark:text-app-text-dark-500 font-bold text-xs leading-3 w-24 truncate"
           :class="splTokenLoading ? 'skeleton-animation skeleton-p' : ''"
-        ></p
-      ></span>
+        ></p>
+      </span>
       <p
         class="font-medium text-xs leading-3 text-right text-app-text-600 dark:text-app-text-dark-500 mr-1 truncate w-20"
         :class="splTokenLoading ? 'skeleton-animation skeleton-p' : ''"

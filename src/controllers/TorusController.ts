@@ -1,9 +1,9 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
-import { getHashedName, getNameAccountKey, getTwitterRegistry, NameRegistryState } from "@solana/spl-name-service";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 import {
+  ACCOUNT_CATEGORY,
   BaseConfig,
   BaseController,
   BaseEmbedController,
@@ -12,6 +12,7 @@ import {
   BROADCAST_CHANNELS,
   COMMUNICATION_NOTIFICATIONS,
   CommunicationWindowManager,
+  CONFIRMATION_STRATEGY,
   ContactPayload,
   createLoggerMiddleware,
   createOriginMiddleware,
@@ -37,19 +38,6 @@ import {
   TX_EVENTS,
   UserInfo,
 } from "@toruslabs/base-controllers";
-import {
-  createEngineStream,
-  JRPCEngine,
-  JRPCEngineEndCallback,
-  JRPCEngineNextCallback,
-  JRPCRequest,
-  JRPCResponse,
-  providerAsMiddleware,
-  SafeEventEmitterProvider,
-  setupMultiplex,
-  Stream,
-  Substream,
-} from "@toruslabs/openlogin-jrpc";
 import { OpenloginSessionManager } from "@toruslabs/openlogin-session-manager";
 import { LOGIN_PROVIDER_TYPE } from "@toruslabs/openlogin-utils";
 import {
@@ -71,6 +59,20 @@ import {
   TokensTrackerController,
   TransactionController,
 } from "@toruslabs/solana-controllers";
+import {
+  createEngineStream,
+  JRPCEngine,
+  JRPCEngineEndCallback,
+  JRPCEngineNextCallback,
+  JRPCRequest,
+  JRPCResponse,
+  providerAsMiddleware,
+  SafeEventEmitterProvider,
+  setupMultiplex,
+  Stream,
+  Substream,
+  WEB3AUTH_NETWORK,
+} from "@web3auth/auth";
 import { BigNumber } from "bignumber.js";
 import base58 from "bs58";
 import { ethErrors } from "eth-rpc-errors";
@@ -101,6 +103,11 @@ import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
+
+async function loadSplNameService() {
+  const module = await import("@solana/spl-name-service");
+  return module;
+}
 
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
@@ -166,6 +173,10 @@ export const DEFAULT_STATE = {
     apiKey: "torus-default",
     oauthModalVisibility: false,
     loginInProgress: false,
+    web3AuthClientId: "",
+    chainConfig: WALLET_SUPPORTED_NETWORKS[TARGET_NETWORK],
+    web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_MAINNET,
+    confirmationStrategy: CONFIRMATION_STRATEGY.POPUP,
     dappMetadata: {
       name: "",
       icon: "",
@@ -174,6 +185,7 @@ export const DEFAULT_STATE = {
   TokensTrackerState: { tokens: undefined },
   TokenInfoState: {
     tokenInfoMap: {},
+    userTokenInfoMap: {},
     metaplexMetaMap: {},
     tokenPriceMap: {},
     unknownSPLTokenInfo: [],
@@ -186,9 +198,17 @@ export const DEFAULT_STATE = {
   UserDapp: new Map(),
 };
 
+export interface EventMap {
+  store: (state: TorusControllerState) => void;
+  networkDidChange: (network: string) => void;
+  newBlock: (block: any) => void;
+  logout: () => void;
+  LOGIN_RESPONSE: (error: string, publicKey: string) => void;
+}
+
 export const EPHERMAL_KEY = `${CONTROLLER_MODULE_KEY}-ephemeral`;
 
-export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState> {
+export default class TorusController extends BaseController<TorusControllerConfig, TorusControllerState, EventMap> {
   public communicationManager = new CommunicationWindowManager();
 
   private tokenInfoController!: TokenInfoController;
@@ -347,7 +367,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       }
     }
 
-    this.storageLayer = new TorusStorageLayer({ hostUrl: config.openloginStateAPI });
+    this.storageLayer = new TorusStorageLayer({
+      hostUrl: config.openloginStateAPI,
+    });
     // BaseController methods
     this.initialize();
     this.configure(_config, true, true);
@@ -378,7 +400,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: this.config.CurrencyControllerConfig,
       state: this.state.CurrencyControllerState,
     });
-    this.currencyController.updateQueryToken(Object.values(this.tokenInfoController.state.tokenInfoMap));
+    const combinedTokens = { ...this.tokenInfoController.state.userTokenInfoMap, ...this.tokenInfoController.state.tokenInfoMap };
+    this.currencyController.updateQueryToken(Object.values(combinedTokens), true);
     if (this.preferencesController?.state?.selectedAddress) {
       this.currencyController.scheduleConversionInterval();
       this.currencyController.updateConversionRate();
@@ -398,6 +421,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getCurrentCurrency: this.currencyController.getCurrentCurrency.bind(this.currencyController),
       getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
       getConnection: this.networkController.getConnection.bind(this),
+      validateSignMessage: async (_msg: string) => {
+        //
+      },
     });
 
     this.accountTracker = new AccountTrackerController({
@@ -424,7 +450,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
 
     this.txController.on(TX_EVENTS.TX_UNAPPROVED, ({ txMeta, req }) => {
-      this.emit(TX_EVENTS.TX_UNAPPROVED, { txMeta, req });
+      this.emit(TX_EVENTS.TX_UNAPPROVED as keyof EventMap, { txMeta, req });
     });
 
     this.networkController._blockTrackerProxy.on("latest", (block) => {
@@ -474,7 +500,8 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokenInfoController.on("store", (state2) => {
       this.update({ TokenInfoState: state2 });
-      this.currencyController.updateQueryToken(Object.values(state2.tokenInfoMap), true);
+      const combinedUserTokens = { ...state2.userTokenInfoMap, ...state2.tokenInfoMap };
+      this.currencyController.updateQueryToken(Object.values(combinedUserTokens), true);
     });
 
     this.keyringController.on("store", (state2) => {
@@ -483,8 +510,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     this.tokensTracker.on("store", async (state2) => {
       this.update({ TokensTrackerState: state2 });
-      this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
-      this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+      if (state2.tokens) {
+        this.tokenInfoController.updateMetadata(state2.tokens[this.selectedAddress]);
+        this.tokenInfoController.updateTokenInfoMap(state2.tokens[this.selectedAddress]);
+      }
       // this.tokenInfoController.updateTokenPrice(state2.tokens[this.selectedAddress]);
     });
 
@@ -548,7 +577,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       token.network = this.currentNetworkName;
       const result = await this.tokenInfoController.importCustomToken(token);
       const tokenList = this.tokensTracker.state.tokens ? this.tokensTracker.state.tokens[this.selectedAddress] : [];
-      if (tokenList?.length) await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
+      await this.tokenInfoController.updateTokenInfoMap(tokenList, true);
       return result;
     } catch (err) {
       log.error(err);
@@ -574,12 +603,15 @@ export default class TorusController extends BaseController<TorusControllerConfi
   }
 
   async getInputKey(input: string) {
+    const { getHashedName, getNameAccountKey } = await loadSplNameService();
+
     const hashedInputName = await getHashedName(input);
     const inputDomainKey = await getNameAccountKey(hashedInputName, undefined, SOL_TLD_AUTHORITY);
     return { inputDomainKey, hashedInputName };
   }
 
-  async getSNSAccount(type: string, address: string): Promise<NameRegistryState | null | PublicKey> {
+  async getSNSAccount(type: string, address: string): Promise<null | PublicKey | any> {
+    const { getTwitterRegistry } = await loadSplNameService();
     // const { inputDomainKey } = await this.getInputKey(address); // we only support SNS at the moment
     switch (type) {
       case "sns": {
@@ -698,9 +730,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
         this.preferencesController.update({ identities: omit(this.preferencesController.state.identities, address), selectedAddress: "" });
         await this.preferencesController.initPreferences({
           address,
+          jwtToken: userInfo.idToken,
           calledFromEmbed: !isMain,
           userInfo,
           rehydrate,
+          type: ACCOUNT_CATEGORY.IMPORTED,
         });
       } catch (e) {
         log.error(e);
@@ -802,7 +836,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       isIFrameFullScreen,
     });
 
-    if (rid) this.emit(rid);
+    if (rid) this.emit(rid as keyof EventMap);
   }
 
   logout(req: JRPCRequest<[]>, res: JRPCResponse<boolean>, _: JRPCEngineNextCallback, end: JRPCEngineEndCallback): void {
@@ -861,7 +895,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       config: {
         features: getPopupFeatures(FEATURES_DEFAULT_WALLET_WINDOW),
       },
-      state: { url: finalUrl },
+      state: { url: finalUrl, windowId: "" },
     });
     walletPopupWindow.open();
   }
@@ -869,7 +903,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   public loginFromWidgetButton(): void {
     const id = randomId();
     this.toggleIframeFullScreen(id);
-    this.once(id, () => {
+    this.once(id as keyof EventMap, () => {
       this.embedController.update({
         loginInProgress: true,
         oauthModalVisibility: true,
@@ -881,7 +915,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       setTimeout(() => {
         this.toggleIframeFullScreen(id2);
       }, 100);
-      this.once(id2, () => {
+      this.once(id2 as keyof EventMap, () => {
         this.embedController.update({ loginInProgress: false });
       });
       if (error) {
@@ -1057,13 +1091,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
         windowId,
       },
       config: {
-        dappStorageKey: config.dappStorageKey || undefined,
         communicationEngine: this.communicationEngine as JRPCEngine,
         communicationWindowManager: this.communicationManager,
         target: "_blank",
         features: getPopupFeatures(FEATURES_PROVIDER_CHANGE_WINDOW),
       },
-      instanceId: channelName,
+      channelPrefix: channelName,
     });
     const result = (await providerChangeWindow.handleWithHandshake({
       origin: this.preferencesController.iframeOrigin,
@@ -1084,6 +1117,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<boolean> {
     try {
       const { windowId } = req;
+      if (!windowId) throw new Error("windowId not found");
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm?instanceId=${windowId}&integrity=true&id=${windowId}`);
 
@@ -1108,13 +1142,12 @@ export default class TorusController extends BaseController<TorusControllerConfi
           windowId,
         },
         config: {
-          dappStorageKey: config.dappStorageKey || undefined,
           communicationEngine: this.communicationEngine,
           communicationWindowManager: this.communicationManager,
           target: "_blank",
           features: getPopupFeatures(FEATURES_CONFIRM_WINDOW),
         },
-        instanceId: channelName,
+        channelPrefix: channelName,
       });
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
@@ -1140,6 +1173,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   ): Promise<boolean> {
     try {
       const { windowId } = req;
+      if (!windowId) throw new Error("windowId not found");
       const channelName = `${BROADCAST_CHANNELS.TRANSACTION_CHANNEL}_${windowId}`;
       const finalUrl = new URL(`${config.baseRoute}confirm_message?instanceId=${windowId}&integrity=true&id=${windowId}`);
 
@@ -1165,12 +1199,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
           windowId,
         },
         config: {
-          dappStorageKey: config.dappStorageKey || undefined,
           communicationEngine: this.communicationEngine,
           communicationWindowManager: this.communicationManager,
           target: "_blank",
         },
-        instanceId: channelName,
+        channelPrefix: channelName,
       });
       const result = (await txApproveWindow.handleWithHandshake(popupPayload)) as { approve: boolean };
       const { approve = false } = result;
@@ -1194,13 +1227,13 @@ export default class TorusController extends BaseController<TorusControllerConfi
     const state = {
       // selectedAddress: params.selectedAddress || this.selectedAddress,
       selectedAddress: this.selectedAddress,
-      email: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email,
+      email: this.state.PreferencesControllerState.identities[this.selectedAddress].userInfo.email || "",
     };
     log.info(params);
     try {
       const finalUrl = await topupPlugin[provider].orderUrl(state, params, instanceId, redirectFlow, redirectURL);
 
-      if (!redirectFlow) {
+      if (!redirectFlow && windowId) {
         const channelName = `${BROADCAST_CHANNELS.REDIRECT_CHANNEL}_${instanceId}`;
         const topUpPopUpWindow = new PopupWithBcHandler({
           state: {
@@ -1208,12 +1241,11 @@ export default class TorusController extends BaseController<TorusControllerConfi
             windowId,
           },
           config: {
-            dappStorageKey: config.dappStorageKey || undefined,
             communicationEngine: this.communicationEngine,
             communicationWindowManager: this.communicationManager,
             target: "_blank",
           },
-          instanceId: channelName,
+          channelPrefix: channelName,
         });
         await topUpPopUpWindow.handle();
       } else {
@@ -1243,6 +1275,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       if (login_hint) extraLoginOptions.login_hint = login_hint;
 
       const handler = new OpenLoginHandler({
+        windowId: randomId(),
         loginProvider,
         extraLoginOptions,
       });
@@ -1272,10 +1305,10 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
       if (!this.hasSelectedPrivateKey || !this.privateKey) throw new Error("Wallet Error: Invalid private key ");
 
-      this.emit("LOGIN_RESPONSE", null, address);
+      this.emit("LOGIN_RESPONSE", "", address);
       return result;
     } catch (error) {
-      this.emit("LOGIN_RESPONSE", (error as Error)?.message);
+      this.emit("LOGIN_RESPONSE", (error as Error)?.message, "");
       log.error(error);
       throw error;
     }
@@ -1315,7 +1348,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
   async UNSAFE_signAllTransactions(req: Ihandler<{ message: string[] | undefined }>) {
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg: string) => {
-      const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
+      const tx = VersionedTransaction.deserialize(new Uint8Array(Buffer.from(msg as string, "hex")));
       const modifiedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
       const signedMessage = Buffer.from(modifiedTx.serialize()).toString("hex");
       return signedMessage;
@@ -1340,7 +1373,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
     });
     this.communicationEngine?.emit("notification", {
       method: COMMUNICATION_NOTIFICATIONS.USER_LOGGED_IN,
-      params: { currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "" },
+      params: {
+        currentLoginProvider: this.getAccountPreferences(this.selectedAddress)?.userInfo.typeOfLogin || "",
+      },
     });
     return accounts;
   }
@@ -1363,14 +1398,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
     // sign all transaction
     const allTransactions = req.params?.message?.map((msg) => {
       if (req.params?.messageOnly) {
-        const signature = this.keyringController.signMessage(Buffer.from(msg as string, "hex"), this.selectedAddress);
-        return JSON.stringify({ publicKey: this.selectedAddress, signature: Buffer.from(signature).toString("hex") });
+        const signature = this.keyringController.signMessage(new Uint8Array(Buffer.from(msg as string, "hex")), this.selectedAddress);
+        return JSON.stringify({
+          publicKey: this.selectedAddress,
+          signature: Buffer.from(signature).toString("hex"),
+        });
       }
 
       // Fallback to whole tx
       // const msgObj = VersionedMessage.deserialize(msg);
       // const tx = new VersionedTransaction(msgObj);
-      const tx = VersionedTransaction.deserialize(Buffer.from(msg as string, "hex"));
+      const tx = VersionedTransaction.deserialize(new Uint8Array(Buffer.from(msg as string, "hex")));
       const signedTx = this.keyringController.signTransaction(tx, this.selectedAddress);
       const signedMessage = Buffer.from(signedTx.serialize()).toString("hex");
       return signedMessage;
@@ -1389,7 +1427,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       const approved = await this.handleTransactionPopup("", req);
       if (!approved) throw ethErrors.provider.userRejectedRequest("User Rejected");
 
-      signature = this.keyringController.signMessage(Buffer.from(message as string, "hex"), this.selectedAddress);
+      signature = this.keyringController.signMessage(new Uint8Array(Buffer.from(message as string, "hex")), this.selectedAddress);
 
       return JSON.stringify({
         publicKey: this.selectedAddress,
@@ -1397,7 +1435,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       });
     }
 
-    const tx = VersionedTransaction.deserialize(Buffer.from(message as string, "hex"));
+    const tx = VersionedTransaction.deserialize(new Uint8Array(Buffer.from(message as string, "hex")));
 
     const ret_signed = await this.txController.addSignTransaction(tx, req);
     try {
@@ -1417,9 +1455,9 @@ export default class TorusController extends BaseController<TorusControllerConfi
 
     let tx: VersionedTransaction;
     if (req.params?.messageOnly) {
-      const msgObj = VersionedMessage.deserialize(Buffer.from(message, "hex"));
+      const msgObj = VersionedMessage.deserialize(new Uint8Array(Buffer.from(message, "hex")));
       tx = new VersionedTransaction(msgObj);
-    } else tx = VersionedTransaction.deserialize(Buffer.from(message, "hex"));
+    } else tx = VersionedTransaction.deserialize(new Uint8Array(Buffer.from(message, "hex")));
     return this.transfer(tx, req);
   }
 
@@ -1653,6 +1691,17 @@ export default class TorusController extends BaseController<TorusControllerConfi
       },
       showWindowBlockAlert: () => {
         throw new Error("Unsupported method");
+      },
+      loginWithSessionId(_req: Ihandler<[string, string]>): Promise<{ success: boolean }> {
+        throw new Error("Function not implemented.");
+      },
+      showSwap(
+        _req: JRPCRequest<BaseEmbedControllerState["showCheckout"]>,
+        _res: JRPCResponse<boolean>,
+        _next: JRPCEngineNextCallback,
+        _end: JRPCEngineEndCallback
+      ): void {
+        throw new Error("Function not implemented.");
       },
     };
     this.embedController.initializeProvider(commProviderHandlers);
