@@ -54,6 +54,7 @@ const continueToApp = async (selectedIndex: number) => {
         sessionId,
       },
     } as PopupData<OpenLoginPopupResponse>);
+    await bc.close();
   } catch (error) {
     log.error(error, "something went wrong");
   }
