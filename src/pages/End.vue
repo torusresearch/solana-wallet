@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Keypair } from "@solana/web3.js";
-import { PopupData } from "@toruslabs/base-controllers";
+import { broadcastChannelOptions, PopupData } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import { get } from "@toruslabs/http-helpers";
 import { getED25519Key } from "@toruslabs/openlogin-ed25519";
@@ -45,7 +45,7 @@ const continueToApp = async (selectedIndex: number) => {
     }
 
     log.info(accounts);
-    const bc = new BroadcastChannel(channel, { webWorkerSupport: false });
+    const bc = new BroadcastChannel(channel, broadcastChannelOptions);
     await bc.postMessage({
       data: {
         userInfo,

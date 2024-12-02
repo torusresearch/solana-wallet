@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { clusterApiUrl, Connection, TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
-import { BROADCAST_CHANNELS, BroadcastChannelHandler, POPUP_RESULT } from "@toruslabs/base-controllers";
+import { BROADCAST_CHANNELS, BroadcastChannelHandler, broadcastChannelOptions, POPUP_RESULT } from "@toruslabs/base-controllers";
 import { BroadcastChannel } from "@toruslabs/broadcast-channel";
 import log from "loglevel";
 import { onErrorCaptured, onMounted, ref } from "vue";
@@ -84,7 +84,7 @@ onMounted(async () => {
 
 const approveTxn = async (): Promise<void> => {
   loading.value = true;
-  const bc = new BroadcastChannel(channel, { webWorkerSupport: false });
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({
     data: { type: POPUP_RESULT, approve: true },
   });
@@ -93,7 +93,7 @@ const approveTxn = async (): Promise<void> => {
 
 const closeModal = async () => {
   loading.value = true;
-  const bc = new BroadcastChannel(channel, { webWorkerSupport: false });
+  const bc = new BroadcastChannel(channel, broadcastChannelOptions);
   await bc.postMessage({ data: { type: POPUP_RESULT, approve: false } });
   bc.close();
 };
