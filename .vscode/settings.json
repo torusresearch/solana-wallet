@@ -6,6 +6,6 @@
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": true
-}
+    "source.fixAll": "explicit"
+  }
 }

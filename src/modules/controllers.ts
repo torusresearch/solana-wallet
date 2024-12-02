@@ -9,7 +9,6 @@ import {
   BillboardEvent,
   BROADCAST_CHANNELS,
   BROADCAST_CHANNELS_MSGS,
-  broadcastChannelOptions,
   Contact,
   ContactPayload,
   DEFAULT_PREFERENCES,
@@ -392,10 +391,9 @@ class ControllerModule extends VuexModule {
   public async changeTheme(theme: "light" | "dark") {
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
-      const themeChannel = new BroadcastChannel<PopupData<ThemeChannelData>>(
-        `${BROADCAST_CHANNELS.THEME_CHANGE}_${instanceId}`,
-        broadcastChannelOptions
-      );
+      const themeChannel = new BroadcastChannel<PopupData<ThemeChannelData>>(`${BROADCAST_CHANNELS.THEME_CHANGE}_${instanceId}`, {
+        webWorkerSupport: false,
+      });
       themeChannel.postMessage({
         data: {
           type: BROADCAST_CHANNELS_MSGS.SET_THEME,
@@ -560,10 +558,9 @@ class ControllerModule extends VuexModule {
     torus.setOrigin(origin);
     const instanceId = new URLSearchParams(window.location.search).get("instanceId");
     if (instanceId) {
-      const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(
-        `${BROADCAST_CHANNELS.WALLET_LOGOUT_CHANNEL}_${instanceId}`,
-        broadcastChannelOptions
-      );
+      const logoutChannel = new BroadcastChannel<PopupData<BasePopupChannelData>>(`${BROADCAST_CHANNELS.WALLET_LOGOUT_CHANNEL}_${instanceId}`, {
+        webWorkerSupport: false,
+      });
       logoutChannel.postMessage({
         data: {
           type: BROADCAST_CHANNELS_MSGS.LOGOUT,
@@ -589,7 +586,7 @@ class ControllerModule extends VuexModule {
     if (instanceId) {
       const networkChangeChannel = new BroadcastChannel<PopupData<NetworkChangeChannelData>>(
         `${BROADCAST_CHANNELS.WALLET_NETWORK_CHANGE_CHANNEL}_${instanceId}`,
-        broadcastChannelOptions
+        { webWorkerSupport: false }
       );
       networkChangeChannel.postMessage({
         data: {
@@ -610,7 +607,7 @@ class ControllerModule extends VuexModule {
     if (instanceId) {
       const accountImportChannel = new BroadcastChannel<PopupData<AccountImportedChannelData>>(
         `${BROADCAST_CHANNELS.WALLET_ACCOUNT_IMPORT_CHANNEL}_${instanceId}`,
-        broadcastChannelOptions
+        { webWorkerSupport: false }
       );
       accountImportChannel.postMessage({
         data: {
@@ -640,7 +637,7 @@ class ControllerModule extends VuexModule {
     if (instanceId) {
       const selectedAddressChannel = new BroadcastChannel<PopupData<SelectedAddresssChangeChannelData>>(
         `${BROADCAST_CHANNELS.WALLET_SELECTED_ADDRESS_CHANNEL}_${instanceId}`,
-        broadcastChannelOptions
+        { webWorkerSupport: false }
       );
       selectedAddressChannel.postMessage({
         data: {
