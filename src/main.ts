@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import "@/global";
+import "@/globalValue";
 
 import "@/main.css";
 
