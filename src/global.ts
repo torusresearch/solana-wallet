@@ -1,4 +1,9 @@
 import { broadcastChannelOptions } from "@toruslabs/base-controllers";
+import { MethodType } from "@toruslabs/broadcast-channel";
 
-// change type
-(broadcastChannelOptions as any).type = null;
+(
+  broadcastChannelOptions as {
+    type?: MethodType;
+    webWorkerSupport: boolean;
+  }
+).type = undefined;
