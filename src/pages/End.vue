@@ -54,6 +54,7 @@ const continueToApp = async (selectedIndex: number) => {
         sessionId,
       },
     } as PopupData<OpenLoginPopupResponse>);
+    await bc.close();
   } catch (error) {
     log.error(error, "something went wrong");
   }
@@ -92,9 +93,8 @@ async function endLogin() {
       throw new Error("Login unsuccessful");
     }
     const appState = JSON.parse(safeatob(decodeURIComponent(decodeURIComponent(openLoginStore.appState as string))));
-    const { instanceId } = appState;
-    channel = instanceId;
-
+    const { instanceId, windowId } = appState;
+    channel = `openlogin_${instanceId}_${windowId || ""}`;
     // Main wallet's Accoun
     // const { sk: secretKey } = getED25519Key(privKey.padStart(64, "0"));
     const secretKey = Buffer.from(ed25519PrivKey!, "hex");

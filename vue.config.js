@@ -25,6 +25,7 @@ module.exports = {
         config.resolve.alias = {
             ...config.resolve.alias,
             'bn.js': p.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
+            '@solana/spl-name-service': path.resolve(__dirname, 'node_modules/@solana/spl-name-service/lib/esm/index.js'),
         }
         config.plugins.push(new ProvidePlugin({Buffer: ["buffer", "Buffer"]}));
         config.plugins.push(new ProvidePlugin({process: ["process/browser"]}));

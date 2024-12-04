@@ -377,6 +377,7 @@ describe("Controller Module", () => {
         tokenAddress: "",
         isFungible: false,
         balance: { decimals: mockMintInfo[mockMintAddress[1]].decimals, amount: "0", uiAmount: 0, uiAmountString: "0" },
+        isImportToken: false,
       };
       const splTransaction = await SolanaHelper.generateSPLTransaction(
         sKeyPair[0].publicKey.toBase58(),
