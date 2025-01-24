@@ -237,8 +237,12 @@ export async function buildOptimalTransaction(
   sender: PublicKey,
   lookupTables: Array<AddressLookupTableAccount>
 ) {
+  const priorityFees = await connection.getRecentPrioritizationFees();
+  const allPriorityFee = priorityFees.map((x) => x.prioritizationFee);
+
   const [microLamports, units, recentBlockhash] = await Promise.all([
-    100 /* Get optimal priority fees - https://solana.com/developers/guides/advanced/how-to-use-priority-fees */,
+    Math.min(...allPriorityFee),
+    // 100 /* Get optimal priority fees - https://solana.com/developers/guides/advanced/how-to-use-priority-fees */,
     getSimulationComputeUnits(connection, instructions, sender, lookupTables),
     connection.getLatestBlockhash(),
   ]);
