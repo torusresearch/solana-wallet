@@ -18,6 +18,7 @@ import {
   TokenInstruction,
 } from "@solana/spl-token";
 import {
+  ComputeBudgetProgram,
   Connection,
   PublicKey,
   StakeInstruction,
@@ -349,7 +350,19 @@ export const constructTokenData = async (
 
     // TODO: Need to Decode for Token Account Creation and Transfer Instruction which bundle in 1 Transaction.
     let interestedTransactionInstructionidx = -1;
-    const instructionLength = instructions.length;
+    let instructionLength = instructions.length;
+
+    let computeBudgetAdjusted = 0;
+    if (instructionLength >= 3) {
+      if (ComputeBudgetProgram.programId.equals(instructions[0].programId)) {
+        instructionLength -= 1;
+        computeBudgetAdjusted += 1;
+      }
+      if (ComputeBudgetProgram.programId.equals(instructions[1].programId)) {
+        instructionLength -= 1;
+        computeBudgetAdjusted += 1;
+      }
+    }
 
     if (instructionLength > 1 && instructionLength <= 3) {
       const createInstructionIdx = instructions.findIndex((inst) => {
@@ -380,8 +393,8 @@ export const constructTokenData = async (
     }
 
     // Expect SPL token transfer transaction have only 1 instruction
-    if (instructions.length === 1 || interestedTransactionInstructionidx >= 0) {
-      if (instructions.length === 1) interestedTransactionInstructionidx = 0;
+    if (instructionLength === 1 || interestedTransactionInstructionidx >= 0) {
+      if (instructionLength === 1) interestedTransactionInstructionidx = computeBudgetAdjusted;
       if (TOKEN_PROGRAM_ID.equals(instructions[interestedTransactionInstructionidx].programId)) {
         const decoded = decodeTokenInstruction(instructions[interestedTransactionInstructionidx]);
         // There are transfer and transferChecked type
