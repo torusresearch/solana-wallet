@@ -23,7 +23,7 @@ const getSolanaTransactionLink = (blockExplorerUrl: string, signature: string, c
 export const formatTransactionToActivity = (params: {
   transactions: ParsedTransactionWithMeta[];
   signaturesInfo: ConfirmedSignatureInfo[];
-  chainId: any;
+  chainId: string;
   blockExplorerUrl: string;
   selectedAddress: string;
 }) => {
@@ -203,7 +203,7 @@ export class ModPrefrenceController extends PreferencesController {
     const incomingBlockchainActivities = formatTransactionToActivity({
       transactions: incomingBlockchainTransactions,
       signaturesInfo: filteredSignaturesInfo,
-      chainId: chainId as any,
+      chainId,
       blockExplorerUrl,
       selectedAddress: this.state.selectedAddress,
     });
