@@ -34,14 +34,14 @@ class TorusStorageLayer {
 
   static async serializeMetadataParamsInput(el: unknown, privKey: BN): Promise<unknown> {
     // General case, encrypt message
-    const bufferMetadata = Buffer.from(stringify(el));
+    const bufferMetadata = Buffer.from(stringify(el) ?? "");
     let encryptedDetails: EncryptedMessage;
     if (privKey) {
       encryptedDetails = await encrypt(getPubKeyECC(privKey), bufferMetadata);
     } else {
       throw new Error("Invalid params");
     }
-    const serializedEncryptedDetails = Buffer.from(stringify(encryptedDetails)).toString("base64");
+    const serializedEncryptedDetails = Buffer.from(stringify(encryptedDetails) ?? "").toString("base64");
     return serializedEncryptedDetails;
   }
 
@@ -127,7 +127,7 @@ class TorusStorageLayer {
       timestamp: new BN((this.serverTimeOffset + Date.now()) / 1000).toString(16),
     };
 
-    const hash = keccak256(Buffer.from(stringify(setTKeyStore), "utf-8"));
+    const hash = keccak256(Buffer.from(stringify(setTKeyStore) ?? "", "utf-8"));
     if (privKey) {
       const unparsedSig = toPrivKeyEC(privKey).sign(hash);
       sig = Buffer.from(unparsedSig.r.toString(16, 64) + unparsedSig.s.toString(16, 64) + new BN(0).toString(16, 2), "hex").toString("base64");

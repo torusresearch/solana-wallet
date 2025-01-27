@@ -13,9 +13,12 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import {
+  AddressLookupTableAccount,
+  ComputeBudgetProgram,
   Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
+  RpcResponseAndContext,
   SimulatedTransactionResponse,
   SystemInstruction,
   SystemProgram,
@@ -34,6 +37,39 @@ import log from "loglevel";
 import { SNS, SOL } from "./enums";
 import { decodeInstruction } from "./instructionDecoder";
 import { AccountEstimation, ClubbedNfts, FinalTxData, SolAndSplToken } from "./interfaces";
+
+export const getErrorFromRPCResponse = (rpcResponse: RpcResponseAndContext<any>) => {
+  // Note: `confirmTransaction` does not throw an error if the confirmation does not succeed,
+  // but rather a `TransactionError` object. so we handle that here
+  // See https://solana-labs.github.io/solana-web3.js/classes/Connection.html#confirmTransaction.confirmTransaction-1
+  const error = rpcResponse.value.err;
+  if (error) {
+    // Can be a string or an object (literally just {}, no further typing is provided by the library)
+    // https://github.com/solana-labs/solana-web3.js/blob/4436ba5189548fc3444a9f6efb51098272926945/packages/library-legacy/src/connection.ts#L2930
+    // TODO: if still occurs in web3.js 2 (unlikely), fix it.
+    if (typeof error === "object") {
+      const errorKeys = Object.keys(error);
+      if (errorKeys.length === 1) {
+        if (errorKeys[0] !== "InstructionError") {
+          throw new Error(`Unknown RPC error: ${error}`);
+        }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore due to missing typing information mentioned above.
+        const instructionError = error.InstructionError;
+        // An instruction error is a custom program error and looks like:
+        // [
+        //   1,
+        //   {
+        //     "Custom": 1
+        //   }
+        // ]
+        // See also https://solana.stackexchange.com/a/931/294
+        throw new Error(`Error in transaction: instruction index ${instructionError[0]}, custom program error ${instructionError[1].Custom}`);
+      }
+    }
+    throw Error(error.toString());
+  }
+};
 
 export function ruleVerifierId(selectedTypeOfLogin: string, value: string): boolean {
   if (selectedTypeOfLogin === SOL) {
@@ -165,6 +201,69 @@ export async function generateSolTransaction(receiver: string, amount: number, s
   return transactionV0;
 }
 
+export const getSimulationComputeUnits = async (
+  connection: Connection,
+  instructions: Array<TransactionInstruction>,
+  payer: PublicKey,
+  lookupTables: Array<AddressLookupTableAccount>
+) => {
+  const testInstructions = [
+    // Set an arbitrarily high number in simulation
+    // so we can be sure the transaction will succeed
+    // and get the real compute units used
+    ComputeBudgetProgram.setComputeUnitLimit({ units: 1400000 }),
+    ...instructions,
+  ];
+  const testTransaction = new VersionedTransaction(
+    new TransactionMessage({
+      instructions: testInstructions,
+      payerKey: payer,
+      // RecentBlockhash can by any public key during simulation
+      // since 'replaceRecentBlockhash' is set to 'true' below
+      recentBlockhash: PublicKey.default.toString(),
+    }).compileToV0Message(lookupTables)
+  );
+  const rpcResponse = await connection.simulateTransaction(testTransaction, {
+    replaceRecentBlockhash: true,
+    sigVerify: false,
+  });
+  // getErrorFromRPCResponse(rpcResponse);
+  return rpcResponse.value.unitsConsumed || null;
+};
+
+export async function buildOptimalTransaction(
+  connection: Connection,
+  instructions: Array<TransactionInstruction>,
+  sender: PublicKey,
+  lookupTables: Array<AddressLookupTableAccount>
+) {
+  const priorityFees = await connection.getRecentPrioritizationFees();
+  const allPriorityFee = priorityFees.map((x) => x.prioritizationFee);
+
+  const [microLamports, units, recentBlockhash] = await Promise.all([
+    Math.min(...allPriorityFee),
+    // 100 /* Get optimal priority fees - https://solana.com/developers/guides/advanced/how-to-use-priority-fees */,
+    getSimulationComputeUnits(connection, instructions, sender, lookupTables),
+    connection.getLatestBlockhash(),
+  ]);
+
+  instructions.unshift(ComputeBudgetProgram.setComputeUnitPrice({ microLamports }));
+  if (units) {
+    // probably should add some margin of error to units
+    instructions.unshift(ComputeBudgetProgram.setComputeUnitLimit({ units: units + 1000 }));
+  }
+  return {
+    transaction: new VersionedTransaction(
+      new TransactionMessage({
+        instructions,
+        recentBlockhash: recentBlockhash.blockhash,
+        payerKey: sender,
+      }).compileToV0Message(lookupTables)
+    ),
+    recentBlockhash,
+  };
+}
+
 export async function generateSPLTransaction(
   receiver: string,
   amount: number,
@@ -180,16 +279,8 @@ export async function generateSPLTransaction(
     amount
   );
 
-  const { blockhash } = await connection.getLatestBlockhash("finalized");
-  const messageV0 = new TransactionMessage({
-    payerKey: new PublicKey(sender),
-    recentBlockhash: blockhash,
-    instructions,
-  }).compileToV0Message();
-
-  const versionedTransaction = new VersionedTransaction(messageV0);
-
-  return versionedTransaction;
+  const result = await buildOptimalTransaction(connection, instructions, new PublicKey(sender), []);
+  return result.transaction;
 }
 
 export async function burnAndCloseAccount(selectedAddress: string, associatedAddress: string, mint: string, connection: Connection) {

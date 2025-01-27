@@ -27,11 +27,12 @@
     "@sentry/browser": "^7.77.0",
     "@sentry/tracing": "^7.77.0",
     "@sentry/vue": "^7.77.0",
+    "@solana-developers/helpers": "^2.5.6",
     "@solana/pay": "^0.2.5",
     "@solana/qr-code-styling": "^1.6.0",
     "@solana/spl-name-service": "^0.2.0",
     "@solana/spl-token": "0.3.8",
-    "@solana/web3.js": "^1.87.3",
+    "@solana/web3.js": "^1.98.0",
     "@toruslabs/base-controllers": "^4.11.0",
     "@toruslabs/broadcast-channel": "^9.0.1",
     "@toruslabs/eccrypto": "^4.0.0",
@@ -137,8 +138,8 @@
     "typescript": "^5.2.2"
   },
   "engines": {
-    "node": ">=18.x",
-    "npm": ">=9.x",
+    "node": ">=20.17.0",
+    "npm": ">=10.8.x",
     "yarn": "please use npm"
   }
 }

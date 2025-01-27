@@ -101,6 +101,7 @@ import TorusStorageLayer from "@/utils/tkey/storageLayer";
 import { TOPUP } from "@/utils/topup";
 
 import { PKG } from "../const";
+import { ModPrefrenceController } from "./PrefrenceController";
 
 const TARGET_NETWORK = "mainnet";
 const SOL_TLD_AUTHORITY = new PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
@@ -390,7 +391,7 @@ export default class TorusController extends BaseController<TorusControllerConfi
       state: this.state.KeyringControllerState,
     });
 
-    this.preferencesController = new PreferencesController({
+    this.preferencesController = new ModPrefrenceController({
       state: this.state.PreferencesControllerState,
       config: this.config.PreferencesControllerConfig,
       signAuthMessage: this.keyringController.signAuthMessage.bind(this.keyringController),
@@ -399,7 +400,6 @@ export default class TorusController extends BaseController<TorusControllerConfi
       getConversionRate: this.currencyController.getConversionRate.bind(this.currencyController),
       getConnection: this.networkController.getConnection.bind(this),
     });
-
     this.accountTracker = new AccountTrackerController({
       state: this.state.AccountTrackerState,
       config: this.config.AccountTrackerConfig,
