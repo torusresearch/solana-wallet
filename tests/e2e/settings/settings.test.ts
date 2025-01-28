@@ -71,6 +71,25 @@ test.describe("Settings Page", async () => {
     await page.click("button >> text=Close");
   });
 
+  test("Empty contact name should show required error message", async () => {
+    // // see navigation works correctly
+    await switchTab(page, "settings");
+
+    // if contact is empty, show Required error message
+    await page.click("text=Add Contact");
+    await expect(page.locator("div >> text=Required")).toHaveCount(1);
+  });
+
+  test("Invalid public key should show invalid error message", async () => {
+    // // see navigation works correctly
+    await switchTab(page, "settings");
+
+    // if public key is invalid, show Invalid SOL Address error message
+    await page.fill("input[placeholder='Enter SOL Public Key']", `invalid-${IMPORT_ACC_ADDRESS}`);
+    await page.click("text=Add Contact");
+    await expect(page.locator("div >> text=Invalid SOL Address")).toHaveCount(1);
+  });
+
   test("Contact should be added and then deleted", async () => {
     // // see navigation works correctly
     await switchTab(page, "settings");
