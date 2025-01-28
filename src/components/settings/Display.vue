@@ -13,7 +13,7 @@ const { t } = useI18n();
     <div class="grid grid-cols-2 space-x-3">
       <div>
         <Button
-          v-ga="SettingsPageInteractions.DISPLAY + 'light'"
+          v-ga="`${SettingsPageInteractions.DISPLAY}light`"
           class="w-full"
           :variant="ControllerModule.isDarkMode ? 'tertiary' : 'primary'"
           :block="true"
@@ -23,7 +23,7 @@ const { t } = useI18n();
       </div>
       <div>
         <Button
-          v-ga="SettingsPageInteractions.DISPLAY + 'dark'"
+          v-ga="`${SettingsPageInteractions.DISPLAY}dark`"
           :variant="ControllerModule.isDarkMode ? 'primary' : 'tertiary'"
           :block="true"
           class="w-full"
